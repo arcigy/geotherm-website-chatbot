@@ -394,11 +394,31 @@ h1 {
   max-width: calc(100vw - 28px);
   max-height: calc(100vh - 40px);
   overflow: hidden;
-  resize: both;
   border: 1px solid rgba(13, 17, 17, 0.14);
   border-radius: 14px;
   background: #fff;
   box-shadow: 0 34px 110px rgba(0, 0, 0, 0.28);
+}
+
+.chat-resize-grip {
+  position: absolute;
+  right: 4px;
+  bottom: 4px;
+  z-index: 5;
+  width: 16px;
+  height: 16px;
+  cursor: nwse-resize;
+}
+
+.chat-resize-grip::before {
+  content: "";
+  position: absolute;
+  right: 3px;
+  bottom: 3px;
+  width: 9px;
+  height: 9px;
+  border-right: 1px solid #a8b3b0;
+  border-bottom: 1px solid #a8b3b0;
 }
 
 .chat-header {
@@ -702,6 +722,8 @@ h1 {
 }
 
 .chat-input {
+  position: relative;
+  z-index: 10;
   display: grid;
   grid-template-columns: minmax(0, 1fr) 42px;
   gap: 10px;
@@ -711,6 +733,8 @@ h1 {
 }
 
 .chat-input textarea {
+  position: relative;
+  z-index: 2;
   min-height: 48px;
   max-height: 132px;
   resize: none;
@@ -719,6 +743,12 @@ h1 {
   border-radius: 12px;
   line-height: 1.35;
   overflow-y: auto;
+  pointer-events: auto;
+  scrollbar-width: none;
+}
+
+.chat-input textarea::-webkit-scrollbar {
+  display: none;
 }
 
 .chat-input button {
@@ -783,7 +813,10 @@ h1 {
     width: calc(100vw - 28px);
     min-width: 0;
     height: min(680px, calc(100vh - 28px));
-    resize: none;
+  }
+
+  .chat-resize-grip {
+    display: none;
   }
 }
 

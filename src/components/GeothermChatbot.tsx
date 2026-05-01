@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, KeyboardEvent, useEffect, useRef, useState } from "react";
+import { FormEvent, KeyboardEvent, PointerEvent, useEffect, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 
 type Message = {
@@ -14,6 +14,7 @@ export function GeothermChatbot() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [windowSize, setWindowSize] = useState({ width: 520, height: 720 });
   const scrollRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -99,6 +100,32 @@ export function GeothermChatbot() {
     textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 132)}px`;
   }
 
+  function startResize(event: PointerEvent<HTMLDivElement>) {
+    event.preventDefault();
+    const startX = event.clientX;
+    const startY = event.clientY;
+    const startWidth = windowSize.width;
+    const startHeight = windowSize.height;
+
+    function onPointerMove(pointerEvent: globalThis.PointerEvent) {
+      const maxWidth = window.innerWidth - 28;
+      const maxHeight = window.innerHeight - 40;
+
+      setWindowSize({
+        width: Math.min(Math.max(390, startWidth + pointerEvent.clientX - startX), maxWidth),
+        height: Math.min(Math.max(520, startHeight + pointerEvent.clientY - startY), maxHeight),
+      });
+    }
+
+    function onPointerUp() {
+      window.removeEventListener("pointermove", onPointerMove);
+      window.removeEventListener("pointerup", onPointerUp);
+    }
+
+    window.addEventListener("pointermove", onPointerMove);
+    window.addEventListener("pointerup", onPointerUp);
+  }
+
   if (!isOpen) {
     return (
       <button className="chat-launcher" type="button" onClick={() => setIsOpen(true)}>
@@ -109,7 +136,11 @@ export function GeothermChatbot() {
   }
 
   return (
-    <aside className="chat-shell" aria-label="GEOTHERM AI chatbot">
+    <aside
+      className="chat-shell"
+      style={{ width: windowSize.width, height: windowSize.height }}
+      aria-label="GEOTHERM AI chatbot"
+    >
       <header className="chat-header">
         <div className="chat-title">
           <span className="chat-logo">G</span>
@@ -167,6 +198,7 @@ export function GeothermChatbot() {
           ↑
         </button>
       </form>
+      <div className="chat-resize-grip" aria-hidden="true" onPointerDown={startResize} />
     </aside>
   );
 }
