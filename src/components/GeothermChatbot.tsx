@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useMemo, useRef, useState } from "react";
+import { FormEvent, KeyboardEvent, useEffect, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 
 type Message = {
@@ -9,39 +9,20 @@ type Message = {
   content: string;
 };
 
-const initialMessages: Message[] = [
-  {
-    id: "welcome",
-    role: "assistant",
-    content:
-      "Dobrý deň, som **GEOTHERM asistent**. Pomôžem vám zistiť, či je pre dom vhodnejšie tepelné čerpadlo, podlahové vykurovanie, rekuperácia alebo kombinované riešenie.",
-  },
-];
-
-const quickPrompts = [
-  "Aké tepelné čerpadlo je vhodné pre novostavbu?",
-  "Chcem návrh zdarma",
-  "Mám rekonštrukciu domu",
-  "Ako fungujú dotácie?",
-];
-
-function shouldShowLeadCard(text: string) {
-  const lower = text.toLowerCase();
-  return lower.includes("návrh") || lower.includes("ponuk") || lower.includes("kontakt");
-}
-
 export function GeothermChatbot() {
   const [isOpen, setIsOpen] = useState(true);
-  const [messages, setMessages] = useState<Message[]>(initialMessages);
+  const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [leadMode, setLeadMode] = useState(false);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  const visibleLeadCard = useMemo(
-    () => leadMode || messages.some((message) => message.role === "user" && shouldShowLeadCard(message.content)),
-    [leadMode, messages],
-  );
+  useEffect(() => {
+    scrollRef.current?.scrollTo({
+      top: scrollRef.current.scrollHeight,
+      behavior: "smooth",
+    });
+  }, [messages, isLoading]);
 
   async function sendMessage(content: string) {
     const trimmed = content.trim();
@@ -57,6 +38,10 @@ export function GeothermChatbot() {
     setMessages(nextMessages);
     setInput("");
     setIsLoading(true);
+
+    if (textareaRef.current) {
+      textareaRef.current.style.height = "48px";
+    }
 
     try {
       const response = await fetch("/api/geotherm-chat", {
@@ -98,11 +83,27 @@ export function GeothermChatbot() {
     void sendMessage(input);
   }
 
+  function onKeyDown(event: KeyboardEvent<HTMLTextAreaElement>) {
+    if (event.key === "Enter" && !event.shiftKey) {
+      event.preventDefault();
+      void sendMessage(input);
+    }
+  }
+
+  function onInputChange(value: string) {
+    setInput(value);
+
+    if (!textareaRef.current) return;
+
+    textareaRef.current.style.height = "48px";
+    textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 132)}px`;
+  }
+
   if (!isOpen) {
     return (
       <button className="chat-launcher" type="button" onClick={() => setIsOpen(true)}>
         <span className="launcher-orb">AI</span>
-        <span>Poradiť s riešením</span>
+        <span>GEOTHERM asistent</span>
       </button>
     );
   }
@@ -110,59 +111,60 @@ export function GeothermChatbot() {
   return (
     <aside className="chat-shell" aria-label="GEOTHERM AI chatbot">
       <header className="chat-header">
-        <div>
-          <p>GEOTHERM asistent</p>
-          <span>Online návrhový poradca</span>
+        <div className="chat-title">
+          <span className="chat-logo">G</span>
+          <div>
+            <p>GEOTHERM AI</p>
+            <span>Odborný návrhový asistent</span>
+          </div>
         </div>
         <button type="button" aria-label="Zavrieť chat" onClick={() => setIsOpen(false)}>
           ×
         </button>
       </header>
 
-      <div className="chat-body">
-        <div className="quick-grid">
-          {quickPrompts.map((prompt) => (
-            <button type="button" key={prompt} onClick={() => void sendMessage(prompt)}>
-              {prompt}
-            </button>
-          ))}
-        </div>
+      <div className="chat-body" ref={scrollRef}>
+        {messages.length === 0 ? (
+          <section className="chat-empty">
+            <span className="empty-mark">AI</span>
+            <h2>GEOTHERM AI</h2>
+            <p>Profesionálny poradca pre vykurovanie, chladenie a vetranie domu.</p>
+          </section>
+        ) : null}
 
         <div className="messages">
           {messages.map((message) => (
-            <div className={`message ${message.role}`} key={message.id}>
-              <ReactMarkdown>{message.content}</ReactMarkdown>
-            </div>
+            <article className={`message ${message.role}`} key={message.id}>
+              {message.role === "assistant" ? (
+                <ReactMarkdown>{message.content}</ReactMarkdown>
+              ) : (
+                <p>{message.content}</p>
+              )}
+            </article>
           ))}
+
           {isLoading ? (
-            <div className="message assistant loading">
-              <span />
-              <span />
-              <span />
+            <div className="assistant-thinking">
+              <span>Pripravujem odpoveď</span>
+              <i />
+              <i />
+              <i />
             </div>
           ) : null}
         </div>
-
-        {visibleLeadCard ? (
-          <div className="lead-card">
-            <p>Agent môže pokračovať akciou</p>
-            <strong>Pripraviť podklady pre odborný návrh zdarma</strong>
-            <button type="button" onClick={() => setLeadMode(true)}>
-              Spustiť dry test akcie
-            </button>
-          </div>
-        ) : null}
       </div>
 
       <form className="chat-input" onSubmit={onSubmit}>
-        <input
-          ref={inputRef}
+        <textarea
+          ref={textareaRef}
           value={input}
-          onChange={(event) => setInput(event.target.value)}
-          placeholder="Napíšte otázku o vykurovaní..."
+          onChange={(event) => onInputChange(event.target.value)}
+          onKeyDown={onKeyDown}
+          rows={1}
+          placeholder="Napíšte správu..."
         />
-        <button type="submit" disabled={isLoading || !input.trim()}>
-          Odoslať
+        <button type="submit" disabled={isLoading || !input.trim()} aria-label="Odoslať správu">
+          ↑
         </button>
       </form>
     </aside>

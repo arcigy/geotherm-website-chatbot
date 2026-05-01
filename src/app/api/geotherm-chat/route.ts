@@ -1,5 +1,6 @@
 import { GoogleGenAI } from "@google/genai";
 import { NextResponse } from "next/server";
+import { getRelevantGeothermContext } from "@/lib/geothermKnowledge";
 import { geothermSystemPrompt } from "@/lib/geothermPrompt";
 
 type ChatMessage = {
@@ -26,6 +27,12 @@ export async function POST(request: Request) {
   }
 
   const ai = new GoogleGenAI({ apiKey });
+  const knowledgeContext = getRelevantGeothermContext(
+    messages
+      .slice(-4)
+      .map((message) => `${message.role}: ${message.content}`)
+      .join("\n"),
+  );
 
   const response = await ai.models.generateContent({
     model: "gemini-2.5-flash",
@@ -34,7 +41,11 @@ export async function POST(request: Request) {
       parts: [{ text: message.content }],
     })),
     config: {
-      systemInstruction: geothermSystemPrompt,
+      systemInstruction: `${geothermSystemPrompt}
+
+Používaj primárne tieto aktuálne podklady zo stránky GEOTHERM. Ak v nich odpoveď nie je, povedz, že to treba overiť u GEOTHERM.
+
+${knowledgeContext}`,
       temperature: 0.45,
       maxOutputTokens: 420,
       thinkingConfig: {
