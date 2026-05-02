@@ -830,10 +830,24 @@ h1 {
 }
 
 .perplexity-context {
+  display: block;
+  width: 100%;
   height: 34px;
+  border: 0;
   padding: 9px 18px 0;
+  background: transparent;
   color: rgba(255, 255, 255, 0.42);
+  text-align: left;
   font-size: 13px;
+  cursor: default;
+}
+
+button.perplexity-context:not(:disabled) {
+  cursor: pointer;
+}
+
+button.perplexity-context:not(:disabled):hover {
+  color: rgba(255, 255, 255, 0.72);
 }
 
 .chat-input.perplexity {
@@ -907,12 +921,15 @@ h1 {
   top: 0;
   z-index: 2;
   display: flex;
+  width: 100%;
   align-items: center;
   justify-content: space-between;
+  border: 0;
   padding: 12px 16px;
   border-bottom: 1px solid rgba(13, 17, 17, 0.08);
   background: rgba(255, 255, 255, 0.76);
   backdrop-filter: blur(16px);
+  cursor: pointer;
 }
 
 .perplexity-answer-top span {
@@ -920,13 +937,199 @@ h1 {
   font-weight: 950;
 }
 
-.perplexity-answer-top button {
+.perplexity-answer-top > button {
   width: 28px;
   height: 28px;
   border: 1px solid #dde5e2;
   border-radius: 50%;
   background: #fff;
   cursor: pointer;
+}
+
+.codex-glass-composer {
+  border-color: rgba(255, 255, 255, 0.1);
+  background: rgba(38, 39, 37, 0.58);
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.3);
+  opacity: 1;
+  transition:
+    background 180ms ease,
+    border-color 180ms ease,
+    opacity 180ms ease,
+    box-shadow 180ms ease;
+}
+
+.codex-glass-composer .perplexity-context {
+  height: 22px;
+  padding: 6px 14px 0;
+  color: rgba(255, 255, 255, 0.58);
+  font-size: 11px;
+}
+
+.codex-glass-composer .chat-input.perplexity {
+  grid-template-columns: minmax(0, 1fr) 34px;
+  padding: 2px 8px 7px;
+}
+
+.codex-glass-composer .chat-input.perplexity::before {
+  content: none;
+}
+
+.codex-glass-composer .chat-input.perplexity textarea {
+  min-height: 30px;
+  max-height: 86px;
+  padding: 5px 0;
+  color: #fff;
+  font-size: 14px;
+  line-height: 1.35;
+}
+
+.codex-glass-composer .chat-input.perplexity textarea::placeholder {
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.codex-glass-composer .chat-input.perplexity button {
+  width: 34px;
+  height: 34px;
+  font-size: 18px;
+}
+
+.codex-glass-composer:hover,
+.codex-glass-composer:focus-within {
+  border-color: rgba(255, 255, 255, 0.16);
+  background: rgba(38, 39, 37, 0.66);
+  box-shadow: 0 28px 82px rgba(0, 0, 0, 0.34);
+  opacity: 1;
+}
+
+.codex-glass-answer {
+  bottom: 94px;
+  max-height: min(30vh, 280px);
+  padding-right: 6px;
+  overflow: hidden;
+  border-radius: 14px;
+  border-color: rgba(255, 255, 255, 0.1);
+  background: rgba(75, 76, 70, 0.36);
+  color: #fff;
+  box-shadow: 0 22px 76px rgba(0, 0, 0, 0.28);
+  opacity: 1;
+  transition:
+    background 180ms ease,
+    opacity 180ms ease,
+    box-shadow 180ms ease;
+}
+
+.codex-glass-answer:hover,
+.codex-glass-answer:focus-within {
+  background: rgba(75, 76, 70, 0.44);
+  box-shadow: 0 24px 84px rgba(0, 0, 0, 0.32);
+  opacity: 1;
+}
+
+.codex-glass-answer .perplexity-answer-top {
+  padding: 8px 12px;
+  background: rgba(51, 52, 48, 0.12);
+  color: rgba(255, 255, 255, 0.76);
+}
+
+.codex-glass-answer:hover .perplexity-answer-top,
+.codex-glass-answer:focus-within .perplexity-answer-top {
+  background: rgba(51, 52, 48, 0.18);
+}
+
+.codex-glass-answer .messages.compact {
+  max-height: calc(min(30vh, 280px) - 34px);
+  margin-right: 3px;
+  overflow-y: auto;
+  padding: 8px 16px 14px;
+  scrollbar-color: rgba(255, 255, 255, 0.06) transparent;
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
+}
+
+.codex-glass-answer .messages.compact::-webkit-scrollbar {
+  width: 12px;
+}
+
+.codex-glass-answer .messages.compact::-webkit-scrollbar-track {
+  margin: 10px 0;
+  background: transparent;
+}
+
+.codex-glass-answer .messages.compact::-webkit-scrollbar-thumb {
+  border: 5px solid transparent;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+  background-clip: content-box;
+}
+
+.codex-glass-answer:hover .messages.compact::-webkit-scrollbar-thumb,
+.codex-glass-answer:focus-within .messages.compact::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.09);
+  background-clip: content-box;
+}
+
+.codex-glass-answer .message {
+  color: rgba(255, 255, 255, 0.92);
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.codex-glass-answer .message.assistant {
+  padding: 12px 0;
+  border-bottom-color: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.codex-glass-answer .message.user {
+  color: rgba(255, 255, 255, 0.86);
+}
+
+.codex-glass-answer .message strong {
+  color: #fff;
+}
+
+.codex-glass-answer .message a {
+  color: var(--lime);
+}
+
+.codex-glass-answer .message table {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.codex-glass-answer .message th,
+.codex-glass-answer .message td {
+  border-color: rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.codex-glass-answer .message blockquote {
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.82);
+}
+
+.codex-glass-answer .message h2,
+.codex-glass-answer .message h3 {
+  margin-top: 12px;
+  font-size: 15px;
+}
+
+.codex-glass-answer .message p + p,
+.codex-glass-answer .message p + ul,
+.codex-glass-answer .message p + ol,
+.codex-glass-answer .message ul + p,
+.codex-glass-answer .message ol + p,
+.codex-glass-answer .message h2 + p,
+.codex-glass-answer .message h3 + p {
+  margin-top: 8px;
+}
+
+.codex-answer-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: rgba(255, 255, 255, 0.58);
+  font-size: 18px;
+  font-weight: 900;
 }
 
 .messages.compact {
@@ -1151,6 +1354,14 @@ h1 {
   .perplexity-answer {
     bottom: 132px;
     max-height: 52vh;
+  }
+
+  .codex-glass-answer {
+    bottom: 86px;
+  }
+
+  .codex-glass-answer {
+    max-height: 42vh;
   }
 
   .floating-mode-control {

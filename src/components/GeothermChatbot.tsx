@@ -23,13 +23,13 @@ function MarkdownMessage({ content }: { content: string }) {
 }
 
 export function GeothermChatbot() {
-  const [mode, setMode] = useState<ChatMode>("perplexity");
+  const [mode, setMode] = useState<ChatMode>("codex");
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [windowSize, setWindowSize] = useState({ width: 520, height: 720 });
-  const [codexCollapsed, setCodexCollapsed] = useState(false);
+  const [perplexityCollapsed, setPerplexityCollapsed] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const typingTimerRef = useRef<number | null>(null);
@@ -95,10 +95,10 @@ export function GeothermChatbot() {
     setMessages(nextMessages);
     setInput("");
     setIsLoading(true);
-    setCodexCollapsed(false);
+    setPerplexityCollapsed(false);
 
     if (textareaRef.current) {
-      textareaRef.current.style.height = "48px";
+      textareaRef.current.style.height = mode === "codex" ? "30px" : "48px";
     }
 
     try {
@@ -206,18 +206,18 @@ export function GeothermChatbot() {
     </form>
   );
 
-  if (mode === "perplexity") {
+  if (mode === "codex") {
     return (
       <>
         <div className="floating-mode-control">{modeSwitcher}</div>
-        {hasConversation || isOpen ? (
-          <section className="perplexity-answer" ref={scrollRef} aria-label="GEOTHERM AI odpovede">
-            <div className="perplexity-answer-top">
+        {(hasConversation && isOpen) || isLoading ? (
+          <section className="perplexity-answer codex-glass-answer" ref={scrollRef} aria-label="GEOTHERM AI odpovede">
+            <button className="perplexity-answer-top" type="button" onClick={() => setIsOpen(false)}>
               <span>GEOTHERM AI</span>
-              <button type="button" onClick={() => setIsOpen(false)} aria-label="Minimalizovať odpoveď">
-                ×
-              </button>
-            </div>
+              <div className="codex-answer-actions">
+                <span aria-hidden="true">⌄</span>
+              </div>
+            </button>
             <div className="messages compact">
               {messages.map((message) => (
                 <article className={`message ${message.role}`} key={message.id}>
@@ -235,27 +235,25 @@ export function GeothermChatbot() {
             </div>
           </section>
         ) : null}
-        <section className="perplexity-composer" aria-label="GEOTHERM AI spodný asistent">
-          <div className="perplexity-context">Najnovší príspevok</div>
+        <section className="perplexity-composer codex-glass-composer" aria-label="GEOTHERM AI Codex asistent">
+          <button
+            className="perplexity-context"
+            type="button"
+            onClick={() => setIsOpen(true)}
+            disabled={!hasConversation && !isLoading}
+          >
+            Najnovší príspevok
+          </button>
           {inputForm("perplexity")}
-          <div className="perplexity-footer">
-            <span>+</span>
-            <span>Úplný prístup</span>
-            <span>Gemini 2.5 Flash</span>
-          </div>
         </section>
-        <button className="chat-launcher perplexity" type="button" onClick={() => setIsOpen((current) => !current)}>
-          <span className="launcher-orb">AI</span>
-          <span>GEOTHERM asistent</span>
-        </button>
       </>
     );
   }
 
-  if (mode === "codex") {
+  if (mode === "perplexity") {
     return (
       <>
-        <aside className="codex-dock" aria-label="GEOTHERM AI Codex panel">
+        <aside className="codex-dock" aria-label="GEOTHERM AI Perplexity panel">
           <header className="codex-header">
             <span>•••</span>
             {modeSwitcher}
@@ -268,12 +266,12 @@ export function GeothermChatbot() {
                 <strong>Asistent</strong>
               </div>
             ) : (
-              <article className={`codex-response ${codexCollapsed ? "collapsed" : ""}`}>
-                <button type="button" onClick={() => setCodexCollapsed((current) => !current)}>
+              <article className={`codex-response ${perplexityCollapsed ? "collapsed" : ""}`}>
+                <button type="button" onClick={() => setPerplexityCollapsed((current) => !current)}>
                   <span>GEOTHERM odpoveď</span>
-                  <span>{codexCollapsed ? "Rozbaliť" : "Minimalizovať"}</span>
+                  <span>{perplexityCollapsed ? "Rozbaliť" : "Minimalizovať"}</span>
                 </button>
-                {!codexCollapsed ? (
+                {!perplexityCollapsed ? (
                   <div className="message assistant">
                     <MarkdownMessage content={lastAssistantMessage.content} />
                   </div>
