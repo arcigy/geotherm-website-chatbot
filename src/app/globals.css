@@ -1083,9 +1083,9 @@ button.perplexity-context:not(:disabled):hover {
 
 .voice-wave {
   display: flex;
-  height: 34px;
+  height: 42px;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-end;
   gap: 4px;
   overflow: hidden;
 }
@@ -1093,22 +1093,13 @@ button.perplexity-context:not(:disabled):hover {
 .voice-wave i {
   display: block;
   width: 3px;
-  height: 10px;
+  height: 18px;
   border-radius: 999px;
   background: currentColor;
-  animation: voiceWave 860ms ease-in-out infinite;
-}
-
-.voice-wave i:nth-child(3n) {
-  height: 18px;
-}
-
-.voice-wave i:nth-child(4n) {
-  height: 28px;
-}
-
-.voice-wave i:nth-child(7n) {
-  height: 22px;
+  transform-origin: center;
+  transition:
+    opacity 90ms linear,
+    transform 90ms linear;
 }
 
 .voice-time {
@@ -1467,17 +1458,6 @@ button.perplexity-context:not(:disabled):hover {
   40% {
     opacity: 1;
     transform: translateY(-3px);
-  }
-}
-
-@keyframes voiceWave {
-  0%,
-  100% {
-    transform: scaleY(0.58);
-  }
-
-  50% {
-    transform: scaleY(1.35);
   }
 }
 

@@ -31,6 +31,7 @@ export function GeothermChatbot() {
   const [isRecording, setIsRecording] = useState(false);
   const [isTranscribing, setIsTranscribing] = useState(false);
   const [recordingSeconds, setRecordingSeconds] = useState(0);
+  const [voiceLevels, setVoiceLevels] = useState<number[]>(() => Array(36).fill(0.1));
   const [windowSize, setWindowSize] = useState({ width: 520, height: 720 });
   const [perplexityCollapsed, setPerplexityCollapsed] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -40,6 +41,10 @@ export function GeothermChatbot() {
   const streamRef = useRef<MediaStream | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
   const recordingTimerRef = useRef<number | null>(null);
+  const audioContextRef = useRef<AudioContext | null>(null);
+  const analyserRef = useRef<AnalyserNode | null>(null);
+  const voiceAnimationRef = useRef<number | null>(null);
+  const lastVoiceSampleRef = useRef(0);
 
   const hasConversation = messages.length > 0;
   const lastAssistantMessage = [...messages].reverse().find((message) => message.role === "assistant");
@@ -59,6 +64,7 @@ export function GeothermChatbot() {
       if (recordingTimerRef.current) {
         window.clearInterval(recordingTimerRef.current);
       }
+      stopVoiceMeter();
       streamRef.current?.getTracks().forEach((track) => track.stop());
     };
   }, []);
@@ -123,6 +129,73 @@ export function GeothermChatbot() {
     });
   }
 
+  function formatRecordingTime(totalSeconds: number) {
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+
+    return `${minutes}:${String(seconds).padStart(2, "0")}`;
+  }
+
+  function stopVoiceMeter() {
+    if (voiceAnimationRef.current) {
+      window.cancelAnimationFrame(voiceAnimationRef.current);
+      voiceAnimationRef.current = null;
+    }
+
+    analyserRef.current = null;
+    void audioContextRef.current?.close();
+    audioContextRef.current = null;
+    setVoiceLevels(Array(36).fill(0.1));
+  }
+
+  function startVoiceMeter(stream: MediaStream) {
+    const audioContextConstructor =
+      window.AudioContext ??
+      (window as typeof window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+
+    if (!audioContextConstructor) {
+      setVoiceLevels(Array(36).fill(0.16));
+      return;
+    }
+
+    const audioContext = new audioContextConstructor();
+    const analyser = audioContext.createAnalyser();
+    const source = audioContext.createMediaStreamSource(stream);
+
+    analyser.fftSize = 512;
+    analyser.smoothingTimeConstant = 0.72;
+    const samples = new Uint8Array(analyser.fftSize);
+    source.connect(analyser);
+    audioContextRef.current = audioContext;
+    analyserRef.current = analyser;
+    lastVoiceSampleRef.current = 0;
+    setVoiceLevels(Array(36).fill(0.1));
+
+    function tick(time: number) {
+      if (!analyserRef.current) return;
+
+      analyserRef.current.getByteTimeDomainData(samples);
+
+      let sum = 0;
+      for (const sample of samples) {
+        const centered = (sample - 128) / 128;
+        sum += centered * centered;
+      }
+
+      const rms = Math.sqrt(sum / samples.length);
+      const level = Math.min(1, Math.max(0.08, rms * 8.5));
+
+      if (time - lastVoiceSampleRef.current > 72) {
+        lastVoiceSampleRef.current = time;
+        setVoiceLevels((current) => [...current.slice(1), level]);
+      }
+
+      voiceAnimationRef.current = window.requestAnimationFrame(tick);
+    }
+
+    voiceAnimationRef.current = window.requestAnimationFrame(tick);
+  }
+
   function blobToBase64(blob: Blob) {
     return new Promise<string>((resolve, reject) => {
       const reader = new FileReader();
@@ -172,6 +245,7 @@ export function GeothermChatbot() {
       setRecordingSeconds(0);
       setInput("");
       setIsRecording(true);
+      startVoiceMeter(stream);
 
       recordingTimerRef.current = window.setInterval(() => {
         setRecordingSeconds((current) => current + 1);
@@ -188,6 +262,7 @@ export function GeothermChatbot() {
           type: recorder.mimeType || "audio/webm",
         });
 
+        stopVoiceMeter();
         stream.getTracks().forEach((track) => track.stop());
         streamRef.current = null;
         recorderRef.current = null;
@@ -200,6 +275,7 @@ export function GeothermChatbot() {
 
       recorder.start();
     } catch {
+      stopVoiceMeter();
       setIsRecording(false);
       await animateInputText("Mikrofón sa nepodarilo spustiť.");
     }
@@ -356,11 +432,17 @@ export function GeothermChatbot() {
       {variant === "perplexity" && isRecording ? (
         <div className="voice-recorder" aria-live="polite">
           <div className="voice-wave" aria-hidden="true">
-            {Array.from({ length: 32 }).map((_, index) => (
-              <i key={index} style={{ animationDelay: `${index * 38}ms` }} />
+            {voiceLevels.map((level, index) => (
+              <i
+                key={index}
+                style={{
+                  opacity: 0.38 + level * 0.62,
+                  transform: `scaleY(${0.24 + level * 2.2})`,
+                }}
+              />
             ))}
           </div>
-          <span className="voice-time">0:{String(recordingSeconds).padStart(2, "0")}</span>
+          <span className="voice-time">{formatRecordingTime(recordingSeconds)}</span>
         </div>
       ) : (
         <textarea
