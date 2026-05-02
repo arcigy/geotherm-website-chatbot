@@ -76,10 +76,14 @@ function classifyPage(url, text, title) {
 
 function extractImages($, pageFile) {
   const images = [];
+  const contentRoot = $("main, article, #main, .post-content, .entry-content, .fusion-post-content").first();
+  const scope = contentRoot.length ? contentRoot : $("body");
 
-  $("main img, article img, .post-content img, .entry-content img, .fusion-post-content img, body img").each(
-    (_, element) => {
+  scope.find("img").each((_, element) => {
       const image = $(element);
+      const isChromeImage = image.closest(
+        "header, footer, nav, aside, .sidebar, .fusion-recent-posts, .related-posts, .fusion-carousel, .fusion-sharing-box",
+      ).length;
       const src = image.attr("src") || image.attr("data-src") || image.attr("data-orig-file") || "";
       const url = resolveAssetUrl(pageFile, src);
       const alt = normalizeWhitespace(image.attr("alt") || image.attr("title") || "");
@@ -87,7 +91,7 @@ function extractImages($, pageFile) {
       const height = Number.parseInt(image.attr("height") || "", 10) || undefined;
       const className = image.attr("class") || "";
 
-      if (!url || skipImagePattern.test(`${url} ${alt} ${className}`)) return;
+      if (isChromeImage || !url || skipImagePattern.test(`${url} ${alt} ${className}`)) return;
       if (width && width < 140) return;
 
       images.push({
@@ -96,8 +100,7 @@ function extractImages($, pageFile) {
         width,
         height,
       });
-    },
-  );
+    });
 
   return unique(images.map((image) => image.url))
     .map((url) => images.find((image) => image.url === url))

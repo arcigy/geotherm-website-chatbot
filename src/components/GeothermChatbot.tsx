@@ -57,6 +57,33 @@ export function GeothermChatbot() {
   }, [messages, isLoading]);
 
   useEffect(() => {
+    if (mode !== "codex") return;
+
+    function lockCodexAnswerWheel(event: globalThis.WheelEvent) {
+      const answer = document.querySelector<HTMLElement>(".codex-glass-answer");
+      const scroller = answer?.querySelector<HTMLElement>(".messages.compact");
+
+      if (!answer || !scroller) return;
+
+      const bounds = answer.getBoundingClientRect();
+      const isInside =
+        event.clientX >= bounds.left &&
+        event.clientX <= bounds.right &&
+        event.clientY >= bounds.top &&
+        event.clientY <= bounds.bottom;
+
+      if (!isInside) return;
+
+      event.preventDefault();
+      event.stopPropagation();
+      scroller.scrollTop += event.deltaY;
+    }
+
+    window.addEventListener("wheel", lockCodexAnswerWheel, { capture: true, passive: false });
+    return () => window.removeEventListener("wheel", lockCodexAnswerWheel, { capture: true });
+  }, [mode]);
+
+  useEffect(() => {
     return () => {
       if (typingTimerRef.current) {
         window.clearInterval(typingTimerRef.current);
@@ -383,6 +410,16 @@ export function GeothermChatbot() {
     }
   }
 
+  function routeCodexAnswerWheel(event: WheelEvent<HTMLElement>) {
+    const scroller = event.currentTarget.querySelector<HTMLDivElement>(".messages.compact");
+
+    if (!scroller) return;
+
+    event.preventDefault();
+    event.stopPropagation();
+    scroller.scrollTop += event.deltaY;
+  }
+
   function startResize(event: PointerEvent<HTMLDivElement>) {
     event.preventDefault();
     const startX = event.clientX;
@@ -488,7 +525,11 @@ export function GeothermChatbot() {
       <>
         <div className="floating-mode-control">{modeSwitcher}</div>
         {(hasConversation && isOpen) || isLoading ? (
-          <section className="perplexity-answer codex-glass-answer" aria-label="GEOTHERM AI odpovede">
+          <section
+            className="perplexity-answer codex-glass-answer"
+            aria-label="GEOTHERM AI odpovede"
+            onWheelCapture={routeCodexAnswerWheel}
+          >
             <button className="perplexity-answer-top" type="button" onClick={() => setIsOpen(false)}>
               <span>GEOTHERM AI</span>
               <div className="codex-answer-actions">

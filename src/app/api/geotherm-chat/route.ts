@@ -16,11 +16,27 @@ function cleanMarkdownResponse(value: string) {
     .trim();
 }
 
-function appendImageIfUseful(value: string, images: Array<{ url: string; alt: string }>) {
-  if (!images.length || value.includes("![")) return value;
+function ensureMarkdownHeading(value: string) {
+  if (/^#{1,3}\s+/m.test(value)) return value;
+  return `### GEOTHERM odpoveď\n\n${value}`;
+}
 
+function appendImageIfUseful(value: string, images: Array<{ url: string; alt: string }>) {
+  const allowedUrls = new Set(images.map((image) => image.url));
+  let keptImage = false;
+  const withoutExtraMarkdownImages = value.replace(/!\[[^\]]*]\(([^)]+)\)/g, (match, url: string) => {
+    if (!allowedUrls.has(url.trim()) || keptImage) return "";
+    keptImage = true;
+    return match;
+  });
+  const sanitized = withoutExtraMarkdownImages.replace(
+    /^\s*https?:\/\/\S+\.(?:jpe?g|png|webp)(?:\?\S*)?\s*$/gim,
+    "",
+  );
+
+  if (!images.length || sanitized.includes("![")) return sanitized.trim();
   const [image] = images;
-  return `${value.trim()}\n\n![${image.alt}](${image.url})`;
+  return `${sanitized.trim()}\n\n![${image.alt}](${image.url})`;
 }
 
 export async function POST(request: Request) {
@@ -94,8 +110,10 @@ ${knowledge.context}`,
 
   return NextResponse.json({
     message: appendImageIfUseful(
-      cleanMarkdownResponse(
-        response.text ?? "Nepodarilo sa pripraviť odpoveď. Skúste otázku preformulovať.",
+      ensureMarkdownHeading(
+        cleanMarkdownResponse(
+          response.text ?? "Nepodarilo sa pripraviť odpoveď. Skúste otázku preformulovať.",
+        ),
       ),
       knowledge.images,
     ),

@@ -24,6 +24,18 @@ type KnowledgePage = {
   images: KnowledgeImage[];
 };
 
+type ChunkMatch = {
+  page: KnowledgePage;
+  chunk: KnowledgeChunk;
+  score: number;
+};
+
+type ImageIntent = {
+  match: string[];
+  allow: string[];
+  requireImageText: boolean;
+};
+
 export type RetrievedKnowledge = {
   context: string;
   images: KnowledgeImage[];
@@ -31,6 +43,52 @@ export type RetrievedKnowledge = {
 };
 
 const pages = knowledge.pages as KnowledgePage[];
+
+const genericImagePattern =
+  /logo|avatar|gravatar|sport|armwrestling|sutaz|lego|malovanka|nadej|svetielko|autor|author|coneco|racioenergia|aurel|stodola|simon-podpora/i;
+
+const imageIntents: ImageIntent[] = [
+  {
+    match: ["fotovolt", "fve", "solar", "solarne", "solarny", "panely", "panel"],
+    allow: ["fotovolt", "fve", "solar", "solarne", "solarny", "panel", "panely", "kolektor"],
+    requireImageText: true,
+  },
+  {
+    match: ["multimatic", "red dot", "red-dot"],
+    allow: ["multimatic", "red dot", "red-dot"],
+    requireImageText: true,
+  },
+  {
+    match: ["e-shop", "e-shopu", "eshop", "shop"],
+    allow: ["e-shop", "eshop", "kvapalina", "kvapaliny", "filter", "rekuperacie", "produkt"],
+    requireImageText: false,
+  },
+  {
+    match: ["rekuperacia", "vetranie", "zehnder", "recovair"],
+    allow: ["rekuper", "vetranie", "zehnder", "recovair", "ventil"],
+    requireImageText: true,
+  },
+  {
+    match: ["nibe"],
+    allow: ["nibe"],
+    requireImageText: true,
+  },
+  {
+    match: ["daikin", "altherma"],
+    allow: ["daikin", "altherma"],
+    requireImageText: true,
+  },
+  {
+    match: ["viessmann", "vitocal"],
+    allow: ["viessmann", "vitocal"],
+    requireImageText: true,
+  },
+  {
+    match: ["vaillant"],
+    allow: ["vaillant", "aro", "flexotherm", "flexocompact", "recovair", "multimatic"],
+    requireImageText: true,
+  },
+];
 
 const stopWords = new Set([
   "ako",
@@ -44,6 +102,7 @@ const stopWords = new Set([
   "dajte",
   "dom",
   "este",
+  "geotherm",
   "jeho",
   "ked",
   "ktore",
@@ -54,19 +113,21 @@ const stopWords = new Set([
   "nam",
   "pre",
   "pri",
+  "obrazok",
   "som",
   "tak",
   "tam",
   "ten",
   "toto",
   "treba",
+  "ukaz",
   "vas",
   "viem",
   "viac",
 ]);
 
 const synonymGroups = [
-  ["tc", "tepelne", "cerpadlo", "čerpadlo", "vzduch", "voda", "nibe", "vaillant", "vitocal", "altherma"],
+  ["tc", "tepelne", "cerpadlo", "čerpadlo", "vzduch", "voda"],
   ["rekuperacia", "rekuperácia", "vetranie", "vzduch", "zehnder", "recovair"],
   ["fotovoltaika", "fve", "panely", "solarne", "solárne", "elektrina"],
   ["dotacie", "dotácie", "zelena", "zelená", "domacnostiam", "poukaz"],
@@ -83,6 +144,20 @@ function normalize(value: string) {
     .replace(/[^a-z0-9\s/-]/g, " ");
 }
 
+function safeDecodeUrl(value: string) {
+  try {
+    return decodeURIComponent(value);
+  } catch {
+    return value;
+  }
+}
+
+function imageIntentFor(query: string) {
+  const normalized = normalize(query);
+
+  return imageIntents.find((intent) => intent.match.map(normalize).some((token) => normalized.includes(token)));
+}
+
 function tokensFrom(value: string) {
   const baseTokens = normalize(value)
     .split(/\s+/)
@@ -91,6 +166,15 @@ function tokensFrom(value: string) {
   const expanded = new Set(baseTokens);
 
   for (const token of baseTokens) {
+    if (token.includes("shop")) {
+      expanded.add("e-shop");
+      expanded.add("eshop");
+    }
+
+    if (token === "aplikacie") {
+      expanded.add("aplikacia");
+    }
+
     for (const group of synonymGroups) {
       if (group.map(normalize).includes(token)) {
         group.map(normalize).forEach((synonym) => expanded.add(synonym));
@@ -107,22 +191,45 @@ function tokenScore(value: string, tokens: string[], weight: number) {
 }
 
 function scoreChunk(page: KnowledgePage, chunk: KnowledgeChunk, tokens: string[]) {
+  const archivePenalty = /(^|\/)(blog|category|tag)\//i.test(page.slug) || /arch/i.test(normalize(page.title)) ? 4 : 0;
+
   return (
     tokenScore(page.title, tokens, 10) +
     tokenScore(page.tags.join(" "), tokens, 8) +
     tokenScore(page.headings.join(" "), tokens, 5) +
     tokenScore(page.description, tokens, 4) +
-    tokenScore(chunk.content, tokens, 1)
+    tokenScore(chunk.content, tokens, 1) -
+    archivePenalty
   );
 }
 
 function scoreImage(image: KnowledgeImage, page: KnowledgePage, tokens: string[]) {
+  const imageHaystack = `${image.alt} ${safeDecodeUrl(image.url)}`;
+  const genericPenalty = genericImagePattern.test(imageHaystack) ? 18 : 0;
+  const dimensionBonus = image.width && image.width >= 400 ? 3 : 0;
+
   return (
-    tokenScore(image.alt, tokens, 10) +
-    tokenScore(image.url, tokens, 4) +
-    tokenScore(page.title, tokens, 3) +
-    tokenScore(page.tags.join(" "), tokens, 3)
+    tokenScore(image.alt, tokens, 16) +
+    tokenScore(image.url, tokens, 7) +
+    tokenScore(page.title, tokens, 2) +
+    tokenScore(page.tags.join(" "), tokens, 3) +
+    dimensionBonus -
+    genericPenalty
   );
+}
+
+function imageMatchesIntent(image: KnowledgeImage, page: KnowledgePage, intent?: ImageIntent) {
+  if (!intent) return true;
+
+  const allow = intent.allow.map(normalize);
+  const imageText = normalize(`${image.alt} ${safeDecodeUrl(image.url)}`);
+  const pageText = normalize(`${page.title} ${page.slug} ${page.tags.join(" ")} ${page.headings.join(" ")}`);
+
+  if (intent.requireImageText) {
+    return allow.some((token) => imageText.includes(token));
+  }
+
+  return allow.some((token) => imageText.includes(token) || pageText.includes(token));
 }
 
 function compactChunk(value: string) {
@@ -136,6 +243,24 @@ function uniqueImages(images: KnowledgeImage[]) {
     seen.add(image.url);
     return true;
   });
+}
+
+function selectImages(matches: ChunkMatch[], tokens: string[], query: string) {
+  const intent = imageIntentFor(query);
+  const candidates = matches.flatMap(({ page, score: pageScore }, matchIndex) =>
+    page.images.map((image, imageIndex) => ({
+      image,
+      page,
+      score: scoreImage(image, page, tokens) + Math.max(0, 9 - matchIndex) + pageScore * 0.08 - imageIndex * 0.35,
+    })),
+  );
+
+  return uniqueImages(
+    candidates
+      .filter(({ image, page, score }) => imageMatchesIntent(image, page, intent) && score >= (intent ? 4 : 8))
+      .sort((a, b) => b.score - a.score)
+      .map(({ image }) => image),
+  ).slice(0, 5);
 }
 
 export function getRelevantGeothermKnowledge(query: string): RetrievedKnowledge {
@@ -163,18 +288,7 @@ export function getRelevantGeothermKnowledge(query: string): RetrievedKnowledge 
     ? chunkMatches
     : pages.slice(0, 5).flatMap((page) => page.chunks.slice(0, 1).map((chunk) => ({ page, chunk, score: 1 })));
   const selectedPages = selectedMatches.map(({ page }) => page);
-  const images = uniqueImages(
-    selectedPages
-      .flatMap((page) =>
-        page.images.map((image) => ({
-          image,
-          score: tokens.length ? scoreImage(image, page, tokens) : 1,
-        })),
-      )
-      .filter(({ score }) => score > 0)
-      .sort((a, b) => b.score - a.score)
-      .map(({ image }) => image),
-  ).slice(0, 4);
+  const images = selectImages(selectedMatches, tokens, query);
   const sources = selectedPages
     .filter((page, index, values) => values.findIndex((candidate) => candidate.url === page.url) === index)
     .slice(0, 5)
