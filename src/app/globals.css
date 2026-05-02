@@ -752,9 +752,11 @@ h1 {
 }
 
 .chat-input button {
+  display: grid;
   width: 42px;
   height: 42px;
   align-self: end;
+  place-items: center;
   border: 0;
   border-radius: 50%;
   background: #0d1111;
@@ -763,6 +765,16 @@ h1 {
   font-weight: 900;
   line-height: 1;
   cursor: pointer;
+}
+
+.chat-input button svg {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 2.4;
 }
 
 .chat-input button:disabled {
@@ -972,18 +984,21 @@ button.perplexity-context:not(:disabled):hover {
   display: grid;
   width: 26px;
   height: 38px;
+  align-self: center;
   place-items: center;
   color: rgba(255, 255, 255, 0.56);
   font-size: 22px;
+  line-height: 1;
 }
 
 .codex-glass-composer .chat-input.perplexity textarea {
+  align-self: center;
   min-height: 34px;
   max-height: 86px;
-  padding: 7px 0;
+  padding: 0;
   color: #fff;
   font-size: 15px;
-  line-height: 1.35;
+  line-height: 34px;
 }
 
 .codex-glass-composer .chat-input.perplexity textarea::placeholder {
@@ -993,12 +1008,14 @@ button.perplexity-context:not(:disabled):hover {
 .codex-glass-composer .chat-input.perplexity button {
   width: 36px;
   height: 36px;
+  align-self: center;
   font-size: 18px;
 }
 
 .codex-glass-composer .chat-input.perplexity .chat-mic-button {
   width: 30px;
   height: 30px;
+  align-self: center;
   background: transparent;
   color: rgba(255, 255, 255, 0.52);
 }
@@ -1011,6 +1028,12 @@ button.perplexity-context:not(:disabled):hover {
   stroke-linecap: round;
   stroke-linejoin: round;
   stroke-width: 2;
+}
+
+.codex-glass-composer .chat-input.perplexity button[type="submit"] svg {
+  width: 19px;
+  height: 19px;
+  transform: translateY(-1px);
 }
 
 .codex-glass-composer .chat-input.perplexity .chat-mic-button:hover {

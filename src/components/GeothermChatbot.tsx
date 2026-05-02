@@ -233,7 +233,10 @@ export function GeothermChatbot() {
         </button>
       ) : null}
       <button type="submit" disabled={isLoading} aria-label="Odoslať správu">
-        ↑
+        <svg aria-hidden="true" viewBox="0 0 24 24">
+          <path d="M12 19V5" />
+          <path d="m6.5 10.5 5.5-5.5 5.5 5.5" />
+        </svg>
       </button>
     </form>
   );
