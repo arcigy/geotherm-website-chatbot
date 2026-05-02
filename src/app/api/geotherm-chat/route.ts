@@ -1,6 +1,6 @@
 import { GoogleGenAI } from "@google/genai";
 import { NextResponse } from "next/server";
-import { getRelevantGeothermContext } from "@/lib/geothermKnowledge";
+import { getRelevantGeothermKnowledge } from "@/lib/geothermKnowledge";
 import { geothermSystemPrompt } from "@/lib/geothermPrompt";
 
 type ChatMessage = {
@@ -14,6 +14,13 @@ function cleanMarkdownResponse(value: string) {
     .map((line) => (line.includes("|") ? line.replace(/ {2,}/g, " ").trim() : line))
     .join("\n")
     .trim();
+}
+
+function appendImageIfUseful(value: string, images: Array<{ url: string; alt: string }>) {
+  if (!images.length || value.includes("![")) return value;
+
+  const [image] = images;
+  return `${value.trim()}\n\n![${image.alt}](${image.url})`;
 }
 
 export async function POST(request: Request) {
@@ -39,9 +46,10 @@ export async function POST(request: Request) {
     .slice(-4)
     .map((message) => `${message.role}: ${message.content}`)
     .join("\n");
-  const knowledgeContext = getRelevantGeothermContext(
-    queryContext,
-  );
+  const knowledge = getRelevantGeothermKnowledge(queryContext);
+  const allowedImages = knowledge.images
+    .map((image, index) => `${index + 1}. ${image.alt}: ${image.url}`)
+    .join("\n");
   const wantsComparison = /porovnaj|porovnanie|rozdiel|vs\.?|výhody|vyhody|značky|znacky|možnosti|moznosti/i.test(
     queryContext,
   );
@@ -49,7 +57,7 @@ export async function POST(request: Request) {
     ? "Použi presne tento kompaktný formát: ### Krátky nadpis\n1 veta úvodu.\n| Položka | Kedy dáva zmysel | Hlavný prínos |\n|---|---|---|\n| Názov | krátky text | krátky text |\nPotom 1 krátky záver. Nikdy nezarovnávaj tabuľku medzerami. Nepouži vnorené odrážky."
     : "Použi krátky nadpis, stručné sekcie a maximálne jeden krátky zoznam.";
 
-      const response = await ai.models.generateContent({
+  const response = await ai.models.generateContent({
     model: "gemini-2.5-flash",
     contents: messages.map((message) => ({
       role: message.role === "assistant" ? "model" : "user",
@@ -58,14 +66,26 @@ export async function POST(request: Request) {
     config: {
       systemInstruction: `${geothermSystemPrompt}
 
-Používaj primárne tieto aktuálne podklady zo stránky GEOTHERM. Ak v nich odpoveď nie je, povedz, že to treba overiť u GEOTHERM.
+Používaj primárne vybrané podklady zo stránky GEOTHERM. Nepoužívaj všeobecné dohady tam, kde zdroj obsahuje konkrétnu informáciu.
+Ak v podkladoch odpoveď nie je, povedz, že to treba overiť u GEOTHERM.
+
+Práca so zdrojmi:
+- Odpovedaj podľa relevantných pasáží nižšie, nie podľa všeobecnej znalosti.
+- Nespomínaj interné označenia ZDROJ, chunk ani retrieval.
+- Ak používateľ pýta produkt, článok, dotáciu, montáž, servis alebo konkrétnu technológiu a je dostupný vhodný obrázok, vlož 1 relevantný obrázok Markdownom.
+- Obrázky môžeš použiť iba z povoleného zoznamu. Nevymýšľaj URL obrázkov.
+- Obrázok vlož prirodzene za prvý krátky vysvetľujúci odsek alebo za tabuľku.
 
 Formát tejto odpovede:
 ${formatInstruction}
 
-${knowledgeContext}`,
-      temperature: 0.45,
-      maxOutputTokens: 520,
+Povolené obrázky:
+${allowedImages || "Pre túto otázku nebol nájdený vhodný obrázok."}
+
+Vybrané podklady:
+${knowledge.context}`,
+      temperature: 0.35,
+      maxOutputTokens: 560,
       thinkingConfig: {
         thinkingBudget: 0,
       },
@@ -73,8 +93,11 @@ ${knowledgeContext}`,
   });
 
   return NextResponse.json({
-    message: cleanMarkdownResponse(
-      response.text ?? "Nepodarilo sa pripraviť odpoveď. Skúste otázku preformulovať.",
+    message: appendImageIfUseful(
+      cleanMarkdownResponse(
+        response.text ?? "Nepodarilo sa pripraviť odpoveď. Skúste otázku preformulovať.",
+      ),
+      knowledge.images,
     ),
   });
 }

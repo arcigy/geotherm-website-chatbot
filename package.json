@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
-    "scrape:geotherm": "node scripts/scrape-geotherm.mjs"
+    "scrape:geotherm": "node scripts/scrape-geotherm.mjs",
+    "kb:geotherm:archive": "node scripts/build-geotherm-knowledge-from-archive.mjs"
   },
   "dependencies": {
     "@google/genai": "1.51.0",

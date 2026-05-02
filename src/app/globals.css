@@ -648,6 +648,16 @@ h1 {
   background: transparent;
 }
 
+.message img {
+  display: block;
+  width: min(100%, 560px);
+  max-height: 280px;
+  margin: 14px 0 4px;
+  object-fit: cover;
+  border: 1px solid rgba(13, 17, 17, 0.08);
+  border-radius: 8px;
+}
+
 .message.user {
   justify-self: stretch;
   width: fit-content;
@@ -1258,6 +1268,12 @@ button.perplexity-context:not(:disabled):hover {
 .codex-glass-answer .message blockquote {
   background: rgba(255, 255, 255, 0.06);
   color: rgba(255, 255, 255, 0.82);
+}
+
+.codex-glass-answer .message img {
+  max-height: 180px;
+  border-color: rgba(255, 255, 255, 0.12);
+  opacity: 0.92;
 }
 
 .codex-glass-answer .message h2,
