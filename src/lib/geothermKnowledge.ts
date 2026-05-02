@@ -7,6 +7,11 @@ type KnowledgeImage = {
   height?: number;
 };
 
+export type RetrievedImage = KnowledgeImage & {
+  description: string;
+  useWhen: string;
+};
+
 type KnowledgeChunk = {
   id: string;
   content: string;
@@ -38,14 +43,14 @@ type ImageIntent = {
 
 export type RetrievedKnowledge = {
   context: string;
-  images: KnowledgeImage[];
+  images: RetrievedImage[];
   sources: Array<Pick<KnowledgePage, "url" | "title">>;
 };
 
 const pages = knowledge.pages as KnowledgePage[];
 
 const genericImagePattern =
-  /logo|avatar|gravatar|sport|armwrestling|sutaz|lego|malovanka|nadej|svetielko|autor|author|coneco|racioenergia|aurel|stodola|simon-podpora/i;
+  /logo|avatar|gravatar|sport|armwrestling|sutaz|lego|malovanka|nadej|svetielko|autor|author|coneco|racioenergia|aurel|stodola|simon-podpora|pf-|diplom|skolenie|vyroba/i;
 
 const imageIntents: ImageIntent[] = [
   {
@@ -56,6 +61,21 @@ const imageIntents: ImageIntent[] = [
   {
     match: ["multimatic", "red dot", "red-dot"],
     allow: ["multimatic", "red dot", "red-dot"],
+    requireImageText: true,
+  },
+  {
+    match: ["aplikac", "ovladat", "smart", "showpoint"],
+    allow: ["aplikac", "app", "multimatic", "showpoint"],
+    requireImageText: true,
+  },
+  {
+    match: ["dotaci", "dotacie", "dotacia", "poukaz", "oze", "zelena"],
+    allow: ["dotac", "oze", "zelena", "poukaz"],
+    requireImageText: true,
+  },
+  {
+    match: ["montaz", "montazi", "instalacia", "instalacii", "servis"],
+    allow: ["montaz", "instal", "servis", "tepelne", "cerpadlo", "vykurovanie"],
     requireImageText: true,
   },
   {
@@ -175,6 +195,24 @@ function tokensFrom(value: string) {
       expanded.add("aplikacia");
     }
 
+    if (token.startsWith("aplikac") || token === "ovladat") {
+      ["aplikacia", "app", "multimatic", "showpoint"].forEach((synonym) => expanded.add(synonym));
+    }
+
+    if (["naklady", "prevadzkove", "uspora", "uspory", "setrit", "energia", "energie"].includes(token)) {
+      ["tepelne", "cerpadlo", "rekuperacia", "vykurovanie"].forEach((synonym) => expanded.add(synonym));
+    }
+
+    if (token.startsWith("montaz") || token.startsWith("instal")) {
+      ["montaz", "instalacia", "servis", "tepelne", "cerpadlo", "vykurovanie"].forEach((synonym) =>
+        expanded.add(synonym),
+      );
+    }
+
+    if (["odporucanie", "odporucit", "rychle", "riesenie", "riesenia"].includes(token)) {
+      ["tepelne", "cerpadlo", "rekuperacia", "podlahove", "vykurovanie"].forEach((synonym) => expanded.add(synonym));
+    }
+
     for (const group of synonymGroups) {
       if (group.map(normalize).includes(token)) {
         group.map(normalize).forEach((synonym) => expanded.add(synonym));
@@ -206,6 +244,10 @@ function scoreChunk(page: KnowledgePage, chunk: KnowledgeChunk, tokens: string[]
 function scoreImage(image: KnowledgeImage, page: KnowledgePage, tokens: string[]) {
   const imageHaystack = `${image.alt} ${safeDecodeUrl(image.url)}`;
   const genericPenalty = genericImagePattern.test(imageHaystack) ? 18 : 0;
+  const dotationPenalty =
+    /dotac|oze|zelena|poukaz/i.test(imageHaystack) && !tokens.some((token) => /dotac|oze|zelena|poukaz/.test(token))
+      ? 12
+      : 0;
   const dimensionBonus = image.width && image.width >= 400 ? 3 : 0;
 
   return (
@@ -214,11 +256,14 @@ function scoreImage(image: KnowledgeImage, page: KnowledgePage, tokens: string[]
     tokenScore(page.title, tokens, 2) +
     tokenScore(page.tags.join(" "), tokens, 3) +
     dimensionBonus -
-    genericPenalty
+    genericPenalty -
+    dotationPenalty
   );
 }
 
 function imageMatchesIntent(image: KnowledgeImage, page: KnowledgePage, intent?: ImageIntent) {
+  if (genericImagePattern.test(`${image.alt} ${safeDecodeUrl(image.url)}`)) return false;
+  if (image.width && image.height && image.width / image.height > 2.35) return false;
   if (!intent) return true;
 
   const allow = intent.allow.map(normalize);
@@ -230,6 +275,85 @@ function imageMatchesIntent(image: KnowledgeImage, page: KnowledgePage, intent?:
   }
 
   return allow.some((token) => imageText.includes(token) || pageText.includes(token));
+}
+
+function describeImage(image: KnowledgeImage, page: KnowledgePage): Pick<RetrievedImage, "description" | "useWhen"> {
+  const haystack = normalize(`${image.alt} ${safeDecodeUrl(image.url)} ${page.title} ${page.tags.join(" ")}`);
+
+  if (haystack.includes("multimatic") || haystack.includes("red dot")) {
+    return {
+      description: "obrazovka/aplikácia Vaillant multiMATIC na inteligentné ovládanie systému",
+      useWhen: "použi pri otázkach na multiMATIC, aplikáciu, reguláciu alebo smart ovládanie Vaillant",
+    };
+  }
+
+  if (haystack.includes("nibe")) {
+    return {
+      description: "tepelné čerpadlo alebo produktová vizualizácia značky NIBE",
+      useWhen: "použi pri otázkach na NIBE, švédske tepelné čerpadlá alebo porovnanie značiek",
+    };
+  }
+
+  if (haystack.includes("vaillant") || haystack.includes("arotherm") || haystack.includes("flexotherm")) {
+    return {
+      description: "tepelné čerpadlo alebo riešenie značky Vaillant",
+      useWhen: "použi pri otázkach na Vaillant, aroTHERM, flexoTHERM alebo porovnanie značiek",
+    };
+  }
+
+  if (haystack.includes("rekuper") || haystack.includes("zehnder") || haystack.includes("recovair")) {
+    return {
+      description: "rekuperačná jednotka, vetranie alebo filter pre riadené vetranie",
+      useWhen: "použi pri otázkach na rekuperáciu, vetranie, Zehnder, recoVAIR alebo filtre",
+    };
+  }
+
+  if (haystack.includes("podlah")) {
+    return {
+      description: "podlahové kúrenie alebo rozvody nízkoteplotného vykurovania",
+      useWhen: "použi pri otázkach na podlahové vykurovanie, komfort a nízkoteplotné systémy",
+    };
+  }
+
+  if (haystack.includes("strop") || haystack.includes("stenov") || haystack.includes("chladen")) {
+    return {
+      description: "stropné alebo stenové vykurovanie/chladenie",
+      useWhen: "použi pri otázkach na chladenie, stenové vykurovanie alebo kombináciu vykurovania a chladenia",
+    };
+  }
+
+  if (haystack.includes("dotac") || haystack.includes("oze") || haystack.includes("zelena")) {
+    return {
+      description: "vizuál k dotáciám OZE alebo programu Zelená domácnostiam",
+      useWhen: "použi pri otázkach na dotácie, poukážky a zníženie investičných nákladov",
+    };
+  }
+
+  if (haystack.includes("solar") || haystack.includes("solarn") || haystack.includes("fotovolt")) {
+    return {
+      description: "solárne panely, fotovoltika alebo solárna technológia",
+      useWhen: "použi pri otázkach na fotovoltiku, solárne panely a výrobu energie zo slnka",
+    };
+  }
+
+  if (haystack.includes("kvapalin") || haystack.includes("filter") || haystack.includes("e-shop")) {
+    return {
+      description: "produkt z e-shopu, napríklad teplonosná kvapalina alebo filter",
+      useWhen: "použi pri otázkach na e-shop, filtre, kvapaliny a servisné produkty",
+    };
+  }
+
+  if (haystack.includes("servis") || haystack.includes("instal") || haystack.includes("montaz")) {
+    return {
+      description: "servis, montáž alebo inštalačná situácia technológie",
+      useWhen: "použi pri otázkach na montáž, servis alebo realizáciu riešenia",
+    };
+  }
+
+  return {
+    description: `obrázok k téme: ${page.title}`,
+    useWhen: "použi iba vtedy, keď otázka priamo súvisí s touto témou",
+  };
 }
 
 function compactChunk(value: string) {
@@ -247,6 +371,7 @@ function uniqueImages(images: KnowledgeImage[]) {
 
 function selectImages(matches: ChunkMatch[], tokens: string[], query: string) {
   const intent = imageIntentFor(query);
+  const wantsDotation = tokens.some((token) => /dotac|oze|zelena|poukaz/.test(token));
   const candidates = matches.flatMap(({ page, score: pageScore }, matchIndex) =>
     page.images.map((image, imageIndex) => ({
       image,
@@ -257,10 +382,27 @@ function selectImages(matches: ChunkMatch[], tokens: string[], query: string) {
 
   return uniqueImages(
     candidates
-      .filter(({ image, page, score }) => imageMatchesIntent(image, page, intent) && score >= (intent ? 4 : 8))
+      .filter(({ image, page, score }) => {
+        const imageText = `${image.alt} ${safeDecodeUrl(image.url)}`;
+        const isDotationImage = /dotac|oze|zelena|poukaz/i.test(imageText);
+
+        return (
+          imageMatchesIntent(image, page, intent) &&
+          (intent || !isDotationImage || wantsDotation) &&
+          score >= (intent ? 4 : 8)
+        );
+      })
       .sort((a, b) => b.score - a.score)
       .map(({ image }) => image),
-  ).slice(0, 5);
+  )
+    .slice(0, 5)
+    .map((image) => {
+      const page = matches.find((match) => match.page.images.some((candidate) => candidate.url === image.url))?.page;
+      return {
+        ...image,
+        ...describeImage(image, page ?? matches[0]?.page),
+      };
+    });
 }
 
 export function getRelevantGeothermKnowledge(query: string): RetrievedKnowledge {
