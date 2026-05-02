@@ -98,7 +98,7 @@ export function GeothermChatbot() {
     setPerplexityCollapsed(false);
 
     if (textareaRef.current) {
-      textareaRef.current.style.height = mode === "codex" ? "30px" : "48px";
+      textareaRef.current.style.height = mode === "codex" ? "34px" : "48px";
     }
 
     try {

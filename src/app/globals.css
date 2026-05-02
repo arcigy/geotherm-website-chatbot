@@ -959,6 +959,8 @@ button.perplexity-context:not(:disabled):hover {
 }
 
 .codex-glass-composer {
+  width: min(640px, calc(100vw - 520px));
+  min-width: 460px;
   overflow: hidden;
   border-radius: 999px;
   border-color: rgba(255, 255, 255, 0.1);
@@ -976,7 +978,7 @@ button.perplexity-context:not(:disabled):hover {
   grid-template-columns: 28px minmax(0, 1fr) 32px 38px;
   min-height: 54px;
   align-items: center;
-  padding: 6px 8px 6px 12px;
+  padding: 5px 8px 5px 12px;
 }
 
 .codex-glass-composer .chat-input.perplexity::before {
@@ -993,12 +995,13 @@ button.perplexity-context:not(:disabled):hover {
 
 .codex-glass-composer .chat-input.perplexity textarea {
   align-self: center;
+  height: 34px;
   min-height: 34px;
   max-height: 86px;
-  padding: 0;
+  padding: 8px 0 6px;
   color: #fff;
   font-size: 15px;
-  line-height: 34px;
+  line-height: 20px;
 }
 
 .codex-glass-composer .chat-input.perplexity textarea::placeholder {
@@ -1046,8 +1049,8 @@ button.perplexity-context:not(:disabled):hover {
   bottom: 78px;
   z-index: 54;
   display: flex;
-  width: min(700px, calc(100vw - 480px));
-  min-width: 500px;
+  width: min(620px, calc(100vw - 540px));
+  min-width: 440px;
   height: 34px;
   align-items: center;
   justify-content: space-between;
@@ -1081,6 +1084,8 @@ button.perplexity-context:not(:disabled):hover {
 }
 
 .codex-glass-answer {
+  width: min(660px, calc(100vw - 500px));
+  min-width: 480px;
   bottom: 118px;
   max-height: min(30vh, 280px);
   padding-right: 6px;
