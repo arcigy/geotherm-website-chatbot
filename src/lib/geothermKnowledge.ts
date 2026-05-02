@@ -108,6 +108,11 @@ const imageIntents: ImageIntent[] = [
     allow: ["vaillant", "aro", "flexotherm", "flexocompact", "recovair", "multimatic"],
     requireImageText: true,
   },
+  {
+    match: ["hoval", "thermalia", "ultrasource"],
+    allow: ["hoval", "thermalia", "ultrasource"],
+    requireImageText: true,
+  },
 ];
 
 const stopWords = new Set([
@@ -277,8 +282,10 @@ function imageMatchesIntent(image: KnowledgeImage, page: KnowledgePage, intent?:
   return allow.some((token) => imageText.includes(token) || pageText.includes(token));
 }
 
-function describeImage(image: KnowledgeImage, page: KnowledgePage): Pick<RetrievedImage, "description" | "useWhen"> {
-  const haystack = normalize(`${image.alt} ${safeDecodeUrl(image.url)} ${page.title} ${page.tags.join(" ")}`);
+function describeImage(image: KnowledgeImage, page?: KnowledgePage): Pick<RetrievedImage, "description" | "useWhen"> {
+  const imageText = normalize(`${image.alt} ${safeDecodeUrl(image.url)}`);
+  const pageText = normalize(`${page?.title ?? ""} ${page?.tags.join(" ") ?? ""}`);
+  const haystack = `${imageText} ${pageText}`;
 
   if (haystack.includes("multimatic") || haystack.includes("red dot")) {
     return {
@@ -287,14 +294,35 @@ function describeImage(image: KnowledgeImage, page: KnowledgePage): Pick<Retriev
     };
   }
 
-  if (haystack.includes("nibe")) {
+  if (imageText.includes("stiebel")) {
+    return {
+      description: "produktový obrázok tepelného čerpadla Stiebel Eltron",
+      useWhen: "použi pri otázkach na značku Stiebel Eltron alebo typy tepelných čerpadiel",
+    };
+  }
+
+  if (imageText.includes("hlucnost") && imageText.includes("nibe")) {
+    return {
+      description: "vizuál k tichej prevádzke tepelného čerpadla NIBE",
+      useWhen: "použi pri otázkach na NIBE, hlučnosť alebo tiché tepelné čerpadlá",
+    };
+  }
+
+  if (imageText.includes("nibe")) {
     return {
       description: "tepelné čerpadlo alebo produktová vizualizácia značky NIBE",
       useWhen: "použi pri otázkach na NIBE, švédske tepelné čerpadlá alebo porovnanie značiek",
     };
   }
 
-  if (haystack.includes("vaillant") || haystack.includes("arotherm") || haystack.includes("flexotherm")) {
+  if (imageText.includes("hoval") || imageText.includes("thermalia") || imageText.includes("ultrasource")) {
+    return {
+      description: "produktový alebo výrobný obrázok tepelných čerpadiel Hoval",
+      useWhen: "použi pri otázkach na značku Hoval, Thermalia, UltraSource alebo rozšírenie výroby tepelných čerpadiel",
+    };
+  }
+
+  if (imageText.includes("vaillant") || imageText.includes("arotherm") || imageText.includes("flexotherm")) {
     return {
       description: "tepelné čerpadlo alebo riešenie značky Vaillant",
       useWhen: "použi pri otázkach na Vaillant, aroTHERM, flexoTHERM alebo porovnanie značiek",
@@ -351,9 +379,28 @@ function describeImage(image: KnowledgeImage, page: KnowledgePage): Pick<Retriev
   }
 
   return {
-    description: `obrázok k téme: ${page.title}`,
+    description: page ? `obrázok k téme: ${page.title}` : "obrázok z knižnice GEOTHERM",
     useWhen: "použi iba vtedy, keď otázka priamo súvisí s touto témou",
   };
+}
+
+export function getGeothermImagesByUrl(urls: string[]): RetrievedImage[] {
+  const wanted = new Set(urls);
+  const found = pages.flatMap((page) =>
+    page.images
+      .filter((image) => wanted.has(image.url))
+      .map((image) => ({
+        ...image,
+        ...describeImage(image, page),
+      })),
+  );
+
+  const seen = new Set<string>();
+  return found.filter((image) => {
+    if (seen.has(image.url)) return false;
+    seen.add(image.url);
+    return true;
+  });
 }
 
 function compactChunk(value: string) {

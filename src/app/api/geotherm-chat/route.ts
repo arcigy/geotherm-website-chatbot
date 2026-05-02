@@ -1,6 +1,6 @@
 import { GoogleGenAI } from "@google/genai";
 import { NextResponse } from "next/server";
-import { getRelevantGeothermKnowledge } from "@/lib/geothermKnowledge";
+import { getGeothermImagesByUrl, getRelevantGeothermKnowledge } from "@/lib/geothermKnowledge";
 import { geothermSystemPrompt } from "@/lib/geothermPrompt";
 
 type ChatMessage = {
@@ -27,8 +27,15 @@ function ensureFollowUp(value: string) {
   return `${value.trim()}\n\n**Čo chcete preveriť ďalej:** ide o novostavbu alebo rekonštrukciu a aká je približná plocha domu?`;
 }
 
-function imageMarkdown(images: Array<{ url: string; alt: string }>) {
-  return images.map((image) => `![${image.alt}](${image.url})`).join("\n");
+function imageMarkdown(images: Array<{ url: string; alt: string; description?: string }>) {
+  const markdownImages = images
+    .map((image) => `![${image.description || image.alt}](${image.url})`)
+    .join("\n");
+  const captions = images
+    .map((image, index) => `${images.length > 1 ? `${index + 1}. ` : ""}${image.description || image.alt}`)
+    .join("; ");
+
+  return `${markdownImages}\n\n*${images.length > 1 ? "Obrázky" : "Obrázok"}: ${captions}.*`;
 }
 
 function insertImagesBeforeFinalQuestion(value: string, markdown: string) {
@@ -42,28 +49,15 @@ function insertImagesBeforeFinalQuestion(value: string, markdown: string) {
   return `${value.trim()}\n\n${markdown}`;
 }
 
-function appendImageIfUseful(value: string, images: Array<{ url: string; alt: string }>, maxImages: number) {
-  const allowedUrls = new Set(images.map((image) => image.url));
-  let keptImages = 0;
-  const usedUrls = new Set<string>();
-  const withoutExtraMarkdownImages = value.replace(/!\[[^\]]*]\(([^)]+)\)/g, (match, url: string) => {
-    const cleanUrl = url.trim();
-    if (!allowedUrls.has(cleanUrl) || keptImages >= maxImages) return "";
-    keptImages += 1;
-    usedUrls.add(cleanUrl);
-    return match;
-  });
-  const sanitized = withoutExtraMarkdownImages.replace(
+function appendImageIfUseful(value: string, images: Array<{ url: string; alt: string; description?: string }>, maxImages: number) {
+  const sanitized = value
+    .replace(/!\[[^\]]*]\(([^)]+)\)/g, "")
+    .replace(
     /^\s*https?:\/\/\S+\.(?:jpe?g|png|webp)(?:\?\S*)?\s*$/gim,
     "",
-  );
+    );
 
   if (!images.length) return sanitized.trim();
-  if (sanitized.includes("![")) {
-    const remaining = images.filter((image) => !usedUrls.has(image.url)).slice(0, maxImages - keptImages);
-    if (!remaining.length) return sanitized.trim();
-    return insertImagesBeforeFinalQuestion(sanitized, imageMarkdown(remaining));
-  }
   return insertImagesBeforeFinalQuestion(sanitized, imageMarkdown(images.slice(0, maxImages)));
 }
 
@@ -93,6 +87,55 @@ Najlepšie riešenie treba vybrať podľa domu, izolácie a súčasného zdroja 
 Pri tejto téme je najdôležitejšie navrhnúť riešenie podľa konkrétneho domu, nie všeobecne. GEOTHERM preto pri odporúčaní zohľadňuje typ stavby, plochu, súčasný zdroj tepla, očakávaný komfort a možnosti dotácií.`;
 }
 
+function extractMarkdownImageUrls(value: string) {
+  return [...value.matchAll(/!\[[^\]]*]\(([^)]+)\)/g)].map((match) => match[1].trim());
+}
+
+function normalizeText(value: string) {
+  return value
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/\p{Diacritic}/gu, "")
+    .replace(/[^a-z0-9\s]/g, " ");
+}
+
+function isImageMetaQuestion(value: string) {
+  const raw = value.toLowerCase();
+  if ((raw.includes("obr") || raw.includes("fot")) && (raw.includes("čo") || raw.includes("co") || raw.includes("aké") || raw.includes("ake") || raw.includes("poslal"))) {
+    return true;
+  }
+
+  const normalized = normalizeText(value);
+  const asksAboutExistingImage =
+    normalized.includes("obraz") || normalized.includes("fotk") || normalized.includes("foto");
+  const isMetaWording = /co|ake|aky|ktore|poslal|zobrazuj|vidim|vysvetli|popis/.test(normalized);
+
+  return asksAboutExistingImage && isMetaWording;
+}
+
+function answerImageMetaQuestion(messages: ChatMessage[]) {
+  const previousImageUrls = messages
+    .filter((message) => message.role === "assistant")
+    .flatMap((message) => extractMarkdownImageUrls(message.content));
+  const images = getGeothermImagesByUrl(previousImageUrls).slice(0, 4);
+
+  if (!images.length) {
+    return "### Obrázky v odpovedi\n\nV predchádzajúcej odpovedi nevidím žiadny uložený obrázok, ktorý by som vedel spoľahlivo pomenovať.\n\nChcete, aby som k tejto téme vybral vhodný produktový obrázok z databázy GEOTHERM?";
+  }
+
+  const rows = images
+    .map((image) => {
+      const useWhen = image.useWhen
+        .replace(/^použi pri/i, "hodí sa pri")
+        .replace(/^použi iba vtedy, keď/i, "hodí sa, keď");
+
+      return `| ${image.alt || "Obrázok GEOTHERM"} | ${image.description} | ${useWhen} |`;
+    })
+    .join("\n");
+
+  return `### Čo zobrazujú poslané obrázky\n\n| Obrázok | Čo je na ňom | Prečo sa hodí |\n|---|---|---|\n${rows}\n\n${imageMarkdown(images)}\n\nChcete, aby som pri ďalších odpovediach zobrazoval pod obrázkami vždy aj takýto krátky popis?`;
+}
+
 export async function POST(request: Request) {
   const apiKey = process.env.GEMINI_API_KEY;
 
@@ -109,6 +152,10 @@ export async function POST(request: Request) {
 
   if (!latestUserMessage?.content?.trim()) {
     return NextResponse.json({ error: "Message is required." }, { status: 400 });
+  }
+
+  if (isImageMetaQuestion(latestUserMessage.content)) {
+    return NextResponse.json({ message: answerImageMetaQuestion(messages) });
   }
 
   const ai = new GoogleGenAI({ apiKey });
@@ -128,8 +175,8 @@ export async function POST(request: Request) {
     queryContext,
   );
   const formatInstruction = wantsComparison
-    ? "Použi presne tento kompaktný formát: ### Krátky nadpis\n1 veta úvodu.\n| Položka | Kedy dáva zmysel | Hlavný prínos |\n|---|---|---|\n| Názov | krátky text | krátky text |\nPotom 1 krátku otázku na pokračovanie. Nikdy nezarovnávaj tabuľku medzerami. Nepouži vnorené odrážky."
-    : "Použi krátky nadpis, 1 až 2 stručné sekcie a najviac jeden krátky zoznam. Skonči jednou otázkou, ktorá posunie zákazníka k výberu riešenia.";
+    ? "Použi presne tento kompaktný formát: ### Krátky nadpis\n1 veta úvodu.\n| Položka | Kedy dáva zmysel | Hlavný prínos |\n|---|---|---|\n| Názov | krátky text | krátky text |\nPotom 1 krátku otázku na pokračovanie. Celkovo max 170 slov. Nikdy nezarovnávaj tabuľku medzerami. Nepouži vnorené odrážky."
+    : "Použi krátky nadpis, 1 až 2 stručné sekcie a najviac jeden krátky zoznam. Celkovo max 130 slov. Nepoužívaj tabuľku, ak používateľ výslovne nežiada porovnanie. Skonči jednou otázkou, ktorá posunie zákazníka k výberu riešenia.";
 
   let generatedText: string;
 
@@ -149,10 +196,9 @@ Ak v podkladoch odpoveď nie je, povedz, že to treba overiť u GEOTHERM.
 Práca so zdrojmi:
 - Odpovedaj podľa relevantných pasáží nižšie, nie podľa všeobecnej znalosti.
 - Nespomínaj interné označenia ZDROJ, chunk ani retrieval.
-- Ak používateľ pýta produkt, článok, dotáciu, montáž, servis, značky, typy čerpadiel alebo konkrétnu technológiu a je dostupný vhodný obrázok, vlož relevantný obrázok Markdownom.
-- Bežne použi 1 obrázok. Pri porovnaní, typoch, značkách alebo možnostiach môžeš použiť 2 obrázky, nikdy viac.
-- Obrázky môžeš použiť iba z povoleného zoznamu. Nevymýšľaj URL obrázkov.
-- Obrázok vlož prirodzene za prvý krátky vysvetľujúci odsek alebo za tabuľku.
+- Nevkladaj Markdown obrázky sám. Systém ich pridá automaticky z povoleného zoznamu.
+- Ak v texte spomenieš obrázok, pomenuj vecne čo zobrazuje podľa popisu v povolenom zozname.
+- Obrázky môžeš opisovať iba podľa poľa "Čo je na obrázku". Nevymýšľaj, čo je na nich.
 - Odpoveď drž stručnú. Na konci vždy polož jednu prirodzenú otázku, aby zákazník pokračoval v rozhovore.
 
 Formát tejto odpovede:
@@ -164,7 +210,7 @@ ${allowedImages || "Pre túto otázku nebol nájdený vhodný obrázok."}
 Vybrané podklady:
 ${knowledge.context}`,
         temperature: 0.35,
-        maxOutputTokens: 420,
+        maxOutputTokens: 560,
         thinkingConfig: {
           thinkingBudget: 0,
         },
