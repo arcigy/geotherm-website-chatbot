@@ -947,6 +947,8 @@ button.perplexity-context:not(:disabled):hover {
 }
 
 .codex-glass-composer {
+  overflow: hidden;
+  border-radius: 999px;
   border-color: rgba(255, 255, 255, 0.1);
   background: rgba(38, 39, 37, 0.58);
   box-shadow: 0 24px 70px rgba(0, 0, 0, 0.3);
@@ -958,28 +960,29 @@ button.perplexity-context:not(:disabled):hover {
     box-shadow 180ms ease;
 }
 
-.codex-glass-composer .perplexity-context {
-  height: 22px;
-  padding: 6px 14px 0;
-  color: rgba(255, 255, 255, 0.58);
-  font-size: 11px;
-}
-
 .codex-glass-composer .chat-input.perplexity {
-  grid-template-columns: minmax(0, 1fr) 34px;
-  padding: 2px 8px 7px;
+  grid-template-columns: 28px minmax(0, 1fr) 32px 38px;
+  min-height: 54px;
+  align-items: center;
+  padding: 6px 8px 6px 12px;
 }
 
 .codex-glass-composer .chat-input.perplexity::before {
-  content: none;
+  content: "+";
+  display: grid;
+  width: 26px;
+  height: 38px;
+  place-items: center;
+  color: rgba(255, 255, 255, 0.56);
+  font-size: 22px;
 }
 
 .codex-glass-composer .chat-input.perplexity textarea {
-  min-height: 30px;
+  min-height: 34px;
   max-height: 86px;
-  padding: 5px 0;
+  padding: 7px 0;
   color: #fff;
-  font-size: 14px;
+  font-size: 15px;
   line-height: 1.35;
 }
 
@@ -988,9 +991,62 @@ button.perplexity-context:not(:disabled):hover {
 }
 
 .codex-glass-composer .chat-input.perplexity button {
-  width: 34px;
-  height: 34px;
+  width: 36px;
+  height: 36px;
   font-size: 18px;
+}
+
+.codex-glass-composer .chat-input.perplexity .chat-mic-button {
+  width: 30px;
+  height: 30px;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.52);
+}
+
+.codex-glass-composer .chat-input.perplexity .chat-mic-button svg {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 2;
+}
+
+.codex-glass-composer .chat-input.perplexity .chat-mic-button:hover {
+  color: rgba(255, 255, 255, 0.82);
+}
+
+.codex-context-popup {
+  position: fixed;
+  left: 50%;
+  bottom: 78px;
+  z-index: 54;
+  display: flex;
+  width: min(700px, calc(100vw - 480px));
+  min-width: 500px;
+  height: 34px;
+  align-items: center;
+  justify-content: space-between;
+  transform: translateX(-50%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 18px 18px 10px 10px;
+  padding: 0 14px;
+  background: rgba(75, 76, 70, 0.32);
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 13px;
+  font-weight: 750;
+  box-shadow: 0 14px 48px rgba(0, 0, 0, 0.18);
+  backdrop-filter: blur(18px);
+  cursor: pointer;
+  transition:
+    background 180ms ease,
+    color 180ms ease;
+}
+
+.codex-context-popup:hover {
+  background: rgba(75, 76, 70, 0.42);
+  color: rgba(255, 255, 255, 0.86);
 }
 
 .codex-glass-composer:hover,
@@ -1002,7 +1058,7 @@ button.perplexity-context:not(:disabled):hover {
 }
 
 .codex-glass-answer {
-  bottom: 94px;
+  bottom: 118px;
   max-height: min(30vh, 280px);
   padding-right: 6px;
   overflow: hidden;
@@ -1027,19 +1083,22 @@ button.perplexity-context:not(:disabled):hover {
 
 .codex-glass-answer .perplexity-answer-top {
   padding: 8px 12px;
-  background: rgba(51, 52, 48, 0.12);
+  border-bottom-color: rgba(255, 255, 255, 0.06);
+  background: transparent;
   color: rgba(255, 255, 255, 0.76);
+  backdrop-filter: none;
 }
 
 .codex-glass-answer:hover .perplexity-answer-top,
 .codex-glass-answer:focus-within .perplexity-answer-top {
-  background: rgba(51, 52, 48, 0.18);
+  background: transparent;
 }
 
 .codex-glass-answer .messages.compact {
   max-height: calc(min(30vh, 280px) - 34px);
   margin-right: 3px;
   overflow-y: auto;
+  overscroll-behavior: contain;
   padding: 8px 16px 14px;
   scrollbar-color: rgba(255, 255, 255, 0.06) transparent;
   scrollbar-gutter: stable;
@@ -1344,7 +1403,8 @@ button.perplexity-context:not(:disabled):hover {
   }
 
   .perplexity-composer,
-  .perplexity-answer {
+  .perplexity-answer,
+  .codex-context-popup {
     left: 14px;
     width: calc(100vw - 28px);
     min-width: 0;
@@ -1357,11 +1417,12 @@ button.perplexity-context:not(:disabled):hover {
   }
 
   .codex-glass-answer {
-    bottom: 86px;
+    bottom: 118px;
+    max-height: 42vh;
   }
 
-  .codex-glass-answer {
-    max-height: 42vh;
+  .codex-context-popup {
+    bottom: 78px;
   }
 
   .floating-mode-control {

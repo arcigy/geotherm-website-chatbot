@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, KeyboardEvent, PointerEvent, useEffect, useRef, useState } from "react";
+import { FormEvent, KeyboardEvent, PointerEvent, WheelEvent, useEffect, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
@@ -142,8 +142,30 @@ export function GeothermChatbot() {
 
     if (!textareaRef.current) return;
 
-    textareaRef.current.style.height = "48px";
-    textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 132)}px`;
+    const minHeight = mode === "codex" ? 34 : 48;
+    const maxHeight = mode === "codex" ? 86 : 132;
+
+    textareaRef.current.style.height = `${minHeight}px`;
+    textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, maxHeight)}px`;
+  }
+
+  function containWheelScroll(event: WheelEvent<HTMLDivElement>) {
+    const element = event.currentTarget;
+    const isScrollable = element.scrollHeight > element.clientHeight;
+
+    event.stopPropagation();
+
+    if (!isScrollable) {
+      event.preventDefault();
+      return;
+    }
+
+    const atTop = element.scrollTop <= 0;
+    const atBottom = Math.ceil(element.scrollTop + element.clientHeight) >= element.scrollHeight;
+
+    if ((event.deltaY < 0 && atTop) || (event.deltaY > 0 && atBottom)) {
+      event.preventDefault();
+    }
   }
 
   function startResize(event: PointerEvent<HTMLDivElement>) {
@@ -200,6 +222,16 @@ export function GeothermChatbot() {
         rows={1}
         placeholder={variant === "codex" ? "Zadajte / pre režimy vyhľadávania a skratky" : "Napíšte správu..."}
       />
+      {variant === "perplexity" ? (
+        <button className="chat-mic-button" type="button" aria-label="Mikrofón">
+          <svg aria-hidden="true" viewBox="0 0 24 24">
+            <path d="M12 4a3 3 0 0 0-3 3v5a3 3 0 0 0 6 0V7a3 3 0 0 0-3-3Z" />
+            <path d="M5 11a7 7 0 0 0 14 0" />
+            <path d="M12 18v3" />
+            <path d="M9 21h6" />
+          </svg>
+        </button>
+      ) : null}
       <button type="submit" disabled={isLoading} aria-label="Odoslať správu">
         ↑
       </button>
@@ -211,14 +243,14 @@ export function GeothermChatbot() {
       <>
         <div className="floating-mode-control">{modeSwitcher}</div>
         {(hasConversation && isOpen) || isLoading ? (
-          <section className="perplexity-answer codex-glass-answer" ref={scrollRef} aria-label="GEOTHERM AI odpovede">
+          <section className="perplexity-answer codex-glass-answer" aria-label="GEOTHERM AI odpovede">
             <button className="perplexity-answer-top" type="button" onClick={() => setIsOpen(false)}>
               <span>GEOTHERM AI</span>
               <div className="codex-answer-actions">
                 <span aria-hidden="true">⌄</span>
               </div>
             </button>
-            <div className="messages compact">
+            <div className="messages compact" ref={scrollRef} onWheel={containWheelScroll}>
               {messages.map((message) => (
                 <article className={`message ${message.role}`} key={message.id}>
                   {message.role === "assistant" ? <MarkdownMessage content={message.content} /> : <p>{message.content}</p>}
@@ -235,15 +267,18 @@ export function GeothermChatbot() {
             </div>
           </section>
         ) : null}
-        <section className="perplexity-composer codex-glass-composer" aria-label="GEOTHERM AI Codex asistent">
+        {hasConversation || isLoading ? (
           <button
-            className="perplexity-context"
+            className="codex-context-popup"
             type="button"
             onClick={() => setIsOpen(true)}
             disabled={!hasConversation && !isLoading}
           >
-            Najnovší príspevok
+            <span>Najnovší príspevok</span>
+            <span aria-hidden="true">›</span>
           </button>
+        ) : null}
+        <section className="perplexity-composer codex-glass-composer" aria-label="GEOTHERM AI Codex asistent">
           {inputForm("perplexity")}
         </section>
       </>
