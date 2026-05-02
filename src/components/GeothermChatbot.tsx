@@ -28,11 +28,18 @@ export function GeothermChatbot() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
+  const [isTranscribing, setIsTranscribing] = useState(false);
+  const [recordingSeconds, setRecordingSeconds] = useState(0);
   const [windowSize, setWindowSize] = useState({ width: 520, height: 720 });
   const [perplexityCollapsed, setPerplexityCollapsed] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const typingTimerRef = useRef<number | null>(null);
+  const recorderRef = useRef<MediaRecorder | null>(null);
+  const streamRef = useRef<MediaStream | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
+  const recordingTimerRef = useRef<number | null>(null);
 
   const hasConversation = messages.length > 0;
   const lastAssistantMessage = [...messages].reverse().find((message) => message.role === "assistant");
@@ -49,8 +56,29 @@ export function GeothermChatbot() {
       if (typingTimerRef.current) {
         window.clearInterval(typingTimerRef.current);
       }
+      if (recordingTimerRef.current) {
+        window.clearInterval(recordingTimerRef.current);
+      }
+      streamRef.current?.getTracks().forEach((track) => track.stop());
     };
   }, []);
+
+  useEffect(() => {
+    if (!isRecording) return;
+
+    function stopWithEnter(event: globalThis.KeyboardEvent) {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        stopRecording();
+      }
+    }
+
+    window.addEventListener("keydown", stopWithEnter);
+
+    return () => {
+      window.removeEventListener("keydown", stopWithEnter);
+    };
+  }, [isRecording]);
 
   function animateAssistantMessage(content: string) {
     const id = crypto.randomUUID();
@@ -76,6 +104,117 @@ export function GeothermChatbot() {
         }
       }, 12);
     });
+  }
+
+  function animateInputText(content: string) {
+    let index = 0;
+    setInput("");
+
+    return new Promise<void>((resolve) => {
+      const timer = window.setInterval(() => {
+        index += 1;
+        setInput(content.slice(0, index));
+
+        if (index >= content.length) {
+          window.clearInterval(timer);
+          resolve();
+        }
+      }, 18);
+    });
+  }
+
+  function blobToBase64(blob: Blob) {
+    return new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(String(reader.result).split(",")[1] ?? "");
+      reader.onerror = () => reject(new Error("Audio sa nepodarilo načítať."));
+      reader.readAsDataURL(blob);
+    });
+  }
+
+  async function transcribeAudio(audioBlob: Blob) {
+    setIsTranscribing(true);
+
+    try {
+      const audioBase64 = await blobToBase64(audioBlob);
+      const response = await fetch("/api/geotherm-transcribe", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          audioBase64,
+          mimeType: audioBlob.type || "audio/webm",
+        }),
+      });
+      const data = (await response.json()) as { text?: string; error?: string };
+
+      if (!response.ok || !data.text?.trim()) {
+        throw new Error(data.error ?? "Transkripcia zlyhala.");
+      }
+
+      await animateInputText(data.text.trim());
+    } catch {
+      await animateInputText("Nepodarilo sa prepísať hlas. Skúste to ešte raz.");
+    } finally {
+      setIsTranscribing(false);
+    }
+  }
+
+  async function startRecording() {
+    if (isRecording || isTranscribing || isLoading) return;
+
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const recorder = new MediaRecorder(stream);
+
+      streamRef.current = stream;
+      recorderRef.current = recorder;
+      audioChunksRef.current = [];
+      setRecordingSeconds(0);
+      setInput("");
+      setIsRecording(true);
+
+      recordingTimerRef.current = window.setInterval(() => {
+        setRecordingSeconds((current) => current + 1);
+      }, 1000);
+
+      recorder.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+          audioChunksRef.current.push(event.data);
+        }
+      };
+
+      recorder.onstop = () => {
+        const audioBlob = new Blob(audioChunksRef.current, {
+          type: recorder.mimeType || "audio/webm",
+        });
+
+        stream.getTracks().forEach((track) => track.stop());
+        streamRef.current = null;
+        recorderRef.current = null;
+        audioChunksRef.current = [];
+
+        if (audioBlob.size > 0) {
+          void transcribeAudio(audioBlob);
+        }
+      };
+
+      recorder.start();
+    } catch {
+      setIsRecording(false);
+      await animateInputText("Mikrofón sa nepodarilo spustiť.");
+    }
+  }
+
+  function stopRecording() {
+    if (!recorderRef.current || recorderRef.current.state === "inactive") return;
+
+    if (recordingTimerRef.current) {
+      window.clearInterval(recordingTimerRef.current);
+      recordingTimerRef.current = null;
+    }
+
+    setIsRecording(false);
+    recorderRef.current.stop();
   }
 
   async function sendMessage(content: string) {
@@ -213,26 +352,47 @@ export function GeothermChatbot() {
   );
 
   const inputForm = (variant: "panel" | "perplexity" | "codex") => (
-    <form className={`chat-input ${variant}`} onSubmit={onSubmit}>
-      <textarea
-        ref={textareaRef}
-        value={input}
-        onChange={(event) => onInputChange(event.target.value)}
-        onKeyDown={onKeyDown}
-        rows={1}
-        placeholder={variant === "codex" ? "Zadajte / pre režimy vyhľadávania a skratky" : "Napíšte správu..."}
-      />
+    <form className={`chat-input ${variant} ${isRecording ? "is-recording" : ""}`} onSubmit={onSubmit}>
+      {variant === "perplexity" && isRecording ? (
+        <div className="voice-recorder" aria-live="polite">
+          <div className="voice-wave" aria-hidden="true">
+            {Array.from({ length: 32 }).map((_, index) => (
+              <i key={index} style={{ animationDelay: `${index * 38}ms` }} />
+            ))}
+          </div>
+          <span className="voice-time">0:{String(recordingSeconds).padStart(2, "0")}</span>
+        </div>
+      ) : (
+        <textarea
+          ref={textareaRef}
+          value={input}
+          onChange={(event) => onInputChange(event.target.value)}
+          onKeyDown={onKeyDown}
+          rows={1}
+          placeholder={variant === "codex" ? "Zadajte / pre režimy vyhľadávania a skratky" : "Napíšte správu..."}
+        />
+      )}
       {variant === "perplexity" ? (
-        <button className="chat-mic-button" type="button" aria-label="Mikrofón">
-          <svg aria-hidden="true" viewBox="0 0 24 24">
-            <path d="M12 4a3 3 0 0 0-3 3v5a3 3 0 0 0 6 0V7a3 3 0 0 0-3-3Z" />
-            <path d="M5 11a7 7 0 0 0 14 0" />
-            <path d="M12 18v3" />
-            <path d="M9 21h6" />
-          </svg>
+        <button
+          className={`chat-mic-button ${isRecording ? "recording" : ""}`}
+          type="button"
+          aria-label={isRecording ? "Zastaviť nahrávanie" : "Mikrofón"}
+          onClick={isRecording ? stopRecording : startRecording}
+          disabled={isTranscribing}
+        >
+          {isRecording ? (
+            <span aria-hidden="true" />
+          ) : (
+            <svg aria-hidden="true" viewBox="0 0 24 24">
+              <path d="M12 4a3 3 0 0 0-3 3v5a3 3 0 0 0 6 0V7a3 3 0 0 0-3-3Z" />
+              <path d="M5 11a7 7 0 0 0 14 0" />
+              <path d="M12 18v3" />
+              <path d="M9 21h6" />
+            </svg>
+          )}
         </button>
       ) : null}
-      <button type="submit" disabled={isLoading} aria-label="Odoslať správu">
+      <button type="submit" disabled={isLoading || isRecording || isTranscribing} aria-label="Odoslať správu">
         <svg aria-hidden="true" viewBox="0 0 24 24">
           <path d="M12 19V5" />
           <path d="m6.5 10.5 5.5-5.5 5.5 5.5" />

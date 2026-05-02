@@ -981,6 +981,16 @@ button.perplexity-context:not(:disabled):hover {
   padding: 5px 8px 5px 12px;
 }
 
+.codex-glass-composer .chat-input.perplexity.is-recording {
+  grid-template-columns: minmax(0, 1fr) 48px;
+  padding: 6px 10px 6px 22px;
+  background: rgba(255, 241, 244, 0.82);
+}
+
+.codex-glass-composer .chat-input.perplexity.is-recording::before {
+  content: none;
+}
+
 .codex-glass-composer .chat-input.perplexity::before {
   content: "+";
   display: grid;
@@ -1041,6 +1051,71 @@ button.perplexity-context:not(:disabled):hover {
 
 .codex-glass-composer .chat-input.perplexity .chat-mic-button:hover {
   color: rgba(255, 255, 255, 0.82);
+}
+
+.codex-glass-composer .chat-input.perplexity .chat-mic-button.recording {
+  width: 44px;
+  height: 44px;
+  background: rgba(231, 10, 36, 0.12);
+  color: #e0001c;
+}
+
+.codex-glass-composer .chat-input.perplexity .chat-mic-button.recording span {
+  display: block;
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  background: currentColor;
+}
+
+.codex-glass-composer .chat-input.perplexity.is-recording button[type="submit"] {
+  display: none;
+}
+
+.voice-recorder {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 22px;
+  min-height: 42px;
+  color: #df001c;
+}
+
+.voice-wave {
+  display: flex;
+  height: 34px;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  overflow: hidden;
+}
+
+.voice-wave i {
+  display: block;
+  width: 3px;
+  height: 10px;
+  border-radius: 999px;
+  background: currentColor;
+  animation: voiceWave 860ms ease-in-out infinite;
+}
+
+.voice-wave i:nth-child(3n) {
+  height: 18px;
+}
+
+.voice-wave i:nth-child(4n) {
+  height: 28px;
+}
+
+.voice-wave i:nth-child(7n) {
+  height: 22px;
+}
+
+.voice-time {
+  min-width: 48px;
+  font-size: 22px;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
 }
 
 .codex-context-popup {
@@ -1392,6 +1467,17 @@ button.perplexity-context:not(:disabled):hover {
   40% {
     opacity: 1;
     transform: translateY(-3px);
+  }
+}
+
+@keyframes voiceWave {
+  0%,
+  100% {
+    transform: scaleY(0.58);
+  }
+
+  50% {
+    transform: scaleY(1.35);
   }
 }
 
