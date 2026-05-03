@@ -1,12 +1,16 @@
 import { GoogleGenAI } from "@google/genai";
 import { NextResponse } from "next/server";
+import {
+  nextFollowUpQuestion,
+  normalizeText,
+  stateForPrompt,
+  topicLabel,
+  updateConversationState,
+  type ChatMessage,
+  type ConversationState,
+} from "@/lib/geothermConversation";
 import { getGeothermImagesByUrl, getRelevantGeothermKnowledge } from "@/lib/geothermKnowledge";
 import { geothermSystemPrompt } from "@/lib/geothermPrompt";
-
-type ChatMessage = {
-  role: "user" | "assistant";
-  content: string;
-};
 
 function cleanMarkdownResponse(value: string) {
   return value
@@ -107,14 +111,6 @@ function extractMarkdownImageUrls(value: string) {
   return [...value.matchAll(/!\[[^\]]*]\(([^)]+)\)/g)].map((match) => match[1].trim());
 }
 
-function normalizeText(value: string) {
-  return value
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/\p{Diacritic}/gu, "")
-    .replace(/[^a-z0-9\s]/g, " ");
-}
-
 function hasSituation(value: string) {
   return /\b(novostav|novy dom|staviam|staviame|rekonstruk|rekonstru|stary dom|stars[iy] dom)\b/.test(value);
 }
@@ -211,6 +207,46 @@ function answerImageMetaQuestion(messages: ChatMessage[]) {
   return `### Čo zobrazujú poslané obrázky\n\n| Obrázok | Čo je na ňom | Prečo sa hodí |\n|---|---|---|\n${rows}\n\n${imageMarkdown(images)}\n\nChcete, aby som pri ďalších odpovediach zobrazoval pod obrázkami vždy aj takýto krátky popis?`;
 }
 
+function deterministicResponse(latestUserMessage: ChatMessage, state: ConversationState) {
+  const text = normalizeText(latestUserMessage.content);
+  const topic = topicLabel(state.lastTopic);
+  const latestHasContact = /@|(?:\+421\s*)?(?:0)?9\d{2}[\s.-]?\d{3}[\s.-]?\d{3}|vol[aá]m sa/i.test(
+    latestUserMessage.content,
+  );
+
+  if (state.contactRefused) {
+    return "Rozumiem, kontaktné údaje dávať nemusíte. Viem pokračovať orientačne a pomôcť vám ujasniť riešenie bez tlaku.";
+  }
+
+  if (latestHasContact) {
+    return "Ďakujem, poznačil som si to. Kontaktné údaje nebudem zbytočne opakovať; dôležitejšie je doplniť technické údaje, aby bol podklad užitočný.";
+  }
+
+  if (state.lead.intent === "callback") {
+    return "Rozumiem, chcete spätný kontakt. Najprv si bezpečne poznačíme len potrebný kontakt a potom doplníme údaje o dome, aby bolo jasné, s čím vám majú pomôcť.";
+  }
+
+  if (state.lead.intent === "quote" || state.lead.intent === "price_estimate") {
+    return "Orientácia v cene dáva zmysel až po základných údajoch o dome. Bez nich by bola suma príliš hrubý odhad a mohla by zavádzať.";
+  }
+
+  if (/(predtym|vratme|podla toho|pre moj pripad|plati to aj)/.test(text)) {
+    const facts = state.knownFacts.slice(0, 4).join(" ");
+    return `Podľa toho, čo ste už napísali, platí hlavne toto: ${facts || "zatiaľ nemám dosť údajov na presné odporúčanie"}. Preto by som odporúčanie viazal na váš konkrétny dom, nie na všeobecné riešenie.`;
+  }
+
+  if (state.project.type && state.project.houseSizeM2 && state.project.priority) {
+    const facts = state.knownFacts.slice(0, 4).join(" ");
+    return `Podľa vašich údajov: ${facts}. Odporúčanie by som držal pri riešení na mieru, aby sedelo na dom, rozpočet aj očakávaný komfort.`;
+  }
+
+  if (topic) {
+    return `K téme ${topic}: dá sa to riešiť, ale správny návrh závisí od domu a existujúceho systému. Zatiaľ si skladám obraz o vašej situácii, aby odporúčanie nebolo všeobecné.`;
+  }
+
+  return "Rozumiem. Najlepšie bude ísť postupne, aby sme zistili, aké riešenie dáva zmysel pre váš dom a rozpočet.";
+}
+
 export async function POST(request: Request) {
   const apiKey = process.env.GEMINI_API_KEY;
 
@@ -221,16 +257,37 @@ export async function POST(request: Request) {
     );
   }
 
-  const body = (await request.json()) as { messages?: ChatMessage[] };
-  const messages = body.messages?.slice(-12) ?? [];
-  const latestUserMessage = [...messages].reverse().find((message) => message.role === "user");
+  const body = (await request.json()) as {
+    messages?: ChatMessage[];
+    conversationState?: ConversationState | null;
+    testMode?: boolean;
+  };
+  const allMessages = body.messages ?? [];
+  const messages = allMessages.slice(-12);
+  const latestUserMessage = [...allMessages].reverse().find((message) => message.role === "user");
+  const conversationState = updateConversationState(allMessages, body.conversationState);
+  const fallbackQuestion = fallbackFollowUpQuestion(messages);
+  const followUpQuestion = nextFollowUpQuestion(conversationState) || fallbackQuestion;
 
   if (!latestUserMessage?.content?.trim()) {
     return NextResponse.json({ error: "Message is required." }, { status: 400 });
   }
 
   if (isImageMetaQuestion(latestUserMessage.content)) {
-    return NextResponse.json({ message: answerImageMetaQuestion(messages) });
+    return NextResponse.json({
+      message: enforceSingleFollowUpQuestion(answerImageMetaQuestion(messages), followUpQuestion),
+      conversationState,
+    });
+  }
+
+  if (body.testMode) {
+    return NextResponse.json({
+      message: enforceSingleFollowUpQuestion(
+        ensureMarkdownHeading(deterministicResponse(latestUserMessage, conversationState)),
+        followUpQuestion,
+      ),
+      conversationState,
+    });
   }
 
   const ai = new GoogleGenAI({ apiKey });
@@ -250,8 +307,7 @@ export async function POST(request: Request) {
   const wantsComparison = /porovnaj|porovnanie|rozdiel|\bvs\.?\b|výhody|vyhody|značky|znacky|možnosti|moznosti/i.test(
     queryContext,
   );
-  const conversationGuide = conversationGuideInstruction(messages);
-  const followUpQuestion = fallbackFollowUpQuestion(messages);
+  const conversationGuide = `${conversationGuideInstruction(messages)} Aktuálne platí finálna otázka: "${followUpQuestion}"`;
   const formatInstruction = wantsComparison
     ? "Použi presne tento kompaktný formát: ### Krátky nadpis\n1 veta úvodu.\n| Položka | Kedy dáva zmysel | Hlavný prínos |\n|---|---|---|\n| Názov | krátky text | krátky text |\nPotom 1 krátku otázku na pokračovanie. Celkovo max 100 slov. Nikdy nezarovnávaj tabuľku medzerami. Nepouži vnorené odrážky."
     : "Použi krátky nadpis, 1 stručnú sekciu a najviac jeden krátky zoznam. Celkovo max 75 slov. Nepoužívaj tabuľku, ak používateľ výslovne nežiada porovnanie. Skonči jednou otázkou, ktorá posunie zákazníka k výberu riešenia.";
@@ -281,6 +337,9 @@ Práca so zdrojmi:
 
 Konverzačné riadenie:
 ${conversationGuide}
+
+Aktuálna pamäť rozhovoru:
+${stateForPrompt(conversationState)}
 
 Formát tejto odpovede:
 ${formatInstruction}
@@ -315,5 +374,6 @@ ${knowledge.context}`,
 
   return NextResponse.json({
     message: enforceSingleFollowUpQuestion(message, followUpQuestion),
+    conversationState,
   });
 }

@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint .",
     "scrape:geotherm": "node scripts/scrape-geotherm.mjs",
-    "kb:geotherm:archive": "node scripts/build-geotherm-knowledge-from-archive.mjs"
+    "kb:geotherm:archive": "node scripts/build-geotherm-knowledge-from-archive.mjs",
+    "test:geotherm:v2": "node scripts/test-geotherm-chatbot-v2.mjs"
   },
   "dependencies": {
     "@google/genai": "1.51.0",

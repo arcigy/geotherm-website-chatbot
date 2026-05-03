@@ -10,6 +10,8 @@ type Message = {
   content: string;
 };
 
+type ConversationState = Record<string, unknown>;
+
 type ChatMode = "panel" | "perplexity" | "codex";
 
 const modeLabels: Record<ChatMode, string> = {
@@ -26,6 +28,7 @@ export function GeothermChatbot() {
   const [mode, setMode] = useState<ChatMode>("codex");
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
+  const [conversationState, setConversationState] = useState<ConversationState | null>(null);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
@@ -349,10 +352,18 @@ export function GeothermChatbot() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           messages: nextMessages.map(({ role, content }) => ({ role, content })),
+          conversationState,
         }),
       });
 
-      const data = (await response.json()) as { message?: string; error?: string };
+      const data = (await response.json()) as {
+        message?: string;
+        error?: string;
+        conversationState?: ConversationState;
+      };
+      if (data.conversationState) {
+        setConversationState(data.conversationState);
+      }
       const assistantContent = response.ok
         ? data.message ?? "Nemám pripravenú odpoveď."
         : `Nepodarilo sa spojiť s AI modelom. ${data.error ?? ""}`;
