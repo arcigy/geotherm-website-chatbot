@@ -329,49 +329,56 @@ function describeImage(image: KnowledgeImage, page?: KnowledgePage): Pick<Retrie
     };
   }
 
-  if (haystack.includes("rekuper") || haystack.includes("zehnder") || haystack.includes("recovair")) {
+  if (imageText.includes("tepelne") || imageText.includes("cerpadlo")) {
+    return {
+      description: "tepelné čerpadlo alebo riešenie pre vykurovanie domu",
+      useWhen: "použi pri otázkach na tepelné čerpadlá, vykurovanie, teplú vodu alebo typy riešení",
+    };
+  }
+
+  if (imageText.includes("rekuper") || imageText.includes("zehnder") || imageText.includes("recovair")) {
     return {
       description: "rekuperačná jednotka, vetranie alebo filter pre riadené vetranie",
       useWhen: "použi pri otázkach na rekuperáciu, vetranie, Zehnder, recoVAIR alebo filtre",
     };
   }
 
-  if (haystack.includes("podlah")) {
+  if (imageText.includes("podlah")) {
     return {
       description: "podlahové kúrenie alebo rozvody nízkoteplotného vykurovania",
       useWhen: "použi pri otázkach na podlahové vykurovanie, komfort a nízkoteplotné systémy",
     };
   }
 
-  if (haystack.includes("strop") || haystack.includes("stenov") || haystack.includes("chladen")) {
+  if (imageText.includes("strop") || imageText.includes("stenov") || imageText.includes("chladen")) {
     return {
       description: "stropné alebo stenové vykurovanie/chladenie",
       useWhen: "použi pri otázkach na chladenie, stenové vykurovanie alebo kombináciu vykurovania a chladenia",
     };
   }
 
-  if (haystack.includes("dotac") || haystack.includes("oze") || haystack.includes("zelena")) {
+  if (imageText.includes("dotac") || imageText.includes("oze") || imageText.includes("zelena")) {
     return {
       description: "vizuál k dotáciám OZE alebo programu Zelená domácnostiam",
       useWhen: "použi pri otázkach na dotácie, poukážky a zníženie investičných nákladov",
     };
   }
 
-  if (haystack.includes("solar") || haystack.includes("solarn") || haystack.includes("fotovolt")) {
+  if (imageText.includes("solar") || imageText.includes("solarn") || imageText.includes("fotovolt")) {
     return {
       description: "solárne panely, fotovoltika alebo solárna technológia",
       useWhen: "použi pri otázkach na fotovoltiku, solárne panely a výrobu energie zo slnka",
     };
   }
 
-  if (haystack.includes("kvapalin") || haystack.includes("filter") || haystack.includes("e-shop")) {
+  if (imageText.includes("kvapalin") || imageText.includes("filter") || imageText.includes("e-shop")) {
     return {
       description: "produkt z e-shopu, napríklad teplonosná kvapalina alebo filter",
       useWhen: "použi pri otázkach na e-shop, filtre, kvapaliny a servisné produkty",
     };
   }
 
-  if (haystack.includes("servis") || haystack.includes("instal") || haystack.includes("montaz")) {
+  if (imageText.includes("servis") || imageText.includes("instal") || imageText.includes("montaz")) {
     return {
       description: "servis, montáž alebo inštalačná situácia technológie",
       useWhen: "použi pri otázkach na montáž, servis alebo realizáciu riešenia",

@@ -21,10 +21,13 @@ function ensureMarkdownHeading(value: string) {
   return `### GEOTHERM odpoveď\n\n${value}`;
 }
 
-function ensureFollowUp(value: string) {
-  const finalBlock = value.trim().split(/\n{2,}/).at(-1) ?? "";
-  if (finalBlock.includes("?")) return value;
-  return `${value.trim()}\n\n**Čo chcete preveriť ďalej:** ide o novostavbu alebo rekonštrukciu a aká je približná plocha domu?`;
+function enforceSingleFollowUpQuestion(value: string, followUpQuestion: string) {
+  const questionCount = (value.match(/\?/g) || []).length;
+
+  if (questionCount === 1) return value.trim();
+
+  const withoutQuestions = value.replace(/\?/g, ".").trim();
+  return `${withoutQuestions}\n\n${followUpQuestion}`;
 }
 
 function imageMarkdown(images: Array<{ url: string; alt: string; description?: string }>) {
@@ -52,6 +55,7 @@ function insertImagesBeforeFinalQuestion(value: string, markdown: string) {
 function appendImageIfUseful(value: string, images: Array<{ url: string; alt: string; description?: string }>, maxImages: number) {
   const sanitized = value
     .replace(/!\[[^\]]*]\(([^)]+)\)/g, "")
+    .replace(/^\s*\*?Obr[áa]z(?:ok|ky):.*$/gim, "")
     .replace(
     /^\s*https?:\/\/\S+\.(?:jpe?g|png|webp)(?:\?\S*)?\s*$/gim,
     "",
@@ -67,6 +71,18 @@ function imageLimitFor(query: string) {
   )
     ? 2
     : 1;
+}
+
+function isRelevantImageForQuery(image: { alt: string; description?: string; useWhen?: string }, query: string) {
+  const imageText = normalizeText(`${image.alt} ${image.description ?? ""} ${image.useWhen ?? ""}`);
+  const queryText = normalizeText(query);
+
+  if (imageText.includes("rekuper") && !/(rekuper|vetran|vzduch|filter)/.test(queryText)) return false;
+  if (imageText.includes("dotac") && !/(dotac|oze|poukaz|zelena)/.test(queryText)) return false;
+  if (imageText.includes("podlah") && !/(podlah|kuren|vykurov|komfort)/.test(queryText)) return false;
+  if (imageText.includes("strop") && !/(strop|chladen|klimatiz|stenov)/.test(queryText)) return false;
+
+  return true;
 }
 
 function fallbackResponse(topic: string, wantsComparison: boolean) {
@@ -97,6 +113,65 @@ function normalizeText(value: string) {
     .normalize("NFD")
     .replace(/\p{Diacritic}/gu, "")
     .replace(/[^a-z0-9\s]/g, " ");
+}
+
+function hasSituation(value: string) {
+  return /\b(novostav|novy dom|staviam|staviame|rekonstruk|rekonstru|stary dom|stars[iy] dom)\b/.test(value);
+}
+
+function hasSize(value: string) {
+  return /\b\d{2,4}\s*(m2|m 2|m²|metrov|metrovy|metrovym|m)\b/.test(value);
+}
+
+function hasCurrentSystem(value: string) {
+  return /\b(plyn|plynom|kotol|radiator|radiatory|elektr|krb|tuh[eé]|drevo|uhlie|od nuly|nuly|nemame|nemam|podlahov)\b/.test(value);
+}
+
+function hasPriority(value: string) {
+  return /\b(lacn|najlacn|usetrit|uspor|vstupn|dlhodob|prevadzk|naklad|navratnost|komfort|ticho)\b/.test(value);
+}
+
+function conversationGuideInstruction(messages: ChatMessage[]) {
+  const userText = normalizeText(
+    messages
+      .filter((message) => message.role === "user")
+      .map((message) => message.content)
+      .join(" "),
+  );
+
+  if (!hasSituation(userText)) {
+    return 'Na konci polož presne jednu otázku: "Staviate nový dom alebo rekonštruujete?"';
+  }
+
+  if (!hasSize(userText)) {
+    return 'Na konci polož presne jednu otázku: "Aká je približne veľkosť domu v m²?"';
+  }
+
+  if (!hasCurrentSystem(userText)) {
+    return 'Na konci polož presne jednu otázku: "Máte už nejaké kúrenie alebo riešite systém od nuly?"';
+  }
+
+  if (!hasPriority(userText)) {
+    return 'Na konci polož presne jednu otázku: "Chcete skôr ušetriť na začiatku alebo mať čo najnižšie náklady dlhodobo?"';
+  }
+
+  return "Používateľ už dal základné údaje. Odporuč stručný ďalší krok a na konci polož presne jednu konkrétnu otázku, ktorá pomôže pripraviť odborný návrh.";
+}
+
+function fallbackFollowUpQuestion(messages: ChatMessage[]) {
+  const userText = normalizeText(
+    messages
+      .filter((message) => message.role === "user")
+      .map((message) => message.content)
+      .join(" "),
+  );
+
+  if (!hasSituation(userText)) return "Staviate nový dom alebo rekonštruujete?";
+  if (!hasSize(userText)) return "Aká je približne veľkosť domu v m²?";
+  if (!hasCurrentSystem(userText)) return "Máte už nejaké kúrenie alebo riešite systém od nuly?";
+  if (!hasPriority(userText)) return "Chcete skôr ušetriť na začiatku alebo mať čo najnižšie náklady dlhodobo?";
+
+  return "Chcete, aby som vám z toho pripravil stručné odporúčanie ďalšieho kroku?";
 }
 
 function isImageMetaQuestion(value: string) {
@@ -165,7 +240,8 @@ export async function POST(request: Request) {
     .join("\n");
   const knowledge = getRelevantGeothermKnowledge(queryContext);
   const maxImages = imageLimitFor(queryContext);
-  const allowedImages = knowledge.images
+  const relevantImages = knowledge.images.filter((image) => isRelevantImageForQuery(image, queryContext));
+  const allowedImages = relevantImages
     .map(
       (image, index) =>
         `${index + 1}. ${image.alt}: ${image.url}\n   Čo je na obrázku: ${image.description}\n   Použi keď: ${image.useWhen}`,
@@ -174,9 +250,11 @@ export async function POST(request: Request) {
   const wantsComparison = /porovnaj|porovnanie|rozdiel|\bvs\.?\b|výhody|vyhody|značky|znacky|možnosti|moznosti/i.test(
     queryContext,
   );
+  const conversationGuide = conversationGuideInstruction(messages);
+  const followUpQuestion = fallbackFollowUpQuestion(messages);
   const formatInstruction = wantsComparison
-    ? "Použi presne tento kompaktný formát: ### Krátky nadpis\n1 veta úvodu.\n| Položka | Kedy dáva zmysel | Hlavný prínos |\n|---|---|---|\n| Názov | krátky text | krátky text |\nPotom 1 krátku otázku na pokračovanie. Celkovo max 170 slov. Nikdy nezarovnávaj tabuľku medzerami. Nepouži vnorené odrážky."
-    : "Použi krátky nadpis, 1 až 2 stručné sekcie a najviac jeden krátky zoznam. Celkovo max 130 slov. Nepoužívaj tabuľku, ak používateľ výslovne nežiada porovnanie. Skonči jednou otázkou, ktorá posunie zákazníka k výberu riešenia.";
+    ? "Použi presne tento kompaktný formát: ### Krátky nadpis\n1 veta úvodu.\n| Položka | Kedy dáva zmysel | Hlavný prínos |\n|---|---|---|\n| Názov | krátky text | krátky text |\nPotom 1 krátku otázku na pokračovanie. Celkovo max 100 slov. Nikdy nezarovnávaj tabuľku medzerami. Nepouži vnorené odrážky."
+    : "Použi krátky nadpis, 1 stručnú sekciu a najviac jeden krátky zoznam. Celkovo max 75 slov. Nepoužívaj tabuľku, ak používateľ výslovne nežiada porovnanie. Skonči jednou otázkou, ktorá posunie zákazníka k výberu riešenia.";
 
   let generatedText: string;
 
@@ -199,7 +277,10 @@ Práca so zdrojmi:
 - Nevkladaj Markdown obrázky sám. Systém ich pridá automaticky z povoleného zoznamu.
 - Ak v texte spomenieš obrázok, pomenuj vecne čo zobrazuje podľa popisu v povolenom zozname.
 - Obrázky môžeš opisovať iba podľa poľa "Čo je na obrázku". Nevymýšľaj, čo je na nich.
-- Odpoveď drž stručnú. Na konci vždy polož jednu prirodzenú otázku, aby zákazník pokračoval v rozhovore.
+- Odpoveď drž stručnú. Na konci vždy polož presne jednu prirodzenú otázku, aby zákazník pokračoval v rozhovore.
+
+Konverzačné riadenie:
+${conversationGuide}
 
 Formát tejto odpovede:
 ${formatInstruction}
@@ -210,7 +291,7 @@ ${allowedImages || "Pre túto otázku nebol nájdený vhodný obrázok."}
 Vybrané podklady:
 ${knowledge.context}`,
         temperature: 0.35,
-        maxOutputTokens: 560,
+        maxOutputTokens: 340,
         thinkingConfig: {
           thinkingBudget: 0,
         },
@@ -222,17 +303,17 @@ ${knowledge.context}`,
     generatedText = fallbackResponse(knowledge.sources[0]?.title ?? "", wantsComparison);
   }
 
-  return NextResponse.json({
-    message: ensureFollowUp(
-      appendImageIfUseful(
-        ensureMarkdownHeading(
-          cleanMarkdownResponse(
-            generatedText,
-          ),
-        ),
-        knowledge.images,
-        maxImages,
+  const message = appendImageIfUseful(
+    ensureMarkdownHeading(
+      cleanMarkdownResponse(
+        generatedText,
       ),
     ),
+        relevantImages,
+    maxImages,
+  );
+
+  return NextResponse.json({
+    message: enforceSingleFollowUpQuestion(message, followUpQuestion),
   });
 }
