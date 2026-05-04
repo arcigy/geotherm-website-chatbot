@@ -47,6 +47,12 @@ export type RetrievedKnowledge = {
   sources: Array<Pick<KnowledgePage, "url" | "title">>;
 };
 
+export type KnowledgeInspectionImage = RetrievedImage & {
+  sourceTitle: string;
+  sourceUrl: string;
+  tags: string[];
+};
+
 const pages = knowledge.pages as KnowledgePage[];
 
 const genericImagePattern =
@@ -439,6 +445,27 @@ export function getGeothermImagesByUrl(urls: string[]): RetrievedImage[] {
     seen.add(image.url);
     return true;
   });
+}
+
+export function getAllGeothermKnowledgeImages(): KnowledgeInspectionImage[] {
+  const seen = new Set<string>();
+
+  return pages
+    .flatMap((page) =>
+      page.images.map((image) => ({
+        ...image,
+        ...describeImage(image, page),
+        sourceTitle: page.title,
+        sourceUrl: page.url,
+        tags: page.tags,
+      })),
+    )
+    .filter((image) => {
+      if (seen.has(image.url)) return false;
+      seen.add(image.url);
+      return true;
+    })
+    .sort((a, b) => `${a.sourceTitle} ${a.alt}`.localeCompare(`${b.sourceTitle} ${b.alt}`));
 }
 
 function compactChunk(value: string) {
