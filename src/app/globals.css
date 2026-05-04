@@ -1101,9 +1101,11 @@ button.perplexity-context:not(:disabled):hover {
 .codex-mini-bubble span {
   display: block;
   color: rgba(255, 255, 255, 0.92);
-  font-size: 20px;
-  font-weight: 800;
+  font-family: var(--font-geist-sans), "Inter", system-ui, sans-serif;
+  font-size: 27px;
+  font-weight: 300;
   line-height: 1;
+  transform: scaleX(0.82) scaleY(1.18);
   text-shadow: 0 1px 8px rgba(0, 0, 0, 0.22);
 }
 
