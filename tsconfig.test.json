@@ -17,6 +17,7 @@
     "src/lib/geothermAnswerPlanner.ts",
     "src/lib/geothermConversation.ts",
     "src/lib/geothermEntityCatalog.ts",
+    "src/lib/geothermMessageSanitizer.ts",
     "src/lib/geothermTypes.ts",
     "src/data/geotherm-entities/*.json"
   ]

@@ -9,6 +9,7 @@ type Message = {
   role: "user" | "assistant";
   content: string;
   actions?: PageAction[];
+  images?: ChatImage[];
 };
 
 type ConversationState = Record<string, unknown>;
@@ -25,6 +26,13 @@ type PageAction = {
   topic?: string;
 };
 
+type ChatImage = {
+  id: string;
+  url: string;
+  alt: string;
+  description: string;
+};
+
 type ChatMode = "panel" | "perplexity" | "codex";
 
 const modeLabels: Record<ChatMode, string> = {
@@ -34,7 +42,13 @@ const modeLabels: Record<ChatMode, string> = {
 };
 
 function MarkdownMessage({ content }: { content: string }) {
-  return <ReactMarkdown remarkPlugins={[remarkGfm]}>{content}</ReactMarkdown>;
+  const withoutImages = content
+    .replace(/!\[[^\]]*]\([^)]+\)/g, "")
+    .replace(/^\s*\*?Obr[áa]z(?:ok|ky):.*$/gim, "")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+
+  return <ReactMarkdown remarkPlugins={[remarkGfm]}>{withoutImages}</ReactMarkdown>;
 }
 
 function highlightElement(element: HTMLElement) {
@@ -51,6 +65,22 @@ function MessageActions({ actions, onAction }: { actions?: PageAction[]; onActio
         <button type="button" key={action.id} onClick={() => onAction(action)}>
           {action.label}
         </button>
+      ))}
+    </div>
+  );
+}
+
+function MessageImages({ images }: { images?: ChatImage[] }) {
+  if (!images?.length) return null;
+
+  return (
+    <div className={`chat-api-images ${images.length > 1 ? "two-up" : ""}`}>
+      {images.map((image) => (
+        <figure key={image.id}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={image.url} alt={image.alt || image.description} loading="lazy" decoding="async" />
+          <figcaption>{image.description || image.alt}</figcaption>
+        </figure>
       ))}
     </div>
   );
@@ -175,11 +205,11 @@ export function GeothermChatbot() {
     }
   }
 
-  function animateAssistantMessage(content: string, actions?: PageAction[]) {
+  function animateAssistantMessage(content: string, actions?: PageAction[], images?: ChatImage[]) {
     const id = crypto.randomUUID();
     let index = 0;
 
-    setMessages((current) => [...current, { id, role: "assistant", content: "", actions }]);
+    setMessages((current) => [...current, { id, role: "assistant", content: "", actions, images }]);
 
     return new Promise<void>((resolve) => {
       typingTimerRef.current = window.setInterval(() => {
@@ -187,7 +217,7 @@ export function GeothermChatbot() {
         const nextContent = content.slice(0, index);
 
         setMessages((current) =>
-          current.map((message) => (message.id === id ? { ...message, content: nextContent, actions } : message)),
+          current.map((message) => (message.id === id ? { ...message, content: nextContent, actions, images } : message)),
         );
 
         if (index >= content.length) {
@@ -421,6 +451,7 @@ export function GeothermChatbot() {
         error?: string;
         conversationState?: ConversationState;
         actions?: PageAction[];
+        images?: ChatImage[];
       };
       if (data.conversationState) {
         setConversationState(data.conversationState);
@@ -430,7 +461,7 @@ export function GeothermChatbot() {
         : `Nepodarilo sa spojiť s AI modelom. ${data.error ?? ""}`;
 
       setIsLoading(false);
-      await animateAssistantMessage(assistantContent, data.actions);
+      await animateAssistantMessage(assistantContent, data.actions, data.images);
     } catch {
       setIsLoading(false);
       await animateAssistantMessage("Spojenie sa prerušilo. Skúste to ešte raz.");
@@ -648,6 +679,7 @@ export function GeothermChatbot() {
                   {message.role === "assistant" ? (
                     <>
                       <MarkdownMessage content={message.content} />
+                      <MessageImages images={message.images} />
                       <MessageActions actions={message.actions} onAction={handleAction} />
                     </>
                   ) : (
@@ -744,6 +776,7 @@ export function GeothermChatbot() {
                 {!perplexityCollapsed ? (
                   <div className="message assistant">
                     <MarkdownMessage content={lastAssistantMessage.content} />
+                    <MessageImages images={lastAssistantMessage.images} />
                     <MessageActions actions={lastAssistantMessage.actions} onAction={handleAction} />
                   </div>
                 ) : null}
@@ -819,6 +852,7 @@ export function GeothermChatbot() {
                 {message.role === "assistant" ? (
                   <>
                     <MarkdownMessage content={message.content} />
+                    <MessageImages images={message.images} />
                     <MessageActions actions={message.actions} onAction={handleAction} />
                   </>
                 ) : (

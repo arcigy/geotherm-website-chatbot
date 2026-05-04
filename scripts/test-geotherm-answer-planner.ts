@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { buildGeothermAnswerPlanWithDebug } from "../src/lib/geothermAnswerPlanner";
 import { createConversationState, type ConversationState } from "../src/lib/geothermConversation";
+import { stripMarkdownImagesFromMessage } from "../src/lib/geothermMessageSanitizer";
 import type { RetrievedKnowledgeChunk } from "../src/lib/geothermTypes";
 
 type TestCase = {
@@ -74,9 +75,13 @@ const tests: TestCase[] = [
     name: "Recuperation photo returns only approved max one image",
     run: () => {
       const result = plan("pošli mi fotku rekuperácie");
+      assert.equal(result.plan.intent, "image_meta_question");
+      assert.equal(result.plan.topic, "rekuperacia");
+      assert.equal(result.plan.selectedImages.length, 1);
       assert.ok(result.plan.selectedImages.length <= 1);
       assert.ok(result.plan.selectedImages.every((image) => image.quality === "approved"));
       assert.ok(result.plan.selectedImages.every((image) => image.topics.includes("rekuperacia")));
+      assert.ok(result.plan.selectedActions.some((action) => action.entityId === "service-rekuperacia"));
     },
   },
   {
@@ -102,6 +107,16 @@ const tests: TestCase[] = [
       assert.equal(result.plan.matchedEntityIds[0], "vaillant-arotherm-plus");
       assert.ok(result.debug.rejectedImages.some((image) => image.id === "img-vaillant-arotherm-generic"));
       assert.ok(result.plan.selectedImages.every((image) => image.quality === "approved"));
+    },
+  },
+  {
+    name: "Exact product with needs review image does not fallback to another product image",
+    run: () => {
+      const result = plan("čo je Vaillant aroTHERM Plus?");
+      assert.equal(result.plan.matchedEntityIds[0], "vaillant-arotherm-plus");
+      assert.deepEqual(result.plan.selectedImages, []);
+      assert.ok(result.debug.rejectedImages.some((image) => image.id === "img-vaillant-arotherm-generic"));
+      assert.ok(!result.debug.selectedImages.some((image) => image.id.includes("nibe")));
     },
   },
   {
@@ -142,6 +157,22 @@ const tests: TestCase[] = [
     },
   },
   {
+    name: "Recuperation service question returns at most two actions",
+    run: () => {
+      const result = plan("čo je rekuperácia?");
+      assert.equal(result.plan.intent, "service_question");
+      assert.ok(result.plan.selectedActions.length <= 2);
+    },
+  },
+  {
+    name: "Price question does not return NIBE product actions",
+    run: () => {
+      const result = plan("koľko stojí tepelné čerpadlo pre dom 150m2?");
+      assert.equal(result.plan.intent, "price_question");
+      assert.ok(!result.plan.selectedActions.some((action) => action.entityId?.includes("nibe")));
+    },
+  },
+  {
     name: "Unknown intent does not return random actions",
     run: () => {
       const result = plan("ahoj, len testujem");
@@ -159,6 +190,19 @@ const tests: TestCase[] = [
       assert.ok(result.debug.selectedChunks.length > 0);
       assert.ok(!JSON.stringify(result.debug).includes("peter@test.sk"));
       assert.ok(!JSON.stringify(result.debug).includes("0903 123 456"));
+    },
+  },
+  {
+    name: "Markdown image sanitizer removes random image syntax",
+    run: () => {
+      const cleaned = stripMarkdownImagesFromMessage(
+        "### Test\n\nText pred.\n\n![random](https://example.com/random.jpg)\n\n*Obrázok: random.*\n\nhttps://example.com/other.png\n\nOtázka?",
+      );
+
+      assert.ok(!cleaned.includes("!["));
+      assert.ok(!cleaned.includes("https://example.com/random.jpg"));
+      assert.ok(!cleaned.includes("https://example.com/other.png"));
+      assert.ok(cleaned.includes("Text pred."));
     },
   },
 ];

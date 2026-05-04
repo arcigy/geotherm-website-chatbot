@@ -15,6 +15,7 @@ import {
 } from "@/lib/geothermAnswerPlanner";
 import { geothermImageCatalog } from "@/lib/geothermEntityCatalog";
 import { getRelevantGeothermKnowledge } from "@/lib/geothermKnowledge";
+import { stripMarkdownImagesFromMessage } from "@/lib/geothermMessageSanitizer";
 import { geothermSystemPrompt } from "@/lib/geothermPrompt";
 import type { ChatAnswerPlan, GeothermChatResponse, ImageAsset } from "@/lib/geothermTypes";
 
@@ -38,48 +39,6 @@ function enforceSingleFollowUpQuestion(value: string, followUpQuestion: string) 
 
   const withoutQuestions = value.replace(/\?/g, ".").trim();
   return `${withoutQuestions}\n\n${followUpQuestion}`;
-}
-
-function imageMarkdown(images: Array<{ url: string; alt: string; description?: string }>) {
-  const markdownImages = images
-    .map((image) => `![${image.description || image.alt}](${image.url})`)
-    .join("\n");
-  const captions = images
-    .map((image, index) => `${images.length > 1 ? `${index + 1}. ` : ""}${image.description || image.alt}`)
-    .join("; ");
-
-  return `${markdownImages}\n\n*${images.length > 1 ? "Obrázky" : "Obrázok"}: ${captions}.*`;
-}
-
-function planImageMarkdown(images: ImageAsset[]) {
-  return imageMarkdown(
-    images.map((image) => ({
-      url: image.url,
-      alt: image.alt,
-      description: image.verifiedDescription,
-    })),
-  );
-}
-
-function insertImagesBeforeFinalQuestion(value: string, markdown: string) {
-  const parts = value.trim().split(/\n{2,}/);
-  const finalPart = parts.at(-1) ?? "";
-
-  if (parts.length > 1 && finalPart.includes("?") && finalPart.length < 260) {
-    return `${parts.slice(0, -1).join("\n\n")}\n\n${markdown}\n\n${finalPart}`;
-  }
-
-  return `${value.trim()}\n\n${markdown}`;
-}
-
-function appendPlanImagesIfUseful(value: string, images: ImageAsset[]) {
-  const sanitized = value
-    .replace(/!\[[^\]]*]\(([^)]+)\)/g, "")
-    .replace(/^\s*\*?Obr[áa]z(?:ok|ky):.*$/gim, "")
-    .replace(/^\s*https?:\/\/\S+\.(?:jpe?g|png|webp)(?:\?\S*)?\s*$/gim, "");
-
-  if (!images.length) return sanitized.trim();
-  return insertImagesBeforeFinalQuestion(sanitized, planImageMarkdown(images));
 }
 
 function responseImages(images: ImageAsset[]) {
@@ -121,6 +80,13 @@ function deterministicAnswerFromPlan(plan: ChatAnswerPlan) {
 
   if (plan.intent === "price_question") {
     return `### Cena závisí od návrhu\n\nPresnú cenu nemám v podkladoch bezpečne určenú. Pri dome rozhoduje hlavne plocha, aktuálne kúrenie, typ systému a rozsah montáže.\n\n${plan.followupQuestion}`;
+  }
+
+  if (plan.intent === "image_meta_question" && plan.selectedImages.length) {
+    const image = plan.selectedImages[0];
+    const actionText = plan.selectedActions.length ? "\n\nViac detailov si môžete pozrieť v sekcii nižšie." : "";
+
+    return `### Obrázok k téme\n\nVybral som schválený obrázok z katalógu GEOTHERM: ${image.verifiedDescription}${actionText}\n\n${plan.followupQuestion}`;
   }
 
   if (plan.intent === "product_question" && entity && plan.confidence >= 0.82) {
@@ -262,7 +228,7 @@ function answerImageMetaQuestion(messages: ChatMessage[]) {
     })
     .join("\n");
 
-  return `### Čo zobrazujú poslané obrázky\n\n| Obrázok | Čo je na ňom | Prečo sa hodí |\n|---|---|---|\n${rows}\n\n${planImageMarkdown(images)}\n\nChcete, aby som pri ďalších odpovediach zobrazoval pod obrázkami vždy aj takýto krátky popis?`;
+  return `### Čo zobrazujú poslané obrázky\n\n| Obrázok | Čo je na ňom | Prečo sa hodí |\n|---|---|---|\n${rows}\n\nChcete, aby som pri ďalších odpovediach zobrazoval pod obrázkami vždy aj takýto krátky popis?`;
 }
 
 function deterministicResponse(latestUserMessage: ChatMessage, state: ConversationState) {
@@ -397,7 +363,7 @@ Actions available: ${plan.selectedActions.length ? plan.selectedActions.map((act
 
   if (plan.intent === "product_question" && plan.matchedEntityIds.length > 0 && plan.confidence >= 0.82) {
     generatedText = deterministicAnswerFromPlan(plan);
-  } else if (plan.fallbackUsed || plan.intent === "price_question") {
+  } else if (plan.fallbackUsed || plan.intent === "price_question" || plan.intent === "image_meta_question") {
     generatedText = deterministicAnswerFromPlan(plan);
   } else {
     if (!apiKey) {
@@ -472,13 +438,12 @@ ${knowledge.context}`,
     generatedText = exactSourceFallback(knowledge.context, knowledge.sources[0]?.title ?? "");
   }
 
-  const message = appendPlanImagesIfUseful(
+  const message = stripMarkdownImagesFromMessage(
     ensureMarkdownHeading(
       cleanMarkdownResponse(
         generatedText,
       ),
     ),
-    relevantImages,
   );
 
   const payload: GeothermChatResponse & { conversationState: ConversationState } = {

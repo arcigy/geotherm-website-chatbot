@@ -38,13 +38,24 @@ type PlannerResult = {
 
 const topicAliases: Record<string, string[]> = {
   "tepelne-cerpadla": ["tepelne cerpadlo", "tepelne cerpadla", "cerpadlo", "vykurovanie", "vzduch voda"],
-  rekuperacia: ["rekuperacia", "vetranie", "vzduch", "vlhkost", "plesen"],
+  rekuperacia: ["rekuperacia", "rekuperacie", "rekuperaciu", "vetranie", "vzduch", "vlhkost", "plesen"],
   "podlahove-kurenie": ["podlahove kurenie", "podlahovka", "podlahove vykurovanie"],
   "stropne-chladenie": ["stropne chladenie", "chladenie", "railfix", "rehau"],
   fotovoltika: ["fotovoltika", "fotovoltaika", "fve", "solar", "solarne panely"],
   dotacie: ["dotacie", "poukaz", "oze", "zelena domacnostiam"],
   servis: ["servis", "servise", "servisne", "montaz", "udrzba", "instalacia"],
   kontakt: ["kontakt", "zavolat", "email", "telefon"],
+};
+
+const memoryTopicMap: Record<string, string> = {
+  heat_pump: "tepelne-cerpadla",
+  recuperation: "rekuperacia",
+  floor_heating: "podlahove-kurenie",
+  ceiling_cooling: "stropne-chladenie",
+  cooling: "stropne-chladenie",
+  subsidies: "dotacie",
+  service: "servis",
+  photovoltaics: "fotovoltika",
 };
 
 function detectIntent(text: string) {
@@ -99,7 +110,7 @@ function detectTopic(text: string, entities: KnowledgeEntity[], memory: Conversa
     if (aliases.some((alias) => aliasMatches(text, alias))) return topic;
   }
 
-  return memory.lastTopic ?? undefined;
+  return memory.lastTopic ? (memoryTopicMap[memory.lastTopic] ?? memory.lastTopic) : undefined;
 }
 
 function confidenceFor(input: {
@@ -121,7 +132,8 @@ function confidenceFor(input: {
 function imageAllowedFor(image: ImageAsset, input: { intent: string; topic?: string; entityIds: string[] }) {
   if (image.quality !== "approved") return { allowed: false, reason: `quality:${image.quality}` };
   if (input.topic && image.blockedTopics?.includes(input.topic)) return { allowed: false, reason: "blocked_topic" };
-  if (image.allowedIntents?.length && !image.allowedIntents.includes(input.intent)) return { allowed: false, reason: "intent_not_allowed" };
+  const effectiveIntent = input.intent === "image_meta_question" ? "service_question" : input.intent;
+  if (image.allowedIntents?.length && !image.allowedIntents.includes(effectiveIntent)) return { allowed: false, reason: "intent_not_allowed" };
   if (input.entityIds.length && image.products?.some((product) => input.entityIds.includes(product))) return { allowed: true };
   if (input.topic && image.topics.includes(input.topic)) return { allowed: true };
   if (!input.topic && !input.entityIds.length) return { allowed: false, reason: "no_topic_or_entity" };
@@ -131,10 +143,11 @@ function imageAllowedFor(image: ImageAsset, input: { intent: string; topic?: str
 
 function selectImages(input: { intent: string; topic?: string; entities: KnowledgeEntity[] }) {
   const entityIds = input.entities.map((entity) => entity.id);
+  const hasProductEntity = input.entities.some((entity) => entity.type === "product");
   const explicitIds = input.entities.flatMap((entity) => entity.imageIds ?? []);
   const candidates = [
     ...getImagesByIds(explicitIds),
-    ...geothermImageCatalog.filter((image) => input.topic && image.topics.includes(input.topic)),
+    ...(hasProductEntity ? [] : geothermImageCatalog.filter((image) => input.topic && image.topics.includes(input.topic))),
   ].filter((image, index, values) => values.findIndex((candidate) => candidate.id === image.id) === index);
   const rejected: AnswerPlanDebug["rejectedImages"] = [];
   const selected = candidates.filter((image) => {
@@ -159,16 +172,28 @@ function selectImages(input: { intent: string; topic?: string; entities: Knowled
 function selectActions(input: { topic?: string; entities: KnowledgeEntity[]; intent: string }) {
   const explicitActions = getActionsByIds(input.entities.flatMap((entity) => entity.actionIds ?? []));
   const hasProductEntity = input.entities.some((entity) => entity.type === "product");
-  const topicActions = input.topic && !hasProductEntity
-    ? geothermPageActions.filter((action) => action.topic === input.topic || action.entityId === `service-${input.topic}`)
+  if (hasProductEntity && input.intent === "product_question") return explicitActions.slice(0, 1);
+
+  const serviceActions = input.topic
+    ? geothermPageActions.filter((action) => action.entityId === `service-${input.topic}`)
+    : [];
+  const topicActions = input.topic
+    ? geothermPageActions.filter((action) => action.topic === input.topic && !action.entityId?.startsWith("service-"))
     : [];
   const contactActions = ["contact_request", "consultation_request"].includes(input.intent)
     ? geothermPageActions.filter((action) => action.type === "open_contact")
     : [];
+  const priceActions = input.intent === "price_question" ? [...serviceActions, ...contactActions].slice(0, 2) : null;
+  if (priceActions) return priceActions;
 
-  return [...explicitActions, ...topicActions, ...contactActions]
+  const comparisonActions = input.intent === "comparison_question"
+    ? [...serviceActions, ...explicitActions, ...topicActions].slice(0, 2)
+    : null;
+  if (comparisonActions) return comparisonActions;
+
+  return [...explicitActions, ...serviceActions, ...topicActions, ...contactActions]
     .filter((action, index, values) => values.findIndex((candidate) => candidate.id === action.id) === index)
-    .slice(0, 3);
+    .slice(0, input.intent === "service_question" || input.intent === "image_meta_question" ? 2 : 3);
 }
 
 function factsFromEntities(entities: KnowledgeEntity[]) {
