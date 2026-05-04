@@ -1701,6 +1701,26 @@ button.perplexity-context:not(:disabled):hover {
   gap: 14px;
 }
 
+.image-audit-section {
+  display: grid;
+  gap: 16px;
+  margin-bottom: 34px;
+}
+
+.image-audit-section-title p {
+  margin: 0 0 6px;
+  color: #4c6500;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.image-audit-section-title h2 {
+  margin: 0;
+  font-size: clamp(24px, 3vw, 38px);
+}
+
 .image-audit-card {
   display: grid;
   grid-template-columns: minmax(220px, 360px) minmax(0, 1fr);
@@ -1789,6 +1809,33 @@ button.perplexity-context:not(:disabled):hover {
   font-size: 13px;
 }
 
+.image-quality-badge {
+  flex: 0 0 auto;
+  padding: 8px 10px;
+  border-radius: 999px;
+  background: rgba(11, 15, 15, 0.08);
+  color: rgba(11, 15, 15, 0.72);
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.image-quality-approved {
+  border-color: rgba(76, 101, 0, 0.24);
+}
+
+.image-quality-approved .image-quality-badge {
+  background: rgba(183, 255, 0, 0.38);
+  color: #263500;
+}
+
+.image-quality-needs_review {
+  opacity: 0.78;
+}
+
+.image-quality-blocked {
+  opacity: 0.58;
+}
+
 .image-audit-copy dl {
   display: grid;
   gap: 10px;
@@ -1822,6 +1869,34 @@ button.perplexity-context:not(:disabled):hover {
   overflow-wrap: anywhere;
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
   font-size: 12px;
+}
+
+.chat-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.chat-actions button {
+  border: 1px solid rgba(183, 255, 0, 0.38);
+  border-radius: 999px;
+  padding: 8px 11px;
+  background: rgba(183, 255, 0, 0.14);
+  color: inherit;
+  font-size: 12px;
+  font-weight: 850;
+  cursor: pointer;
+}
+
+.chat-actions button:hover {
+  background: rgba(183, 255, 0, 0.24);
+}
+
+.geotherm-action-highlight {
+  outline: 3px solid rgba(183, 255, 0, 0.8);
+  outline-offset: 6px;
+  transition: outline-color 0.25s ease;
 }
 
 @media (max-width: 860px) {

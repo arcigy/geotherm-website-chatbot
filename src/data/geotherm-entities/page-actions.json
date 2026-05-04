@@ -1,0 +1,161 @@
+[
+  {
+    "id": "action-comfoair-q",
+    "label": "Pozrieť viac o Zehnder ComfoAir Q",
+    "type": "scroll_to",
+    "url": "/ako-sa-zbavit-vlhkosti-a-plesni-v-dome-pomocou-vetracej-jednotky-zehnder/#comfoair-q",
+    "selector": "#comfoair-q",
+    "anchorId": "comfoair-q",
+    "entityId": "zehnder-comfoair-q",
+    "topic": "rekuperacia"
+  },
+  {
+    "id": "action-rehau-railfix",
+    "label": "Pozrieť stropné chladenie REHAU RAILFIX",
+    "type": "scroll_to",
+    "url": "/stropne-vykurovanie-a-chladenie/#railfix",
+    "selector": "#railfix",
+    "anchorId": "railfix",
+    "entityId": "rehau-railfix",
+    "topic": "stropne-chladenie"
+  },
+  {
+    "id": "action-nibe-s2125",
+    "label": "Pozrieť NIBE S2125",
+    "type": "scroll_to",
+    "url": "/tepelne-cerpadla/svedske-nibe/vzduch-voda/tepelne-cerpadlo-s2125/#nibe-s2125",
+    "selector": "#nibe-s2125",
+    "anchorId": "nibe-s2125",
+    "entityId": "nibe-s2125",
+    "topic": "tepelne-cerpadla"
+  },
+  {
+    "id": "action-nibe-f2120",
+    "label": "Pozrieť NIBE F2120",
+    "type": "scroll_to",
+    "url": "/jedno-z-najtichsich-tepelnych-cerpadiel-na-trhu-nibe-f2120/#nibe-f2120",
+    "selector": "#nibe-f2120",
+    "anchorId": "nibe-f2120",
+    "entityId": "nibe-f2120",
+    "topic": "tepelne-cerpadla"
+  },
+  {
+    "id": "action-vaillant-arotherm-plus",
+    "label": "Pozrieť tepelné čerpadlá Vaillant",
+    "type": "scroll_to",
+    "url": "/tepelne-cerpadla/vaillant/#arotherm-plus",
+    "selector": "#arotherm-plus",
+    "anchorId": "arotherm-plus",
+    "entityId": "vaillant-arotherm-plus",
+    "topic": "tepelne-cerpadla"
+  },
+  {
+    "id": "action-vaillant-recovair",
+    "label": "Pozrieť Vaillant recoVAIR",
+    "type": "scroll_to",
+    "url": "/rekuperacna-jednotka/vaillant/#recovair",
+    "selector": "#recovair",
+    "anchorId": "recovair",
+    "entityId": "vaillant-recovair",
+    "topic": "rekuperacia"
+  },
+  {
+    "id": "action-ivt-air-x",
+    "label": "Pozrieť IVT Air X",
+    "type": "scroll_to",
+    "url": "/tepelne-cerpadla/ivt-tepelne-cerpadla/tepelne-cerpadlo-ivt-air-x/#ivt-air-x",
+    "selector": "#ivt-air-x",
+    "anchorId": "ivt-air-x",
+    "entityId": "ivt-air-x",
+    "topic": "tepelne-cerpadla"
+  },
+  {
+    "id": "action-stiebel-eltron-wpl",
+    "label": "Pozrieť referenciu Stiebel Eltron WPL",
+    "type": "scroll_to",
+    "url": "/kvalitne-vykurovanie-aj-v-rakusku-zabezpeci-geotherm/#stiebel-eltron-wpl",
+    "selector": "#stiebel-eltron-wpl",
+    "anchorId": "stiebel-eltron-wpl",
+    "entityId": "stiebel-eltron-wpl",
+    "topic": "tepelne-cerpadla"
+  },
+  {
+    "id": "action-service-tepelne-cerpadla",
+    "label": "Pozrieť tepelné čerpadlá",
+    "type": "scroll_to",
+    "url": "/tepelne-cerpadla/#tepelne-cerpadla",
+    "selector": "#tepelne-cerpadla",
+    "anchorId": "tepelne-cerpadla",
+    "entityId": "service-tepelne-cerpadla",
+    "topic": "tepelne-cerpadla"
+  },
+  {
+    "id": "action-service-rekuperacia",
+    "label": "Pozrieť rekuperáciu",
+    "type": "scroll_to",
+    "url": "/rekuperacna-jednotka/#rekuperacia",
+    "selector": "#rekuperacia",
+    "anchorId": "rekuperacia",
+    "entityId": "service-rekuperacia",
+    "topic": "rekuperacia"
+  },
+  {
+    "id": "action-service-podlahove-kurenie",
+    "label": "Pozrieť podlahové kúrenie",
+    "type": "scroll_to",
+    "url": "/podlahove-vykurovanie/#podlahove-kurenie",
+    "selector": "#podlahove-kurenie",
+    "anchorId": "podlahove-kurenie",
+    "entityId": "service-podlahove-kurenie",
+    "topic": "podlahove-kurenie"
+  },
+  {
+    "id": "action-service-stropne-chladenie",
+    "label": "Pozrieť stropné chladenie",
+    "type": "scroll_to",
+    "url": "/stropne-vykurovanie-a-chladenie/#stropne-chladenie",
+    "selector": "#stropne-chladenie",
+    "anchorId": "stropne-chladenie",
+    "entityId": "service-stropne-chladenie",
+    "topic": "stropne-chladenie"
+  },
+  {
+    "id": "action-service-fotovoltika",
+    "label": "Pozrieť fotovoltiku",
+    "type": "scroll_to",
+    "url": "/solarne-systemy/#fotovoltika",
+    "selector": "#fotovoltika",
+    "anchorId": "fotovoltika",
+    "entityId": "service-fotovoltika",
+    "topic": "fotovoltika"
+  },
+  {
+    "id": "action-service-dotacie",
+    "label": "Pozrieť dotácie",
+    "type": "scroll_to",
+    "url": "/dotacie-obnovitelne-zdroje/#dotacie",
+    "selector": "#dotacie",
+    "anchorId": "dotacie",
+    "entityId": "service-dotacie",
+    "topic": "dotacie"
+  },
+  {
+    "id": "action-service-servis",
+    "label": "Pozrieť servis",
+    "type": "scroll_to",
+    "url": "/servis/#servis",
+    "selector": "#servis",
+    "anchorId": "servis",
+    "entityId": "service-servis",
+    "topic": "servis"
+  },
+  {
+    "id": "action-contact",
+    "label": "Kontaktovať GEOTHERM",
+    "type": "open_contact",
+    "url": "/kontakt/#kontakt",
+    "selector": "#kontakt",
+    "anchorId": "kontakt",
+    "topic": "kontakt"
+  }
+]

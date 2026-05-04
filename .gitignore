@@ -1,6 +1,8 @@
 node_modules
 .next
+.tmp-tests
 out
+tsconfig.tsbuildinfo
 .env
 .env.*
 !.env.example

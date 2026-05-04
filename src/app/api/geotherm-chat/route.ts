@@ -9,8 +9,14 @@ import {
   type ChatMessage,
   type ConversationState,
 } from "@/lib/geothermConversation";
-import { getGeothermImagesByUrl, getRelevantGeothermKnowledge } from "@/lib/geothermKnowledge";
+import {
+  buildGeothermAnswerPlanWithDebug,
+  getMatchedEntityDetails,
+} from "@/lib/geothermAnswerPlanner";
+import { geothermImageCatalog } from "@/lib/geothermEntityCatalog";
+import { getRelevantGeothermKnowledge } from "@/lib/geothermKnowledge";
 import { geothermSystemPrompt } from "@/lib/geothermPrompt";
+import type { ChatAnswerPlan, GeothermChatResponse, ImageAsset } from "@/lib/geothermTypes";
 
 function cleanMarkdownResponse(value: string) {
   return value
@@ -45,6 +51,16 @@ function imageMarkdown(images: Array<{ url: string; alt: string; description?: s
   return `${markdownImages}\n\n*${images.length > 1 ? "Obrázky" : "Obrázok"}: ${captions}.*`;
 }
 
+function planImageMarkdown(images: ImageAsset[]) {
+  return imageMarkdown(
+    images.map((image) => ({
+      url: image.url,
+      alt: image.alt,
+      description: image.verifiedDescription,
+    })),
+  );
+}
+
 function insertImagesBeforeFinalQuestion(value: string, markdown: string) {
   const parts = value.trim().split(/\n{2,}/);
   const finalPart = parts.at(-1) ?? "";
@@ -56,80 +72,23 @@ function insertImagesBeforeFinalQuestion(value: string, markdown: string) {
   return `${value.trim()}\n\n${markdown}`;
 }
 
-function appendImageIfUseful(value: string, images: Array<{ url: string; alt: string; description?: string }>, maxImages: number) {
+function appendPlanImagesIfUseful(value: string, images: ImageAsset[]) {
   const sanitized = value
     .replace(/!\[[^\]]*]\(([^)]+)\)/g, "")
     .replace(/^\s*\*?Obr[áa]z(?:ok|ky):.*$/gim, "")
-    .replace(
-    /^\s*https?:\/\/\S+\.(?:jpe?g|png|webp)(?:\?\S*)?\s*$/gim,
-    "",
-    );
+    .replace(/^\s*https?:\/\/\S+\.(?:jpe?g|png|webp)(?:\?\S*)?\s*$/gim, "");
 
   if (!images.length) return sanitized.trim();
-  return insertImagesBeforeFinalQuestion(sanitized, imageMarkdown(images.slice(0, maxImages)));
+  return insertImagesBeforeFinalQuestion(sanitized, planImageMarkdown(images));
 }
 
-function imageLimitFor(query: string) {
-  return /porovnaj|porovnanie|rozdiel|\bvs\.?\b|značky|znacky|typy|druhy|možnosti|moznosti|nibe.*vaillant|vaillant.*nibe/i.test(
-    query,
-  )
-    ? 2
-    : 1;
-}
-
-function isRelevantImageForQuery(image: { alt: string; description?: string; useWhen?: string }, query: string) {
-  const imageText = normalizeText(`${image.alt} ${image.description ?? ""} ${image.useWhen ?? ""}`);
-  const queryText = normalizeText(query);
-  const productTokens = [
-    "arotherm",
-    "recovair",
-    "multimatic",
-    "nibe",
-    "s2125",
-    "f2120",
-    "f2040",
-    "f1155",
-    "f1255",
-    "s1255",
-    "zehnder",
-    "comfoair",
-    "comfotube",
-    "stiebel",
-    "wpl",
-    "ivt",
-    "air x",
-    "daikin",
-    "hoval",
-    "rehau",
-    "railfix",
-  ];
-  const requestedProductTokens = productTokens.filter((token) => queryText.includes(token));
-
-  if (imageText.includes("rekuper") && !/(rekuper|vetran|vzduch|filter)/.test(queryText)) return false;
-  if (imageText.includes("dotac") && !/(dotac|oze|poukaz|zelena)/.test(queryText)) return false;
-  if (imageText.includes("podlah") && !/(podlah|kuren|vykurov|komfort)/.test(queryText)) return false;
-  if (imageText.includes("strop") && !/(strop|chladen|klimatiz|stenov)/.test(queryText)) return false;
-  if (requestedProductTokens.length && !requestedProductTokens.some((token) => imageText.includes(token))) return false;
-
-  return true;
-}
-
-function fallbackImagesForQuery(query: string) {
-  const queryText = normalizeText(query);
-
-  if (/(strop|chladen|railfix|rehau)/.test(queryText) && /(strop|chladen)/.test(queryText)) {
-    return getGeothermImagesByUrl([
-      "https://www.geotherm.sk/wp-content/uploads/2026/03/stropne-chladenie-railfix-rehau-bratislava.jpg",
-    ]);
-  }
-
-  if (/(zehnder|comfoair|rekuper|vetran)/.test(queryText)) {
-    return getGeothermImagesByUrl([
-      "https://www.geotherm.sk/wp-content/uploads/2023/12/Zehnder_comfoair-Q350.jpg",
-    ]);
-  }
-
-  return [];
+function responseImages(images: ImageAsset[]) {
+  return images.map((image) => ({
+    id: image.id,
+    url: image.url,
+    alt: image.alt,
+    description: image.verifiedDescription,
+  }));
 }
 
 function fallbackResponse(topic: string, wantsComparison: boolean) {
@@ -148,6 +107,27 @@ Najlepšie riešenie treba vybrať podľa domu, izolácie a súčasného zdroja 
   return `### ${topic || "GEOTHERM odpoveď"}
 
 Pri tejto téme je najdôležitejšie navrhnúť riešenie podľa konkrétneho domu, nie všeobecne. GEOTHERM preto pri odporúčaní zohľadňuje typ stavby, plochu, súčasný zdroj tepla, očakávaný komfort a možnosti dotácií.`;
+}
+
+function deterministicAnswerFromPlan(plan: ChatAnswerPlan) {
+  const [firstFact, secondFact, thirdFact] = plan.answerFacts;
+  const entity = getMatchedEntityDetails(plan.matchedEntityIds)[0];
+  const title = entity?.name ?? "GEOTHERM odpoveď";
+  const moreDetails = plan.selectedActions.length ? "\n\nViac detailov si môžete pozrieť v sekcii nižšie." : "";
+
+  if (plan.fallbackUsed) {
+    return `### Potrebujem spresnenie\n\nK tejto otázke nemám v lokálnej knowledge base dosť presný podklad. Bez overenia nechcem dopĺňať technické parametre ani cenu.\n\n${plan.followupQuestion}`;
+  }
+
+  if (plan.intent === "price_question") {
+    return `### Cena závisí od návrhu\n\nPresnú cenu nemám v podkladoch bezpečne určenú. Pri dome rozhoduje hlavne plocha, aktuálne kúrenie, typ systému a rozsah montáže.\n\n${plan.followupQuestion}`;
+  }
+
+  if (plan.intent === "product_question" && entity && plan.confidence >= 0.82) {
+    return `### ${title}\n\n${firstFact} ${secondFact ?? ""}\n\n${thirdFact ?? "Konkrétnu vhodnosť treba overiť podľa domu."}${moreDetails}\n\n${plan.followupQuestion}`;
+  }
+
+  return `### ${title}\n\n${firstFact} ${secondFact ?? ""}${moreDetails}\n\n${plan.followupQuestion}`;
 }
 
 function cleanKnowledgeExcerpt(value: string) {
@@ -265,7 +245,10 @@ function answerImageMetaQuestion(messages: ChatMessage[]) {
   const previousImageUrls = messages
     .filter((message) => message.role === "assistant")
     .flatMap((message) => extractMarkdownImageUrls(message.content));
-  const images = getGeothermImagesByUrl(previousImageUrls).slice(0, 4);
+  const wanted = new Set(previousImageUrls);
+  const images = geothermImageCatalog
+    .filter((image) => image.quality === "approved" && wanted.has(image.url))
+    .slice(0, 4);
 
   if (!images.length) {
     return "### Obrázky v odpovedi\n\nV predchádzajúcej odpovedi nevidím žiadny uložený obrázok, ktorý by som vedel spoľahlivo pomenovať.\n\nChcete, aby som k tejto téme vybral vhodný produktový obrázok z databázy GEOTHERM?";
@@ -273,15 +256,13 @@ function answerImageMetaQuestion(messages: ChatMessage[]) {
 
   const rows = images
     .map((image) => {
-      const useWhen = image.useWhen
-        .replace(/^použi pri/i, "hodí sa pri")
-        .replace(/^použi iba vtedy, keď/i, "hodí sa, keď");
+      const useWhen = `hodí sa pri témach: ${image.topics.join(", ")}`;
 
-      return `| ${image.alt || "Obrázok GEOTHERM"} | ${image.description} | ${useWhen} |`;
+      return `| ${image.alt || "Obrázok GEOTHERM"} | ${image.verifiedDescription} | ${useWhen} |`;
     })
     .join("\n");
 
-  return `### Čo zobrazujú poslané obrázky\n\n| Obrázok | Čo je na ňom | Prečo sa hodí |\n|---|---|---|\n${rows}\n\n${imageMarkdown(images)}\n\nChcete, aby som pri ďalších odpovediach zobrazoval pod obrázkami vždy aj takýto krátky popis?`;
+  return `### Čo zobrazujú poslané obrázky\n\n| Obrázok | Čo je na ňom | Prečo sa hodí |\n|---|---|---|\n${rows}\n\n${planImageMarkdown(images)}\n\nChcete, aby som pri ďalších odpovediach zobrazoval pod obrázkami vždy aj takýto krátky popis?`;
 }
 
 function deterministicResponse(latestUserMessage: ChatMessage, state: ConversationState) {
@@ -327,17 +308,11 @@ function deterministicResponse(latestUserMessage: ChatMessage, state: Conversati
 export async function POST(request: Request) {
   const apiKey = process.env.GEMINI_API_KEY;
 
-  if (!apiKey) {
-    return NextResponse.json(
-      { error: "Missing GEMINI_API_KEY environment variable." },
-      { status: 500 },
-    );
-  }
-
   const body = (await request.json()) as {
     messages?: ChatMessage[];
     conversationState?: ConversationState | null;
     testMode?: boolean;
+    debug?: boolean;
   };
   const allMessages = body.messages ?? [];
   const messages = allMessages.slice(-12);
@@ -358,28 +333,47 @@ export async function POST(request: Request) {
   }
 
   if (body.testMode) {
+    const testQueryContext = messages
+      .slice(-4)
+      .map((message) => `${message.role}: ${message.content}`)
+      .join("\n");
+    const testKnowledge = getRelevantGeothermKnowledge(testQueryContext);
+    const { plan, debug } = buildGeothermAnswerPlanWithDebug({
+      userMessage: latestUserMessage.content,
+      memory: conversationState,
+      knowledgeChunks: testKnowledge.chunks,
+      followupQuestion: followUpQuestion,
+    });
+
     return NextResponse.json({
       message: enforceSingleFollowUpQuestion(
         ensureMarkdownHeading(deterministicResponse(latestUserMessage, conversationState)),
         followUpQuestion,
       ),
       conversationState,
+      images: responseImages(plan.selectedImages),
+      actions: plan.selectedActions,
+      followupQuestion: followUpQuestion,
+      debug,
     });
   }
 
-  const ai = new GoogleGenAI({ apiKey });
   const queryContext = messages
     .slice(-4)
     .map((message) => `${message.role}: ${message.content}`)
     .join("\n");
   const knowledge = getRelevantGeothermKnowledge(queryContext);
-  const maxImages = imageLimitFor(queryContext);
-  const retrievedImages = knowledge.images.filter((image) => isRelevantImageForQuery(image, queryContext));
-  const relevantImages = retrievedImages.length ? retrievedImages : fallbackImagesForQuery(queryContext);
+  const { plan, debug } = buildGeothermAnswerPlanWithDebug({
+    userMessage: latestUserMessage.content,
+    memory: conversationState,
+    knowledgeChunks: knowledge.chunks,
+    followupQuestion: followUpQuestion,
+  });
+  const relevantImages = plan.selectedImages;
   const allowedImages = relevantImages
     .map(
       (image, index) =>
-        `${index + 1}. ${image.alt}: ${image.url}\n   Čo je na obrázku: ${image.description}\n   Použi keď: ${image.useWhen}`,
+        `${index + 1}. ${image.id}\n   Alt: ${image.alt}\n   Čo je na obrázku: ${image.verifiedDescription}\n   Použitie: backend tento obrázok pridá automaticky, ak ostane relevantný.`,
     )
     .join("\n");
   const wantsComparison = /porovnaj|porovnanie|rozdiel|\bvs\.?\b|výhody|vyhody|značky|znacky|možnosti|moznosti/i.test(
@@ -390,28 +384,59 @@ export async function POST(request: Request) {
     ? "Použi presne tento kompaktný formát: ### Krátky nadpis\n1 veta úvodu.\n| Položka | Kedy dáva zmysel | Hlavný prínos |\n|---|---|---|\n| Názov | krátky text | krátky text |\nPotom 1 krátku otázku na pokračovanie. Celkovo max 100 slov. Nikdy nezarovnávaj tabuľku medzerami. Nepouži vnorené odrážky."
     : "Použi krátky nadpis, 1 stručnú sekciu a najviac jeden krátky zoznam. Celkovo max 75 slov. Nepoužívaj tabuľku, ak používateľ výslovne nežiada porovnanie. Skonči jednou otázkou, ktorá posunie zákazníka k výberu riešenia.";
 
+  const answerPlanPrompt = `ANSWER PLAN:
+Intent: ${plan.intent}
+Topic: ${plan.topic ?? "unknown"}
+Confidence: ${plan.confidence}
+Fallback used: ${plan.fallbackUsed ? "yes" : "no"}
+Follow-up question: ${plan.followupQuestion}
+Facts, ktoré smieš použiť:
+${plan.answerFacts.map((fact, index) => `${index + 1}. ${fact}`).join("\n")}
+Actions available: ${plan.selectedActions.length ? plan.selectedActions.map((action) => action.label).join(" | ") : "none"}`;
   let generatedText: string;
 
-  try {
-    const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
-      contents: messages.map((message) => ({
-        role: message.role === "assistant" ? "model" : "user",
-        parts: [{ text: message.content }],
-      })),
-      config: {
-        systemInstruction: `${geothermSystemPrompt}
+  if (plan.intent === "product_question" && plan.matchedEntityIds.length > 0 && plan.confidence >= 0.82) {
+    generatedText = deterministicAnswerFromPlan(plan);
+  } else if (plan.fallbackUsed || plan.intent === "price_question") {
+    generatedText = deterministicAnswerFromPlan(plan);
+  } else {
+    if (!apiKey) {
+      return NextResponse.json(
+        { error: "Missing GEMINI_API_KEY environment variable." },
+        { status: 500 },
+      );
+    }
 
-Používaj primárne vybrané podklady zo stránky GEOTHERM. Nepoužívaj všeobecné dohady tam, kde zdroj obsahuje konkrétnu informáciu.
+    const ai = new GoogleGenAI({ apiKey });
+    const finalPromptPreview = `${answerPlanPrompt}
+
+Vybrané podklady:
+${knowledge.context}`.slice(0, 4000);
+    debug.finalPromptPreview = finalPromptPreview;
+
+    try {
+      const response = await ai.models.generateContent({
+        model: "gemini-2.5-flash",
+        contents: messages.map((message) => ({
+          role: message.role === "assistant" ? "model" : "user",
+          parts: [{ text: message.content }],
+        })),
+        config: {
+          systemInstruction: `${geothermSystemPrompt}
+
+Používaj primárne Answer Plan. Nepoužívaj všeobecné dohady tam, kde Answer Plan obsahuje konkrétnu informáciu.
 Ak v podkladoch odpoveď nie je, povedz, že to treba overiť u GEOTHERM.
 
 Práca so zdrojmi:
-- Odpovedaj podľa relevantných pasáží nižšie, nie podľa všeobecnej znalosti.
+- Odpovedaj podľa Answer Planu a relevantných pasáží nižšie, nie podľa všeobecnej znalosti.
+- Nesmieš pridávať technické parametre, značky, ceny ani tvrdenia mimo faktov v Answer Plane.
 - Nespomínaj interné označenia ZDROJ, chunk ani retrieval.
 - Nevkladaj Markdown obrázky sám. Systém ich pridá automaticky z povoleného zoznamu.
+- Nevytváraj tlačidlá ani odkazy v texte. Ak existujú actions, môžeš napísať: "Viac detailov si môžete pozrieť v sekcii nižšie."
 - Ak v texte spomenieš obrázok, pomenuj vecne čo zobrazuje podľa popisu v povolenom zozname.
 - Obrázky môžeš opisovať iba podľa poľa "Čo je na obrázku". Nevymýšľaj, čo je na nich.
 - Odpoveď drž stručnú. Na konci vždy polož presne jednu prirodzenú otázku, aby zákazník pokračoval v rozhovore.
+- Ak confidence v Answer Plane je nízka, priznaj neistotu a polož spresňujúcu otázku.
 
 Konverzačné riadenie:
 ${conversationGuide}
@@ -422,40 +447,48 @@ ${stateForPrompt(conversationState)}
 Formát tejto odpovede:
 ${formatInstruction}
 
-Povolené obrázky:
+POVOLENÉ OBRÁZKY:
 ${allowedImages || "Pre túto otázku nebol nájdený vhodný obrázok."}
+
+${answerPlanPrompt}
 
 Vybrané podklady:
 ${knowledge.context}`,
-        temperature: 0.35,
-        maxOutputTokens: 340,
-        thinkingConfig: {
-          thinkingBudget: 0,
+          temperature: 0.25,
+          maxOutputTokens: 300,
+          thinkingConfig: {
+            thinkingBudget: 0,
+          },
         },
-      },
-    });
+      });
 
-    generatedText = response.text ?? fallbackResponse(knowledge.sources[0]?.title ?? "", wantsComparison);
-  } catch {
-    generatedText = fallbackResponse(knowledge.sources[0]?.title ?? "", wantsComparison);
+      generatedText = response.text ?? deterministicAnswerFromPlan(plan);
+    } catch {
+      generatedText = deterministicAnswerFromPlan(plan);
+    }
   }
 
   if (!wantsComparison && isGenericFallback(generatedText)) {
     generatedText = exactSourceFallback(knowledge.context, knowledge.sources[0]?.title ?? "");
   }
 
-  const message = appendImageIfUseful(
+  const message = appendPlanImagesIfUseful(
     ensureMarkdownHeading(
       cleanMarkdownResponse(
         generatedText,
       ),
     ),
-        relevantImages,
-    maxImages,
+    relevantImages,
   );
 
-  return NextResponse.json({
+  const payload: GeothermChatResponse & { conversationState: ConversationState } = {
     message: enforceSingleFollowUpQuestion(message, followUpQuestion),
     conversationState,
-  });
+    images: responseImages(relevantImages),
+    actions: plan.selectedActions,
+    followupQuestion: followUpQuestion,
+    debug: body.debug || body.testMode ? debug : undefined,
+  };
+
+  return NextResponse.json(payload);
 }

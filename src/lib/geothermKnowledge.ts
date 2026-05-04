@@ -1,4 +1,5 @@
 import knowledge from "@/data/geotherm-knowledge.json";
+import type { RetrievedKnowledgeChunk } from "./geothermTypes";
 
 type KnowledgeImage = {
   url: string;
@@ -45,6 +46,7 @@ export type RetrievedKnowledge = {
   context: string;
   images: RetrievedImage[];
   sources: Array<Pick<KnowledgePage, "url" | "title">>;
+  chunks: RetrievedKnowledgeChunk[];
 };
 
 export type KnowledgeInspectionImage = RetrievedImage & {
@@ -548,6 +550,7 @@ export function getRelevantGeothermKnowledge(query: string): RetrievedKnowledge 
       context: "Knowledge base zo stránky GEOTHERM ešte nebola naplnená.",
       images: [],
       sources: [],
+      chunks: [],
     };
   }
 
@@ -572,13 +575,15 @@ export function getRelevantGeothermKnowledge(query: string): RetrievedKnowledge 
     .filter((page, index, values) => values.findIndex((candidate) => candidate.url === page.url) === index)
     .slice(0, 5)
     .map(({ url, title }) => ({ url, title }));
+  const chunks = selectedMatches.map(({ page, chunk, score }) => ({
+    id: chunk.id,
+    pageUrl: page.url,
+    pageTitle: page.title,
+    score,
+    content: compactChunk(chunk.content),
+  }));
   const context = selectedMatches
     .map(({ page, chunk }, index) => {
-      const imageList = page.images
-        .slice(0, 3)
-        .map((image) => `- ${image.alt}: ${image.url}`)
-        .join("\n");
-
       return [
         `ZDROJ ${index + 1}`,
         `URL: ${page.url}`,
@@ -587,7 +592,6 @@ export function getRelevantGeothermKnowledge(query: string): RetrievedKnowledge 
         page.tags?.length ? `Témy: ${page.tags.join(", ")}` : "",
         page.headings?.length ? `Sekcie: ${page.headings.slice(0, 8).join(" | ")}` : "",
         `Relevantná pasáž: ${compactChunk(chunk.content)}`,
-        imageList ? `Obrázky zo zdroja:\n${imageList}` : "",
       ]
         .filter(Boolean)
         .join("\n");
@@ -595,7 +599,7 @@ export function getRelevantGeothermKnowledge(query: string): RetrievedKnowledge 
     .join("\n\n---\n\n")
     .slice(0, 11000);
 
-  return { context, images, sources };
+  return { context, images, sources, chunks };
 }
 
 export function getRelevantGeothermContext(query: string) {

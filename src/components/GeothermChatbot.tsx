@@ -8,9 +8,22 @@ type Message = {
   id: string;
   role: "user" | "assistant";
   content: string;
+  actions?: PageAction[];
 };
 
 type ConversationState = Record<string, unknown>;
+
+type PageAction = {
+  id: string;
+  label: string;
+  type: "scroll_to" | "open_page" | "open_contact" | "highlight_section";
+  url?: string;
+  selector?: string;
+  anchorId?: string;
+  highlightText?: string;
+  entityId?: string;
+  topic?: string;
+};
 
 type ChatMode = "panel" | "perplexity" | "codex";
 
@@ -22,6 +35,25 @@ const modeLabels: Record<ChatMode, string> = {
 
 function MarkdownMessage({ content }: { content: string }) {
   return <ReactMarkdown remarkPlugins={[remarkGfm]}>{content}</ReactMarkdown>;
+}
+
+function highlightElement(element: HTMLElement) {
+  element.classList.add("geotherm-action-highlight");
+  window.setTimeout(() => element.classList.remove("geotherm-action-highlight"), 1800);
+}
+
+function MessageActions({ actions, onAction }: { actions?: PageAction[]; onAction: (action: PageAction) => void }) {
+  if (!actions?.length) return null;
+
+  return (
+    <div className="chat-actions">
+      {actions.map((action) => (
+        <button type="button" key={action.id} onClick={() => onAction(action)}>
+          {action.label}
+        </button>
+      ))}
+    </div>
+  );
 }
 
 export function GeothermChatbot() {
@@ -119,11 +151,35 @@ export function GeothermChatbot() {
     };
   }, [isRecording]);
 
-  function animateAssistantMessage(content: string) {
+  function handleAction(action: PageAction) {
+    const targetSelector = action.selector || (action.anchorId ? `#${action.anchorId}` : "");
+    const target = targetSelector ? document.querySelector<HTMLElement>(targetSelector) : null;
+
+    if ((action.type === "scroll_to" || action.type === "highlight_section") && target) {
+      target.scrollIntoView({ behavior: "smooth", block: "center" });
+      highlightElement(target);
+      return;
+    }
+
+    if (action.type === "open_contact") {
+      const contactTarget = target || document.querySelector<HTMLElement>("#kontakt, #contact, [data-section='contact']");
+      if (contactTarget) {
+        contactTarget.scrollIntoView({ behavior: "smooth", block: "center" });
+        highlightElement(contactTarget);
+        return;
+      }
+    }
+
+    if (action.url) {
+      window.location.href = action.url;
+    }
+  }
+
+  function animateAssistantMessage(content: string, actions?: PageAction[]) {
     const id = crypto.randomUUID();
     let index = 0;
 
-    setMessages((current) => [...current, { id, role: "assistant", content: "" }]);
+    setMessages((current) => [...current, { id, role: "assistant", content: "", actions }]);
 
     return new Promise<void>((resolve) => {
       typingTimerRef.current = window.setInterval(() => {
@@ -131,7 +187,7 @@ export function GeothermChatbot() {
         const nextContent = content.slice(0, index);
 
         setMessages((current) =>
-          current.map((message) => (message.id === id ? { ...message, content: nextContent } : message)),
+          current.map((message) => (message.id === id ? { ...message, content: nextContent, actions } : message)),
         );
 
         if (index >= content.length) {
@@ -364,6 +420,7 @@ export function GeothermChatbot() {
         message?: string;
         error?: string;
         conversationState?: ConversationState;
+        actions?: PageAction[];
       };
       if (data.conversationState) {
         setConversationState(data.conversationState);
@@ -373,7 +430,7 @@ export function GeothermChatbot() {
         : `Nepodarilo sa spojiť s AI modelom. ${data.error ?? ""}`;
 
       setIsLoading(false);
-      await animateAssistantMessage(assistantContent);
+      await animateAssistantMessage(assistantContent, data.actions);
     } catch {
       setIsLoading(false);
       await animateAssistantMessage("Spojenie sa prerušilo. Skúste to ešte raz.");
@@ -588,7 +645,14 @@ export function GeothermChatbot() {
             <div className="messages compact" ref={scrollRef} onWheel={containWheelScroll}>
               {messages.map((message) => (
                 <article className={`message ${message.role}`} key={message.id}>
-                  {message.role === "assistant" ? <MarkdownMessage content={message.content} /> : <p>{message.content}</p>}
+                  {message.role === "assistant" ? (
+                    <>
+                      <MarkdownMessage content={message.content} />
+                      <MessageActions actions={message.actions} onAction={handleAction} />
+                    </>
+                  ) : (
+                    <p>{message.content}</p>
+                  )}
                 </article>
               ))}
               {isLoading ? (
@@ -680,6 +744,7 @@ export function GeothermChatbot() {
                 {!perplexityCollapsed ? (
                   <div className="message assistant">
                     <MarkdownMessage content={lastAssistantMessage.content} />
+                    <MessageActions actions={lastAssistantMessage.actions} onAction={handleAction} />
                   </div>
                 ) : null}
               </article>
@@ -751,7 +816,14 @@ export function GeothermChatbot() {
           <div className="messages">
             {messages.map((message) => (
               <article className={`message ${message.role}`} key={message.id}>
-                {message.role === "assistant" ? <MarkdownMessage content={message.content} /> : <p>{message.content}</p>}
+                {message.role === "assistant" ? (
+                  <>
+                    <MarkdownMessage content={message.content} />
+                    <MessageActions actions={message.actions} onAction={handleAction} />
+                  </>
+                ) : (
+                  <p>{message.content}</p>
+                )}
               </article>
             ))}
 
