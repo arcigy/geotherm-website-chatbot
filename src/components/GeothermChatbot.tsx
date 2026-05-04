@@ -639,7 +639,16 @@ export function GeothermChatbot() {
               setIsOpen(true);
             }}
           >
-            <span>?</span>
+            <svg aria-hidden="true" viewBox="0 0 32 32" className="codex-robot-icon">
+              <path d="M16 7v3" />
+              <path d="M12.5 7h7" />
+              <rect x="8.5" y="11" width="15" height="13" rx="5" />
+              <path d="M8.5 17H6.2" />
+              <path d="M25.8 17h-2.3" />
+              <path d="M13 18h.1" />
+              <path d="M19 18h.1" />
+              <path d="M13.5 22h5" />
+            </svg>
           </button>
           <div className="codex-composer-content">{inputForm("perplexity")}</div>
         </section>
