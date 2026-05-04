@@ -1028,19 +1028,22 @@ button.perplexity-context:not(:disabled):hover {
 
 .codex-collapse-button {
   position: absolute;
-  top: 50%;
-  right: 4px;
+  top: 0;
+  right: 0;
+  bottom: 0;
   z-index: 3;
   display: grid;
-  width: 14px;
-  height: 42px;
+  width: 30px;
+  height: 100%;
   place-items: center;
   border: 0;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.12);
+  border-radius: 0 999px 999px 0;
+  background:
+    linear-gradient(90deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.12)),
+    rgba(255, 255, 255, 0.08);
   color: rgba(255, 255, 255, 0.72);
   cursor: grab;
-  transform: translateY(-50%);
+  transform: none;
   transition:
     width 180ms ease,
     background 180ms ease,
@@ -1048,16 +1051,28 @@ button.perplexity-context:not(:disabled):hover {
     transform 180ms ease;
 }
 
+.codex-collapse-button::before {
+  content: "";
+  position: absolute;
+  top: 8px;
+  bottom: 8px;
+  left: 0;
+  width: 1px;
+  background: linear-gradient(180deg, transparent, rgba(255, 255, 255, 0.16), transparent);
+}
+
 .codex-collapse-button span {
-  transform: translateX(1px);
-  font-size: 16px;
+  transform: translateX(3px);
+  font-size: 13px;
   font-weight: 900;
   line-height: 1;
 }
 
 .codex-collapse-button:hover {
-  width: 16px;
-  background: rgba(255, 255, 255, 0.18);
+  width: 34px;
+  background:
+    linear-gradient(90deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.18)),
+    rgba(255, 255, 255, 0.1);
   color: #fff;
 }
 
@@ -1121,7 +1136,7 @@ button.perplexity-context:not(:disabled):hover {
 .codex-glass-composer.is-collapsed .codex-collapse-button {
   opacity: 0;
   pointer-events: none;
-  transform: translateY(-50%) scale(0.72);
+  transform: scale(0.72);
 }
 
 .codex-glass-composer.is-collapsed .codex-composer-content {
@@ -1138,7 +1153,7 @@ button.perplexity-context:not(:disabled):hover {
   grid-template-columns: 28px minmax(0, 1fr) 32px 38px;
   min-height: 54px;
   align-items: center;
-  padding: 5px 22px 5px 12px;
+  padding: 5px 34px 5px 12px;
 }
 
 .codex-glass-composer .chat-input.perplexity.is-recording {
