@@ -39,6 +39,7 @@ export type PageAction = {
   highlightText?: string;
   entityId?: string;
   topic?: string;
+  external_unverified?: boolean;
 };
 
 export type ChatAnswerPlan = {

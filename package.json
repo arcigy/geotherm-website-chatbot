@@ -8,10 +8,11 @@
     "start": "next start",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
-    "test": "tsc -p tsconfig.test.json && node .tmp-tests/scripts/test-geotherm-answer-planner.js && node scripts/test-geotherm-chat-api-shape.mjs",
+    "test": "tsc -p tsconfig.test.json && node .tmp-tests/scripts/test-geotherm-answer-planner.js && node scripts/test-geotherm-chat-api-shape.mjs && node scripts/test-geotherm-actions.mjs",
     "scrape:geotherm": "node scripts/scrape-geotherm.mjs",
     "kb:geotherm:archive": "node scripts/build-geotherm-knowledge-from-archive.mjs",
-    "test:geotherm:v2": "node scripts/test-geotherm-chatbot-v2.mjs"
+    "test:geotherm:v2": "node scripts/test-geotherm-chatbot-v2.mjs",
+    "test:geotherm:actions": "node scripts/test-geotherm-actions.mjs"
   },
   "dependencies": {
     "@google/genai": "1.51.0",

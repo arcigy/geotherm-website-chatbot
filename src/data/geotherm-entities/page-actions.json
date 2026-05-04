@@ -7,7 +7,8 @@
     "selector": "#comfoair-q",
     "anchorId": "comfoair-q",
     "entityId": "zehnder-comfoair-q",
-    "topic": "rekuperacia"
+    "topic": "rekuperacia",
+    "external_unverified": true
   },
   {
     "id": "action-rehau-railfix",
@@ -17,7 +18,8 @@
     "selector": "#railfix",
     "anchorId": "railfix",
     "entityId": "rehau-railfix",
-    "topic": "stropne-chladenie"
+    "topic": "stropne-chladenie",
+    "external_unverified": true
   },
   {
     "id": "action-nibe-s2125",
@@ -27,7 +29,8 @@
     "selector": "#nibe-s2125",
     "anchorId": "nibe-s2125",
     "entityId": "nibe-s2125",
-    "topic": "tepelne-cerpadla"
+    "topic": "tepelne-cerpadla",
+    "external_unverified": true
   },
   {
     "id": "action-nibe-f2120",
@@ -37,7 +40,8 @@
     "selector": "#nibe-f2120",
     "anchorId": "nibe-f2120",
     "entityId": "nibe-f2120",
-    "topic": "tepelne-cerpadla"
+    "topic": "tepelne-cerpadla",
+    "external_unverified": true
   },
   {
     "id": "action-vaillant-arotherm-plus",
@@ -47,7 +51,8 @@
     "selector": "#arotherm-plus",
     "anchorId": "arotherm-plus",
     "entityId": "vaillant-arotherm-plus",
-    "topic": "tepelne-cerpadla"
+    "topic": "tepelne-cerpadla",
+    "external_unverified": true
   },
   {
     "id": "action-vaillant-recovair",
@@ -57,7 +62,8 @@
     "selector": "#recovair",
     "anchorId": "recovair",
     "entityId": "vaillant-recovair",
-    "topic": "rekuperacia"
+    "topic": "rekuperacia",
+    "external_unverified": true
   },
   {
     "id": "action-ivt-air-x",
@@ -67,7 +73,8 @@
     "selector": "#ivt-air-x",
     "anchorId": "ivt-air-x",
     "entityId": "ivt-air-x",
-    "topic": "tepelne-cerpadla"
+    "topic": "tepelne-cerpadla",
+    "external_unverified": true
   },
   {
     "id": "action-stiebel-eltron-wpl",
@@ -77,7 +84,8 @@
     "selector": "#stiebel-eltron-wpl",
     "anchorId": "stiebel-eltron-wpl",
     "entityId": "stiebel-eltron-wpl",
-    "topic": "tepelne-cerpadla"
+    "topic": "tepelne-cerpadla",
+    "external_unverified": true
   },
   {
     "id": "action-service-tepelne-cerpadla",
@@ -87,7 +95,8 @@
     "selector": "#tepelne-cerpadla",
     "anchorId": "tepelne-cerpadla",
     "entityId": "service-tepelne-cerpadla",
-    "topic": "tepelne-cerpadla"
+    "topic": "tepelne-cerpadla",
+    "external_unverified": true
   },
   {
     "id": "action-service-rekuperacia",
@@ -97,7 +106,8 @@
     "selector": "#rekuperacia",
     "anchorId": "rekuperacia",
     "entityId": "service-rekuperacia",
-    "topic": "rekuperacia"
+    "topic": "rekuperacia",
+    "external_unverified": true
   },
   {
     "id": "action-service-podlahove-kurenie",
@@ -107,7 +117,8 @@
     "selector": "#podlahove-kurenie",
     "anchorId": "podlahove-kurenie",
     "entityId": "service-podlahove-kurenie",
-    "topic": "podlahove-kurenie"
+    "topic": "podlahove-kurenie",
+    "external_unverified": true
   },
   {
     "id": "action-service-stropne-chladenie",
@@ -117,7 +128,8 @@
     "selector": "#stropne-chladenie",
     "anchorId": "stropne-chladenie",
     "entityId": "service-stropne-chladenie",
-    "topic": "stropne-chladenie"
+    "topic": "stropne-chladenie",
+    "external_unverified": true
   },
   {
     "id": "action-service-fotovoltika",
@@ -127,7 +139,8 @@
     "selector": "#fotovoltika",
     "anchorId": "fotovoltika",
     "entityId": "service-fotovoltika",
-    "topic": "fotovoltika"
+    "topic": "fotovoltika",
+    "external_unverified": true
   },
   {
     "id": "action-service-dotacie",
@@ -137,7 +150,8 @@
     "selector": "#dotacie",
     "anchorId": "dotacie",
     "entityId": "service-dotacie",
-    "topic": "dotacie"
+    "topic": "dotacie",
+    "external_unverified": true
   },
   {
     "id": "action-service-servis",
@@ -147,15 +161,16 @@
     "selector": "#servis",
     "anchorId": "servis",
     "entityId": "service-servis",
-    "topic": "servis"
+    "topic": "servis",
+    "external_unverified": true
   },
   {
     "id": "action-contact",
     "label": "Kontaktovať GEOTHERM",
     "type": "open_contact",
-    "url": "/kontakt/#kontakt",
-    "selector": "#kontakt",
-    "anchorId": "kontakt",
+    "url": "/#proposal",
+    "selector": "#proposal",
+    "anchorId": "proposal",
     "topic": "kontakt"
   }
 ]
