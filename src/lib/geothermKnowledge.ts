@@ -84,8 +84,13 @@ const imageIntents: ImageIntent[] = [
     requireImageText: false,
   },
   {
-    match: ["rekuperacia", "vetranie", "zehnder", "recovair"],
-    allow: ["rekuper", "vetranie", "zehnder", "recovair", "ventil"],
+    match: ["rekuperacia", "vetranie", "zehnder", "recovair", "comfoair", "comfotube", "comfowell"],
+    allow: ["rekuper", "vetranie", "zehnder", "recovair", "comfoair", "comfotube", "comfowell", "ventil"],
+    requireImageText: true,
+  },
+  {
+    match: ["stropne", "stropné", "chladenie", "railfix", "rehau"],
+    allow: ["strop", "chladen", "railfix", "rehau"],
     requireImageText: true,
   },
   {
@@ -157,7 +162,8 @@ const synonymGroups = [
   ["fotovoltaika", "fve", "panely", "solarne", "solárne", "elektrina"],
   ["dotacie", "dotácie", "zelena", "zelená", "domacnostiam", "poukaz"],
   ["podlahove", "podlahové", "vykurovanie", "kurenie", "podlahovka"],
-  ["stropne", "stropné", "chladenie", "stenove", "stenové"],
+  ["stropne", "stropné", "chladenie", "strop"],
+  ["stenove", "stenové", "stena"],
   ["servis", "montaz", "montáž", "instalacia", "inštalácia"],
 ];
 
@@ -235,13 +241,24 @@ function tokenScore(value: string, tokens: string[], weight: number) {
 
 function scoreChunk(page: KnowledgePage, chunk: KnowledgeChunk, tokens: string[]) {
   const archivePenalty = /(^|\/)(blog|category|tag)\//i.test(page.slug) || /arch/i.test(normalize(page.title)) ? 4 : 0;
+  const haystack = normalize(`${page.url} ${page.title} ${page.headings.join(" ")} ${chunk.content}`);
+  const exactProductBoost =
+    (tokens.includes("comfoair") && haystack.includes("comfoair q") ? 70 : 0) +
+    (tokens.includes("railfix") && haystack.includes("railfix") ? 60 : 0) +
+    (tokens.includes("s2125") && haystack.includes("s2125") ? 60 : 0) +
+    (tokens.includes("f2120") && haystack.includes("f2120") ? 60 : 0) +
+    (tokens.includes("arotherm") && haystack.includes("arotherm plus") ? 45 : 0) +
+    (tokens.includes("recovair") && haystack.includes("recovair") ? 45 : 0) +
+    (tokens.includes("ivt") && haystack.includes("ivt air x") ? 55 : 0) +
+    (tokens.includes("wpl") && haystack.includes("wpl") ? 45 : 0);
 
   return (
     tokenScore(page.title, tokens, 10) +
     tokenScore(page.tags.join(" "), tokens, 8) +
     tokenScore(page.headings.join(" "), tokens, 5) +
     tokenScore(page.description, tokens, 4) +
-    tokenScore(chunk.content, tokens, 1) -
+    tokenScore(chunk.content, tokens, 1) +
+    exactProductBoost -
     archivePenalty
   );
 }
@@ -301,6 +318,13 @@ function describeImage(image: KnowledgeImage, page?: KnowledgePage): Pick<Retrie
     };
   }
 
+  if (imageText.includes("comfoair") || imageText.includes("q350")) {
+    return {
+      description: "rekuperačná jednotka Zehnder ComfoAir Q350",
+      useWhen: "použi pri otázkach na Zehnder ComfoAir Q, centrálnu rekuperáciu alebo riadené vetranie",
+    };
+  }
+
   if (imageText.includes("hlucnost") && imageText.includes("nibe")) {
     return {
       description: "vizuál k tichej prevádzke tepelného čerpadla NIBE",
@@ -322,6 +346,13 @@ function describeImage(image: KnowledgeImage, page?: KnowledgePage): Pick<Retrie
     };
   }
 
+  if (imageText.includes("rekuper") || imageText.includes("zehnder") || imageText.includes("recovair")) {
+    return {
+      description: "rekuperačná jednotka, vetranie alebo filter pre riadené vetranie",
+      useWhen: "použi pri otázkach na rekuperáciu, vetranie, Zehnder, recoVAIR alebo filtre",
+    };
+  }
+
   if (imageText.includes("vaillant") || imageText.includes("arotherm") || imageText.includes("flexotherm")) {
     return {
       description: "tepelné čerpadlo alebo riešenie značky Vaillant",
@@ -336,17 +367,17 @@ function describeImage(image: KnowledgeImage, page?: KnowledgePage): Pick<Retrie
     };
   }
 
-  if (imageText.includes("rekuper") || imageText.includes("zehnder") || imageText.includes("recovair")) {
-    return {
-      description: "rekuperačná jednotka, vetranie alebo filter pre riadené vetranie",
-      useWhen: "použi pri otázkach na rekuperáciu, vetranie, Zehnder, recoVAIR alebo filtre",
-    };
-  }
-
   if (imageText.includes("podlah")) {
     return {
       description: "podlahové kúrenie alebo rozvody nízkoteplotného vykurovania",
       useWhen: "použi pri otázkach na podlahové vykurovanie, komfort a nízkoteplotné systémy",
+    };
+  }
+
+  if (imageText.includes("railfix") || (imageText.includes("rehau") && imageText.includes("strop"))) {
+    return {
+      description: "stropné chladenie REHAU RAILFIX pri montáži v interiéri",
+      useWhen: "použi pri otázkach na stropné chladenie, REHAU RAILFIX, suchú montáž alebo chladenie bez klimatizácie",
     };
   }
 
@@ -411,7 +442,14 @@ export function getGeothermImagesByUrl(urls: string[]): RetrievedImage[] {
 }
 
 function compactChunk(value: string) {
-  return value.length > 1050 ? `${value.slice(0, 1050).trim()}...` : value;
+  const cleaned = value
+    .replace(/[A-ZÁÄČĎÉÍĹĽŇÓÔŔŠŤÚÝŽ][A-Za-zÁÄČĎÉÍĹĽŇÓÔŔŠŤÚÝŽáäčďéíĺľňóôŕšťúýž]+\s+[A-ZÁÄČĎÉÍĹĽŇÓÔŔŠŤÚÝŽ][A-Za-zÁÄČĎÉÍĹĽŇÓÔŔŠŤÚÝŽáäčďéíĺľňóôŕšťúýž]+20\d{2}-\d{2}-\d{2}T\S+/g, ". ")
+    .replace(/GEOTHERM Slovakia s\.r\.o\.20\d{2}-\d{2}-\d{2}T\S+/g, ". ")
+    .replace(/Zobraziť väčší obrázok/gi, "")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  return cleaned.length > 1050 ? `${cleaned.slice(0, 1050).trim()}...` : cleaned;
 }
 
 function uniqueImages(images: KnowledgeImage[]) {
@@ -434,8 +472,8 @@ function selectImages(matches: ChunkMatch[], tokens: string[], query: string) {
     })),
   );
 
-  return uniqueImages(
-    candidates
+  function filterCandidates(items: Array<{ image: KnowledgeImage; page: KnowledgePage; score: number }>, minimumScore: number) {
+    return items
       .filter(({ image, page, score }) => {
         const imageText = `${image.alt} ${safeDecodeUrl(image.url)}`;
         const isDotationImage = /dotac|oze|zelena|poukaz/i.test(imageText);
@@ -443,15 +481,33 @@ function selectImages(matches: ChunkMatch[], tokens: string[], query: string) {
         return (
           imageMatchesIntent(image, page, intent) &&
           (intent || !isDotationImage || wantsDotation) &&
-          score >= (intent ? 4 : 8)
+          score >= minimumScore
         );
       })
-      .sort((a, b) => b.score - a.score)
-      .map(({ image }) => image),
-  )
+      .sort((a, b) => b.score - a.score);
+  }
+
+  let selected = filterCandidates(candidates, intent ? 4 : 8);
+
+  if (!selected.length && intent) {
+    selected = filterCandidates(
+      pages.flatMap((page) =>
+        page.images.map((image, imageIndex) => ({
+          image,
+          page,
+          score: scoreImage(image, page, tokens) + tokenScore(page.title, tokens, 2) - imageIndex * 0.25,
+        })),
+      ),
+      3,
+    );
+  }
+
+  return uniqueImages(selected.map(({ image }) => image))
     .slice(0, 5)
     .map((image) => {
-      const page = matches.find((match) => match.page.images.some((candidate) => candidate.url === image.url))?.page;
+      const page =
+        selected.find((match) => match.image.url === image.url)?.page ??
+        matches.find((match) => match.page.images.some((candidate) => candidate.url === image.url))?.page;
       return {
         ...image,
         ...describeImage(image, page ?? matches[0]?.page),

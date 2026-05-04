@@ -80,13 +80,56 @@ function imageLimitFor(query: string) {
 function isRelevantImageForQuery(image: { alt: string; description?: string; useWhen?: string }, query: string) {
   const imageText = normalizeText(`${image.alt} ${image.description ?? ""} ${image.useWhen ?? ""}`);
   const queryText = normalizeText(query);
+  const productTokens = [
+    "arotherm",
+    "recovair",
+    "multimatic",
+    "nibe",
+    "s2125",
+    "f2120",
+    "f2040",
+    "f1155",
+    "f1255",
+    "s1255",
+    "zehnder",
+    "comfoair",
+    "comfotube",
+    "stiebel",
+    "wpl",
+    "ivt",
+    "air x",
+    "daikin",
+    "hoval",
+    "rehau",
+    "railfix",
+  ];
+  const requestedProductTokens = productTokens.filter((token) => queryText.includes(token));
 
   if (imageText.includes("rekuper") && !/(rekuper|vetran|vzduch|filter)/.test(queryText)) return false;
   if (imageText.includes("dotac") && !/(dotac|oze|poukaz|zelena)/.test(queryText)) return false;
   if (imageText.includes("podlah") && !/(podlah|kuren|vykurov|komfort)/.test(queryText)) return false;
   if (imageText.includes("strop") && !/(strop|chladen|klimatiz|stenov)/.test(queryText)) return false;
+  if (requestedProductTokens.length && !requestedProductTokens.some((token) => imageText.includes(token))) return false;
 
   return true;
+}
+
+function fallbackImagesForQuery(query: string) {
+  const queryText = normalizeText(query);
+
+  if (/(strop|chladen|railfix|rehau)/.test(queryText) && /(strop|chladen)/.test(queryText)) {
+    return getGeothermImagesByUrl([
+      "https://www.geotherm.sk/wp-content/uploads/2026/03/stropne-chladenie-railfix-rehau-bratislava.jpg",
+    ]);
+  }
+
+  if (/(zehnder|comfoair|rekuper|vetran)/.test(queryText)) {
+    return getGeothermImagesByUrl([
+      "https://www.geotherm.sk/wp-content/uploads/2023/12/Zehnder_comfoair-Q350.jpg",
+    ]);
+  }
+
+  return [];
 }
 
 function fallbackResponse(topic: string, wantsComparison: boolean) {
@@ -105,6 +148,40 @@ Najlepšie riešenie treba vybrať podľa domu, izolácie a súčasného zdroja 
   return `### ${topic || "GEOTHERM odpoveď"}
 
 Pri tejto téme je najdôležitejšie navrhnúť riešenie podľa konkrétneho domu, nie všeobecne. GEOTHERM preto pri odporúčaní zohľadňuje typ stavby, plochu, súčasný zdroj tepla, očakávaný komfort a možnosti dotácií.`;
+}
+
+function cleanKnowledgeExcerpt(value: string) {
+  return value
+    .replace(/Zobraziť väčší obrázok/gi, "")
+    .replace(/[A-ZÁÄČĎÉÍĹĽŇÓÔŔŠŤÚÝŽ][A-Za-zÁÄČĎÉÍĹĽŇÓÔŔŠŤÚÝŽáäčďéíĺľňóôŕšťúýž]+\s+[A-ZÁÄČĎÉÍĹĽŇÓÔŔŠŤÚÝŽ][A-Za-zÁÄČĎÉÍĹĽŇÓÔŔŠŤÚÝŽáäčďéíĺľňóôŕšťúýž]+20\d{2}-\d{2}-\d{2}T\S+/g, ". ")
+    .replace(/GEOTHERM Slovakia s\.r\.o\.\d{4}-\d{2}-\d{2}T\S+/g, ". ")
+    .replace(/Obrázky zo zdroja:[\s\S]*$/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function exactSourceFallback(context: string, fallbackTitle: string) {
+  const firstSource = context.split(/\n\n---\n\n/)[0] ?? "";
+  const title = firstSource.match(/Názov:\s*(.+)/)?.[1]?.trim() || fallbackTitle || "GEOTHERM odpoveď";
+  const passage = cleanKnowledgeExcerpt(firstSource.match(/Relevantná pasáž:\s*([\s\S]+)/)?.[1] ?? "");
+  const sentences = passage
+    .split(/(?<=[.!?])\s+/)
+    .map((sentence) => sentence.trim())
+    .filter((sentence) => sentence.length > 35)
+    .slice(0, 3);
+  const excerpt = (sentences.join(" ") || passage).slice(0, 560).trim();
+
+  if (!excerpt) return fallbackResponse(title, false);
+
+  return `### ${title}
+
+${excerpt}`;
+}
+
+function isGenericFallback(value: string) {
+  return /Pri tejto tĂ©me je najdĂ´leĹľitejĹˇie navrhnĂşĹĄ rieĹˇenie podÄľa konkrĂ©tneho domu|Pri tejto téme je najdôležitejšie navrhnúť riešenie podľa konkrétneho domu/i.test(
+    value,
+  );
 }
 
 function extractMarkdownImageUrls(value: string) {
@@ -297,7 +374,8 @@ export async function POST(request: Request) {
     .join("\n");
   const knowledge = getRelevantGeothermKnowledge(queryContext);
   const maxImages = imageLimitFor(queryContext);
-  const relevantImages = knowledge.images.filter((image) => isRelevantImageForQuery(image, queryContext));
+  const retrievedImages = knowledge.images.filter((image) => isRelevantImageForQuery(image, queryContext));
+  const relevantImages = retrievedImages.length ? retrievedImages : fallbackImagesForQuery(queryContext);
   const allowedImages = relevantImages
     .map(
       (image, index) =>
@@ -360,6 +438,10 @@ ${knowledge.context}`,
     generatedText = response.text ?? fallbackResponse(knowledge.sources[0]?.title ?? "", wantsComparison);
   } catch {
     generatedText = fallbackResponse(knowledge.sources[0]?.title ?? "", wantsComparison);
+  }
+
+  if (!wantsComparison && isGenericFallback(generatedText)) {
+    generatedText = exactSourceFallback(knowledge.context, knowledge.sources[0]?.title ?? "");
   }
 
   const message = appendImageIfUseful(
