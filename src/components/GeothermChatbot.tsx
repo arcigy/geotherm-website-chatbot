@@ -639,8 +639,7 @@ export function GeothermChatbot() {
               setIsOpen(true);
             }}
           >
-            <span>AI</span>
-            <span>GEOTHERM</span>
+            <span>?</span>
           </button>
           <div className="codex-composer-content">{inputForm("perplexity")}</div>
         </section>
