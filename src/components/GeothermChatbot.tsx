@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, KeyboardEvent, PointerEvent, WheelEvent, useEffect, useRef, useState } from "react";
+import { CSSProperties, FormEvent, KeyboardEvent, PointerEvent, WheelEvent, useEffect, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
@@ -27,6 +27,9 @@ function MarkdownMessage({ content }: { content: string }) {
 export function GeothermChatbot() {
   const [mode, setMode] = useState<ChatMode>("codex");
   const [isOpen, setIsOpen] = useState(false);
+  const [isCodexCollapsed, setIsCodexCollapsed] = useState(false);
+  const [codexDragOffset, setCodexDragOffset] = useState(0);
+  const [isCodexDragging, setIsCodexDragging] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [conversationState, setConversationState] = useState<ConversationState | null>(null);
   const [input, setInput] = useState("");
@@ -327,6 +330,7 @@ export function GeothermChatbot() {
     const trimmed = content.trim();
     if (!trimmed || isLoading) return;
 
+    setIsCodexCollapsed(false);
     if (!isOpen) setIsOpen(true);
     if (typingTimerRef.current) window.clearInterval(typingTimerRef.current);
 
@@ -457,6 +461,39 @@ export function GeothermChatbot() {
     window.addEventListener("pointerup", onPointerUp);
   }
 
+  function startCodexCloseDrag(event: PointerEvent<HTMLElement>) {
+    if (isCodexCollapsed || isRecording || isTranscribing) return;
+
+    const target = event.target as HTMLElement;
+    if (target.closest("button:not(.codex-collapse-button), input")) return;
+
+    const startX = event.clientX;
+    let latestOffset = 0;
+    setIsCodexDragging(true);
+
+    function onPointerMove(pointerEvent: globalThis.PointerEvent) {
+      latestOffset = Math.max(0, Math.min(220, pointerEvent.clientX - startX));
+      setCodexDragOffset(latestOffset);
+    }
+
+    function onPointerUp() {
+      window.removeEventListener("pointermove", onPointerMove);
+      window.removeEventListener("pointerup", onPointerUp);
+      setIsCodexDragging(false);
+
+      if (latestOffset > 110) {
+        setCodexDragOffset(0);
+        setIsCodexCollapsed(true);
+        setIsOpen(false);
+      } else {
+        setCodexDragOffset(0);
+      }
+    }
+
+    window.addEventListener("pointermove", onPointerMove);
+    window.addEventListener("pointerup", onPointerUp);
+  }
+
   const modeSwitcher = (
     <div className="chat-mode-switch" aria-label="Výber vzhľadu chatbota">
       {(Object.keys(modeLabels) as ChatMode[]).map((option) => (
@@ -466,6 +503,7 @@ export function GeothermChatbot() {
           key={option}
           onClick={() => {
             setMode(option);
+            setIsCodexCollapsed(false);
             setIsOpen(option !== "panel" || isOpen);
           }}
         >
@@ -534,8 +572,8 @@ export function GeothermChatbot() {
   if (mode === "codex") {
     return (
       <>
-        <div className="floating-mode-control">{modeSwitcher}</div>
-        {(hasConversation && isOpen) || isLoading ? (
+        {!isCodexCollapsed ? <div className="floating-mode-control">{modeSwitcher}</div> : null}
+        {!isCodexCollapsed && ((hasConversation && isOpen) || isLoading) ? (
           <section
             className="perplexity-answer codex-glass-answer"
             aria-label="GEOTHERM AI odpovede"
@@ -564,7 +602,7 @@ export function GeothermChatbot() {
             </div>
           </section>
         ) : null}
-        {hasConversation || isLoading ? (
+        {!isCodexCollapsed && (hasConversation || isLoading) ? (
           <button
             className="codex-context-popup"
             type="button"
@@ -575,8 +613,36 @@ export function GeothermChatbot() {
             <span aria-hidden="true">›</span>
           </button>
         ) : null}
-        <section className="perplexity-composer codex-glass-composer" aria-label="GEOTHERM AI Codex asistent">
-          {inputForm("perplexity")}
+        <section
+          className={`perplexity-composer codex-glass-composer ${isCodexCollapsed ? "is-collapsed" : ""} ${isCodexDragging ? "is-dragging" : ""}`}
+          aria-label="GEOTHERM AI Codex asistent"
+          onPointerDown={startCodexCloseDrag}
+          style={{ "--codex-drag-x": `${codexDragOffset}px` } as CSSProperties}
+        >
+          <button
+            className="codex-collapse-button"
+            type="button"
+            aria-label="Zavrieť Codex chat"
+            onClick={() => {
+              setIsCodexCollapsed(true);
+              setIsOpen(false);
+            }}
+          >
+            <span aria-hidden="true">›</span>
+          </button>
+          <button
+            className="codex-mini-bubble"
+            type="button"
+            aria-label="Otvoriť GEOTHERM AI Codex chat"
+            onClick={() => {
+              setIsCodexCollapsed(false);
+              setIsOpen(true);
+            }}
+          >
+            <span>AI</span>
+            <span>GEOTHERM</span>
+          </button>
+          <div className="codex-composer-content">{inputForm("perplexity")}</div>
         </section>
       </>
     );

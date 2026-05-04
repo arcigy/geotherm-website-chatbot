@@ -985,17 +985,155 @@ button.perplexity-context:not(:disabled):hover {
 .codex-glass-composer {
   width: min(640px, calc(100vw - 520px));
   min-width: 460px;
-  overflow: hidden;
+  height: auto;
+  overflow: visible;
   border-radius: 999px;
   border-color: rgba(255, 255, 255, 0.1);
   background: rgba(38, 39, 37, 0.58);
   box-shadow: 0 24px 70px rgba(0, 0, 0, 0.3);
   opacity: 1;
+  transform: translateX(calc(-50% + var(--codex-drag-x, 0px)));
   transition:
+    left 360ms cubic-bezier(0.2, 0.9, 0.18, 1),
+    right 360ms cubic-bezier(0.2, 0.9, 0.18, 1),
+    bottom 360ms cubic-bezier(0.2, 0.9, 0.18, 1),
+    width 360ms cubic-bezier(0.2, 0.9, 0.18, 1),
+    min-width 360ms cubic-bezier(0.2, 0.9, 0.18, 1),
+    height 360ms cubic-bezier(0.2, 0.9, 0.18, 1),
+    border-radius 360ms cubic-bezier(0.2, 0.9, 0.18, 1),
+    transform 260ms cubic-bezier(0.2, 0.9, 0.18, 1),
     background 180ms ease,
     border-color 180ms ease,
     opacity 180ms ease,
     box-shadow 180ms ease;
+  touch-action: pan-y;
+}
+
+.codex-glass-composer.is-dragging {
+  transition:
+    background 120ms ease,
+    border-color 120ms ease,
+    opacity 120ms ease,
+    box-shadow 120ms ease;
+}
+
+.codex-composer-content {
+  opacity: 1;
+  transform: scale(1);
+  transform-origin: right center;
+  transition:
+    opacity 160ms ease,
+    transform 240ms cubic-bezier(0.2, 0.9, 0.18, 1);
+}
+
+.codex-collapse-button {
+  position: absolute;
+  top: 50%;
+  right: -10px;
+  z-index: 1;
+  display: grid;
+  width: 16px;
+  height: 46px;
+  place-items: center;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(184, 242, 0, 0.34);
+  color: rgba(255, 255, 255, 0.82);
+  cursor: grab;
+  transform: translateY(-50%);
+  transition:
+    width 180ms ease,
+    background 180ms ease,
+    color 180ms ease,
+    transform 180ms ease;
+}
+
+.codex-collapse-button span {
+  transform: translateX(1px);
+  font-size: 16px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.codex-collapse-button:hover {
+  width: 19px;
+  background: rgba(184, 242, 0, 0.48);
+  color: #fff;
+}
+
+.codex-collapse-button:active {
+  cursor: grabbing;
+}
+
+.codex-mini-bubble {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  gap: 4px;
+  border: 0;
+  border-radius: 999px;
+  background:
+    linear-gradient(180deg, rgba(184, 242, 0, 0.96), rgba(141, 190, 0, 0.96)),
+    #b8f200;
+  color: #0d1111;
+  cursor: pointer;
+  opacity: 0;
+  pointer-events: none;
+  transform: scale(0.72);
+  transition:
+    opacity 160ms ease 90ms,
+    transform 280ms cubic-bezier(0.2, 0.9, 0.18, 1);
+}
+
+.codex-mini-bubble span:first-child {
+  display: grid;
+  width: 38px;
+  height: 38px;
+  place-items: center;
+  border-radius: 50%;
+  background: #0d1111;
+  color: var(--lime);
+  font-size: 14px;
+  font-weight: 950;
+}
+
+.codex-mini-bubble span:last-child {
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  font-size: 10px;
+  font-weight: 950;
+  letter-spacing: 0;
+}
+
+.codex-glass-composer.is-collapsed {
+  left: calc(100vw - 92px);
+  bottom: 18px;
+  width: 58px;
+  min-width: 58px;
+  height: 118px;
+  border-radius: 999px;
+  border-color: rgba(13, 17, 17, 0.1);
+  background: rgba(184, 242, 0, 0.95);
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.28);
+  transform: translateX(0);
+}
+
+.codex-glass-composer.is-collapsed .codex-composer-content,
+.codex-glass-composer.is-collapsed .codex-collapse-button {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-50%) scale(0.72);
+}
+
+.codex-glass-composer.is-collapsed .codex-composer-content {
+  transform: scale(0.72);
+}
+
+.codex-glass-composer.is-collapsed .codex-mini-bubble {
+  opacity: 1;
+  pointer-events: auto;
+  transform: scale(1);
 }
 
 .codex-glass-composer .chat-input.perplexity {
