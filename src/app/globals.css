@@ -986,7 +986,7 @@ button.perplexity-context:not(:disabled):hover {
   width: min(640px, calc(100vw - 520px));
   min-width: 460px;
   height: auto;
-  overflow: visible;
+  overflow: hidden;
   border-radius: 999px;
   border-color: rgba(255, 255, 255, 0.1);
   background: rgba(38, 39, 37, 0.58);
@@ -1029,16 +1029,16 @@ button.perplexity-context:not(:disabled):hover {
 .codex-collapse-button {
   position: absolute;
   top: 50%;
-  right: -10px;
-  z-index: 1;
+  right: 4px;
+  z-index: 3;
   display: grid;
-  width: 16px;
-  height: 46px;
+  width: 14px;
+  height: 42px;
   place-items: center;
   border: 0;
   border-radius: 999px;
-  background: rgba(184, 242, 0, 0.34);
-  color: rgba(255, 255, 255, 0.82);
+  background: rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.72);
   cursor: grab;
   transform: translateY(-50%);
   transition:
@@ -1056,8 +1056,8 @@ button.perplexity-context:not(:disabled):hover {
 }
 
 .codex-collapse-button:hover {
-  width: 19px;
-  background: rgba(184, 242, 0, 0.48);
+  width: 16px;
+  background: rgba(255, 255, 255, 0.18);
   color: #fff;
 }
 
@@ -1073,10 +1073,8 @@ button.perplexity-context:not(:disabled):hover {
   gap: 4px;
   border: 0;
   border-radius: 999px;
-  background:
-    linear-gradient(180deg, rgba(184, 242, 0, 0.96), rgba(141, 190, 0, 0.96)),
-    #b8f200;
-  color: #0d1111;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.88);
   cursor: pointer;
   opacity: 0;
   pointer-events: none;
@@ -1092,8 +1090,8 @@ button.perplexity-context:not(:disabled):hover {
   height: 38px;
   place-items: center;
   border-radius: 50%;
-  background: #0d1111;
-  color: var(--lime);
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
   font-size: 14px;
   font-weight: 950;
 }
@@ -1113,8 +1111,8 @@ button.perplexity-context:not(:disabled):hover {
   min-width: 58px;
   height: 118px;
   border-radius: 999px;
-  border-color: rgba(13, 17, 17, 0.1);
-  background: rgba(184, 242, 0, 0.95);
+  border-color: rgba(255, 255, 255, 0.12);
+  background: rgba(38, 39, 37, 0.58);
   box-shadow: 0 18px 48px rgba(0, 0, 0, 0.28);
   transform: translateX(0);
 }
@@ -1140,7 +1138,7 @@ button.perplexity-context:not(:disabled):hover {
   grid-template-columns: 28px minmax(0, 1fr) 32px 38px;
   min-height: 54px;
   align-items: center;
-  padding: 5px 8px 5px 12px;
+  padding: 5px 22px 5px 12px;
 }
 
 .codex-glass-composer .chat-input.perplexity.is-recording {
