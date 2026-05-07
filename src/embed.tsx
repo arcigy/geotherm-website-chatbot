@@ -130,6 +130,13 @@ function createResponse(answer: string, pageTitle: string, url: string, sectionI
   };
 }
 
+function createTextResponse(answer: string): ChatResponse {
+  return {
+    answer,
+    sources: [],
+  };
+}
+
 function normalize(value: string) {
   return value
     .toLowerCase()
@@ -177,12 +184,8 @@ function fakeLocalResponse(message: string): ChatResponse {
   if (normalized.includes("kontakt") || normalized.includes("zavol")) return fakeResponses.kontakt;
   if (normalized.includes("realizac")) return fakeResponses.realizacie;
 
-  return createResponse(
+  return createTextResponse(
     "### Pomôžem vám vybrať smer\n\nNajlepšie je začať od situácie domu, nie od konkrétneho produktu. GEOTHERM rieši hlavne tepelné čerpadlá, podlahové kúrenie, chladenie, rekuperáciu, fotovoltiku, servis a dotácie OZE.\n\nStaviate nový dom alebo rekonštruujete?",
-    "Kontakt",
-    "/kontakt/",
-    "kontakt-formular",
-    "Kontaktný formulár",
   );
 }
 
