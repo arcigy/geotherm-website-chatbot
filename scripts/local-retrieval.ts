@@ -108,8 +108,8 @@ const stopwords = new Set([
 
 const synonymGroups = [
   ["hluk", "hlucnost", "hlucne", "hlučne", "tiche", "tichy", "ticha", "ticho"],
-  ["cena", "cennik", "kolko", "stoji", "naklady", "rozpocet", "ponuka", "cenova", "cenovu"],
-  ["dotacie", "dotacia", "prispevok", "poukazka", "podpora", "oze"],
+  ["cena", "cennik", "kolko", "stoji", "stat", "naklady", "rozpocet", "ponuka", "cenova", "cenovu"],
+  ["dotacie", "dotacia", "prispevok", "poukazka", "podpora", "stat", "oze"],
   ["servis", "udrzba", "revizia", "kontrola", "prehliadka"],
   ["montaz", "instalacia", "realizacia", "osadenie", "zapojenie"],
   ["tepelne", "cerpadlo", "cerpadla", "heat", "pump"],
@@ -122,6 +122,8 @@ const synonymGroups = [
   ["daikin"],
   ["fotovoltaika", "fotovoltika", "solarne", "panely"],
   ["kontakt", "kontaktovat", "kontaktujem", "kontaktuj", "najdem", "najst", "telefon", "tel", "email", "mail", "adresa", "showroom"],
+  ["znacka", "znacky", "vyrobca", "vyrobcovia", "nibe", "vaillant"],
+  ["navrh", "poradit", "projekt", "podorys", "informacie", "udaje"],
 ];
 
 const synonymMap = new Map<string, Set<string>>();
@@ -218,7 +220,7 @@ function snippet(text: string, queryTokens: string[]): string {
       break;
     }
   }
-  return text.slice(bestIndex, bestIndex + 360).replace(/\s+/g, " ").trim();
+  return text.slice(bestIndex, bestIndex + 700).replace(/\s+/g, " ").trim();
 }
 
 function chunkFingerprint(chunk: KnowledgeChunk): string {
@@ -232,7 +234,7 @@ export function retrieveKnowledge(chunks: KnowledgeChunk[], query: string, limit
   const querySet = new Set(expandedTokens);
   const priceIntent = ["cena", "cennik", "cenov", "ponuk", "naklad", "stoji"].some((token) => querySet.has(token));
   const noiseIntent = ["hluk", "hlucnost", "hlucn", "tich"].some((token) => querySet.has(token));
-  const outOfDomainIntent = ["auto", "automobil", "hypotek", "pocasi", "pocas", "gulas", "futbal", "akci"].some((token) =>
+  const outOfDomainIntent = ["auto", "automobil", "hypotek", "pocasi", "pocas", "gulas", "futbal", "akci", "etf", "investovat", "praha"].some((token) =>
     querySet.has(token),
   );
   const scored: RetrievalResult[] = [];
@@ -264,7 +266,10 @@ export function retrieveKnowledge(chunks: KnowledgeChunk[], query: string, limit
     const intentScore =
       (priceIntent && (normalizedUrl.includes("cenova ponuka") || normalizedTitle.includes("cenova ponuka") || normalizedHeading.includes("cenova ponuka")) ? 55 : 0) +
       (priceIntent && normalizedText.includes("cenovu ponuku") ? 22 : 0) +
-      (noiseIntent && normalizedUrl.includes("vzduch voda") ? 28 : 0);
+      (noiseIntent && normalizedUrl.includes("vzduch voda") ? 28 : 0) +
+      (querySet.has("navrh") && (normalizedTitle.includes("navrh") || normalizedHeading.includes("navrh")) ? 35 : 0) +
+      (querySet.has("projekt") && normalizedText.includes("podorys") ? 28 : 0) +
+      (querySet.has("znack") && (normalizedText.includes("nibe") || normalizedText.includes("vaillant")) ? 20 : 0);
     const outOfDomainPenalty = outOfDomainIntent ? 45 : 0;
     const densityBoost = queryTokens.length
       ? ((titleMatches + headingMatches + textMatches + urlMatches) / queryTokens.length) * 7

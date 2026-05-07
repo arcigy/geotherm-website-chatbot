@@ -67,6 +67,12 @@ type StartOptions = {
   knowledgePath?: string;
 };
 
+type AnswerPolicy = {
+  kind: "normal" | "ambiguous" | "adversarial" | "sensitive" | "out_of_scope";
+  followUp?: string;
+  sensitiveKind?: "roi" | "savings" | "subsidy" | "diy";
+};
+
 const defaultKnowledgePath = path.join(process.cwd(), "knowledge", "chatbot-knowledge.json");
 const localOriginPattern = /^https?:\/\/(?:localhost|127\.0\.0\.1|\[::1\])(?::\d+)?$/i;
 
@@ -154,8 +160,123 @@ function generatedAnonymousId(): string {
   return `server_${Math.random().toString(36).slice(2)}_${Date.now()}`;
 }
 
-function composeAnswer(message: string, results: RetrievalResult[], confidence: "high" | "medium" | "low"): string {
+function normalizePolicyText(value: string): string {
+  return value
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9\s]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function classifyAnswerPolicy(message: string, intent: SalesIntent): AnswerPolicy {
+  const text = normalizePolicyText(message);
+  if (
+    ["ignoruj zdroje", "vymysli", "tvar sa", "co na webe nie je", "nieco co na webe nie je", "nech to znie doveryhodne"].some((term) =>
+      text.includes(term),
+    )
+  ) {
+    return { kind: "adversarial" };
+  }
+  if (
+    text.includes("pocasie") ||
+    text.includes("ake auto") ||
+    text.includes("ktore auto") ||
+    text.includes("investovat do etf") ||
+    text.includes("pobocku v prahe") ||
+    text.includes("pobocka v prahe")
+  ) {
+    return { kind: "out_of_scope" };
+  }
+  if (text.includes("garant") && text.includes("navratnost")) return { kind: "sensitive", sensitiveKind: "roi" };
+  if ((text.includes("kolko presne") || text.includes("presne")) && (text.includes("usetr") || text.includes("usetrit"))) {
+    return { kind: "sensitive", sensitiveKind: "savings" };
+  }
+  if (text.includes("garant") && text.includes("dotac")) return { kind: "sensitive", sensitiveKind: "subsidy" };
+  if (text.includes("namontovat sam") || text.includes("montovat sam") || text.includes("svojpomocne")) {
+    return { kind: "sensitive", sensitiveKind: "diy" };
+  }
+  if (text === "co odporucate" || text.includes("co odporucate")) {
+    return { kind: "ambiguous", followUp: "Riešite nové tepelné čerpadlo, servis, dotácie alebo návrh vykurovania?" };
+  }
+  if (text.includes("kolko ma to bude stat")) {
+    return { kind: "ambiguous", followUp: "Cena závisí od typu riešenia. Ide o tepelné čerpadlo, montáž, servis alebo podlahové kúrenie?" };
+  }
+  if (text.includes("je to vhodne pre moj dom")) {
+    return { kind: "ambiguous", followUp: "Ide o novostavbu alebo rekonštrukciu a aký zdroj vykurovania máte dnes?" };
+  }
+  if (text.includes("ako dlho to trva")) {
+    return { kind: "ambiguous", followUp: "Myslíte montáž, servis, vybavenie dotácie alebo prípravu cenovej ponuky?" };
+  }
+  if (text.includes("bude to hlucne") || (text.includes("hlucne") && !text.includes("nibe"))) {
+    return { kind: "ambiguous", followUp: "Kde by bola vonkajšia jednotka umiestnená voči obytným miestnostiam a susedom?" };
+  }
+  if (intent === "irrelevant") return { kind: "out_of_scope" };
+  return { kind: "normal" };
+}
+
+function cleanSnippet(value: string, allowContactDetails: boolean): string {
+  let text = value
+    .replace(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi, "")
+    .replace(/(?:\+421\s*)?(?:0\s*)?\d{3}[\s.-]?\d{3}[\s.-]?\d{3}/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+  if (!allowContactDetails) {
+    text = text
+      .replace(/\b(?:e-mail|email|mailom|telefonicky|telefón|telefon|tel\.?)\b/gi, "kontakt")
+      .replace(/neváhajte nás kontaktovať[^.]*\./gi, "")
+      .replace(/môžete nás kontaktovať[^.]*\./gi, "");
+  }
+  return text.replace(/\?/g, ".").slice(0, 340).trim();
+}
+
+function sourceBullets(results: RetrievalResult[], confidence: "high" | "medium" | "low", allowContactDetails: boolean): string[] {
+  if (confidence === "low") return [];
+  return results
+    .slice(0, confidence === "high" ? 2 : 1)
+    .map((result) => cleanSnippet(result.snippet || result.chunk.text, allowContactDetails))
+    .filter(Boolean)
+    .map((snippet) => `- ${snippet}`);
+}
+
+function composeSensitiveAnswer(policy: AnswerPolicy, results: RetrievalResult[], confidence: "high" | "medium" | "low"): string {
+  const bullets = sourceBullets(results, confidence, false);
+  const evidence = bullets.length ? ["", "Relevantné zdroje hovoria:", "", ...bullets] : [];
+  if (policy.sensitiveKind === "savings") {
+    return ["Neviem presne povedať, koľko ušetríte za rok. Závisí to od domu, tepelnej straty, spotreby, nastavenia systému, nákladov a cien energií.", ...evidence].join("\n");
+  }
+  if (policy.sensitiveKind === "subsidy") {
+    return ["Neviem garantovať dotáciu. Podľa dostupných zdrojov dotácie závisia od pravidiel programu, oprávnenosti žiadateľa, dostupného rozpočtu a správnosti žiadosti.", ...evidence].join("\n");
+  }
+  if (policy.sensitiveKind === "diy") {
+    return ["Podľa dostupných zdrojov je pri tepelnom čerpadle dôležitý odborný návrh, odborná montáž a servis. Svojpomocnú montáž by som neodporúčal prezentovať ako bezpečnú alebo vhodnú bez odbornej kontroly.", ...evidence].join("\n");
+  }
+  return ["Neviem garantovať návratnosť tepelného čerpadla. Dá sa o nej hovoriť len orientačne podľa konkrétneho domu, spotreby, cien energií, technického riešenia a kvality návrhu.", ...evidence].join("\n");
+}
+
+function composeAnswer(message: string, results: RetrievalResult[], confidence: "high" | "medium" | "low", intent: SalesIntent, policy: AnswerPolicy): string {
   const top = results[0];
+
+  if (policy.kind === "adversarial") {
+    return "Nemôžem ignorovať zdroje ani vymýšľať informácie, ktoré nie sú vo webových podkladoch. Neviem povedať presnú cenu alebo tvrdenie bez opory v zdrojoch.";
+  }
+
+  if (policy.kind === "out_of_scope") {
+    return [
+      "Na webe som nenašiel dostatočne jasnú odpoveď na túto otázku.",
+      "",
+      "Skúste sa opýtať konkrétnejšie na tepelné čerpadlá, servis, dotácie, montáž, hlučnosť alebo kontakt.",
+    ].join("\n");
+  }
+
+  if (policy.kind === "sensitive") return composeSensitiveAnswer(policy, results, confidence);
+
+  if (policy.kind === "ambiguous") {
+    const bullets = sourceBullets(results, confidence, intent === "contact");
+    const intro = bullets.length ? "Podľa dostupných zdrojov viem zatiaľ odpovedať len všeobecne:" : "Na toto potrebujem trochu viac kontextu.";
+    return [intro, "", ...bullets, "", policy.followUp].filter((line) => line !== undefined).join("\n");
+  }
 
   if (!top || confidence === "low") {
     return [
@@ -165,12 +286,11 @@ function composeAnswer(message: string, results: RetrievalResult[], confidence: 
     ].join("\n");
   }
 
-  const usefulResults = results.slice(0, confidence === "high" ? 3 : 2);
+  const bullets = sourceBullets(results, confidence, intent === "contact");
   const intro =
     confidence === "high"
       ? "Podľa nájdených informácií na webe:"
       : "Podľa dostupných informácií web uvádza, ale výsledok berte ako menej istý:";
-  const bullets = usefulResults.map((result) => `- ${result.snippet || result.chunk.text}`);
 
   return [
     intro,
@@ -178,8 +298,6 @@ function composeAnswer(message: string, results: RetrievalResult[], confidence: 
     ...bullets,
     "",
     `Najrelevantnejší zdroj: ${top.chunk.pageTitle} (${top.chunk.url})`,
-    "",
-    `Otázka: ${message}`,
   ].join("\n");
 }
 
@@ -206,11 +324,20 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
   const sourceResults = confidence === "low" ? retrieval.results.slice(0, 2) : retrieval.results.slice(0, 3);
   const sources = sourceResults.map(sourceFromResult);
   const intent = detectIntent(message, retrieval.results);
+  let answerPolicy = classifyAnswerPolicy(message, intent);
   const previousState = parseState(conversation.qualification_state_json);
+  if (answerPolicy.kind === "ambiguous" && (previousState.relevant_turns || 0) >= 3) {
+    answerPolicy = { kind: "normal" };
+  }
   const nextState = updateQualificationState(previousState, message, intent);
   const contact = extractContact(message);
   const leadCaptured = Boolean(contact.email || contact.phone);
-  const leadCapture = nextLeadQuestion(nextState, intent, confidence);
+  let leadCapture = nextLeadQuestion(nextState, intent, confidence);
+  if (answerPolicy.kind === "out_of_scope" || answerPolicy.kind === "adversarial" || answerPolicy.kind === "sensitive") {
+    leadCapture = { shouldAsk: false, nextQuestion: null, mode: nextState.assistant_mode || "informative", isContactRequest: false };
+  } else if (answerPolicy.kind === "ambiguous" && answerPolicy.followUp) {
+    leadCapture = { shouldAsk: true, nextQuestion: answerPolicy.followUp, mode: "informative", isContactRequest: false };
+  }
   const finalState = leadCaptured ? nextState : applyLeadDecision(nextState, leadCapture);
   const score = leadScore(finalState, intent);
   const previousMessages = getConversationMessages(conversation.id);
@@ -251,7 +378,7 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     });
   }
 
-  let answer = composeAnswer(message, retrieval.results, confidence);
+  let answer = composeAnswer(message, retrieval.results, confidence, intent, answerPolicy);
   if (leadCaptured) {
     const transcript = getConversationMessages(conversation.id);
     upsertLead({
@@ -286,7 +413,7 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
       intent,
       qualificationStateJson: JSON.stringify(finalState),
     });
-    if (leadCapture.shouldAsk && leadCapture.nextQuestion) {
+    if (leadCapture.shouldAsk && leadCapture.nextQuestion && answerPolicy.kind !== "ambiguous") {
       insertEvent({
         siteId: site.id,
         sessionId: session.id,

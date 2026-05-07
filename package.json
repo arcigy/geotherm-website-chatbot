@@ -19,6 +19,7 @@
     "build:knowledge": "tsc -p tsconfig.wp-export.json && node .tmp-wp-export/build-chatbot-knowledge.js",
     "retrieve": "tsc -p tsconfig.wp-export.json && node .tmp-wp-export/retrieve-knowledge.js",
     "evaluate:retrieval": "tsc -p tsconfig.wp-export.json && node .tmp-wp-export/evaluate-retrieval.js",
+    "evaluate:rag": "tsx scripts/evaluate-rag-answers.ts",
     "dev:chat-api": "tsx scripts/chat-server.ts",
     "test:chat-api": "tsx scripts/test-chat-api.ts",
     "preview:embed": "vite dist-embed --host 127.0.0.1 --port 4321",
