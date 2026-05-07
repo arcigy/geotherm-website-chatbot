@@ -232,7 +232,7 @@ export function retrieveKnowledge(chunks: KnowledgeChunk[], query: string, limit
   const querySet = new Set(expandedTokens);
   const priceIntent = ["cena", "cennik", "cenov", "ponuk", "naklad", "stoji"].some((token) => querySet.has(token));
   const noiseIntent = ["hluk", "hlucnost", "hlucn", "tich"].some((token) => querySet.has(token));
-  const outOfDomainIntent = ["auto", "automobil", "hypotek", "pocasi", "gulas", "futbal", "akci"].some((token) =>
+  const outOfDomainIntent = ["auto", "automobil", "hypotek", "pocasi", "pocas", "gulas", "futbal", "akci"].some((token) =>
     querySet.has(token),
   );
   const scored: RetrievalResult[] = [];

@@ -3,10 +3,10 @@
 ## Summary
 
 - total test cases: 42
-- top1 pass rate: 88%
-- top3 pass rate: 93%
+- top1 pass rate: 86%
+- top3 pass rate: 90%
 - fallback pass rate: 100%
-- average top score: 90.94
+- average top score: 90.45
 - verdict: PASS
 
 Confidence thresholds: `finalScore >= 35` is confident, `14-34.99` is uncertain, `< 14` is no answer.
@@ -22,7 +22,7 @@ Confidence thresholds: `finalScore >= 35` is confident, `14-34.99` is uncertain,
 | montáž | 4 | 100% | 100% | n/a |
 | hlučnosť | 4 | 100% | 100% | n/a |
 | kontakt | 4 | 100% | 100% | n/a |
-| fallback | 6 | 50% | 50% | 100% |
+| fallback | 6 | 33% | 33% | 100% |
 
 ## Failed Cases
 
@@ -30,7 +30,7 @@ None.
 
 ## Weak Areas
 
-- fallback: top3 50%, fallback 100%.
+- fallback: top3 33%, fallback 100%.
 
 Likely failure causes: missing source content for some brand-specific questions, sparse contact/email chunks, and lexical limits without embeddings.
 

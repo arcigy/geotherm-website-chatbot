@@ -19,6 +19,8 @@
     "build:knowledge": "tsc -p tsconfig.wp-export.json && node .tmp-wp-export/build-chatbot-knowledge.js",
     "retrieve": "tsc -p tsconfig.wp-export.json && node .tmp-wp-export/retrieve-knowledge.js",
     "evaluate:retrieval": "tsc -p tsconfig.wp-export.json && node .tmp-wp-export/evaluate-retrieval.js",
+    "dev:chat-api": "tsx scripts/chat-server.ts",
+    "test:chat-api": "tsx scripts/test-chat-api.ts",
     "test:wp-plugin": "node scripts/test-wp-plugin.mjs"
   },
   "dependencies": {
@@ -37,6 +39,7 @@
     "@vitejs/plugin-react": "^6.0.1",
     "eslint": "^9.39.1",
     "eslint-config-next": "16.2.4",
+    "tsx": "^4.21.0",
     "typescript": "^5.9.3",
     "vite": "^8.0.11"
   },

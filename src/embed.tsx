@@ -16,9 +16,11 @@ type EmbedConfig = {
 type Source = {
   pageTitle: string;
   url: string;
-  sectionId: string;
-  selector: string;
-  heading: string;
+  sectionId?: string;
+  selector?: string;
+  heading?: string;
+  sectionHeading?: string;
+  snippet?: string;
 };
 
 type ChatResponse = {
@@ -30,6 +32,9 @@ type ChatResponse = {
 type BackendChatResponse = Partial<ChatResponse> & {
   message?: string;
   actions?: EmbedAction[];
+  action?: EmbedAction | null;
+  confidence?: "high" | "medium" | "low";
+  topScore?: number;
 };
 
 type ChatMessage = {
@@ -198,7 +203,7 @@ function normalizeChatResponse(data: BackendChatResponse): ChatResponse {
 }
 
 async function sendMessage(message: string, config: EmbedConfig): Promise<ChatResponse> {
-  if (config.apiBase && config.mode !== "preview") {
+  if (config.apiBase) {
     try {
       const response = await fetch(`${config.apiBase.replace(/\/$/, "")}/chat`, {
         method: "POST",
