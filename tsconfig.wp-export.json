@@ -10,5 +10,11 @@
     "types": ["node"],
     "outDir": ".tmp-wp-export"
   },
-  "include": ["scripts/export-wordpress-content.ts", "scripts/build-chatbot-knowledge.ts"]
+  "include": [
+    "scripts/export-wordpress-content.ts",
+    "scripts/build-chatbot-knowledge.ts",
+    "scripts/local-retrieval.ts",
+    "scripts/retrieve-knowledge.ts",
+    "scripts/evaluate-retrieval.ts"
+  ]
 }

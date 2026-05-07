@@ -1,0 +1,338 @@
+[
+  {
+    "id": "T001",
+    "query": "Aké tepelné čerpadlá NIBE ponúkate?",
+    "category": "produkty",
+    "expectedTerms": ["nibe"],
+    "expectedUrlIncludes": [],
+    "mustNotAnswerIfLowConfidence": false
+  },
+  {
+    "id": "T002",
+    "query": "Máte tepelné čerpadlo Vaillant?",
+    "category": "produkty",
+    "expectedTerms": ["vaillant"],
+    "expectedUrlIncludes": [],
+    "mustNotAnswerIfLowConfidence": false
+  },
+  {
+    "id": "T003",
+    "query": "Čo viete povedať o značke Viessmann?",
+    "category": "produkty",
+    "expectedTerms": ["tepelné čerpadlo"],
+    "expectedUrlIncludes": [],
+    "mustNotAnswerIfLowConfidence": false
+  },
+  {
+    "id": "T004",
+    "query": "Predávate Ariston tepelné čerpadlá?",
+    "category": "produkty",
+    "expectedTerms": ["tepelné čerpadlo"],
+    "expectedUrlIncludes": [],
+    "mustNotAnswerIfLowConfidence": false
+  },
+  {
+    "id": "T005",
+    "query": "Máte Daikin alebo iné tepelné čerpadlá?",
+    "category": "produkty",
+    "expectedTerms": ["tepelné čerpadlo"],
+    "expectedUrlIncludes": [],
+    "mustNotAnswerIfLowConfidence": false
+  },
+  {
+    "id": "T006",
+    "query": "Aký je rozdiel medzi tepelným čerpadlom vzduch voda a zem voda?",
+    "category": "produkty",
+    "expectedTerms": ["vzduch", "zem"],
+    "expectedUrlIncludes": ["tepelne-cerpadla"],
+    "mustNotAnswerIfLowConfidence": false
+  },
+  {
+    "id": "T007",
+    "query": "Ktoré tepelné čerpadlo je vhodné pre rodinný dom?",
+    "category": "produkty",
+    "expectedTerms": ["rodinný dom", "tepelné čerpadlo"],
+    "expectedUrlIncludes": [],
+    "mustNotAnswerIfLowConfidence": false
+  },
+  {
+    "id": "T008",
+    "query": "Ponúkate tepelné čerpadlá vzduch voda?",
+    "category": "produkty",
+    "expectedTerms": ["vzduch-voda", "vzduch voda"],
+    "expectedUrlIncludes": ["vzduch"],
+    "mustNotAnswerIfLowConfidence": false
+  },
+  {
+    "id": "T009",
+    "query": "Koľko stojí tepelné čerpadlo?",
+    "category": "cena",
+    "expectedTerms": ["cena", "tepelné čerpadlo"],
+    "expectedUrlIncludes": [],
+    "mustNotAnswerIfLowConfidence": false
+  },
+  {
+    "id": "T010",
+    "query": "Aká je cena montáže tepelného čerpadla?",
+    "category": "cena",
+    "expectedTerms": ["montáž", "cena"],
+    "expectedUrlIncludes": [],
+    "mustNotAnswerIfLowConfidence": false
+  },
+  {
+    "id": "T011",
+    "query": "Je dostupný cenník pre vykurovanie?",
+    "category": "cena",
+    "expectedTerms": ["cenová ponuka", "cena"],
+    "expectedUrlIncludes": ["cenova-ponuka"],
+    "mustNotAnswerIfLowConfidence": false
+  },
+  {
+    "id": "T012",
+    "query": "Ako získam cenovú ponuku na vykurovanie?",
+    "category": "cena",
+    "expectedTerms": ["cenová ponuka"],
+    "expectedUrlIncludes": ["cenova-ponuka"],
+    "mustNotAnswerIfLowConfidence": false
+  },
+  {
+    "id": "T013",
+    "query": "Aké sú náklady na servis tepelného čerpadla?",
+    "category": "cena",
+    "expectedTerms": ["servis", "cena"],
+    "expectedUrlIncludes": ["servis"],
+    "mustNotAnswerIfLowConfidence": false
+  },
+  {
+    "id": "T014",
+    "query": "Ako fungujú dotácie na tepelné čerpadlá?",
+    "category": "dotácie",
+    "expectedTerms": ["dotácie", "poukážky", "príspevok"],
+    "expectedUrlIncludes": ["dotacie"],
+    "mustNotAnswerIfLowConfidence": false
+  },
+  {
+    "id": "T015",
+    "query": "Mám nárok na dotáciu na obnoviteľné zdroje?",
+    "category": "dotácie",
+    "expectedTerms": ["dotácia", "oprávnení"],
+    "expectedUrlIncludes": ["dotacie"],
+    "mustNotAnswerIfLowConfidence": false
+  },
+  {
+    "id": "T016",
+    "query": "Vybavujete dotácie OZE?",
+    "category": "dotácie",
+    "expectedTerms": ["OZE", "dotácie"],
+    "expectedUrlIncludes": ["dotacie"],
+    "mustNotAnswerIfLowConfidence": false
+  },
+  {
+    "id": "T017",
+    "query": "Čo je Zelená domácnostiam?",
+    "category": "dotácie",
+    "expectedTerms": ["zelená domácnostiam", "dotácie"],
+    "expectedUrlIncludes": ["dotacie"],
+    "mustNotAnswerIfLowConfidence": false
+  },
+  {
+    "id": "T018",
+    "query": "Ako prebieha vyplatenie príspevku?",
+    "category": "dotácie",
+    "expectedTerms": ["príspevok", "poukážka"],
+    "expectedUrlIncludes": ["dotacie"],
+    "mustNotAnswerIfLowConfidence": false
+  },
+  {
+    "id": "T019",
+    "query": "Robíte servis tepelných čerpadiel?",
+    "category": "servis",
+    "expectedTerms": ["servis", "tepelné čerpadlo"],
+    "expectedUrlIncludes": ["servis"],
+    "mustNotAnswerIfLowConfidence": false
+  },
+  {
+    "id": "T020",
+    "query": "Ako často treba robiť pravidelnú údržbu tepelného čerpadla?",
+    "category": "servis",
+    "expectedTerms": ["servis", "údržba", "pravidelný"],
+    "expectedUrlIncludes": ["servis"],
+    "mustNotAnswerIfLowConfidence": false
+  },
+  {
+    "id": "T021",
+    "query": "Potrebujem revíziu alebo kontrolu čerpadla?",
+    "category": "servis",
+    "expectedTerms": ["kontrola", "servis"],
+    "expectedUrlIncludes": ["servis"],
+    "mustNotAnswerIfLowConfidence": false
+  },
+  {
+    "id": "T022",
+    "query": "Prečo sa oplatí servisná prehliadka?",
+    "category": "servis",
+    "expectedTerms": ["servisná prehliadka", "servis"],
+    "expectedUrlIncludes": ["servis"],
+    "mustNotAnswerIfLowConfidence": false
+  },
+  {
+    "id": "T023",
+    "query": "Ako prebieha montáž tepelného čerpadla?",
+    "category": "montáž",
+    "expectedTerms": ["inštalácia", "montáž"],
+    "expectedUrlIncludes": ["instalacia"],
+    "mustNotAnswerIfLowConfidence": false
+  },
+  {
+    "id": "T024",
+    "query": "Ako dlho trvá inštalácia tepelného čerpadla?",
+    "category": "montáž",
+    "expectedTerms": ["inštalácia", "montáž"],
+    "expectedUrlIncludes": ["instalacia"],
+    "mustNotAnswerIfLowConfidence": false
+  },
+  {
+    "id": "T025",
+    "query": "Robíte realizáciu podlahového kúrenia?",
+    "category": "montáž",
+    "expectedTerms": ["podlahové kúrenie", "inštalácia"],
+    "expectedUrlIncludes": ["podlahove"],
+    "mustNotAnswerIfLowConfidence": false
+  },
+  {
+    "id": "T026",
+    "query": "Ako sa pripravuje technická obhliadka pred montážou?",
+    "category": "montáž",
+    "expectedTerms": ["technická obhliadka", "montáž"],
+    "expectedUrlIncludes": [],
+    "mustNotAnswerIfLowConfidence": false
+  },
+  {
+    "id": "T027",
+    "query": "Je tepelné čerpadlo hlučné?",
+    "category": "hlučnosť",
+    "expectedTerms": ["hlučnosť", "hluk"],
+    "expectedUrlIncludes": ["vzduch-voda"],
+    "mustNotAnswerIfLowConfidence": false
+  },
+  {
+    "id": "T028",
+    "query": "Aké tiché je NIBE?",
+    "category": "hlučnosť",
+    "expectedTerms": ["NIBE", "hlučnosť"],
+    "expectedUrlIncludes": [],
+    "mustNotAnswerIfLowConfidence": false
+  },
+  {
+    "id": "T029",
+    "query": "Čo ovplyvňuje hluk pri montáži?",
+    "category": "hlučnosť",
+    "expectedTerms": ["hluk", "montáž"],
+    "expectedUrlIncludes": [],
+    "mustNotAnswerIfLowConfidence": false
+  },
+  {
+    "id": "T030",
+    "query": "Sú katalógové hodnoty hlučnosti spoľahlivé?",
+    "category": "hlučnosť",
+    "expectedTerms": ["hlučnosť", "katalógové hodnoty"],
+    "expectedUrlIncludes": ["vzduch-voda"],
+    "mustNotAnswerIfLowConfidence": false
+  },
+  {
+    "id": "T031",
+    "query": "Kde vás nájdem?",
+    "category": "kontakt",
+    "expectedTerms": ["kontakt", "showroom"],
+    "expectedUrlIncludes": ["kontakt"],
+    "mustNotAnswerIfLowConfidence": false
+  },
+  {
+    "id": "T032",
+    "query": "Ako vás môžem kontaktovať?",
+    "category": "kontakt",
+    "expectedTerms": ["kontakt", "telefón"],
+    "expectedUrlIncludes": ["kontakt"],
+    "mustNotAnswerIfLowConfidence": false
+  },
+  {
+    "id": "T033",
+    "query": "Máte telefón alebo email?",
+    "category": "kontakt",
+    "expectedTerms": ["telefón", "email", "kontakt"],
+    "expectedUrlIncludes": ["kontakt"],
+    "mustNotAnswerIfLowConfidence": false
+  },
+  {
+    "id": "T034",
+    "query": "Kde je showroom Geotherm?",
+    "category": "kontakt",
+    "expectedTerms": ["showroom", "Geotherm"],
+    "expectedUrlIncludes": ["showroom"],
+    "mustNotAnswerIfLowConfidence": false
+  },
+  {
+    "id": "T035",
+    "query": "Potrebujem hypotéku na byt",
+    "category": "fallback",
+    "expectedTerms": [],
+    "expectedUrlIncludes": [],
+    "mustNotAnswerIfLowConfidence": true
+  },
+  {
+    "id": "T036",
+    "query": "Aké bude zajtra počasie v Košiciach?",
+    "category": "fallback",
+    "expectedTerms": [],
+    "expectedUrlIncludes": [],
+    "mustNotAnswerIfLowConfidence": true
+  },
+  {
+    "id": "T037",
+    "query": "Ktoré auto má najnižšiu spotrebu?",
+    "category": "fallback",
+    "expectedTerms": [],
+    "expectedUrlIncludes": [],
+    "mustNotAnswerIfLowConfidence": true
+  },
+  {
+    "id": "T038",
+    "query": "Ako uvariť segedínsky guláš?",
+    "category": "fallback",
+    "expectedTerms": [],
+    "expectedUrlIncludes": [],
+    "mustNotAnswerIfLowConfidence": true
+  },
+  {
+    "id": "T039",
+    "query": "Kto vyhral posledný futbalový zápas?",
+    "category": "fallback",
+    "expectedTerms": [],
+    "expectedUrlIncludes": [],
+    "mustNotAnswerIfLowConfidence": true
+  },
+  {
+    "id": "T040",
+    "query": "Poradíte mi investovanie do akcií?",
+    "category": "fallback",
+    "expectedTerms": [],
+    "expectedUrlIncludes": [],
+    "mustNotAnswerIfLowConfidence": true
+  },
+  {
+    "id": "T041",
+    "query": "Ako funguje rekuperácia v dome?",
+    "category": "produkty",
+    "expectedTerms": ["rekuperácia"],
+    "expectedUrlIncludes": ["rekuperac"],
+    "mustNotAnswerIfLowConfidence": false
+  },
+  {
+    "id": "T042",
+    "query": "Ponúkate fotovoltaiku?",
+    "category": "produkty",
+    "expectedTerms": ["fotovoltaika"],
+    "expectedUrlIncludes": ["fotovoltaika"],
+    "mustNotAnswerIfLowConfidence": false
+  }
+]
