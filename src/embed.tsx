@@ -24,7 +24,12 @@ type Source = {
 type ChatResponse = {
   answer: string;
   sources: Source[];
-  action: EmbedAction;
+  action?: EmbedAction;
+};
+
+type BackendChatResponse = Partial<ChatResponse> & {
+  message?: string;
+  actions?: EmbedAction[];
 };
 
 type ChatMessage = {
@@ -53,56 +58,56 @@ const version = "0.1.0";
 
 const fakeResponses: Record<string, ChatResponse> = {
   nibe: createResponse(
-    "### NIBE S2125\n\nNIBE S2125 je ukážkový produktový intent pre tepelné čerpadlá. V testovacom režime ťa viem presunúť na sekciu produktu.",
+    "### NIBE S2125\n\nNIBE S2125 patrí medzi riešenia tepelných čerpadiel pre domy, kde sa rieši úsporné vykurovanie a príprava teplej vody. Pri výbere však nestačí pozerať iba na značku alebo model, ale hlavne na výkon, tepelné straty domu a spôsob odovzdávania tepla.\n\nAk chcete, viem vám ukázať produktovú sekciu nižšie. Staviate nový dom alebo rekonštruujete?",
     "Produkty",
     "/produkty/",
     "nibe-s2125",
     "NIBE S2125",
   ),
   dotacie: createResponse(
-    "### Dotácie\n\nDotácie závisia od aktuálneho programu a technického riešenia. V testovacom režime ťa presuniem na dotačnú sekciu.",
+    "### Dotácie OZE\n\nDotácie vedia znížiť vstupnú investíciu, ale vždy závisia od aktuálnych pravidiel programu, typu zariadenia a pripravenosti projektu. Preto je bezpečnejšie najprv vybrať vhodné riešenie a až potom overiť, či sa naň dá použiť podpora.\n\nRiešite dotáciu skôr k tepelnému čerpadlu, fotovoltike alebo rekuperácii?",
     "Produkty",
     "/produkty/",
     "dotacie",
     "Dotácie",
   ),
   montaz: createResponse(
-    "### Montáž\n\nMontáž zahŕňa prípravu, osadenie technológie, zapojenie, spustenie a základné zaškolenie.",
+    "### Montáž systému\n\nMontáž pri takomto riešení nie je len osadenie zariadenia. Dôležitá je príprava, správne zapojenie technológie, spustenie systému a nastavenie tak, aby dom kúril úsporne a stabilne.\n\nMáte už vybraný konkrétny systém alebo ste ešte vo fáze návrhu?",
     "Produkty",
     "/produkty/",
     "montaz",
     "Montáž",
   ),
   servis: createResponse(
-    "### Servis\n\nServis rieši kontrolu systému, nastavenie prevádzky a technickú podporu po montáži.",
+    "### Servis a nastavenie\n\nServis je dôležitý hlavne preto, aby systém nefungoval iba technicky správne, ale aj úsporne. Pri tepelných čerpadlách a rekuperácii často rozhoduje práve nastavenie prevádzky, nie iba samotné zariadenie.\n\nMáte už existujúce zariadenie, alebo servis riešite až k novej inštalácii?",
     "Produkty",
     "/produkty/",
     "servis",
     "Servis",
   ),
   hlucnost: createResponse(
-    "### Hlučnosť\n\nHlučnosť závisí od konkrétneho zariadenia, umiestnenia a montáže. Dôležitý je správny návrh výkonu a pozície jednotky.",
+    "### Hlučnosť tepelného čerpadla\n\nHlučnosť závisí od konkrétneho modelu, výkonu, umiestnenia vonkajšej jednotky a kvality montáže. Pri správnom návrhu sa dá riziko nepríjemného hluku výrazne znížiť, najmä ak sa jednotka neumiestni priamo k oddychovej zóne alebo k susedom.\n\nIde u vás o novostavbu alebo už existujúci dom?",
     "FAQ",
     "/faq/",
     "faq-hlucnost",
     "Hlučnosť",
   ),
   cena: createResponse(
-    "### Cena\n\nCena závisí od veľkosti domu, typu riešenia a rozsahu montáže. Presnú cenu by mal potvrdiť technik po základných vstupoch.",
+    "### Cena závisí od domu\n\nPresnú cenu bez vstupov nechcem hádať. Najviac ju ovplyvní plocha domu, tepelné straty, typ systému, príprava rozvodov a rozsah montáže. Pri dobrom návrhu sa však nepozerá iba na najnižšiu cenu, ale aj na dlhodobé náklady.\n\nAká je približne plocha domu v m²?",
     "FAQ",
     "/faq/",
     "faq-cena",
     "Cena",
   ),
   kontakt: createResponse(
-    "### Kontakt\n\nKontakt je najlepší ďalší krok, keď už chceš riešiť konkrétny dom alebo cenový odhad.",
+    "### Kontakt na odborný návrh\n\nKontakt dáva zmysel vtedy, keď už chcete riešiť konkrétny dom, cenu alebo vhodnú kombináciu technológií. Najlepšie je pripraviť si základné údaje: typ stavby, plochu domu, aktuálne kúrenie a prioritu.\n\nChcete skôr orientačne poradiť tu v chate, alebo už riešite konkrétnu ponuku?",
     "Kontakt",
     "/kontakt/",
     "kontakt-formular",
     "Kontaktný formulár",
   ),
   realizacie: createResponse(
-    "### Realizácie\n\nRealizácie pomáhajú ukázať, ako vyzerá riešenie v praxi na konkrétnom dome.",
+    "### Realizácie\n\nRealizácie sú dobré na to, aby ste videli, ako podobné riešenia vyzerajú v praxi. Pri vykurovaní, chladení a vetraní je však dôležité porovnávať domy s podobnou veľkosťou, izoláciou a očakávaným komfortom.\n\nChcete pozrieť skôr realizácie tepelných čerpadiel alebo rekuperácie?",
     "Realizácie",
     "/realizacie/",
     "realizacia-rodinny-dom",
@@ -173,12 +178,20 @@ function fakeLocalResponse(message: string): ChatResponse {
   if (normalized.includes("realizac")) return fakeResponses.realizacie;
 
   return createResponse(
-    "### Testovací režim\n\nZatiaľ som v testovacom režime. Skús sa spýtať na **NIBE**, **dotácie**, **montáž**, **servis**, **cenu** alebo **kontakt**.",
-    "Produkty",
-    "/produkty/",
-    "nibe-s2125",
-    "NIBE S2125",
+    "### Pomôžem vám vybrať smer\n\nNajlepšie je začať od situácie domu, nie od konkrétneho produktu. GEOTHERM rieši hlavne tepelné čerpadlá, podlahové kúrenie, chladenie, rekuperáciu, fotovoltiku, servis a dotácie OZE.\n\nStaviate nový dom alebo rekonštruujete?",
+    "Kontakt",
+    "/kontakt/",
+    "kontakt-formular",
+    "Kontaktný formulár",
   );
+}
+
+function normalizeChatResponse(data: BackendChatResponse): ChatResponse {
+  return {
+    answer: data.answer ?? data.message ?? "### GEOTHERM odpoveď\n\nNemám pripravenú odpoveď.\n\nStaviate nový dom alebo rekonštruujete?",
+    sources: data.sources ?? [],
+    action: data.action ?? data.actions?.[0],
+  };
 }
 
 async function sendMessage(message: string, config: EmbedConfig): Promise<ChatResponse> {
@@ -195,7 +208,7 @@ async function sendMessage(message: string, config: EmbedConfig): Promise<ChatRe
       });
 
       if (!response.ok) throw new Error("Backend request failed.");
-      return (await response.json()) as ChatResponse;
+      return normalizeChatResponse((await response.json()) as BackendChatResponse);
     } catch (error) {
       if (config.debug) console.warn("[ArcigyChatbot] Backend failed, using fake local response.", error);
     }
@@ -345,7 +358,7 @@ function Chatbot({ config }: { config: EmbedConfig }) {
                     <MarkdownMessage content={message.content} />
                     {message.response?.action ? (
                       <div className="arcigy-chatbot__actions">
-                        <button type="button" onClick={() => runAction(message.response!.action)}>
+                        <button type="button" onClick={() => message.response?.action && runAction(message.response.action)}>
                           Ukázať na stránke
                         </button>
                       </div>
@@ -465,7 +478,8 @@ function mountWidget() {
     test: {
       validateSelector,
       runFakeAction(name: string) {
-        runAction(fakeLocalResponse(name).action);
+        const action = fakeLocalResponse(name).action;
+        if (action) runAction(action);
       },
     },
   };
