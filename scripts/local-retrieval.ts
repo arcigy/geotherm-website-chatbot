@@ -234,7 +234,7 @@ export function retrieveKnowledge(chunks: KnowledgeChunk[], query: string, limit
   const querySet = new Set(expandedTokens);
   const priceIntent = ["cena", "cennik", "cenov", "ponuk", "naklad", "stoji"].some((token) => querySet.has(token));
   const noiseIntent = ["hluk", "hlucnost", "hlucn", "tich"].some((token) => querySet.has(token));
-  const outOfDomainIntent = ["auto", "automobil", "hypotek", "pocasi", "pocas", "gulas", "futbal", "akci", "etf", "investovat", "praha"].some((token) =>
+  const outOfDomainIntent = ["auto", "automobil", "hypotek", "pocasi", "pocas", "gulas", "futbal", "akci", "akcii", "akcie", "etf", "bitcoin", "praha"].some((token) =>
     querySet.has(token),
   );
   const scored: RetrievalResult[] = [];
@@ -270,7 +270,7 @@ export function retrieveKnowledge(chunks: KnowledgeChunk[], query: string, limit
       (querySet.has("navrh") && (normalizedTitle.includes("navrh") || normalizedHeading.includes("navrh")) ? 35 : 0) +
       (querySet.has("projekt") && normalizedText.includes("podorys") ? 28 : 0) +
       (querySet.has("znack") && (normalizedText.includes("nibe") || normalizedText.includes("vaillant")) ? 20 : 0);
-    const outOfDomainPenalty = outOfDomainIntent ? 45 : 0;
+    const outOfDomainPenalty = outOfDomainIntent ? 140 : 0;
     const densityBoost = queryTokens.length
       ? ((titleMatches + headingMatches + textMatches + urlMatches) / queryTokens.length) * 7
       : 0;

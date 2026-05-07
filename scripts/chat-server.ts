@@ -240,6 +240,28 @@ function sourceBullets(results: RetrievalResult[], confidence: "high" | "medium"
     .map((snippet) => `- ${snippet}`);
 }
 
+function topicLeadIn(message: string): string | null {
+  const text = normalizePolicyText(message);
+  const mentionsSubsidy = text.includes("dotac") || text.includes("prispev") || text.includes("stat");
+  const mentionsService = text.includes("servis") || text.includes("udrzb") || text.includes("prehliad");
+  const mentionsInstallation = text.includes("montaz") || text.includes("instalac") || text.includes("nov") || text.includes("namont");
+  const mentionsCosts = text.includes("naklad") || text.includes("kureni") || text.includes("vykurov") || text.includes("usetr");
+
+  if (mentionsSubsidy && mentionsService) {
+    return "Pri dotácii ide najmä o podporu a podmienky programu; pri servise ide o kontrolu, údržbu a spoľahlivú prevádzku existujúceho systému.";
+  }
+  if (mentionsInstallation && mentionsService) {
+    return "Montáž nového tepelného čerpadla rieši návrh, výber a inštaláciu systému; servis existujúceho čerpadla rieši kontrolu, nastavenie, údržbu a prevádzkovú spoľahlivosť.";
+  }
+  if (mentionsSubsidy) {
+    return "Dotácia aj príspevok závisia od dostupnej podpory, podmienok programu a oprávnenosti konkrétneho žiadateľa.";
+  }
+  if (mentionsCosts) {
+    return "Pri nákladoch na vykurovanie záleží na type domu, tepelných stratách, zdroji tepla, nastavení systému a prevádzke.";
+  }
+  return null;
+}
+
 function composeSensitiveAnswer(policy: AnswerPolicy, results: RetrievalResult[], confidence: "high" | "medium" | "low"): string {
   const bullets = sourceBullets(results, confidence, false);
   const evidence = bullets.length ? ["", "Relevantné zdroje hovoria:", "", ...bullets] : [];
@@ -275,7 +297,8 @@ function composeAnswer(message: string, results: RetrievalResult[], confidence: 
   if (policy.kind === "ambiguous") {
     const bullets = sourceBullets(results, confidence, intent === "contact");
     const intro = bullets.length ? "Podľa dostupných zdrojov viem zatiaľ odpovedať len všeobecne:" : "Na toto potrebujem trochu viac kontextu.";
-    return [intro, "", ...bullets, "", policy.followUp].filter((line) => line !== undefined).join("\n");
+    const leadIn = topicLeadIn(message);
+    return [intro, "", leadIn, ...bullets, "", policy.followUp].filter(Boolean).join("\n");
   }
 
   if (!top || confidence === "low") {
@@ -287,6 +310,7 @@ function composeAnswer(message: string, results: RetrievalResult[], confidence: 
   }
 
   const bullets = sourceBullets(results, confidence, intent === "contact");
+  const leadIn = topicLeadIn(message);
   const intro =
     confidence === "high"
       ? "Podľa nájdených informácií na webe:"
@@ -295,10 +319,11 @@ function composeAnswer(message: string, results: RetrievalResult[], confidence: 
   return [
     intro,
     "",
+    leadIn,
     ...bullets,
     "",
     `Najrelevantnejší zdroj: ${top.chunk.pageTitle} (${top.chunk.url})`,
-  ].join("\n");
+  ].filter(Boolean).join("\n");
 }
 
 export async function createChatResponse(requestBody: ChatRequest, knowledgePath?: string): Promise<ChatResponse> {

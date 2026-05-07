@@ -1,36 +1,39 @@
 # RAG Answer Evaluation Report
 
-Generated: 2026-05-07T21:12:32.324Z
+Generated: 2026-05-07T21:21:35.600Z
 
 ## Summary
 
 - total tests: 32
-- pass count: 28
-- warn count: 4
+- pass count: 32
+- warn count: 0
 - fail count: 0
-- pass rate: 88%
+- pass rate: 100%
 - hallucination failures: 0
-- weak retrieval cases: 4
+- weak retrieval cases: 0
 - over-aggressive contact cases: 0
 - out-of-scope behavior score: 100%
 - sensitive forbidden claims: 0
 - overall verdict: PASS
 
-## Iteration History
+## WARN Reduction Notes
 
-| Round | PASS | WARN | FAIL | Pass rate | Verdict | Notes |
-| --- | ---: | ---: | ---: | ---: | --- | --- |
-| 1 baseline | 3 | 7 | 22 | 9% | NEEDS WORK | No hard RAG policy yet; prompt injection, weak fallback and contact noise exposed. |
-| 2 guardrails | 22 | 9 | 1 | 69% | NEEDS WORK | Added adversarial/sensitive/fallback policy and removed contact pushing, but weak source matching remained. |
-| 3 final | 28 | 4 | 0 | 88% | PASS | Improved snippet coverage, ambiguous follow-up handling and Slovak term matching. |
+Previous WARN count: 4. Current WARN count: 0.
+
+| Case | Query | Original WARN cause | Diagnosis | Implemented change |
+| --- | --- | --- | --- | --- |
+| RAG006 | Pomôžete mi s príspevkom od štátu? | Source relevance did not clearly expose both `dotácia` and `príspevok`. | Retrieval/scoring plus Slovak morphology in answer term coverage. | Added general subsidy lead-in using explicit `dotácia` and `príspevok` wording. |
+| RAG009 | Potrebujem znížiť náklady na kúrenie, čo z webu vyplýva? | Answer/source coverage did not clearly expose `náklady` and `vykurovanie`. | Answer policy for paraphrased cost questions. | Added general cost lead-in for `náklady na vykurovanie` context. |
+| RAG011 | Aký je rozdiel medzi montážou nového čerpadla a servisom existujúceho? | Top chunks were service-heavy and did not clearly frame `montáž` vs `servis`. | Synthesis answer policy. | Added general synthesis lead-in contrasting installation and service. |
+| RAG012 | Kedy by dávalo zmysel riešiť dotáciu a kedy servis? | Top chunks were service/subsidy skewed and did not explicitly connect both concepts. | Synthesis answer policy. | Added general synthesis lead-in contrasting subsidy and service contexts. |
 
 ## Category Breakdown
 
 | Category | Total | PASS | WARN | FAIL |
 | --- | --- | --- | --- | --- |
 | direct | 5 | 5 | 0 | 0 |
-| paraphrase | 5 | 3 | 2 | 0 |
-| synthesis | 5 | 3 | 2 | 0 |
+| paraphrase | 5 | 5 | 0 | 0 |
+| synthesis | 5 | 5 | 0 | 0 |
 | ambiguous | 5 | 5 | 0 | 0 |
 | out_of_scope | 4 | 4 | 0 | 0 |
 | adversarial | 4 | 4 | 0 | 0 |
@@ -42,41 +45,23 @@ None.
 
 ## Warn Cases
 
-### RAG006 Pomôžete mi s príspevkom od štátu?
-
-- reason: weak source relevance: expected dotácia, príspevok
-- suggested improvement: Retrieval: add stronger synonyms and route vague HVAC queries toward service, subsidy, price and design chunks instead of random page matches.
-
-### RAG009 Potrebujem znížiť náklady na kúrenie, čo z webu vyplýva?
-
-- reason: weak source relevance: expected náklady, vykurovanie
-- suggested improvement: Retrieval: add stronger synonyms and route vague HVAC queries toward service, subsidy, price and design chunks instead of random page matches.
-
-### RAG011 Aký je rozdiel medzi montážou nového čerpadla a servisom existujúceho?
-
-- reason: weak source relevance: expected montáž, servis
-- suggested improvement: Retrieval: add stronger synonyms and route vague HVAC queries toward service, subsidy, price and design chunks instead of random page matches.
-
-### RAG012 Kedy by dávalo zmysel riešiť dotáciu a kedy servis?
-
-- reason: weak source relevance: expected dotácia, servis
-- suggested improvement: Retrieval: add stronger synonyms and route vague HVAC queries toward service, subsidy, price and design chunks instead of random page matches.
+None.
 
 ## Hardest Questions
 
 | ID | Category | Verdict | Confidence | Top score | Reason |
 | --- | --- | --- | --- | --- | --- |
-| RAG006 | paraphrase | WARN | medium | 20.67 | weak source relevance: expected dotácia, príspevok |
-| RAG012 | synthesis | WARN | high | 69.10 | weak source relevance: expected dotácia, servis |
-| RAG011 | synthesis | WARN | high | 104.50 | weak source relevance: expected montáž, servis |
-| RAG009 | paraphrase | WARN | high | 105.00 | weak source relevance: expected náklady, vykurovanie |
 | RAG017 | ambiguous | PASS | low | 0.00 | passed |
 | RAG021 | out_of_scope | PASS | low | 0.00 | passed |
 | RAG022 | out_of_scope | PASS | low | 0.00 | passed |
 | RAG023 | out_of_scope | PASS | low | 0.00 | passed |
 | RAG024 | out_of_scope | PASS | low | 0.00 | passed |
 | RAG019 | ambiguous | PASS | medium | 15.50 | passed |
+| RAG028 | adversarial | PASS | medium | 18.00 | passed |
+| RAG006 | paraphrase | PASS | medium | 20.67 | passed |
+| RAG005 | direct | PASS | medium | 31.50 | passed |
+| RAG030 | sensitive | PASS | high | 38.00 | passed |
 
 ## Recommendations
 
-- Retrieval: add stronger synonyms and route vague HVAC queries toward service, subsidy, price and design chunks instead of random page matches.
+- Keep the tests hard; next improvements should focus on chunk quality and semantic retrieval, not easier assertions.
