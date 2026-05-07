@@ -121,7 +121,7 @@ const synonymGroups = [
   ["ariston"],
   ["daikin"],
   ["fotovoltaika", "fotovoltika", "solarne", "panely"],
-  ["kontakt", "kontaktovat", "najdem", "najst", "telefon", "tel", "email", "mail", "adresa", "showroom"],
+  ["kontakt", "kontaktovat", "kontaktujem", "kontaktuj", "najdem", "najst", "telefon", "tel", "email", "mail", "adresa", "showroom"],
 ];
 
 const synonymMap = new Map<string, Set<string>>();

@@ -17,6 +17,13 @@
     "scripts/retrieve-knowledge.ts",
     "scripts/evaluate-retrieval.ts",
     "scripts/chat-server.ts",
-    "scripts/test-chat-api.ts"
+    "scripts/test-chat-api.ts",
+    "scripts/local-db.ts",
+    "scripts/db-init.ts",
+    "scripts/sales-system.ts",
+    "scripts/test-sales-flow.ts",
+    "scripts/leads-list.ts",
+    "scripts/analytics-report.ts",
+    "scripts/security-self-check.ts"
   ]
 }

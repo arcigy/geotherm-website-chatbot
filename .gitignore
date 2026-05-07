@@ -2,6 +2,8 @@ node_modules
 .next
 .tmp-tests
 .tmp-wp-export
+data/*.db
+data/*.db-*
 out
 tsconfig.tsbuildinfo
 .env

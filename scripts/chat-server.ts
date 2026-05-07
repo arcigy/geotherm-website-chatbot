@@ -2,11 +2,37 @@ import { createServer, type IncomingMessage, type Server, type ServerResponse } 
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { type KnowledgeChunk, retrieveKnowledge, type RetrievalResult } from "./local-retrieval";
+import {
+  getConversationMessages,
+  getOrCreateActiveConversation,
+  getSiteByPublicId,
+  initDb,
+  insertEvent,
+  insertMessage,
+  insertRetrievalEvent,
+  updateConversation,
+  upsertLead,
+  upsertSession,
+} from "./local-db";
+import {
+  detectIntent,
+  extractContact,
+  leadScore,
+  nextLeadQuestion,
+  updateQualificationState,
+  type QualificationState,
+  type SalesIntent,
+} from "./sales-system";
 
 type ChatRequest = {
   message?: string;
   currentUrl?: string;
   siteId?: string;
+  anonymousId?: string;
+  metadata?: {
+    userAgent?: string;
+    referrer?: string;
+  };
 };
 
 type ChatSource = {
@@ -16,11 +42,21 @@ type ChatSource = {
   snippet: string;
 };
 
-type ChatResponse = {
+export type ChatResponse = {
+  conversationId: string;
   answer: string;
+  intent: SalesIntent;
   confidence: "high" | "medium" | "low";
   topScore: number;
   sources: ChatSource[];
+  leadCapture: {
+    shouldAsk: boolean;
+    nextQuestion: string | null;
+  };
+  lead: {
+    captured: boolean;
+    score: number;
+  };
   action: null;
 };
 
@@ -69,6 +105,10 @@ function writeJson(response: ServerResponse, statusCode: number, body: unknown, 
   response.end(`${JSON.stringify(body, null, 2)}\n`);
 }
 
+function writeError(response: ServerResponse, statusCode: number, code: string, message: string, origin?: string): void {
+  writeJson(response, statusCode, { error: { code, message } }, origin);
+}
+
 async function readJsonBody(request: IncomingMessage): Promise<unknown> {
   const chunks: Buffer[] = [];
   let total = 0;
@@ -101,9 +141,20 @@ function sourceFromResult(result: RetrievalResult): ChatSource {
   };
 }
 
-function composeAnswer(message: string, results: RetrievalResult[]): string {
+function parseState(value: string): QualificationState {
+  try {
+    return JSON.parse(value) as QualificationState;
+  } catch {
+    return {};
+  }
+}
+
+function generatedAnonymousId(): string {
+  return `server_${Math.random().toString(36).slice(2)}_${Date.now()}`;
+}
+
+function composeAnswer(message: string, results: RetrievalResult[], confidence: "high" | "medium" | "low"): string {
   const top = results[0];
-  const confidence = confidenceFromResult(top);
 
   if (!top || confidence === "low") {
     return [
@@ -118,10 +169,7 @@ function composeAnswer(message: string, results: RetrievalResult[]): string {
     confidence === "high"
       ? "Podľa nájdených informácií na webe:"
       : "Podľa dostupných informácií web uvádza, ale výsledok berte ako menej istý:";
-  const bullets = usefulResults.map((result) => {
-    const text = result.snippet || result.chunk.text;
-    return `- ${text}`;
-  });
+  const bullets = usefulResults.map((result) => `- ${result.snippet || result.chunk.text}`);
 
   return [
     intro,
@@ -136,28 +184,139 @@ function composeAnswer(message: string, results: RetrievalResult[]): string {
 
 export async function createChatResponse(requestBody: ChatRequest, knowledgePath?: string): Promise<ChatResponse> {
   const message = typeof requestBody.message === "string" ? requestBody.message.trim() : "";
-  if (!message) {
-    return {
-      answer: "Chýba text otázky.",
-      confidence: "low",
-      topScore: 0,
-      sources: [],
-      action: null,
-    };
-  }
+  const sitePublicId = typeof requestBody.siteId === "string" ? requestBody.siteId.trim() : "";
 
+  if (!message) throw new Error("message is required");
+  if (message.length > 2000) throw new Error("message is too long");
+  if (!sitePublicId) throw new Error("siteId is required");
+
+  initDb();
+  const site = getSiteByPublicId(sitePublicId);
+  if (!site) throw new Error(`Unknown siteId: ${sitePublicId}`);
+
+  const anonymousId = requestBody.anonymousId?.trim() || generatedAnonymousId();
+  const session = upsertSession(site, anonymousId, requestBody.metadata?.userAgent);
+  const conversation = getOrCreateActiveConversation(site, session);
   const knowledge = await loadKnowledge(knowledgePath);
   const retrieval = retrieveKnowledge(knowledge, message, 5);
   const topResult = retrieval.results[0];
   const topScore = topResult?.score.finalScore || 0;
   const confidence = confidenceFromResult(topResult);
   const sourceResults = confidence === "low" ? retrieval.results.slice(0, 2) : retrieval.results.slice(0, 3);
+  const sources = sourceResults.map(sourceFromResult);
+  const intent = detectIntent(message, retrieval.results);
+  const previousState = parseState(conversation.qualification_state_json);
+  const nextState = updateQualificationState(previousState, message, intent);
+  const contact = extractContact(message);
+  const score = leadScore(nextState, intent);
+  const leadCaptured = Boolean(contact.email || contact.phone);
+  const leadCapture = nextLeadQuestion(nextState, intent, confidence);
+  const previousMessages = getConversationMessages(conversation.id);
+
+  if (!previousMessages.length) {
+    insertEvent({
+      siteId: site.id,
+      sessionId: session.id,
+      conversationId: conversation.id,
+      eventType: "widget_opened",
+      payload: { inferredFromFirstMessage: true, currentUrl: requestBody.currentUrl },
+    });
+  }
+  insertEvent({
+    siteId: site.id,
+    sessionId: session.id,
+    conversationId: conversation.id,
+    eventType: "message_sent",
+    payload: { currentUrl: requestBody.currentUrl, referrer: requestBody.metadata?.referrer, messageLength: message.length },
+  });
+  insertMessage({ conversationId: conversation.id, role: "user", content: message });
+  insertRetrievalEvent({ conversationId: conversation.id, query: message, topScore, confidence, topSources: sources });
+  insertEvent({
+    siteId: site.id,
+    sessionId: session.id,
+    conversationId: conversation.id,
+    eventType: "retrieval_performed",
+    payload: { topScore, confidence, results: sources.length },
+  });
+
+  if (confidence === "low") {
+    insertEvent({
+      siteId: site.id,
+      sessionId: session.id,
+      conversationId: conversation.id,
+      eventType: "fallback_triggered",
+      payload: { query: message, topScore },
+    });
+  }
+
+  let answer = composeAnswer(message, retrieval.results, confidence);
+  if (leadCaptured) {
+    const transcript = getConversationMessages(conversation.id);
+    upsertLead({
+      conversationId: conversation.id,
+      siteId: site.id,
+      name: nextState.contact_name,
+      email: nextState.contact_email,
+      phone: nextState.contact_phone,
+      projectType: nextState.project_type,
+      location: nextState.location,
+      timeline: nextState.timeline,
+      budget: undefined,
+      intent,
+      score,
+      transcript,
+    });
+    updateConversation(conversation.id, {
+      status: "lead_captured",
+      intent,
+      qualificationStateJson: JSON.stringify(nextState),
+    });
+    insertEvent({
+      siteId: site.id,
+      sessionId: session.id,
+      conversationId: conversation.id,
+      eventType: "lead_captured",
+      payload: { score, email: Boolean(nextState.contact_email), phone: Boolean(nextState.contact_phone) },
+    });
+    answer = "Ďakujem, mám to. Odovzdám dopyt technikovi/obchodníkovi. Ak treba, doplním k nemu aj kontext z tejto konverzácie.";
+  } else {
+    updateConversation(conversation.id, {
+      intent,
+      qualificationStateJson: JSON.stringify(nextState),
+    });
+    if (leadCapture.shouldAsk && leadCapture.nextQuestion) {
+      insertEvent({
+        siteId: site.id,
+        sessionId: session.id,
+        conversationId: conversation.id,
+        eventType: "lead_question_asked",
+        payload: { nextQuestion: leadCapture.nextQuestion, intent },
+      });
+      answer = `${answer}\n\n${leadCapture.nextQuestion}`;
+    }
+  }
+
+  insertMessage({ conversationId: conversation.id, role: "assistant", content: answer, confidence, sources });
+  insertEvent({
+    siteId: site.id,
+    sessionId: session.id,
+    conversationId: conversation.id,
+    eventType: "answer_returned",
+    payload: { confidence, intent, leadCaptured },
+  });
 
   return {
-    answer: composeAnswer(message, retrieval.results),
+    conversationId: conversation.id,
+    answer,
+    intent,
     confidence,
     topScore,
-    sources: sourceResults.map(sourceFromResult),
+    sources,
+    leadCapture,
+    lead: {
+      captured: leadCaptured,
+      score,
+    },
     action: null,
   };
 }
@@ -170,6 +329,7 @@ export async function startChatServer(options: StartOptions = {}): Promise<Serve
   const port = options.port ?? Number.parseInt(process.env.CHAT_API_PORT || "4317", 10);
   const host = options.host ?? process.env.CHAT_API_HOST ?? "127.0.0.1";
   const knowledgePath = options.knowledgePath ?? defaultKnowledgePath;
+  initDb();
   await loadKnowledge(knowledgePath);
 
   const server = createServer(async (request, response) => {
@@ -187,14 +347,14 @@ export async function startChatServer(options: StartOptions = {}): Promise<Serve
     }
 
     if (request.method !== "POST" || request.url !== "/chat") {
-      writeJson(response, 404, { error: "Not found" }, origin);
+      writeError(response, 404, "not_found", "Not found", origin);
       return;
     }
 
     try {
       const body = await readJsonBody(request);
       if (!isChatRequest(body)) {
-        writeJson(response, 400, { error: "Request must include message." }, origin);
+        writeError(response, 400, "bad_request", "Request must include message.", origin);
         return;
       }
 
@@ -202,7 +362,8 @@ export async function startChatServer(options: StartOptions = {}): Promise<Serve
       writeJson(response, 200, chatResponse, origin);
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
-      writeJson(response, 500, { error: message }, origin);
+      const status = message.includes("Unknown siteId") || message.includes("required") || message.includes("too long") ? 400 : 500;
+      writeError(response, status, status === 400 ? "bad_request" : "server_error", message, origin);
     }
   });
 

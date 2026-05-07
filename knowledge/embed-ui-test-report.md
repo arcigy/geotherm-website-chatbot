@@ -2,7 +2,7 @@
 
 Preview URL: `http://127.0.0.1:4321/embed-preview.html`
 API base: `http://127.0.0.1:4317`
-Generated: 2026-05-07T17:54:32.492Z
+Generated: 2026-05-07T20:41:59.021Z
 
 ## Summary
 
@@ -21,7 +21,7 @@ Query: `aké hlučné je NIBE`
 
 Podľa nájdených informácií na webe:
 
-u pri vykurovaní miestností, 35/55 °C A+++ Tichý režim Tepelné čerpadlo je možné prepnúť do „tichého režimu“, ktorý znižuje j
+u pri vykurovaní miestností, 35/55 °C A+++ Tichý režim Tepelné čerpadlo je možné prepnúť do „tichého režimu“, ktorý znižuje jeho
 
 ## Fallback Query
 

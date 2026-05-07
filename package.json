@@ -23,6 +23,11 @@
     "test:chat-api": "tsx scripts/test-chat-api.ts",
     "preview:embed": "vite dist-embed --host 127.0.0.1 --port 4321",
     "test:embed-ui": "tsx scripts/test-embed-ui.ts",
+    "db:init": "tsx scripts/db-init.ts",
+    "test:sales-flow": "tsx scripts/test-sales-flow.ts",
+    "leads:list": "tsx scripts/leads-list.ts",
+    "analytics:report": "tsx scripts/analytics-report.ts",
+    "security:self-check": "tsx scripts/security-self-check.ts",
     "test:wp-plugin": "node scripts/test-wp-plugin.mjs"
   },
   "dependencies": {
