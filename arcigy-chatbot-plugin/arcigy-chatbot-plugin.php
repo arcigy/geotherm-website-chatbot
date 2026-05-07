@@ -22,8 +22,8 @@ require_once ARCIGY_CHATBOT_DIR . 'includes/class-admin.php';
 function arcigy_chatbot_default_options() {
     return array(
         'enabled' => '1',
-        'mode' => 'fake',
-        'external_backend_url' => '',
+        'mode' => 'external',
+        'external_backend_url' => 'http://127.0.0.1:3000/api/geotherm-chat',
         'api_key' => '',
         'show_on_all_pages' => '1',
     );

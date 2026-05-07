@@ -44,7 +44,16 @@ class Arcigy_Chatbot_REST {
     public function message($request) {
         $payload = $request->get_json_params();
         $message = isset($payload['message']) ? sanitize_textarea_field((string) $payload['message']) : '';
+        $messages = $this->sanitize_messages($payload['messages'] ?? array());
+        $conversation_state = isset($payload['conversationState']) && is_array($payload['conversationState'])
+            ? $payload['conversationState']
+            : null;
         $current_url = isset($payload['currentUrl']) ? esc_url_raw((string) $payload['currentUrl']) : '';
+
+        if ($message === '' && !empty($messages)) {
+            $last_message = end($messages);
+            $message = isset($last_message['content']) ? sanitize_textarea_field((string) $last_message['content']) : '';
+        }
 
         if ($message === '') {
             return new WP_Error('arcigy_chatbot_empty_message', 'Message is required.', array('status' => 400));
@@ -53,17 +62,62 @@ class Arcigy_Chatbot_REST {
         $options = arcigy_chatbot_options();
 
         if ($options['mode'] === 'external' && !empty($options['external_backend_url'])) {
-            return $this->forward_to_external_backend($options, $message, $current_url);
+            return $this->forward_to_external_backend($options, $message, $current_url, $messages, $conversation_state);
         }
 
         return rest_ensure_response($this->fake_response($message));
     }
 
-    private function forward_to_external_backend($options, $message, $current_url) {
+    private function sanitize_messages($messages) {
+        if (!is_array($messages)) {
+            return array();
+        }
+
+        $sanitized = array();
+
+        foreach ($messages as $message) {
+            if (!is_array($message)) {
+                continue;
+            }
+
+            $role = isset($message['role']) ? sanitize_key((string) $message['role']) : 'user';
+            if (!in_array($role, array('user', 'assistant'), true)) {
+                $role = 'user';
+            }
+
+            $content = isset($message['content']) ? sanitize_textarea_field((string) $message['content']) : '';
+            if ($content === '') {
+                continue;
+            }
+
+            $sanitized[] = array(
+                'role' => $role,
+                'content' => $content,
+            );
+        }
+
+        return array_slice($sanitized, -20);
+    }
+
+    private function forward_to_external_backend($options, $message, $current_url, $messages, $conversation_state) {
         $headers = array('Content-Type' => 'application/json');
 
         if (!empty($options['api_key'])) {
             $headers['X-Arcigy-Api-Key'] = $options['api_key'];
+        }
+
+        $request_body = array(
+            'messages' => !empty($messages) ? $messages : array(
+                array(
+                    'role' => 'user',
+                    'content' => $message,
+                ),
+            ),
+            'currentUrl' => $current_url,
+        );
+
+        if (is_array($conversation_state)) {
+            $request_body['conversationState'] = $conversation_state;
         }
 
         $response = wp_remote_post(
@@ -71,12 +125,7 @@ class Arcigy_Chatbot_REST {
             array(
                 'timeout' => 20,
                 'headers' => $headers,
-                'body' => wp_json_encode(
-                    array(
-                        'message' => $message,
-                        'currentUrl' => $current_url,
-                    )
-                ),
+                'body' => wp_json_encode($request_body),
             )
         );
 
@@ -90,11 +139,34 @@ class Arcigy_Chatbot_REST {
             return new WP_Error('arcigy_chatbot_external_invalid', 'External chatbot backend returned invalid JSON.', array('status' => 502));
         }
 
-        return rest_ensure_response($body);
+        return rest_ensure_response($this->normalize_backend_response($body));
+    }
+
+    private function normalize_backend_response($body) {
+        $message = isset($body['message']) ? wp_kses_post((string) $body['message']) : '';
+        $answer = isset($body['answer']) ? wp_kses_post((string) $body['answer']) : $message;
+        $actions = isset($body['actions']) && is_array($body['actions']) ? $body['actions'] : array();
+        $action = isset($body['action']) && is_array($body['action']) ? $body['action'] : null;
+
+        if (!$action && !empty($actions[0]) && is_array($actions[0])) {
+            $action = $actions[0];
+        }
+
+        return array(
+            'answer' => $answer,
+            'message' => $message !== '' ? $message : $answer,
+            'conversationState' => isset($body['conversationState']) && is_array($body['conversationState'])
+                ? $body['conversationState']
+                : null,
+            'images' => isset($body['images']) && is_array($body['images']) ? $body['images'] : array(),
+            'actions' => $actions,
+            'action' => $action,
+            'followupQuestion' => isset($body['followupQuestion']) ? sanitize_text_field((string) $body['followupQuestion']) : null,
+        );
     }
 
     private function fake_response($message) {
-        $normalized = remove_accents(mb_strtolower($message));
+        $normalized = remove_accents(strtolower($message));
 
         if (str_contains($normalized, 'nibe')) {
             return $this->response_for(
