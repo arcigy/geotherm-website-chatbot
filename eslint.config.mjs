@@ -3,7 +3,14 @@ import nextTypescript from "eslint-config-next/typescript";
 
 const eslintConfig = [
   {
-    ignores: [".next/**", ".tmp-tests/**", "node_modules/**", "next-env.d.ts", "arcigy-chatbot-plugin/assets/**"],
+    ignores: [
+      ".next/**",
+      ".tmp-tests/**",
+      "node_modules/**",
+      "next-env.d.ts",
+      "arcigy-chatbot-plugin/assets/**",
+      "dist-embed/**",
+    ],
   },
   ...nextVitals,
   ...nextTypescript,

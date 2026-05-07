@@ -6,6 +6,7 @@
     "dev": "next dev",
     "build": "next build",
     "build:wp-chatbot": "vite build --config vite.wp-chatbot.config.ts",
+    "build:embed": "vite build --config vite.embed.config.ts",
     "start": "next start",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
