@@ -1,5 +1,7 @@
-import { FormEvent, KeyboardEvent, useEffect, useRef, useState } from "react";
+import { CSSProperties, KeyboardEvent, PointerEvent, useEffect, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import { EmbedAction, runAction, runPendingAction, validateSelector } from "./embed/actionExecutor";
 import "./embed.css";
 
@@ -28,7 +30,7 @@ type ChatResponse = {
 type ChatMessage = {
   id: string;
   role: "user" | "assistant";
-  text: string;
+  content: string;
   response?: ChatResponse;
 };
 
@@ -51,56 +53,56 @@ const version = "0.1.0";
 
 const fakeResponses: Record<string, ChatResponse> = {
   nibe: createResponse(
-    "NIBE S2125 je ukážkový produktový intent pre tepelné čerpadlá. V testovacom režime ťa viem presunúť na sekciu produktu.",
+    "### NIBE S2125\n\nNIBE S2125 je ukážkový produktový intent pre tepelné čerpadlá. V testovacom režime ťa viem presunúť na sekciu produktu.",
     "Produkty",
     "/produkty/",
     "nibe-s2125",
     "NIBE S2125",
   ),
   dotacie: createResponse(
-    "Dotácie závisia od aktuálneho programu a technického riešenia. V testovacom režime ťa presuniem na dotačnú sekciu.",
+    "### Dotácie\n\nDotácie závisia od aktuálneho programu a technického riešenia. V testovacom režime ťa presuniem na dotačnú sekciu.",
     "Produkty",
     "/produkty/",
     "dotacie",
     "Dotácie",
   ),
   montaz: createResponse(
-    "Montáž zahŕňa prípravu, osadenie technológie, zapojenie, spustenie a základné zaškolenie.",
+    "### Montáž\n\nMontáž zahŕňa prípravu, osadenie technológie, zapojenie, spustenie a základné zaškolenie.",
     "Produkty",
     "/produkty/",
     "montaz",
     "Montáž",
   ),
   servis: createResponse(
-    "Servis rieši kontrolu systému, nastavenie prevádzky a technickú podporu po montáži.",
+    "### Servis\n\nServis rieši kontrolu systému, nastavenie prevádzky a technickú podporu po montáži.",
     "Produkty",
     "/produkty/",
     "servis",
     "Servis",
   ),
   hlucnost: createResponse(
-    "Hlučnosť závisí od konkrétneho zariadenia, umiestnenia a montáže. Dôležitý je správny návrh výkonu a pozície jednotky.",
+    "### Hlučnosť\n\nHlučnosť závisí od konkrétneho zariadenia, umiestnenia a montáže. Dôležitý je správny návrh výkonu a pozície jednotky.",
     "FAQ",
     "/faq/",
     "faq-hlucnost",
     "Hlučnosť",
   ),
   cena: createResponse(
-    "Cena závisí od veľkosti domu, typu riešenia a rozsahu montáže. Presnú cenu by mal potvrdiť technik po základných vstupoch.",
+    "### Cena\n\nCena závisí od veľkosti domu, typu riešenia a rozsahu montáže. Presnú cenu by mal potvrdiť technik po základných vstupoch.",
     "FAQ",
     "/faq/",
     "faq-cena",
     "Cena",
   ),
   kontakt: createResponse(
-    "Kontakt je najlepší ďalší krok, keď už chceš riešiť konkrétny dom alebo cenový odhad.",
+    "### Kontakt\n\nKontakt je najlepší ďalší krok, keď už chceš riešiť konkrétny dom alebo cenový odhad.",
     "Kontakt",
     "/kontakt/",
     "kontakt-formular",
     "Kontaktný formulár",
   ),
   realizacie: createResponse(
-    "Realizácie pomáhajú ukázať, ako vyzerá riešenie v praxi na konkrétnom dome.",
+    "### Realizácie\n\nRealizácie pomáhajú ukázať, ako vyzerá riešenie v praxi na konkrétnom dome.",
     "Realizácie",
     "/realizacie/",
     "realizacia-rodinny-dom",
@@ -113,15 +115,7 @@ function createResponse(answer: string, pageTitle: string, url: string, sectionI
 
   return {
     answer,
-    sources: [
-      {
-        pageTitle,
-        url,
-        sectionId,
-        selector,
-        heading,
-      },
-    ],
+    sources: [{ pageTitle, url, sectionId, selector, heading }],
     action: {
       type: "navigate_and_highlight",
       url,
@@ -155,6 +149,17 @@ function createId() {
   return `arcigy-${Date.now()}-${Math.random().toString(36).slice(2)}`;
 }
 
+function sanitizeMarkdown(value: string) {
+  return value
+    .replace(/!\[[^\]]*]\([^)]*\)/g, "")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+}
+
+function MarkdownMessage({ content }: { content: string }) {
+  return <ReactMarkdown remarkPlugins={[remarkGfm]}>{sanitizeMarkdown(content)}</ReactMarkdown>;
+}
+
 function fakeLocalResponse(message: string): ChatResponse {
   const normalized = normalize(message);
 
@@ -168,7 +173,7 @@ function fakeLocalResponse(message: string): ChatResponse {
   if (normalized.includes("realizac")) return fakeResponses.realizacie;
 
   return createResponse(
-    "Zatiaľ som v testovacom režime. Skús sa spýtať na NIBE, dotácie, montáž, servis, cenu alebo kontakt.",
+    "### Testovací režim\n\nZatiaľ som v testovacom režime. Skús sa spýtať na **NIBE**, **dotácie**, **montáž**, **servis**, **cenu** alebo **kontakt**.",
     "Produkty",
     "/produkty/",
     "nibe-s2125",
@@ -201,54 +206,78 @@ async function sendMessage(message: string, config: EmbedConfig): Promise<ChatRe
 
 function Chatbot({ config }: { config: EmbedConfig }) {
   const [isOpen, setIsOpen] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragOffset, setDragOffset] = useState(0);
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const typingTimerRef = useRef<number | null>(null);
+
+  const hasConversation = messages.length > 0;
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
-  }, [messages, isLoading]);
+  }, [messages, isLoading, isOpen]);
+
+  useEffect(() => {
+    return () => {
+      if (typingTimerRef.current) window.clearInterval(typingTimerRef.current);
+    };
+  }, []);
+
+  async function animateAssistantMessage(response: ChatResponse) {
+    const id = createId();
+    let index = 0;
+    const content = sanitizeMarkdown(response.answer);
+
+    setMessages((current) => [...current, { id, role: "assistant", content: "", response }]);
+
+    return new Promise<void>((resolve) => {
+      typingTimerRef.current = window.setInterval(() => {
+        index += 4;
+        const nextContent = content.slice(0, index);
+
+        setMessages((current) =>
+          current.map((message) => (message.id === id ? { ...message, content: nextContent, response } : message)),
+        );
+
+        if (index >= content.length) {
+          if (typingTimerRef.current) {
+            window.clearInterval(typingTimerRef.current);
+            typingTimerRef.current = null;
+          }
+          resolve();
+        }
+      }, 12);
+    });
+  }
 
   async function submitMessage() {
     const text = (textareaRef.current?.value || input).trim();
     if (!text || isLoading) return;
 
-    const userMessage: ChatMessage = { id: createId(), role: "user", text };
-    setMessages((current) => [...current, userMessage]);
+    if (typingTimerRef.current) window.clearInterval(typingTimerRef.current);
+
+    setMessages((current) => [...current, { id: createId(), role: "user", content: text }]);
+    setIsOpen(true);
+    setIsCollapsed(false);
     setInput("");
     if (textareaRef.current) textareaRef.current.value = "";
     setIsLoading(true);
 
     try {
       const response = await sendMessage(text, config);
-      setMessages((current) => [
-        ...current,
-        {
-          id: createId(),
-          role: "assistant",
-          text: response.answer,
-          response,
-        },
-      ]);
-    } catch {
-      setMessages((current) => [
-        ...current,
-        {
-          id: createId(),
-          role: "assistant",
-          text: "Niečo sa pokazilo. Skús to prosím ešte raz.",
-        },
-      ]);
-    } finally {
       setIsLoading(false);
+      await animateAssistantMessage(response);
+    } catch {
+      setIsLoading(false);
+      await animateAssistantMessage(
+        createResponse("### Chyba\n\nNiečo sa pokazilo. Skús to prosím ešte raz.", "Produkty", "/produkty/", "nibe-s2125", "NIBE S2125"),
+      );
     }
-  }
-
-  function onSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    void submitMessage();
   }
 
   function onKeyDown(event: KeyboardEvent<HTMLTextAreaElement>) {
@@ -258,11 +287,121 @@ function Chatbot({ config }: { config: EmbedConfig }) {
     }
   }
 
-  if (!isOpen) {
-    return (
-      <section className="arcigy-chatbot" aria-label="Arcigy chatbot">
-        <button className="arcigy-chatbot__launcher" type="button" onClick={() => setIsOpen(true)} aria-label="Otvoriť chat">
-          <svg aria-hidden="true" viewBox="0 0 32 32">
+  function onInputChange(value: string) {
+    setInput(value);
+
+    if (!textareaRef.current) return;
+
+    textareaRef.current.style.height = "34px";
+    textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 86)}px`;
+  }
+
+  function startCloseDrag(event: PointerEvent<HTMLElement>) {
+    if (isCollapsed) return;
+
+    const target = event.target as HTMLElement;
+    if (target.closest("button:not(.codex-collapse-button), textarea, input")) return;
+
+    const startX = event.clientX;
+    let latestOffset = 0;
+    setIsDragging(true);
+
+    function onPointerMove(pointerEvent: globalThis.PointerEvent) {
+      latestOffset = Math.max(0, Math.min(220, pointerEvent.clientX - startX));
+      setDragOffset(latestOffset);
+    }
+
+    function onPointerUp() {
+      window.removeEventListener("pointermove", onPointerMove);
+      window.removeEventListener("pointerup", onPointerUp);
+      setIsDragging(false);
+
+      if (latestOffset > 110) {
+        setDragOffset(0);
+        setIsCollapsed(true);
+        setIsOpen(false);
+      } else {
+        setDragOffset(0);
+      }
+    }
+
+    window.addEventListener("pointermove", onPointerMove);
+    window.addEventListener("pointerup", onPointerUp);
+  }
+
+  return (
+    <div className="arcigy-chatbot arcigy-chatbot--codex" aria-label="Arcigy Codex chatbot">
+      {!isCollapsed && ((hasConversation && isOpen) || isLoading) ? (
+        <div className="arcigy-chatbot__answer" aria-label="GEOTHERM AI odpovede">
+          <button className="arcigy-chatbot__answerTop" type="button" onClick={() => setIsOpen(false)}>
+            <span>GEOTHERM AI</span>
+            <span aria-hidden="true">⌄</span>
+          </button>
+          <div className="arcigy-chatbot__messages" ref={scrollRef}>
+            {messages.map((message) => (
+              <article className={`arcigy-chatbot__message is-${message.role}`} key={message.id}>
+                {message.role === "assistant" ? (
+                  <>
+                    <MarkdownMessage content={message.content} />
+                    {message.response?.action ? (
+                      <div className="arcigy-chatbot__actions">
+                        <button type="button" onClick={() => runAction(message.response!.action)}>
+                          Ukázať na stránke
+                        </button>
+                      </div>
+                    ) : null}
+                  </>
+                ) : (
+                  <p>{message.content}</p>
+                )}
+              </article>
+            ))}
+            {isLoading ? (
+              <div className="arcigy-chatbot__thinking">
+                <span>Pripravujem odpoveď</span>
+                <i />
+                <i />
+                <i />
+              </div>
+            ) : null}
+          </div>
+        </div>
+      ) : null}
+
+      {!isCollapsed && (hasConversation || isLoading) ? (
+        <button className="arcigy-chatbot__context" type="button" onClick={() => setIsOpen(true)}>
+          <span>Najnovší príspevok</span>
+          <span aria-hidden="true">›</span>
+        </button>
+      ) : null}
+
+      <div
+        className={`arcigy-chatbot__composer ${isCollapsed ? "is-collapsed" : ""} ${isDragging ? "is-dragging" : ""}`}
+        aria-label="GEOTHERM AI Codex asistent"
+        onPointerDown={startCloseDrag}
+        style={{ "--codex-drag-x": `${dragOffset}px` } as CSSProperties}
+      >
+        <button
+          className="codex-collapse-button"
+          type="button"
+          aria-label="Zavrieť Codex chat"
+          onClick={() => {
+            setIsCollapsed(true);
+            setIsOpen(false);
+          }}
+        >
+          <span aria-hidden="true">›</span>
+        </button>
+        <button
+          className="codex-mini-bubble"
+          type="button"
+          aria-label="Otvoriť GEOTHERM AI Codex chat"
+          onClick={() => {
+            setIsCollapsed(false);
+            setIsOpen(true);
+          }}
+        >
+          <svg aria-hidden="true" viewBox="0 0 32 32" className="codex-robot-icon">
             <path d="M16 7v3" />
             <path d="M12.5 7h7" />
             <rect x="8.5" y="11" width="15" height="13" rx="5" />
@@ -273,76 +412,39 @@ function Chatbot({ config }: { config: EmbedConfig }) {
             <path d="M13.5 22h5" />
           </svg>
         </button>
-      </section>
-    );
-  }
-
-  return (
-    <section className="arcigy-chatbot" aria-label="Arcigy chatbot">
-      <aside className="arcigy-chatbot__panel">
-        <header className="arcigy-chatbot__header">
-          <div className="arcigy-chatbot__brand">
-            <span className="arcigy-chatbot__mark">AI</span>
-            <div>
-              <strong>Arcigy Chatbot</strong>
-              <span>{config.mode === "preview" ? "Preview režim" : "Online režim"}</span>
-            </div>
-          </div>
-          <button className="arcigy-chatbot__close" type="button" onClick={() => setIsOpen(false)} aria-label="Zavrieť chat">
-            ×
-          </button>
-        </header>
-
-        <div className="arcigy-chatbot__messages" ref={scrollRef}>
-          {!messages.length ? (
-            <div className="arcigy-chatbot__empty">
-              Skús otázku: NIBE, dotácie, montáž, servis, hlučnosť, cena, kontakt alebo realizácie.
-            </div>
-          ) : null}
-
-          {messages.map((message) => (
-            <article className={`arcigy-chatbot__message is-${message.role}`} key={message.id}>
-              <p>{message.text}</p>
-              {message.response?.sources?.[0] ? (
-                <div className="arcigy-chatbot__source">
-                  Zdroj: {message.response.sources[0].pageTitle} · {message.response.sources[0].heading}
-                </div>
-              ) : null}
-              {message.response?.action ? (
-                <button className="arcigy-chatbot__action" type="button" onClick={() => runAction(message.response!.action)}>
-                  Ukázať na stránke
-                </button>
-              ) : null}
-            </article>
-          ))}
-
-          {isLoading ? (
-            <div className="arcigy-chatbot__loading">
-              <span>Pripravujem odpoveď</span>
-              <i />
-              <i />
-              <i />
-            </div>
-          ) : null}
+        <div className="arcigy-chatbot__composerContent">
+          <form
+            className="arcigy-chatbot__input"
+            onSubmit={(event) => {
+              event.preventDefault();
+              void submitMessage();
+            }}
+          >
+            <textarea
+              ref={textareaRef}
+              onChange={(event) => onInputChange(event.target.value)}
+              onKeyDown={onKeyDown}
+              rows={1}
+              placeholder="Napíšte správu..."
+            />
+            <button className="arcigy-chatbot__mic" type="button" aria-label="Mikrofón">
+              <svg aria-hidden="true" viewBox="0 0 24 24">
+                <path d="M12 4a3 3 0 0 0-3 3v5a3 3 0 0 0 6 0V7a3 3 0 0 0-3-3Z" />
+                <path d="M5 11a7 7 0 0 0 14 0" />
+                <path d="M12 18v3" />
+                <path d="M9 21h6" />
+              </svg>
+            </button>
+            <button className="arcigy-chatbot__send" type="submit" disabled={isLoading} aria-label="Odoslať správu">
+              <svg aria-hidden="true" viewBox="0 0 24 24">
+                <path d="M12 19V5" />
+                <path d="m6.5 10.5 5.5-5.5 5.5 5.5" />
+              </svg>
+            </button>
+          </form>
         </div>
-
-        <form className="arcigy-chatbot__form" onSubmit={onSubmit}>
-          <textarea
-            ref={textareaRef}
-            rows={1}
-            placeholder="Napíšte správu..."
-            onChange={(event) => setInput(event.target.value)}
-            onKeyDown={onKeyDown}
-          />
-          <button className="arcigy-chatbot__send" type="submit" disabled={isLoading} aria-label="Odoslať správu">
-            <svg aria-hidden="true" viewBox="0 0 24 24">
-              <path d="M12 19V5" />
-              <path d="m6.5 10.5 5.5-5.5 5.5 5.5" />
-            </svg>
-          </button>
-        </form>
-      </aside>
-    </section>
+      </div>
+    </div>
   );
 }
 
