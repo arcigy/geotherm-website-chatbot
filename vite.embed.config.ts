@@ -54,9 +54,9 @@ const previewHtml = `<!doctype html>
     </style>
     <script>
       window.ARCIGY_CHATBOT_CONFIG = {
-        mode: "preview",
-        apiBase: "",
-        siteId: "embed-preview",
+        mode: "local",
+        apiBase: "http://127.0.0.1:4317",
+        siteId: "geotherm",
         siteUrl: window.location.origin,
         debug: true
       };
