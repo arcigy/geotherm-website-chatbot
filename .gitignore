@@ -1,6 +1,7 @@
 node_modules
 .next
 .tmp-tests
+.tmp-wp-export
 out
 tsconfig.tsbuildinfo
 .env
