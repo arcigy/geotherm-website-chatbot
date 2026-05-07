@@ -11,7 +11,11 @@ export type SalesIntent =
   | "irrelevant"
   | "unknown";
 
+export type AssistantMode = "informative" | "advisory" | "soft_handoff_offer" | "contact_requested" | "lead_captured";
+
 export type QualificationState = {
+  assistant_mode?: AssistantMode;
+  relevant_turns?: number;
   project_type?: string;
   property_type?: string;
   area_m2?: number;
@@ -22,6 +26,8 @@ export type QualificationState = {
   contact_email?: string;
   contact_phone?: string;
   declined_contact?: boolean;
+  contact_consent?: boolean;
+  soft_handoff_offered?: boolean;
 };
 
 export type ContactInfo = {
@@ -33,6 +39,8 @@ export type ContactInfo = {
 export type LeadDecision = {
   shouldAsk: boolean;
   nextQuestion: string | null;
+  mode: AssistantMode;
+  isContactRequest: boolean;
 };
 
 function normalize(value: string): string {
@@ -47,6 +55,10 @@ function normalize(value: string): string {
 
 function includesAny(haystack: string, terms: string[]): boolean {
   return terms.some((term) => haystack.includes(term));
+}
+
+function isRelevantIntent(intent: SalesIntent): boolean {
+  return intent !== "irrelevant" && intent !== "unknown";
 }
 
 export function detectIntent(message: string, results: RetrievalResult[]): SalesIntent {
@@ -65,13 +77,13 @@ export function detectIntent(message: string, results: RetrievalResult[]): Sales
   if (includesAny(text, ["servis", "udrzba", "revizia", "kontrola", "prehliadka"])) return "service";
   if (includesAny(text, ["dotacia", "dotacie", "prispevok", "poukazka", "zelena domacnostiam", "oze"])) return "subsidy";
   if (includesAny(text, ["montaz", "instalacia", "realizacia", "osadenie", "zapojenie"])) return "installation";
-  if (includesAny(text, ["hluk", "hlucnost", "tichy", "tiche", "akusticky"])) return "noise";
+  if (includesAny(text, ["hluk", "hlucnost", "hlucne", "hlucny", "tichy", "tiche", "akusticky"])) return "noise";
   if (includesAny(combined, ["kontakt", "telefon", "email", "adresa", "zavolat", "kontaktovat"])) return "contact";
   if (includesAny(combined, ["servis", "udrzba", "revizia", "kontrola", "prehliadka"])) return "service";
   if (includesAny(combined, ["dotacia", "dotacie", "prispevok", "poukazka", "zelena domacnostiam", "oze"])) return "subsidy";
   if (includesAny(combined, ["cenova ponuka", "cena", "cennik", "kolko stoji", "naklady", "rozpocet"])) return "quote";
   if (includesAny(combined, ["montaz", "instalacia", "realizacia", "osadenie", "zapojenie"])) return "installation";
-  if (includesAny(combined, ["hluk", "hlucnost", "tichy", "tiche", "akusticky"])) return "noise";
+  if (includesAny(combined, ["hluk", "hlucnost", "hlucne", "hlucny", "tichy", "tiche", "akusticky"])) return "noise";
   if (includesAny(combined, ["nibe", "vaillant", "tepelne cerpadlo", "rekuperacia", "fotovoltaika", "podlahove"])) return "product";
   return "unknown";
 }
@@ -89,16 +101,60 @@ export function extractContact(message: string): ContactInfo {
   };
 }
 
+function hasStrongInterestSignal(normalized: string, intent: SalesIntent): boolean {
+  return (
+    intent === "quote" ||
+    intent === "service" ||
+    intent === "subsidy" ||
+    intent === "installation" ||
+    includesAny(normalized, [
+      "chcem ponuku",
+      "mam zaujem",
+      "riesime to",
+      "potrebujem",
+      "chcel by som",
+      "chcela by som",
+      "odporucate",
+      "dom",
+      "byt",
+      "firma",
+      "zilina",
+      "m2",
+    ])
+  );
+}
+
+function hasContactConsent(normalized: string): boolean {
+  return includesAny(normalized, [
+    "ano",
+    "nech ma kontaktuju",
+    "kontaktujte ma",
+    "mozu ma kontaktovat",
+    "chcem aby ma kontaktovali",
+    "posunte to technikovi",
+    "posunut technikovi",
+  ]);
+}
+
 export function updateQualificationState(previous: QualificationState, message: string, intent: SalesIntent): QualificationState {
   const state: QualificationState = { ...previous };
   const normalized = normalize(message);
   const contact = extractContact(message);
+  const relevantTurn = isRelevantIntent(intent) || hasStrongInterestSignal(normalized, intent);
+
+  if (relevantTurn) state.relevant_turns = (state.relevant_turns || 0) + 1;
   if (contact.email) state.contact_email = contact.email;
   if (contact.phone) state.contact_phone = contact.phone;
   if (contact.name) state.contact_name = contact.name;
-  if (includesAny(normalized, ["nechcem dat kontakt", "bez kontaktu", "nechcem kontakt", "zatial nie"])) state.declined_contact = true;
+  if (includesAny(normalized, ["nechcem dat kontakt", "bez kontaktu", "nechcem kontakt", "zatial nie", "nie dakujem"])) {
+    state.declined_contact = true;
+  }
+  if (hasContactConsent(normalized)) {
+    state.contact_consent = true;
+    state.assistant_mode = "contact_requested";
+  }
 
-  if (!state.project_type && intent !== "unknown" && intent !== "irrelevant") {
+  if (!state.project_type && isRelevantIntent(intent) && intent !== "contact" && intent !== "noise" && intent !== "product") {
     state.project_type =
       intent === "service"
         ? "servis"
@@ -121,12 +177,12 @@ export function updateQualificationState(previous: QualificationState, message: 
   if (area) state.area_m2 = Number.parseInt(area, 10);
 
   if (!state.location) {
-    const locationMatch = message.match(/\b(?:v|vo|okolie|z)\s+([A-ZÁÄČĎÉÍĽĹŇÓÔŔŠŤÚÝŽ][a-záäčďéíľĺňóôŕšťúýž]+)\b/);
+    const locationMatch = message.match(/\b(?:v|vo|okolie|z|zo)\s+([A-ZÁÄČĎÉÍĽĹŇÓÔŔŠŤÚÝŽ][a-záäčďéíľĺňóôŕšťúýž]+)\b/);
     if (locationMatch) state.location = locationMatch[1];
   }
 
   if (!state.timeline) {
-    if (includesAny(normalized, ["urgent", "hneď", "hned", "co najskor", "čo najskôr"])) state.timeline = "urgent";
+    if (includesAny(normalized, ["urgent", "hned", "co najskor", "čo najskôr"])) state.timeline = "urgent";
     else if (includesAny(normalized, ["1-3", "do 3 mes", "mesiac"])) state.timeline = "1-3 mesiace";
     else if (includesAny(normalized, ["3-6", "pol roka"])) state.timeline = "3-6 mesiacov";
     else if (includesAny(normalized, ["neskor", "neskôr", "buduci rok"])) state.timeline = "neskôr";
@@ -138,6 +194,9 @@ export function updateQualificationState(previous: QualificationState, message: 
     else if (includesAny(normalized, ["drevo", "uhlie", "tuhe palivo"])) state.current_heating = "tuhé palivo";
     else if (includesAny(normalized, ["tepelne cerpadlo", "cerpadlo"])) state.current_heating = "tepelné čerpadlo";
   }
+
+  if (state.contact_email || state.contact_phone) state.assistant_mode = "lead_captured";
+  else if (!state.assistant_mode) state.assistant_mode = (state.relevant_turns || 0) <= 1 ? "informative" : "advisory";
 
   return state;
 }
@@ -154,28 +213,93 @@ export function leadScore(state: QualificationState, intent: SalesIntent): numbe
   return score;
 }
 
+function softHandoffQuestion(): string {
+  return "Ak chcete, môžeme to posunúť technikovi/odborníkovi, aby sa pozrel na váš konkrétny prípad. Chcete, aby vás niekto kontaktoval?";
+}
+
 export function nextLeadQuestion(state: QualificationState, intent: SalesIntent, confidence: "high" | "medium" | "low"): LeadDecision {
-  if (intent === "irrelevant" || intent === "unknown") return { shouldAsk: false, nextQuestion: null };
-  if (state.declined_contact) return { shouldAsk: false, nextQuestion: null };
-  if (state.contact_email || state.contact_phone) return { shouldAsk: false, nextQuestion: null };
-  if (confidence === "low") {
+  if (intent === "irrelevant" || intent === "unknown") {
+    return { shouldAsk: false, nextQuestion: null, mode: "informative", isContactRequest: false };
+  }
+  if (state.declined_contact || state.contact_email || state.contact_phone) {
+    return { shouldAsk: false, nextQuestion: null, mode: state.assistant_mode || "informative", isContactRequest: false };
+  }
+
+  if (state.contact_consent || state.assistant_mode === "contact_requested") {
     return {
       shouldAsk: true,
-      nextQuestion: "Ak chcete, nechajte mi kontakt a technik sa vám ozve s presnejšou odpoveďou.",
+      nextQuestion: "Stačí email alebo telefón, kam sa vám môže ozvať odborník.",
+      mode: "contact_requested",
+      isContactRequest: true,
     };
   }
-  if (!state.project_type) return { shouldAsk: true, nextQuestion: "Riešite skôr montáž, servis, dotácie alebo cenovú ponuku?" };
-  if (!state.property_type) return { shouldAsk: true, nextQuestion: "Ide o rodinný dom, firmu alebo byt?" };
-  if (!state.area_m2 && (intent === "quote" || intent === "installation" || intent === "product")) {
-    return { shouldAsk: true, nextQuestion: "Aká je približná plocha domu v m²?" };
+
+  const relevantTurns = state.relevant_turns || 0;
+  const enoughContext = relevantTurns >= 4;
+  if (enoughContext && !state.soft_handoff_offered) {
+    return { shouldAsk: true, nextQuestion: softHandoffQuestion(), mode: "soft_handoff_offer", isContactRequest: false };
   }
-  if (!state.location) return { shouldAsk: true, nextQuestion: "V akej lokalite sa projekt nachádza?" };
-  if (!state.timeline) return { shouldAsk: true, nextQuestion: "Kedy to chcete riešiť: urgentne, do 1-3 mesiacov, do 3-6 mesiacov alebo neskôr?" };
-  if (!state.current_heating && intent !== "subsidy") return { shouldAsk: true, nextQuestion: "Čím aktuálne kúrite?" };
-  return {
-    shouldAsk: true,
-    nextQuestion: "Môžete mi nechať telefón alebo email, aby sa vám ozval technik/obchodník?",
-  };
+
+  if (confidence === "low") {
+    return { shouldAsk: false, nextQuestion: null, mode: "informative", isContactRequest: false };
+  }
+
+  if (intent === "noise") {
+    return {
+      shouldAsk: true,
+      nextQuestion: "Bude čerpadlo umiestnené bližšie k obytným miestnostiam alebo skôr ďalej od domu?",
+      mode: relevantTurns <= 1 ? "informative" : "advisory",
+      isContactRequest: false,
+    };
+  }
+  if ((intent === "quote" || intent === "installation" || intent === "product") && !state.property_type) {
+    return {
+      shouldAsk: true,
+      nextQuestion: "Ide o rodinný dom, byt alebo firemný objekt?",
+      mode: relevantTurns <= 1 ? "informative" : "advisory",
+      isContactRequest: false,
+    };
+  }
+  if ((intent === "quote" || intent === "installation" || intent === "product") && !state.area_m2) {
+    return {
+      shouldAsk: true,
+      nextQuestion: "Aká je približná plocha, ktorú chcete vykurovať?",
+      mode: "advisory",
+      isContactRequest: false,
+    };
+  }
+  if ((intent === "service" || intent === "subsidy") && !state.location) {
+    return {
+      shouldAsk: true,
+      nextQuestion: "V akej lokalite to riešite?",
+      mode: relevantTurns <= 1 ? "informative" : "advisory",
+      isContactRequest: false,
+    };
+  }
+  if (!state.current_heating && intent !== "subsidy" && intent !== "contact") {
+    return {
+      shouldAsk: true,
+      nextQuestion: "Čím aktuálne kúrite?",
+      mode: "advisory",
+      isContactRequest: false,
+    };
+  }
+  if (!state.timeline && (intent === "quote" || intent === "installation" || intent === "service")) {
+    return {
+      shouldAsk: true,
+      nextQuestion: "Riešite to skôr urgentne, v najbližších mesiacoch alebo len orientačne?",
+      mode: "advisory",
+      isContactRequest: false,
+    };
+  }
+
+  return { shouldAsk: false, nextQuestion: null, mode: "advisory", isContactRequest: false };
+}
+
+export function applyLeadDecision(state: QualificationState, decision: LeadDecision): QualificationState {
+  const next: QualificationState = { ...state, assistant_mode: decision.mode };
+  if (decision.mode === "soft_handoff_offer") next.soft_handoff_offered = true;
+  return next;
 }
 
 export function summarizeTranscript(messages: Array<{ role: string; content: string }>): string {

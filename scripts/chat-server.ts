@@ -17,6 +17,7 @@ import {
 import {
   detectIntent,
   extractContact,
+  applyLeadDecision,
   leadScore,
   nextLeadQuestion,
   updateQualificationState,
@@ -208,9 +209,10 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
   const previousState = parseState(conversation.qualification_state_json);
   const nextState = updateQualificationState(previousState, message, intent);
   const contact = extractContact(message);
-  const score = leadScore(nextState, intent);
   const leadCaptured = Boolean(contact.email || contact.phone);
   const leadCapture = nextLeadQuestion(nextState, intent, confidence);
+  const finalState = leadCaptured ? nextState : applyLeadDecision(nextState, leadCapture);
+  const score = leadScore(finalState, intent);
   const previousMessages = getConversationMessages(conversation.id);
 
   if (!previousMessages.length) {
@@ -255,12 +257,12 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     upsertLead({
       conversationId: conversation.id,
       siteId: site.id,
-      name: nextState.contact_name,
-      email: nextState.contact_email,
-      phone: nextState.contact_phone,
-      projectType: nextState.project_type,
-      location: nextState.location,
-      timeline: nextState.timeline,
+      name: finalState.contact_name,
+      email: finalState.contact_email,
+      phone: finalState.contact_phone,
+      projectType: finalState.project_type,
+      location: finalState.location,
+      timeline: finalState.timeline,
       budget: undefined,
       intent,
       score,
@@ -269,20 +271,20 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     updateConversation(conversation.id, {
       status: "lead_captured",
       intent,
-      qualificationStateJson: JSON.stringify(nextState),
+      qualificationStateJson: JSON.stringify(finalState),
     });
     insertEvent({
       siteId: site.id,
       sessionId: session.id,
       conversationId: conversation.id,
       eventType: "lead_captured",
-      payload: { score, email: Boolean(nextState.contact_email), phone: Boolean(nextState.contact_phone) },
+      payload: { score, email: Boolean(finalState.contact_email), phone: Boolean(finalState.contact_phone) },
     });
     answer = "Ďakujem, mám to. Odovzdám dopyt technikovi/obchodníkovi. Ak treba, doplním k nemu aj kontext z tejto konverzácie.";
   } else {
     updateConversation(conversation.id, {
       intent,
-      qualificationStateJson: JSON.stringify(nextState),
+      qualificationStateJson: JSON.stringify(finalState),
     });
     if (leadCapture.shouldAsk && leadCapture.nextQuestion) {
       insertEvent({
