@@ -10,5 +10,5 @@
     "types": ["node"],
     "outDir": ".tmp-wp-export"
   },
-  "include": ["scripts/export-wordpress-content.ts"]
+  "include": ["scripts/export-wordpress-content.ts", "scripts/build-chatbot-knowledge.ts"]
 }

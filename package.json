@@ -16,6 +16,7 @@
     "test:geotherm:v2": "node scripts/test-geotherm-chatbot-v2.mjs",
     "test:geotherm:actions": "node scripts/test-geotherm-actions.mjs",
     "export:wp-content": "tsc -p tsconfig.wp-export.json && node .tmp-wp-export/export-wordpress-content.js",
+    "build:knowledge": "tsc -p tsconfig.wp-export.json && node .tmp-wp-export/build-chatbot-knowledge.js",
     "test:wp-plugin": "node scripts/test-wp-plugin.mjs"
   },
   "dependencies": {
