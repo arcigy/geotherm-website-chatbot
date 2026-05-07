@@ -24,6 +24,7 @@
     "test:chat-api": "tsx scripts/test-chat-api.ts",
     "preview:embed": "vite dist-embed --host 127.0.0.1 --port 4321",
     "test:embed-ui": "tsx scripts/test-embed-ui.ts",
+    "analyze:manual-transcript": "tsx scripts/analyze-debug-transcript.ts",
     "db:init": "tsx scripts/db-init.ts",
     "test:sales-flow": "tsx scripts/test-sales-flow.ts",
     "leads:list": "tsx scripts/leads-list.ts",

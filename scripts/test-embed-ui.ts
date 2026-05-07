@@ -32,6 +32,8 @@ async function main(): Promise<void> {
   let apiCallCount = 0;
   let firstAnswer = "";
   let fallbackAnswer = "";
+  let exportedTurns = 0;
+  let exportHasMetadata = false;
   let screenshotWritten = false;
   let browser: Browser | null = null;
   let failureError = "";
@@ -86,6 +88,12 @@ async function main(): Promise<void> {
     );
     fallbackAnswer = await page.locator(".arcigy-chatbot__message.is-assistant").last().innerText();
 
+    const transcript = await page.evaluate(() => window.arcigyChatbot?.exportDebugTranscript({ download: false }));
+    exportedTurns = transcript?.turns.length || 0;
+    exportHasMetadata = Boolean(
+      transcript?.turns.every((turn) => "userMessage" in turn && "assistantAnswer" in turn && "sources" in turn && "fallbackUsed" in turn),
+    );
+
     await mkdir(path.dirname(screenshotPath), { recursive: true });
     await page.screenshot({ path: screenshotPath, fullPage: true });
     screenshotWritten = true;
@@ -103,7 +111,8 @@ async function main(): Promise<void> {
   const apiCallsPassed = apiCallCount >= 2;
   const firstAnswerPassed = /NIBE|hluč|hluk|tich/i.test(firstAnswer);
   const fallbackPassed = fallbackAnswer.includes("nenašiel dostatočne jasnú odpoveď");
-  const passed = !failureError && widgetLoaded && apiCallsPassed && firstAnswerPassed && fallbackPassed && consoleErrors.length === 0;
+  const exportPassed = exportedTurns >= 2 && exportHasMetadata;
+  const passed = !failureError && widgetLoaded && apiCallsPassed && firstAnswerPassed && fallbackPassed && exportPassed && consoleErrors.length === 0;
   const report = [
     "# Embed UI Test Report",
     "",
@@ -117,6 +126,8 @@ async function main(): Promise<void> {
     `- POST /chat calls: ${apiCallCount}`,
     `- first answer rendered: ${firstAnswerPassed ? "yes" : "no"}`,
     `- fallback worked: ${fallbackPassed ? "yes" : "no"}`,
+    `- debug export turns: ${exportedTurns}`,
+    `- debug export metadata: ${exportHasMetadata ? "yes" : "no"}`,
     `- console errors: ${consoleErrors.length}`,
     `- test error: ${failureError || "none"}`,
     `- screenshot: ${screenshotWritten ? screenshotPath : "not captured"}`,

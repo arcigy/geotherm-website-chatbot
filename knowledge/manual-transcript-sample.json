@@ -1,0 +1,56 @@
+{
+  "exportedAt": "2026-05-07T00:00:00.000Z",
+  "version": "0.1.0",
+  "config": {
+    "mode": "local",
+    "apiBase": "http://127.0.0.1:4317",
+    "siteId": "geotherm",
+    "siteUrl": "http://127.0.0.1:4321",
+    "debug": true
+  },
+  "turns": [
+    {
+      "timestamp": "2026-05-07T00:00:01.000Z",
+      "userMessage": "Koľko stojí tepelné čerpadlo?",
+      "assistantAnswer": "Podľa nájdených informácií na webe: Cena závisí od typu riešenia, domu a rozsahu montáže. Ide o tepelné čerpadlo, montáž, servis alebo podlahové kúrenie?",
+      "confidence": "high",
+      "intent": "quote",
+      "topScore": 80,
+      "sources": [
+        {
+          "pageTitle": "Návrh a cenová ponuka vykurovania",
+          "url": "http://www.geotherm.sk/cenova-ponuka/cp/",
+          "sectionHeading": "Formulár pre vypracovanie návrhu a cenovej ponuky",
+          "snippet": "Pre kvalitný návrh potrebujeme dostatok informácií."
+        }
+      ],
+      "leadCapture": {
+        "shouldAsk": true,
+        "nextQuestion": "Ide o rodinný dom, byt alebo firemný objekt?"
+      },
+      "lead": {
+        "captured": false,
+        "score": 40
+      },
+      "fallbackUsed": false
+    },
+    {
+      "timestamp": "2026-05-07T00:00:02.000Z",
+      "userMessage": "Aké bude počasie?",
+      "assistantAnswer": "Na webe som nenašiel dostatočne jasnú odpoveď na túto otázku. Skúste sa opýtať konkrétnejšie na tepelné čerpadlá, servis, dotácie, montáž, hlučnosť alebo kontakt.",
+      "confidence": "low",
+      "intent": "irrelevant",
+      "topScore": 0,
+      "sources": [],
+      "leadCapture": {
+        "shouldAsk": false,
+        "nextQuestion": null
+      },
+      "lead": {
+        "captured": false,
+        "score": 0
+      },
+      "fallbackUsed": true
+    }
+  ]
+}

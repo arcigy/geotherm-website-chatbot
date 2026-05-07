@@ -27,6 +27,19 @@ type ChatResponse = {
   answer: string;
   sources: Source[];
   action?: EmbedAction;
+  conversationId?: string;
+  confidence?: "high" | "medium" | "low";
+  intent?: string;
+  topScore?: number;
+  leadCapture?: {
+    shouldAsk: boolean;
+    nextQuestion: string | null;
+  };
+  lead?: {
+    captured: boolean;
+    score: number;
+  };
+  fallbackUsed?: boolean;
 };
 
 type BackendChatResponse = Partial<ChatResponse> & {
@@ -35,6 +48,7 @@ type BackendChatResponse = Partial<ChatResponse> & {
   action?: EmbedAction | null;
   confidence?: "high" | "medium" | "low";
   topScore?: number;
+  intent?: string;
 };
 
 type ChatMessage = {
@@ -44,6 +58,26 @@ type ChatMessage = {
   response?: ChatResponse;
 };
 
+type DebugTurn = {
+  timestamp: string;
+  userMessage: string;
+  assistantAnswer: string;
+  confidence: ChatResponse["confidence"] | null;
+  intent: string | null;
+  topScore: number | null;
+  sources: Source[];
+  leadCapture: ChatResponse["leadCapture"] | null;
+  lead: ChatResponse["lead"] | null;
+  fallbackUsed: boolean;
+};
+
+type DebugTranscript = {
+  exportedAt: string;
+  version: string;
+  config: Pick<EmbedConfig, "mode" | "apiBase" | "siteId" | "siteUrl" | "debug">;
+  turns: DebugTurn[];
+};
+
 declare global {
   interface Window {
     ARCIGY_CHATBOT_CONFIG?: Partial<EmbedConfig>;
@@ -51,6 +85,7 @@ declare global {
       runAction: typeof runAction;
       version: string;
       config: EmbedConfig;
+      exportDebugTranscript: (options?: { download?: boolean }) => DebugTranscript;
       test: {
         validateSelector: typeof validateSelector;
         runFakeAction: (name: string) => void;
@@ -173,6 +208,23 @@ function sanitizeMarkdown(value: string) {
     .trim();
 }
 
+function isFallbackAnswer(answer: string, confidence?: ChatResponse["confidence"]) {
+  const normalized = normalize(answer);
+  return confidence === "low" || normalized.includes("nenasiel dostatocne jasnu odpoved") || normalized.includes("nemozem") || normalized.includes("neviem");
+}
+
+function downloadJson(filename: string, payload: unknown) {
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+}
+
 function MarkdownMessage({ content }: { content: string }) {
   return <ReactMarkdown remarkPlugins={[remarkGfm]}>{sanitizeMarkdown(content)}</ReactMarkdown>;
 }
@@ -195,10 +247,18 @@ function fakeLocalResponse(message: string): ChatResponse {
 }
 
 function normalizeChatResponse(data: BackendChatResponse): ChatResponse {
+  const answer = data.answer ?? data.message ?? "### GEOTHERM odpoveď\n\nNemám pripravenú odpoveď.\n\nStaviate nový dom alebo rekonštruujete?";
   return {
-    answer: data.answer ?? data.message ?? "### GEOTHERM odpoveď\n\nNemám pripravenú odpoveď.\n\nStaviate nový dom alebo rekonštruujete?",
+    answer,
     sources: data.sources ?? [],
     action: data.action ?? data.actions?.[0],
+    conversationId: typeof data.conversationId === "string" ? data.conversationId : undefined,
+    confidence: data.confidence,
+    intent: typeof data.intent === "string" ? data.intent : undefined,
+    topScore: typeof data.topScore === "number" ? data.topScore : undefined,
+    leadCapture: data.leadCapture,
+    lead: data.lead,
+    fallbackUsed: isFallbackAnswer(answer, data.confidence),
   };
 }
 
@@ -212,6 +272,11 @@ async function sendMessage(message: string, config: EmbedConfig): Promise<ChatRe
           message,
           currentUrl: window.location.href,
           siteId: config.siteId,
+          anonymousId: window.localStorage.getItem("arcigy-chatbot-anonymous-id") || undefined,
+          metadata: {
+            userAgent: window.navigator.userAgent,
+            referrer: document.referrer,
+          },
         }),
       });
 
@@ -232,12 +297,61 @@ function Chatbot({ config }: { config: EmbedConfig }) {
   const [dragOffset, setDragOffset] = useState(0);
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [debugTurns, setDebugTurns] = useState<DebugTurn[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const typingTimerRef = useRef<number | null>(null);
+  const debugTurnsRef = useRef<DebugTurn[]>([]);
 
   const hasConversation = messages.length > 0;
+
+  useEffect(() => {
+    debugTurnsRef.current = debugTurns;
+  }, [debugTurns]);
+
+  useEffect(() => {
+    if (!window.localStorage.getItem("arcigy-chatbot-anonymous-id")) {
+      window.localStorage.setItem("arcigy-chatbot-anonymous-id", createId());
+    }
+  }, []);
+
+  useEffect(() => {
+    window.arcigyChatbot = {
+      ...(window.arcigyChatbot || {
+        runAction,
+        version,
+        config,
+        test: {
+          validateSelector,
+          runFakeAction(name: string) {
+            const action = fakeLocalResponse(name).action;
+            if (action) runAction(action);
+          },
+        },
+      }),
+      config,
+      exportDebugTranscript(options?: { download?: boolean }) {
+        const transcript: DebugTranscript = {
+          exportedAt: new Date().toISOString(),
+          version,
+          config: {
+            mode: config.mode,
+            apiBase: config.apiBase,
+            siteId: config.siteId,
+            siteUrl: config.siteUrl,
+            debug: config.debug,
+          },
+          turns: debugTurnsRef.current,
+        };
+        if (options?.download !== false) {
+          downloadJson(`arcigy-chat-debug-${new Date().toISOString().replace(/[:.]/g, "-")}.json`, transcript);
+        }
+        if (config.debug) console.log("[ArcigyChatbot] Debug transcript", transcript);
+        return transcript;
+      },
+    };
+  }, [config]);
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
@@ -291,6 +405,19 @@ function Chatbot({ config }: { config: EmbedConfig }) {
 
     try {
       const response = await sendMessage(text, config);
+      const debugTurn: DebugTurn = {
+        timestamp: new Date().toISOString(),
+        userMessage: text,
+        assistantAnswer: response.answer,
+        confidence: response.confidence ?? null,
+        intent: response.intent ?? null,
+        topScore: response.topScore ?? null,
+        sources: response.sources ?? [],
+        leadCapture: response.leadCapture ?? null,
+        lead: response.lead ?? null,
+        fallbackUsed: response.fallbackUsed ?? isFallbackAnswer(response.answer, response.confidence),
+      };
+      setDebugTurns((current) => [...current, debugTurn]);
       setIsLoading(false);
       await animateAssistantMessage(response);
     } catch {
@@ -358,6 +485,11 @@ function Chatbot({ config }: { config: EmbedConfig }) {
             <span>GEOTHERM AI</span>
             <span aria-hidden="true">⌄</span>
           </button>
+          {config.debug ? (
+            <button className="arcigy-chatbot__debugExport" type="button" onClick={() => window.arcigyChatbot?.exportDebugTranscript({ download: true })}>
+              Export JSON
+            </button>
+          ) : null}
           <div className="arcigy-chatbot__messages" ref={scrollRef}>
             {messages.map((message) => (
               <article className={`arcigy-chatbot__message is-${message.role}`} key={message.id}>
@@ -483,6 +615,22 @@ function mountWidget() {
     runAction,
     version,
     config,
+    exportDebugTranscript(options?: { download?: boolean }) {
+      const transcript: DebugTranscript = {
+        exportedAt: new Date().toISOString(),
+        version,
+        config: {
+          mode: config.mode,
+          apiBase: config.apiBase,
+          siteId: config.siteId,
+          siteUrl: config.siteUrl,
+          debug: config.debug,
+        },
+        turns: [],
+      };
+      if (options?.download) downloadJson(`arcigy-chat-debug-${new Date().toISOString().replace(/[:.]/g, "-")}.json`, transcript);
+      return transcript;
+    },
     test: {
       validateSelector,
       runFakeAction(name: string) {
