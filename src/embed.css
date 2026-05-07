@@ -412,7 +412,22 @@
 }
 
 .arcigy-chatbot__message.is-user {
-  display: none;
+  display: block;
+  padding: 8px 0 6px;
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.arcigy-chatbot__message.is-user p {
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 13px;
+  font-weight: 450;
+  line-height: 1.45;
+}
+
+.arcigy-chatbot__message.is-user + .arcigy-chatbot__message.is-assistant {
+  padding-top: 8px;
 }
 
 .arcigy-chatbot__message p {
