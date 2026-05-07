@@ -1,5 +1,7 @@
-import { KeyboardEvent, useCallback, useEffect, useRef, useState } from "react";
+import { CSSProperties, KeyboardEvent, PointerEvent, useCallback, useEffect, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import "./styles.css";
 
 type ArcigyConfig = {
@@ -11,12 +13,20 @@ type ArcigyConfig = {
 };
 
 type ChatAction = {
+  id?: string;
   type?: string;
   url?: string;
   selector?: string;
   anchorId?: string;
   highlightText?: string;
   label?: string;
+};
+
+type ChatImage = {
+  id?: string;
+  url: string;
+  alt?: string;
+  description?: string;
 };
 
 type ChatResponse = {
@@ -28,17 +38,10 @@ type ChatResponse = {
   images?: ChatImage[];
 };
 
-type ChatImage = {
-  id?: string;
-  url: string;
-  alt?: string;
-  description?: string;
-};
-
 type Message = {
   id: string;
   role: "user" | "assistant";
-  text: string;
+  content: string;
   action?: ChatAction | null;
   images?: ChatImage[];
 };
@@ -74,6 +77,18 @@ function samePage(url?: string) {
   const normalize = (value: string) => value.replace(/\/$/, "") || "/";
 
   return target.origin === current.origin && normalize(target.pathname) === normalize(current.pathname);
+}
+
+function sanitizeMarkdown(value: string) {
+  return value
+    .replace(/!\[[^\]]*]\([^)]*\)/g, "")
+    .replace(/^\s*\*?Obr[aá]z(?:ok|ky):.*$/gim, "")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+}
+
+function MarkdownMessage({ content }: { content: string }) {
+  return <ReactMarkdown remarkPlugins={[remarkGfm]}>{sanitizeMarkdown(content)}</ReactMarkdown>;
 }
 
 function highlightTarget(element: HTMLElement) {
@@ -121,18 +136,11 @@ function executePendingAction() {
   }
 }
 
-function sanitizeMarkdownForPlainText(value: string) {
-  return value
-    .replace(/!\[[^\]]*]\([^)]*\)/g, "")
-    .replace(/^#{1,4}\s*/gm, "")
-    .replace(/\*\*/g, "")
-    .replace(/\n{3,}/g, "\n\n")
-    .trim();
-}
-
 function ArcigyCodexChatbot() {
-  const [isOpen, setIsOpen] = useState(true);
-  const [answerOpen, setAnswerOpen] = useState(true);
+  const [isOpen, setIsOpen] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [dragOffset, setDragOffset] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState<Message[]>([]);
   const [conversationState, setConversationState] = useState<unknown>(null);
@@ -140,6 +148,9 @@ function ArcigyCodexChatbot() {
   const messagesRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
+  const typingTimerRef = useRef<number | null>(null);
+
+  const hasConversation = messages.length > 0;
 
   useEffect(() => {
     logAction("PLUGIN_ASSETS_LOADED", getConfig().pluginVersion);
@@ -148,20 +159,54 @@ function ArcigyCodexChatbot() {
   }, []);
 
   useEffect(() => {
+    return () => {
+      if (typingTimerRef.current) window.clearInterval(typingTimerRef.current);
+    };
+  }, []);
+
+  useEffect(() => {
     messagesRef.current?.scrollTo({ top: messagesRef.current.scrollHeight, behavior: "smooth" });
-  }, [messages, isLoading, answerOpen]);
+  }, [messages, isLoading, isOpen]);
 
-  const sendMessage = useCallback(async (event: SubmitEvent) => {
-    event.preventDefault();
+  async function animateAssistantMessage(content: string, action?: ChatAction | null, images?: ChatImage[]) {
+    const id = createMessageId();
+    let index = 0;
+    const cleanContent = sanitizeMarkdown(content);
 
+    setMessages((current) => [...current, { id, role: "assistant", content: "", action, images }]);
+
+    return new Promise<void>((resolve) => {
+      typingTimerRef.current = window.setInterval(() => {
+        index += 4;
+        const nextContent = cleanContent.slice(0, index);
+
+        setMessages((current) =>
+          current.map((message) => (message.id === id ? { ...message, content: nextContent, action, images } : message)),
+        );
+
+        if (index >= cleanContent.length) {
+          if (typingTimerRef.current) {
+            window.clearInterval(typingTimerRef.current);
+            typingTimerRef.current = null;
+          }
+          resolve();
+        }
+      }, 12);
+    });
+  }
+
+  const sendMessage = useCallback(async () => {
     const text = (inputRef.current?.value || input).trim();
     if (!text || isLoading) return;
 
-    const userMessage: Message = { id: createMessageId(), role: "user", text };
+    if (typingTimerRef.current) window.clearInterval(typingTimerRef.current);
+
+    const userMessage: Message = { id: createMessageId(), role: "user", content: text };
     const nextMessages = [...messages, userMessage];
 
     setMessages(nextMessages);
-    setAnswerOpen(true);
+    setIsOpen(true);
+    setIsCollapsed(false);
     setInput("");
     if (inputRef.current) inputRef.current.value = "";
     setIsLoading(true);
@@ -179,7 +224,7 @@ function ArcigyCodexChatbot() {
           message: text,
           messages: nextMessages.map((message) => ({
             role: message.role,
-            content: message.text,
+            content: message.content,
           })),
           conversationState,
           currentUrl: window.location.href,
@@ -191,31 +236,16 @@ function ArcigyCodexChatbot() {
 
       if (data.conversationState) setConversationState(data.conversationState);
 
-      const assistantText = sanitizeMarkdownForPlainText(data.answer || data.message || "Nemam pripravenu odpoved.");
       const action = data.action || data.actions?.[0] || null;
       const images = Array.isArray(data.images) ? data.images.filter((image) => Boolean(image.url)) : [];
 
-      setMessages((current) => [
-        ...current,
-        {
-          id: createMessageId(),
-          role: "assistant",
-          text: assistantText,
-          action,
-          images,
-        },
-      ]);
-    } catch {
-      setMessages((current) => [
-        ...current,
-        {
-          id: createMessageId(),
-          role: "assistant",
-          text: "Spojenie s lokalnym backendom zlyhalo. Skontrolujte, ci bezi Next server na 127.0.0.1:3000.",
-        },
-      ]);
-    } finally {
       setIsLoading(false);
+      await animateAssistantMessage(data.answer || data.message || "Nemám pripravenú odpoveď.", action, images);
+    } catch {
+      setIsLoading(false);
+      await animateAssistantMessage(
+        "Spojenie s lokálnym backendom zlyhalo. Skontrolujte, či beží Next server na 127.0.0.1:3000.",
+      );
     }
   }, [conversationState, input, isLoading, messages]);
 
@@ -224,7 +254,8 @@ function ArcigyCodexChatbot() {
     if (!form) return;
 
     const handler = (event: SubmitEvent) => {
-      void sendMessage(event);
+      event.preventDefault();
+      void sendMessage();
     };
 
     form.addEventListener("submit", handler);
@@ -234,15 +265,138 @@ function ArcigyCodexChatbot() {
   function onKeyDown(event: KeyboardEvent<HTMLTextAreaElement>) {
     if (event.key === "Enter" && !event.shiftKey) {
       event.preventDefault();
-      event.currentTarget.form?.requestSubmit();
+      void sendMessage();
     }
   }
 
-  if (!isOpen) {
-    return (
-      <section className="arcigy-codex is-collapsed" aria-label="Arcigy Codex chatbot">
-        <button className="arcigy-codex__mini" type="button" onClick={() => setIsOpen(true)} aria-label="Otvorit chat">
-          <svg aria-hidden="true" viewBox="0 0 32 32">
+  function onInputChange(value: string) {
+    setInput(value);
+
+    if (!inputRef.current) return;
+
+    inputRef.current.style.height = "34px";
+    inputRef.current.style.height = `${Math.min(inputRef.current.scrollHeight, 86)}px`;
+  }
+
+  function startCloseDrag(event: PointerEvent<HTMLElement>) {
+    if (isCollapsed) return;
+
+    const target = event.target as HTMLElement;
+    if (target.closest("button:not(.codex-collapse-button), textarea, input")) return;
+
+    const startX = event.clientX;
+    let latestOffset = 0;
+    setIsDragging(true);
+
+    function onPointerMove(pointerEvent: globalThis.PointerEvent) {
+      latestOffset = Math.max(0, Math.min(220, pointerEvent.clientX - startX));
+      setDragOffset(latestOffset);
+    }
+
+    function onPointerUp() {
+      window.removeEventListener("pointermove", onPointerMove);
+      window.removeEventListener("pointerup", onPointerUp);
+      setIsDragging(false);
+
+      if (latestOffset > 110) {
+        setDragOffset(0);
+        setIsCollapsed(true);
+        setIsOpen(false);
+      } else {
+        setDragOffset(0);
+      }
+    }
+
+    window.addEventListener("pointermove", onPointerMove);
+    window.addEventListener("pointerup", onPointerUp);
+  }
+
+  return (
+    <>
+      {!isCollapsed && ((hasConversation && isOpen) || isLoading) ? (
+        <section className="perplexity-answer codex-glass-answer" aria-label="GEOTHERM AI odpovede">
+          <button className="perplexity-answer-top" type="button" onClick={() => setIsOpen(false)}>
+            <span>GEOTHERM AI</span>
+            <span aria-hidden="true">⌄</span>
+          </button>
+          <div className="messages compact" ref={messagesRef}>
+            {messages.map((message) => (
+              <article className={`message ${message.role}`} key={message.id}>
+                {message.role === "assistant" ? (
+                  <>
+                    <MarkdownMessage content={message.content} />
+                    {message.images?.length ? (
+                      <div className={`chat-api-images ${message.images.length > 1 ? "two-up" : ""}`}>
+                        {message.images.map((image) => (
+                          <figure key={image.id || image.url}>
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img src={image.url} alt={image.alt || image.description || "Geotherm obrázok"} />
+                            <figcaption>{image.description || image.alt}</figcaption>
+                          </figure>
+                        ))}
+                      </div>
+                    ) : null}
+                    {message.action ? (
+                      <div className="chat-actions">
+                        <button type="button" onClick={() => executeAction(message.action!)}>
+                          {message.action.label || "Ukázať na stránke"}
+                        </button>
+                      </div>
+                    ) : null}
+                  </>
+                ) : (
+                  <p>{message.content}</p>
+                )}
+              </article>
+            ))}
+            {isLoading ? (
+              <div className="assistant-thinking">
+                <span>Pripravujem odpoveď</span>
+                <i />
+                <i />
+                <i />
+              </div>
+            ) : null}
+          </div>
+        </section>
+      ) : null}
+
+      {!isCollapsed && (hasConversation || isLoading) ? (
+        <button className="codex-context-popup" type="button" onClick={() => setIsOpen(true)}>
+          <span>Najnovší príspevok</span>
+          <span aria-hidden="true">›</span>
+        </button>
+      ) : null}
+
+      <section
+        className={`perplexity-composer codex-glass-composer ${isCollapsed ? "is-collapsed" : ""} ${
+          isDragging ? "is-dragging" : ""
+        }`}
+        aria-label="GEOTHERM AI Codex asistent"
+        onPointerDown={startCloseDrag}
+        style={{ "--codex-drag-x": `${dragOffset}px` } as CSSProperties}
+      >
+        <button
+          className="codex-collapse-button"
+          type="button"
+          aria-label="Zavrieť Codex chat"
+          onClick={() => {
+            setIsCollapsed(true);
+            setIsOpen(false);
+          }}
+        >
+          <span aria-hidden="true">›</span>
+        </button>
+        <button
+          className="codex-mini-bubble"
+          type="button"
+          aria-label="Otvoriť GEOTHERM AI Codex chat"
+          onClick={() => {
+            setIsCollapsed(false);
+            setIsOpen(true);
+          }}
+        >
+          <svg aria-hidden="true" viewBox="0 0 32 32" className="codex-robot-icon">
             <path d="M16 7v3" />
             <path d="M12.5 7h7" />
             <rect x="8.5" y="11" width="15" height="13" rx="5" />
@@ -253,80 +407,33 @@ function ArcigyCodexChatbot() {
             <path d="M13.5 22h5" />
           </svg>
         </button>
-      </section>
-    );
-  }
-
-  return (
-    <section className="arcigy-codex is-open" aria-label="Arcigy Codex chatbot">
-      {(messages.length > 0 || isLoading) && answerOpen ? (
-        <div className="arcigy-codex__answer">
-          <button className="arcigy-codex__answerTop" type="button" onClick={() => setAnswerOpen(false)}>
-            <span>GEOTHERM AI</span>
-            <svg aria-hidden="true" viewBox="0 0 24 24">
-              <path d="m6 9 6 6 6-6" />
-            </svg>
-          </button>
-          <div className="arcigy-codex__messages" ref={messagesRef}>
-            {messages.map((message) => (
-              <article className={`arcigy-codex__message is-${message.role}`} key={message.id}>
-                <p>{message.text}</p>
-                {message.images?.length ? (
-                  <div className="arcigy-codex__images">
-                    {message.images.map((image) => (
-                      <a
-                        className="arcigy-codex__imageLink"
-                        href={image.url}
-                        key={image.id || image.url}
-                        target="_blank"
-                        rel="noreferrer"
-                      >
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={image.url} alt={image.alt || image.description || "Geotherm obrazok"} />
-                      </a>
-                    ))}
-                  </div>
-                ) : null}
-                {message.action ? (
-                  <button type="button" onClick={() => executeAction(message.action!)}>
-                    {message.action.label || "Ukazat na stranke"}
-                  </button>
-                ) : null}
-              </article>
-            ))}
-            {isLoading ? <div className="arcigy-codex__typing">Pripravujem odpoved...</div> : null}
-          </div>
+        <div className="codex-composer-content">
+          <form className="chat-input perplexity" ref={formRef}>
+            <textarea
+              ref={inputRef}
+              onChange={(event) => onInputChange(event.target.value)}
+              onKeyDown={onKeyDown}
+              rows={1}
+              placeholder="Napíšte správu..."
+            />
+            <button className="chat-mic-button" type="button" aria-label="Mikrofón">
+              <svg aria-hidden="true" viewBox="0 0 24 24">
+                <path d="M12 4a3 3 0 0 0-3 3v5a3 3 0 0 0 6 0V7a3 3 0 0 0-3-3Z" />
+                <path d="M5 11a7 7 0 0 0 14 0" />
+                <path d="M12 18v3" />
+                <path d="M9 21h6" />
+              </svg>
+            </button>
+            <button type="submit" disabled={isLoading} aria-label="Odoslať správu">
+              <svg aria-hidden="true" viewBox="0 0 24 24">
+                <path d="M12 19V5" />
+                <path d="m6.5 10.5 5.5-5.5 5.5 5.5" />
+              </svg>
+            </button>
+          </form>
         </div>
-      ) : null}
-
-      {!answerOpen && messages.length > 0 ? (
-        <button className="arcigy-codex__context" type="button" onClick={() => setAnswerOpen(true)}>
-          <span>Najnovsia odpoved</span>
-          <span aria-hidden="true">›</span>
-        </button>
-      ) : null}
-
-      <form className="arcigy-codex__composer" ref={formRef}>
-        <button className="arcigy-codex__close" type="button" onClick={() => setIsOpen(false)} aria-label="Zavriet chat">
-          <svg aria-hidden="true" viewBox="0 0 24 24">
-            <path d="m9 6 6 6-6 6" />
-          </svg>
-        </button>
-        <textarea
-          ref={inputRef}
-          onChange={(event) => setInput(event.target.value)}
-          onKeyDown={onKeyDown}
-          rows={1}
-          placeholder="Napiste spravu..."
-        />
-        <button className="arcigy-codex__send" type="submit" disabled={isLoading} aria-label="Odoslat spravu">
-          <svg aria-hidden="true" viewBox="0 0 24 24">
-            <path d="M12 19V5" />
-            <path d="m6.5 10.5 5.5-5.5 5.5 5.5" />
-          </svg>
-        </button>
-      </form>
-    </section>
+      </section>
+    </>
   );
 }
 
