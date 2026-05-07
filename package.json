@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "build:wp-chatbot": "vite build --config vite.wp-chatbot.config.ts",
     "start": "next start",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
@@ -12,7 +13,8 @@
     "scrape:geotherm": "node scripts/scrape-geotherm.mjs",
     "kb:geotherm:archive": "node scripts/build-geotherm-knowledge-from-archive.mjs",
     "test:geotherm:v2": "node scripts/test-geotherm-chatbot-v2.mjs",
-    "test:geotherm:actions": "node scripts/test-geotherm-actions.mjs"
+    "test:geotherm:actions": "node scripts/test-geotherm-actions.mjs",
+    "test:wp-plugin": "node scripts/test-wp-plugin.mjs"
   },
   "dependencies": {
     "@google/genai": "1.51.0",
@@ -27,9 +29,11 @@
     "@types/node": "^24.10.1",
     "@types/react": "^19.2.7",
     "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^6.0.1",
     "eslint": "^9.39.1",
     "eslint-config-next": "16.2.4",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "vite": "^8.0.11"
   },
   "overrides": {
     "postcss": "8.5.10"

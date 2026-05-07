@@ -3,7 +3,7 @@ import nextTypescript from "eslint-config-next/typescript";
 
 const eslintConfig = [
   {
-    ignores: [".next/**", ".tmp-tests/**", "node_modules/**", "next-env.d.ts"],
+    ignores: [".next/**", ".tmp-tests/**", "node_modules/**", "next-env.d.ts", "arcigy-chatbot-plugin/assets/**"],
   },
   ...nextVitals,
   ...nextTypescript,
