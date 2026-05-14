@@ -158,51 +158,11 @@ function previewHtml(): string {
     <title>Geotherm Chatbot Preview</title>
     <link rel="stylesheet" href="/embed/chatbot.css" />
     <style>
+      html,
       body {
+        min-height: 100%;
         margin: 0;
-        background: #f5f5f2;
-        color: #1f2420;
-        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      }
-
-      main {
-        width: min(960px, calc(100vw - 32px));
-        margin: 0 auto;
-        padding: 56px 0 140px;
-      }
-
-      section {
-        min-height: 260px;
-        margin: 0 0 24px;
-        border: 1px solid rgba(31, 36, 32, 0.1);
-        border-radius: 16px;
-        background: rgba(255, 255, 255, 0.86);
-        box-shadow: 0 20px 54px rgba(31, 36, 32, 0.08);
-        padding: 30px;
-      }
-
-      h1 {
-        margin: 0 0 14px;
-        font-size: clamp(34px, 5vw, 62px);
-        line-height: 0.98;
-      }
-
-      h2 {
-        margin: 0 0 10px;
-        font-size: 28px;
-      }
-
-      p {
-        max-width: 720px;
-        color: #59605a;
-        font-size: 18px;
-        line-height: 1.55;
-      }
-
-      code {
-        border-radius: 6px;
-        background: rgba(31, 36, 32, 0.08);
-        padding: 2px 6px;
+        background: #fff;
       }
     </style>
     <script>
@@ -216,15 +176,6 @@ function previewHtml(): string {
     </script>
   </head>
   <body>
-    <main>
-      <section>
-        <h1>Geotherm chatbot preview</h1>
-        <p>Toto je dočasná verejná preview stránka pre testovanie embeddable widgetu mimo lokálneho prostredia.</p>
-        <p>Chatbot používa <code>/embed/chatbot.js</code>, <code>/embed/chatbot.css</code> a volá rovnaké <code>/chat</code> API na tejto doméne.</p>
-      </section>
-      <section><h2>Testovacie otázky</h2><p>Skús napríklad: aké čerpadlá predávate, čo vieš o NIBE S2125, aké výhody má stropné chladenie, koľko stojí tepelné čerpadlo, robíte servis?</p></section>
-      <section><h2>WordPress simulácia</h2><p>Táto stránka iba simuluje cudziu webstránku. Widget sa vkladá ako externý embed a nemá byť závislý od lokálneho vývojového servera.</p></section>
-    </main>
     <div id="arcigy-chatbot-root"></div>
     <script src="/embed/chatbot.js"></script>
   </body>
