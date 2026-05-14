@@ -226,7 +226,7 @@
   width: 100%;
   height: 34px;
   min-height: 34px;
-  max-height: 86px;
+  max-height: 34px;
   resize: none;
   border: 0;
   outline: 0;
@@ -234,7 +234,7 @@
   color: #fff;
   font-size: 15px;
   line-height: 20px;
-  overflow-y: hidden;
+  overflow: hidden;
   padding: 8px 0 6px;
   transition:
     opacity 140ms ease,
@@ -259,7 +259,8 @@
   height: 34px;
   min-width: 0;
   align-items: center;
-  gap: 2px;
+  justify-content: stretch;
+  gap: 3px;
   overflow: hidden;
   opacity: 0;
   pointer-events: none;
@@ -276,9 +277,10 @@
 
 .arcigy-chatbot__voiceBar {
   display: block;
-  width: 2px;
-  height: calc(5px + (var(--voice-level, 0.2) * 24px));
-  flex: 0 0 2px;
+  width: auto;
+  height: calc(4px + (var(--voice-level, 0.2) * 28px));
+  flex: 1 1 0;
+  min-width: 1px;
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.92);
   box-shadow: 0 0 8px rgba(255, 255, 255, 0.16);

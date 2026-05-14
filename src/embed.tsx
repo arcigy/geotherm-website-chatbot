@@ -127,7 +127,7 @@ declare global {
 const version = "0.1.0";
 const conversationMemoryMs = 2 * 60 * 60 * 1000;
 const anonymousIdStorageKey = "arcigy-chatbot-anonymous-id";
-const voiceWaveBarCount = 30;
+const voiceWaveBarCount = 52;
 
 function idleVoiceLevels() {
   return Array.from({ length: voiceWaveBarCount }, (_, index) => 0.16 + ((index * 7) % 5) * 0.018);
@@ -575,6 +575,11 @@ function Chatbot({ config }: { config: EmbedConfig }) {
     setVoiceLevels(idleVoiceLevels());
   }
 
+  function resetTextareaHeight() {
+    if (!textareaRef.current) return;
+    textareaRef.current.style.height = "34px";
+  }
+
   function startSyntheticVoiceWave() {
     const levels = idleVoiceLevels();
     syntheticWaveTimerRef.current = window.setInterval(() => {
@@ -597,11 +602,11 @@ function Chatbot({ config }: { config: EmbedConfig }) {
       const audioContext = new AudioContextConstructor();
       const analyser = audioContext.createAnalyser();
       const source = audioContext.createMediaStreamSource(stream);
-      const data = new Uint8Array(analyser.frequencyBinCount);
       const levels = idleVoiceLevels();
 
-      analyser.fftSize = 256;
-      analyser.smoothingTimeConstant = 0.72;
+      analyser.fftSize = 1024;
+      analyser.smoothingTimeConstant = 0.58;
+      const data = new Uint8Array(analyser.fftSize);
       source.connect(analyser);
       audioContextRef.current = audioContext;
       audioStreamRef.current = stream;
@@ -609,12 +614,16 @@ function Chatbot({ config }: { config: EmbedConfig }) {
       const draw = () => {
         analyser.getByteTimeDomainData(data);
         let sum = 0;
+        let peak = 0;
         for (const sample of data) {
           const value = (sample - 128) / 128;
+          peak = Math.max(peak, Math.abs(value));
           sum += value * value;
         }
         const rms = Math.sqrt(sum / data.length);
-        const level = Math.max(0.12, Math.min(1, rms * 9.5));
+        const noiseFloor = 0.012;
+        const signal = Math.max(0, rms - noiseFloor);
+        const level = Math.max(0.08, Math.min(1, Math.pow(signal * 18 + peak * 0.9, 0.72)));
         levels.shift();
         levels.push(level);
         setVoiceLevels([...levels]);
@@ -672,6 +681,7 @@ function Chatbot({ config }: { config: EmbedConfig }) {
     setIsCollapsed(false);
     setInput("");
     if (textareaRef.current) textareaRef.current.value = "";
+    resetTextareaHeight();
     setIsLoading(true);
 
     try {
@@ -717,19 +727,14 @@ function Chatbot({ config }: { config: EmbedConfig }) {
 
   function onInputChange(value: string) {
     setInput(value);
-
-    if (!textareaRef.current) return;
-
-    textareaRef.current.style.height = "34px";
-    textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 86)}px`;
+    resetTextareaHeight();
   }
 
   function setTextareaValue(value: string) {
     setInput(value);
     if (!textareaRef.current) return;
     textareaRef.current.value = value;
-    textareaRef.current.style.height = "34px";
-    textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 86)}px`;
+    resetTextareaHeight();
     textareaRef.current.focus();
   }
 
