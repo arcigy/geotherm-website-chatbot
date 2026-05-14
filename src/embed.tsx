@@ -40,6 +40,7 @@ type ChatResponse = {
     score: number;
   };
   fallbackUsed?: boolean;
+  debug?: unknown;
 };
 
 type BackendChatResponse = Partial<ChatResponse> & {
@@ -60,6 +61,10 @@ type ChatMessage = {
 
 type DebugTurn = {
   timestamp: string;
+  requestStartedAt: string;
+  responseReceivedAt: string;
+  responseTimeMs: number;
+  responseTimeSeconds: number;
   userMessage: string;
   assistantAnswer: string;
   confidence: ChatResponse["confidence"] | null;
@@ -68,6 +73,7 @@ type DebugTurn = {
   sources: Source[];
   leadCapture: ChatResponse["leadCapture"] | null;
   lead: ChatResponse["lead"] | null;
+  debug: unknown | null;
   fallbackUsed: boolean;
 };
 
@@ -78,14 +84,38 @@ type DebugTranscript = {
   turns: DebugTurn[];
 };
 
+type StoredConversation = {
+  version: string;
+  updatedAt: number;
+  messages: ChatMessage[];
+  debugTurns: DebugTurn[];
+};
+
+type SpeechRecognitionLike = {
+  lang: string;
+  continuous: boolean;
+  interimResults: boolean;
+  maxAlternatives: number;
+  start: () => void;
+  stop: () => void;
+  onresult: ((event: { results: ArrayLike<ArrayLike<{ transcript: string }>> }) => void) | null;
+  onerror: (() => void) | null;
+  onend: (() => void) | null;
+};
+
+type SpeechRecognitionConstructor = new () => SpeechRecognitionLike;
+
 declare global {
   interface Window {
     ARCIGY_CHATBOT_CONFIG?: Partial<EmbedConfig>;
+    SpeechRecognition?: SpeechRecognitionConstructor;
+    webkitSpeechRecognition?: SpeechRecognitionConstructor;
+    webkitAudioContext?: typeof AudioContext;
     arcigyChatbot?: {
       runAction: typeof runAction;
       version: string;
       config: EmbedConfig;
-      exportDebugTranscript: (options?: { download?: boolean }) => DebugTranscript;
+      exportDebugTranscript: (options?: { download?: boolean; copy?: boolean }) => DebugTranscript;
       test: {
         validateSelector: typeof validateSelector;
         runFakeAction: (name: string) => void;
@@ -95,6 +125,13 @@ declare global {
 }
 
 const version = "0.1.0";
+const conversationMemoryMs = 2 * 60 * 60 * 1000;
+const anonymousIdStorageKey = "arcigy-chatbot-anonymous-id";
+const voiceWaveBarCount = 30;
+
+function idleVoiceLevels() {
+  return Array.from({ length: voiceWaveBarCount }, (_, index) => 0.16 + ((index * 7) % 5) * 0.018);
+}
 
 const fakeResponses: Record<string, ChatResponse> = {
   nibe: createResponse(
@@ -201,10 +238,104 @@ function createId() {
   return `arcigy-${Date.now()}-${Math.random().toString(36).slice(2)}`;
 }
 
+function ensureAnonymousId() {
+  if (!window.localStorage.getItem(anonymousIdStorageKey)) {
+    window.localStorage.setItem(anonymousIdStorageKey, createId());
+  }
+}
+
+function conversationStorageKey(config: EmbedConfig) {
+  return `arcigy-chatbot-conversation:${config.siteId}:${config.apiBase || config.siteUrl}`;
+}
+
+function parseStoredConversation(value: string | null): StoredConversation | null {
+  if (!value) return null;
+  try {
+    const parsed = JSON.parse(value) as Partial<StoredConversation>;
+    if (!Array.isArray(parsed.messages) || !Array.isArray(parsed.debugTurns) || typeof parsed.updatedAt !== "number") return null;
+    if (Date.now() - parsed.updatedAt > conversationMemoryMs) return null;
+    return {
+      version: typeof parsed.version === "string" ? parsed.version : version,
+      updatedAt: parsed.updatedAt,
+      messages: parsed.messages
+        .filter((message): message is ChatMessage => {
+          return (
+            Boolean(message) &&
+            (message.role === "user" || message.role === "assistant") &&
+            typeof message.id === "string" &&
+            typeof message.content === "string"
+          );
+        })
+        .map((message) => ({
+          ...message,
+          content: message.role === "assistant" ? cleanAssistantContent(message.content) : message.content,
+          response: message.response
+            ? {
+                ...message.response,
+                answer: cleanAssistantContent(message.response.answer),
+              }
+            : message.response,
+        })),
+      debugTurns: parsed.debugTurns.map((turn) => ({
+        ...turn,
+        assistantAnswer: typeof turn.assistantAnswer === "string" ? cleanAssistantContent(turn.assistantAnswer) : turn.assistantAnswer,
+      })),
+    };
+  } catch {
+    return null;
+  }
+}
+
 function sanitizeMarkdown(value: string) {
   return value
     .replace(/!\[[^\]]*]\([^)]*\)/g, "")
     .replace(/\n{3,}/g, "\n\n")
+    .trim();
+}
+
+function cleanAssistantContent(value: string) {
+  const renderStructured = (object: Record<string, unknown>): string | null => {
+    const structured =
+      object.structuredAnswer && typeof object.structuredAnswer === "object"
+        ? (object.structuredAnswer as Record<string, unknown>)
+        : object;
+    const shortAnswer = typeof structured.shortAnswer === "string" ? structured.shortAnswer.trim() : "";
+    const details = Array.isArray(structured.details)
+      ? structured.details.filter((item): item is string => typeof item === "string" && item.trim().length > 0).slice(0, 4)
+      : [];
+    const followUp = typeof structured.followUpQuestion === "string" ? structured.followUpQuestion.trim() : "";
+    if (!shortAnswer && !details.length && !followUp) return null;
+    return [
+      shortAnswer ? `### Stručne k otázke\n\n${shortAnswer}` : "### Stručne k otázke",
+      details.length ? details.map((item) => `- ${item.trim()}`).join("\n") : "",
+      followUp,
+    ]
+      .filter(Boolean)
+      .join("\n\n");
+  };
+
+  let content = value.trim();
+  const start = content.indexOf("{");
+  const end = content.lastIndexOf("}");
+  if (start >= 0 && end > start) {
+    try {
+      const parsed = JSON.parse(content.slice(start, end + 1)) as unknown;
+      if (typeof parsed === "string") content = parsed;
+      if (parsed && typeof parsed === "object") {
+        const object = parsed as Record<string, unknown>;
+        const direct = ["answer", "message", "content", "assistantAnswer"].find((key) => typeof object[key] === "string");
+        content = direct ? (object[direct] as string) : renderStructured(object) || content;
+      }
+    } catch {
+      // Keep original content and still decode escaped text.
+    }
+  }
+  return content
+    .replace(/\\r\\n/g, "\n")
+    .replace(/\\n/g, "\n")
+    .replace(/\\t/g, " ")
+    .replace(/\\"/g, '"')
+    .replace(/\n?\s*["'}\]]+\s*$/g, "")
     .trim();
 }
 
@@ -223,6 +354,24 @@ function downloadJson(filename: string, payload: unknown) {
   link.click();
   link.remove();
   URL.revokeObjectURL(url);
+}
+
+function copyJson(payload: unknown) {
+  const text = JSON.stringify(payload, null, 2);
+  if (navigator.clipboard?.writeText) {
+    void navigator.clipboard.writeText(text);
+    return;
+  }
+
+  const textarea = document.createElement("textarea");
+  textarea.value = text;
+  textarea.setAttribute("readonly", "true");
+  textarea.style.position = "fixed";
+  textarea.style.left = "-9999px";
+  document.body.appendChild(textarea);
+  textarea.select();
+  document.execCommand("copy");
+  textarea.remove();
 }
 
 function MarkdownMessage({ content }: { content: string }) {
@@ -247,7 +396,7 @@ function fakeLocalResponse(message: string): ChatResponse {
 }
 
 function normalizeChatResponse(data: BackendChatResponse): ChatResponse {
-  const answer = data.answer ?? data.message ?? "### GEOTHERM odpoveď\n\nNemám pripravenú odpoveď.\n\nStaviate nový dom alebo rekonštruujete?";
+  const answer = cleanAssistantContent(data.answer ?? data.message ?? "### GEOTHERM odpoveď\n\nNemám pripravenú odpoveď.\n\nStaviate nový dom alebo rekonštruujete?");
   return {
     answer,
     sources: data.sources ?? [],
@@ -258,7 +407,10 @@ function normalizeChatResponse(data: BackendChatResponse): ChatResponse {
     topScore: typeof data.topScore === "number" ? data.topScore : undefined,
     leadCapture: data.leadCapture,
     lead: data.lead,
-    fallbackUsed: isFallbackAnswer(answer, data.confidence),
+    debug: data.debug,
+    fallbackUsed:
+      data.fallbackUsed ??
+      (Boolean((data.debug as { llmError?: string | null } | undefined)?.llmError) || isFallbackAnswer(answer, data.confidence)),
   };
 }
 
@@ -272,7 +424,7 @@ async function sendMessage(message: string, config: EmbedConfig): Promise<ChatRe
           message,
           currentUrl: window.location.href,
           siteId: config.siteId,
-          anonymousId: window.localStorage.getItem("arcigy-chatbot-anonymous-id") || undefined,
+          anonymousId: window.localStorage.getItem(anonymousIdStorageKey) || undefined,
           metadata: {
             userAgent: window.navigator.userAgent,
             referrer: document.referrer,
@@ -299,10 +451,21 @@ function Chatbot({ config }: { config: EmbedConfig }) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [debugTurns, setDebugTurns] = useState<DebugTurn[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isListening, setIsListening] = useState(false);
+  const [voiceLevels, setVoiceLevels] = useState<number[]>(() => idleVoiceLevels());
+  const [debugCopyLabel, setDebugCopyLabel] = useState("Copy JSON");
   const scrollRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const typingTimerRef = useRef<number | null>(null);
   const debugTurnsRef = useRef<DebugTurn[]>([]);
+  const recognitionRef = useRef<SpeechRecognitionLike | null>(null);
+  const audioContextRef = useRef<AudioContext | null>(null);
+  const audioStreamRef = useRef<MediaStream | null>(null);
+  const waveFrameRef = useRef<number | null>(null);
+  const syntheticWaveTimerRef = useRef<number | null>(null);
+  const speechBaseTextRef = useRef("");
+  const skipNextStorageWriteRef = useRef(false);
+  const storageKey = conversationStorageKey(config);
 
   const hasConversation = messages.length > 0;
 
@@ -311,10 +474,40 @@ function Chatbot({ config }: { config: EmbedConfig }) {
   }, [debugTurns]);
 
   useEffect(() => {
-    if (!window.localStorage.getItem("arcigy-chatbot-anonymous-id")) {
-      window.localStorage.setItem("arcigy-chatbot-anonymous-id", createId());
-    }
+    ensureAnonymousId();
   }, []);
+
+  useEffect(() => {
+    const rawStored = window.localStorage.getItem(storageKey);
+    const stored = parseStoredConversation(rawStored);
+    if (!stored) {
+      if (rawStored) {
+        window.localStorage.removeItem(storageKey);
+        window.localStorage.removeItem(anonymousIdStorageKey);
+        ensureAnonymousId();
+      }
+      return;
+    }
+    skipNextStorageWriteRef.current = true;
+    setMessages(stored.messages.slice(-40));
+    setDebugTurns(stored.debugTurns.slice(-40));
+    setIsOpen(false);
+  }, [storageKey]);
+
+  useEffect(() => {
+    if (!messages.length && !debugTurns.length) return;
+    if (skipNextStorageWriteRef.current) {
+      skipNextStorageWriteRef.current = false;
+      return;
+    }
+    const stored: StoredConversation = {
+      version,
+      updatedAt: Date.now(),
+      messages: messages.slice(-40),
+      debugTurns: debugTurns.slice(-40),
+    };
+    window.localStorage.setItem(storageKey, JSON.stringify(stored));
+  }, [messages, debugTurns, storageKey]);
 
   useEffect(() => {
     window.arcigyChatbot = {
@@ -331,7 +524,7 @@ function Chatbot({ config }: { config: EmbedConfig }) {
         },
       }),
       config,
-      exportDebugTranscript(options?: { download?: boolean }) {
+      exportDebugTranscript(options?: { download?: boolean; copy?: boolean }) {
         const transcript: DebugTranscript = {
           exportedAt: new Date().toISOString(),
           version,
@@ -347,6 +540,7 @@ function Chatbot({ config }: { config: EmbedConfig }) {
         if (options?.download !== false) {
           downloadJson(`arcigy-chat-debug-${new Date().toISOString().replace(/[:.]/g, "-")}.json`, transcript);
         }
+        if (options?.copy) copyJson(transcript);
         if (config.debug) console.log("[ArcigyChatbot] Debug transcript", transcript);
         return transcript;
       },
@@ -360,8 +554,79 @@ function Chatbot({ config }: { config: EmbedConfig }) {
   useEffect(() => {
     return () => {
       if (typingTimerRef.current) window.clearInterval(typingTimerRef.current);
+      recognitionRef.current?.stop();
+      stopVoiceMonitor();
     };
   }, []);
+
+  function stopVoiceMonitor() {
+    if (waveFrameRef.current) {
+      window.cancelAnimationFrame(waveFrameRef.current);
+      waveFrameRef.current = null;
+    }
+    if (syntheticWaveTimerRef.current) {
+      window.clearInterval(syntheticWaveTimerRef.current);
+      syntheticWaveTimerRef.current = null;
+    }
+    audioStreamRef.current?.getTracks().forEach((track) => track.stop());
+    audioStreamRef.current = null;
+    void audioContextRef.current?.close().catch(() => undefined);
+    audioContextRef.current = null;
+    setVoiceLevels(idleVoiceLevels());
+  }
+
+  function startSyntheticVoiceWave() {
+    const levels = idleVoiceLevels();
+    syntheticWaveTimerRef.current = window.setInterval(() => {
+      levels.shift();
+      levels.push(0.18 + Math.random() * 0.72);
+      setVoiceLevels([...levels]);
+    }, 74);
+  }
+
+  async function startVoiceMonitor() {
+    stopVoiceMonitor();
+    const AudioContextConstructor = window.AudioContext || window.webkitAudioContext;
+    if (!window.navigator.mediaDevices?.getUserMedia || !AudioContextConstructor) {
+      startSyntheticVoiceWave();
+      return;
+    }
+
+    try {
+      const stream = await window.navigator.mediaDevices.getUserMedia({ audio: true });
+      const audioContext = new AudioContextConstructor();
+      const analyser = audioContext.createAnalyser();
+      const source = audioContext.createMediaStreamSource(stream);
+      const data = new Uint8Array(analyser.frequencyBinCount);
+      const levels = idleVoiceLevels();
+
+      analyser.fftSize = 256;
+      analyser.smoothingTimeConstant = 0.72;
+      source.connect(analyser);
+      audioContextRef.current = audioContext;
+      audioStreamRef.current = stream;
+
+      const draw = () => {
+        analyser.getByteTimeDomainData(data);
+        let sum = 0;
+        for (const sample of data) {
+          const value = (sample - 128) / 128;
+          sum += value * value;
+        }
+        const rms = Math.sqrt(sum / data.length);
+        const level = Math.max(0.12, Math.min(1, rms * 9.5));
+        levels.shift();
+        levels.push(level);
+        setVoiceLevels([...levels]);
+        waveFrameRef.current = window.requestAnimationFrame(draw);
+      };
+
+      draw();
+    } catch (error) {
+      if (config.debug) console.warn("[ArcigyChatbot] Microphone audio monitor failed, using visual fallback.", error);
+      startSyntheticVoiceWave();
+    }
+  }
 
   async function animateAssistantMessage(response: ChatResponse) {
     const id = createId();
@@ -395,6 +660,12 @@ function Chatbot({ config }: { config: EmbedConfig }) {
     if (!text || isLoading) return;
 
     if (typingTimerRef.current) window.clearInterval(typingTimerRef.current);
+    if (isListening) {
+      recognitionRef.current?.stop();
+      recognitionRef.current = null;
+      setIsListening(false);
+      stopVoiceMonitor();
+    }
 
     setMessages((current) => [...current, { id: createId(), role: "user", content: text }]);
     setIsOpen(true);
@@ -404,9 +675,17 @@ function Chatbot({ config }: { config: EmbedConfig }) {
     setIsLoading(true);
 
     try {
+      const requestStartedAt = new Date();
+      const requestStartedAtMs = performance.now();
       const response = await sendMessage(text, config);
+      const responseReceivedAt = new Date();
+      const responseTimeMs = Math.round(performance.now() - requestStartedAtMs);
       const debugTurn: DebugTurn = {
-        timestamp: new Date().toISOString(),
+        timestamp: responseReceivedAt.toISOString(),
+        requestStartedAt: requestStartedAt.toISOString(),
+        responseReceivedAt: responseReceivedAt.toISOString(),
+        responseTimeMs,
+        responseTimeSeconds: Number((responseTimeMs / 1000).toFixed(2)),
         userMessage: text,
         assistantAnswer: response.answer,
         confidence: response.confidence ?? null,
@@ -415,6 +694,7 @@ function Chatbot({ config }: { config: EmbedConfig }) {
         sources: response.sources ?? [],
         leadCapture: response.leadCapture ?? null,
         lead: response.lead ?? null,
+        debug: response.debug ?? null,
         fallbackUsed: response.fallbackUsed ?? isFallbackAnswer(response.answer, response.confidence),
       };
       setDebugTurns((current) => [...current, debugTurn]);
@@ -442,6 +722,69 @@ function Chatbot({ config }: { config: EmbedConfig }) {
 
     textareaRef.current.style.height = "34px";
     textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 86)}px`;
+  }
+
+  function setTextareaValue(value: string) {
+    setInput(value);
+    if (!textareaRef.current) return;
+    textareaRef.current.value = value;
+    textareaRef.current.style.height = "34px";
+    textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 86)}px`;
+    textareaRef.current.focus();
+  }
+
+  function toggleMicrophone() {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    if (isListening) {
+      recognitionRef.current?.stop();
+      setIsListening(false);
+      stopVoiceMonitor();
+      return;
+    }
+
+    if (!SpeechRecognition) {
+      if (config.debug) console.warn("[ArcigyChatbot] Speech recognition is not available in this browser.");
+      setIsListening(true);
+      void startVoiceMonitor();
+      textareaRef.current?.focus();
+      return;
+    }
+
+    const recognition = new SpeechRecognition();
+    recognitionRef.current = recognition;
+    recognition.lang = "sk-SK";
+    recognition.continuous = true;
+    recognition.interimResults = true;
+    recognition.maxAlternatives = 1;
+    recognition.onresult = (event) => {
+      const transcript = Array.from(event.results)
+        .map((result) => result?.[0]?.transcript || "")
+        .join(" ")
+        .trim();
+      if (!transcript) return;
+      const current = speechBaseTextRef.current;
+      setTextareaValue(current ? `${current} ${transcript}` : transcript);
+    };
+    recognition.onerror = () => {
+      if (config.debug) console.warn("[ArcigyChatbot] Speech recognition ended with an error.");
+    };
+    recognition.onend = () => {
+      recognitionRef.current = null;
+    };
+
+    try {
+      setIsListening(true);
+      speechBaseTextRef.current = (textareaRef.current?.value || input).trim();
+      void startVoiceMonitor();
+      recognition.start();
+    } catch (error) {
+      if (config.debug) console.warn("[ArcigyChatbot] Speech recognition could not start.", error);
+      recognitionRef.current = null;
+      setIsListening(true);
+      void startVoiceMonitor();
+      textareaRef.current?.focus();
+    }
   }
 
   function startCloseDrag(event: PointerEvent<HTMLElement>) {
@@ -477,17 +820,28 @@ function Chatbot({ config }: { config: EmbedConfig }) {
     window.addEventListener("pointerup", onPointerUp);
   }
 
+  const showAnswerShell = !isCollapsed && (hasConversation || isLoading);
+  const isAnswerVisible = showAnswerShell && (isOpen || isLoading);
+
   return (
     <div className="arcigy-chatbot arcigy-chatbot--codex" aria-label="Arcigy Codex chatbot">
-      {!isCollapsed && ((hasConversation && isOpen) || isLoading) ? (
-        <div className="arcigy-chatbot__answer" aria-label="GEOTHERM AI odpovede">
-          <button className="arcigy-chatbot__answerTop" type="button" onClick={() => setIsOpen(false)}>
-            <span>GEOTHERM AI</span>
-            <span aria-hidden="true">⌄</span>
+      {showAnswerShell ? (
+        <div className={`arcigy-chatbot__answer ${isAnswerVisible ? "is-open" : "is-closed"}`} aria-label="Najnovší príspevok">
+          <button className="arcigy-chatbot__answerTop" type="button" onClick={() => !isLoading && setIsOpen((current) => !current)}>
+            <span>Najnovší príspevok</span>
+            <span aria-hidden="true">{isAnswerVisible ? "v" : "›"}</span>
           </button>
           {config.debug ? (
-            <button className="arcigy-chatbot__debugExport" type="button" onClick={() => window.arcigyChatbot?.exportDebugTranscript({ download: true })}>
-              Export JSON
+            <button
+              className="arcigy-chatbot__debugExport"
+              type="button"
+              onClick={() => {
+                window.arcigyChatbot?.exportDebugTranscript({ download: false, copy: true });
+                setDebugCopyLabel("Copied");
+                window.setTimeout(() => setDebugCopyLabel("Copy JSON"), 1200);
+              }}
+            >
+              {debugCopyLabel}
             </button>
           ) : null}
           <div className="arcigy-chatbot__messages" ref={scrollRef}>
@@ -511,21 +865,11 @@ function Chatbot({ config }: { config: EmbedConfig }) {
             ))}
             {isLoading ? (
               <div className="arcigy-chatbot__thinking">
-                <span>Pripravujem odpoveď</span>
-                <i />
-                <i />
-                <i />
+                <span>Rozmýšľam...</span>
               </div>
             ) : null}
           </div>
         </div>
-      ) : null}
-
-      {!isCollapsed && (hasConversation || isLoading) ? (
-        <button className="arcigy-chatbot__context" type="button" onClick={() => setIsOpen(true)}>
-          <span>Najnovší príspevok</span>
-          <span aria-hidden="true">›</span>
-        </button>
       ) : null}
 
       <div
@@ -567,7 +911,7 @@ function Chatbot({ config }: { config: EmbedConfig }) {
         </button>
         <div className="arcigy-chatbot__composerContent">
           <form
-            className="arcigy-chatbot__input"
+            className={`arcigy-chatbot__input ${isListening ? "is-listening" : ""}`}
             onSubmit={(event) => {
               event.preventDefault();
               void submitMessage();
@@ -580,7 +924,23 @@ function Chatbot({ config }: { config: EmbedConfig }) {
               rows={1}
               placeholder="Napíšte správu..."
             />
-            <button className="arcigy-chatbot__mic" type="button" aria-label="Mikrofón">
+            <div className="arcigy-chatbot__voiceWave" aria-hidden={!isListening}>
+              {voiceLevels.map((level, index) => (
+                <span
+                  className="arcigy-chatbot__voiceBar"
+                  key={index}
+                  style={{ "--voice-level": level.toFixed(3) } as CSSProperties}
+                />
+              ))}
+            </div>
+            <button
+              className={`arcigy-chatbot__mic ${isListening ? "is-listening" : ""}`}
+              type="button"
+              aria-label="Mikrofón"
+              aria-pressed={isListening}
+              onClick={toggleMicrophone}
+              disabled={isLoading}
+            >
               <svg aria-hidden="true" viewBox="0 0 24 24">
                 <path d="M12 4a3 3 0 0 0-3 3v5a3 3 0 0 0 6 0V7a3 3 0 0 0-3-3Z" />
                 <path d="M5 11a7 7 0 0 0 14 0" />
@@ -615,7 +975,7 @@ function mountWidget() {
     runAction,
     version,
     config,
-    exportDebugTranscript(options?: { download?: boolean }) {
+    exportDebugTranscript(options?: { download?: boolean; copy?: boolean }) {
       const transcript: DebugTranscript = {
         exportedAt: new Date().toISOString(),
         version,
@@ -629,6 +989,7 @@ function mountWidget() {
         turns: [],
       };
       if (options?.download) downloadJson(`arcigy-chat-debug-${new Date().toISOString().replace(/[:.]/g, "-")}.json`, transcript);
+      if (options?.copy) copyJson(transcript);
       return transcript;
     },
     test: {

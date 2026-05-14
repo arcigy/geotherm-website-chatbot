@@ -8,7 +8,11 @@ if (!leads.length) {
 }
 
 for (const lead of leads) {
-  const transcript = JSON.parse(lead.transcript_json) as Array<{ role: string; content: string }>;
+  const rawTranscript = JSON.parse(lead.transcript_json) as
+    | Array<{ role: string; content: string }>
+    | { messages?: Array<{ role: string; content: string }>; leadProfile?: { description?: string; interestLevel?: string; stage?: string } };
+  const transcript = Array.isArray(rawTranscript) ? rawTranscript : rawTranscript.messages || [];
+  const leadProfile = Array.isArray(rawTranscript) ? null : rawTranscript.leadProfile || null;
   const summary = transcript
     .filter((message) => message.role === "user")
     .slice(-3)
@@ -23,6 +27,9 @@ for (const lead of leads) {
     `phone: ${lead.phone || "-"}`,
     `intent: ${lead.intent || "-"}`,
     `score: ${lead.score}`,
+    `description: ${leadProfile?.description || "-"}`,
+    `interest_level: ${leadProfile?.interestLevel || "-"}`,
+    `stage: ${leadProfile?.stage || "-"}`,
     `summary: ${summary || "-"}`,
     "",
   ].join("\n"));

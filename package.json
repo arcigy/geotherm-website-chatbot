@@ -20,7 +20,17 @@
     "retrieve": "tsc -p tsconfig.wp-export.json && node .tmp-wp-export/retrieve-knowledge.js",
     "evaluate:retrieval": "tsc -p tsconfig.wp-export.json && node .tmp-wp-export/evaluate-retrieval.js",
     "evaluate:rag": "tsx scripts/evaluate-rag-answers.ts",
+    "evaluate:ceiling-cooling": "tsx scripts/evaluate-ceiling-cooling-rag.ts",
+    "generate:rag-massive": "tsx scripts/generate-rag-massive-test-cases.ts",
+    "evaluate:retrieval-chaos": "tsx scripts/evaluate-retrieval-chaos.ts",
+    "analyze:knowledge-coverage": "tsx scripts/analyze-knowledge-coverage.ts",
+    "detect:knowledge-contradictions": "tsx scripts/detect-knowledge-contradictions.ts",
+    "test:long-conversations": "tsx scripts/test-long-conversations.ts",
+    "evaluate:rag-massive": "tsx scripts/evaluate-rag-massive.ts",
     "dev:chat-api": "tsx scripts/chat-server.ts",
+    "start:chat-api": "tsx scripts/chat-server.ts",
+    "test:router": "tsx scripts/test-router.ts",
+    "test:practical-chat": "tsx scripts/test-practical-conversations.ts",
     "test:chat-api": "tsx scripts/test-chat-api.ts",
     "preview:embed": "vite dist-embed --host 127.0.0.1 --port 4321",
     "test:embed-ui": "tsx scripts/test-embed-ui.ts",
@@ -30,7 +40,9 @@
     "leads:list": "tsx scripts/leads-list.ts",
     "analytics:report": "tsx scripts/analytics-report.ts",
     "security:self-check": "tsx scripts/security-self-check.ts",
-    "test:wp-plugin": "node scripts/test-wp-plugin.mjs"
+    "test:wp-plugin": "node scripts/test-wp-plugin.mjs",
+    "test:llm-chat": "tsx scripts/test-llm-chat-quality.ts",
+    "test:llm-chat-quality": "tsx scripts/test-llm-chat-quality.ts"
   },
   "dependencies": {
     "@google/genai": "1.51.0",

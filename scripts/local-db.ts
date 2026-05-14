@@ -58,6 +58,11 @@ export function nowIso(): string {
   return new Date().toISOString();
 }
 
+function sessionTimeoutSeconds(): number {
+  const parsed = Number.parseInt(process.env.SESSION_TIMEOUT_SECONDS || "7200", 10);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : 7200;
+}
+
 export function createId(prefix: string): string {
   return `${prefix}_${randomUUID()}`;
 }
@@ -240,11 +245,18 @@ export function upsertSession(site: SiteRecord, anonymousId: string, userAgent?:
 
 export function getOrCreateActiveConversation(site: SiteRecord, session: SessionRecord): ConversationRecord {
   const database = getDb();
-  const existing = database
-    .prepare("SELECT * FROM conversations WHERE site_id = ? AND session_id = ? AND status = 'active' ORDER BY created_at DESC LIMIT 1")
-    .get(site.id, session.id) as ConversationRecord | undefined;
+  const activeConversations = database
+    .prepare("SELECT * FROM conversations WHERE site_id = ? AND session_id = ? AND status = 'active' ORDER BY updated_at DESC")
+    .all(site.id, session.id) as ConversationRecord[];
 
-  if (existing) return existing;
+  const timeoutMs = sessionTimeoutSeconds() * 1000;
+  const now = Date.now();
+  for (const active of activeConversations) {
+    const updatedAtMs = Date.parse(active.updated_at);
+    const isExpired = !Number.isFinite(updatedAtMs) || now - updatedAtMs > timeoutMs;
+    if (!isExpired) return active;
+    database.prepare("UPDATE conversations SET status = ?, updated_at = ? WHERE id = ?").run("closed", nowIso(), active.id);
+  }
 
   const createdAt = nowIso();
   const conversation: ConversationRecord = {

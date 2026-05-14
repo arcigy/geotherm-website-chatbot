@@ -1,0 +1,956 @@
+[
+  {
+    "id": "CC001",
+    "category": "benefits",
+    "query": "Aké výhody má stropné chladenie?",
+    "expectedAnswerTerms": [
+      "tiché",
+      "skryté",
+      "rovnomerne",
+      "Uvažujete",
+      "novostavbe",
+      "rekonštrukcii"
+    ],
+    "expectedSourceTerms": [
+      "Stropné chladenie",
+      "Výhody stropného chladenia"
+    ],
+    "forbiddenAnswerTerms": [
+      "nenašiel dostatočne jasnú",
+      "neviem to zodpovedne",
+      "Krátka odpoveď",
+      "Podľa webu",
+      "Podľa dostupných"
+    ],
+    "minConfidence": "medium"
+  },
+  {
+    "id": "CC002",
+    "category": "benefits",
+    "query": "Prečo je stropné chladenie komfortné?",
+    "expectedAnswerTerms": [
+      "rovnomerne",
+      "prievan"
+    ],
+    "expectedSourceTerms": [
+      "Stropné chladenie"
+    ],
+    "forbiddenAnswerTerms": [
+      "nenašiel",
+      "Krátka odpoveď",
+      "Podľa webu",
+      "Podľa dostupných"
+    ],
+    "minConfidence": "medium"
+  },
+  {
+    "id": "CC003",
+    "category": "benefits",
+    "query": "Je stropné chladenie tiché?",
+    "expectedAnswerTerms": [
+      "tiché",
+      "skryté"
+    ],
+    "expectedSourceTerms": [
+      "Výhody stropného chladenia"
+    ],
+    "forbiddenAnswerTerms": [
+      "neviem",
+      "Krátka odpoveď",
+      "Podľa webu",
+      "Podľa dostupných"
+    ],
+    "minConfidence": "medium"
+  },
+  {
+    "id": "CC004",
+    "category": "benefits",
+    "query": "Víri stropné chladenie prach?",
+    "expectedAnswerTerms": [
+      "nevíri prach"
+    ],
+    "expectedSourceTerms": [
+      "Výhody stropného chladenia"
+    ],
+    "forbiddenAnswerTerms": [
+      "áno víri",
+      "Krátka odpoveď",
+      "Podľa webu",
+      "Podľa dostupných"
+    ],
+    "minConfidence": "medium"
+  },
+  {
+    "id": "CC005",
+    "category": "benefits",
+    "query": "Má stropné chladenie studený prievan?",
+    "expectedAnswerTerms": [
+      "prievan"
+    ],
+    "expectedSourceTerms": [
+      "Stropné chladenie verzus klimatizácia"
+    ],
+    "forbiddenAnswerTerms": [
+      "určite",
+      "garantujeme",
+      "Krátka odpoveď",
+      "Podľa webu",
+      "Podľa dostupných"
+    ],
+    "minConfidence": "medium"
+  },
+  {
+    "id": "CC006",
+    "category": "benefits",
+    "query": "Je stropné chladenie skryté alebo ho vidno?",
+    "expectedAnswerTerms": [
+      "skryté"
+    ],
+    "expectedSourceTerms": [
+      "Výhody stropného chladenia"
+    ],
+    "forbiddenAnswerTerms": [
+      "nenašiel",
+      "Krátka odpoveď",
+      "Podľa webu",
+      "Podľa dostupných"
+    ],
+    "minConfidence": "medium"
+  },
+  {
+    "id": "CC007",
+    "category": "benefits",
+    "query": "Ako stropné chladenie chladí miestnosť?",
+    "expectedAnswerTerms": [
+      "veľkou plochou",
+      "rovnomerne"
+    ],
+    "expectedSourceTerms": [
+      "Stropné chladenie"
+    ],
+    "forbiddenAnswerTerms": [
+      "kompresor je vždy nutný",
+      "Krátka odpoveď",
+      "Podľa webu",
+      "Podľa dostupných"
+    ],
+    "minConfidence": "medium"
+  },
+  {
+    "id": "CC008",
+    "category": "benefits",
+    "query": "Prečo je stropné chladenie príjemnejšie ako fúkanie studeného vzduchu?",
+    "expectedAnswerTerms": [
+      "prúdením",
+      "plošne"
+    ],
+    "expectedSourceTerms": [
+      "Stropné chladenie verzus klimatizácia"
+    ],
+    "forbiddenAnswerTerms": [
+      "nenašiel",
+      "Krátka odpoveď",
+      "Podľa webu",
+      "Podľa dostupných"
+    ],
+    "minConfidence": "medium"
+  },
+  {
+    "id": "CC009",
+    "category": "benefits",
+    "query": "Je stropné chladenie zdravotne lepšie ako klimatizácia?",
+    "expectedAnswerTerms": [
+      "prúd",
+      "prach"
+    ],
+    "expectedSourceTerms": [
+      "Výhody stropného chladenia"
+    ],
+    "forbiddenAnswerTerms": [
+      "garantuje zdravie",
+      "Krátka odpoveď",
+      "Podľa webu",
+      "Podľa dostupných"
+    ],
+    "minConfidence": "medium"
+  },
+  {
+    "id": "CC010",
+    "category": "benefits",
+    "query": "Aké sú hlavné plusy stropného chladenia pre bežný dom?",
+    "expectedAnswerTerms": [
+      "tiché",
+      "náklady"
+    ],
+    "expectedSourceTerms": [
+      "Stropné chladenie"
+    ],
+    "forbiddenAnswerTerms": [
+      "nenašiel",
+      "Krátka odpoveď",
+      "Podľa webu",
+      "Podľa dostupných"
+    ],
+    "minConfidence": "medium"
+  },
+  {
+    "id": "CC011",
+    "category": "comparison",
+    "query": "Stropné chladenie alebo klimatizácia, čo je pohodlnejšie?",
+    "expectedAnswerTerms": [
+      "klimatizácia",
+      "prúdením",
+      "plošne"
+    ],
+    "expectedSourceTerms": [
+      "Stropné chladenie verzus klimatizácia"
+    ],
+    "forbiddenAnswerTerms": [
+      "klimatizácia je vždy lepšia",
+      "Krátka odpoveď",
+      "Podľa webu",
+      "Podľa dostupných"
+    ],
+    "minConfidence": "medium"
+  },
+  {
+    "id": "CC012",
+    "category": "comparison",
+    "query": "Aký je rozdiel medzi stropným chladením a klímou?",
+    "expectedAnswerTerms": [
+      "klimatizácia",
+      "prúdením"
+    ],
+    "expectedSourceTerms": [
+      "Stropné chladenie verzus klimatizácia"
+    ],
+    "forbiddenAnswerTerms": [
+      "nenašiel",
+      "Krátka odpoveď",
+      "Podľa webu",
+      "Podľa dostupných"
+    ],
+    "minConfidence": "medium"
+  },
+  {
+    "id": "CC013",
+    "category": "comparison",
+    "query": "Je klimatizácia lacnejšia než stropné chladenie?",
+    "expectedAnswerTerms": [
+      "cenovú výhodu",
+      "výhody"
+    ],
+    "expectedSourceTerms": [
+      "Stropné chladenie verzus klimatizácia"
+    ],
+    "forbiddenAnswerTerms": [
+      "presne",
+      "Krátka odpoveď",
+      "Podľa webu",
+      "Podľa dostupných"
+    ],
+    "minConfidence": "medium"
+  },
+  {
+    "id": "CC014",
+    "category": "comparison",
+    "query": "Prečo web píše, že stropné chladenie je lepšie než klimatizácia?",
+    "expectedAnswerTerms": [
+      "komfort",
+      "prievanu"
+    ],
+    "expectedSourceTerms": [
+      "Stropné chladenie verzus klimatizácia"
+    ],
+    "forbiddenAnswerTerms": [
+      "vždy lepšie pre každého",
+      "Krátka odpoveď",
+      "Podľa webu",
+      "Podľa dostupných"
+    ],
+    "minConfidence": "medium"
+  },
+  {
+    "id": "CC015",
+    "category": "comparison",
+    "query": "Čo je prirodzenejšie, stropné chladenie alebo klasická klíma?",
+    "expectedAnswerTerms": [
+      "klimatizácia",
+      "plošne"
+    ],
+    "expectedSourceTerms": [
+      "Stropné chladenie verzus klimatizácia"
+    ],
+    "forbiddenAnswerTerms": [
+      "garantujeme",
+      "Krátka odpoveď",
+      "Podľa webu",
+      "Podľa dostupných"
+    ],
+    "minConfidence": "medium"
+  },
+  {
+    "id": "CC016",
+    "category": "disadvantages",
+    "query": "Aké nevýhody má stropné chladenie?",
+    "expectedAnswerTerms": [
+      "pomalší nábeh",
+      "kondenzácie",
+      "vyššiu obstarávaciu cenu"
+    ],
+    "expectedSourceTerms": [
+      "Nevýhody stropného chladenia"
+    ],
+    "forbiddenAnswerTerms": [
+      "nemá žiadne nevýhody",
+      "Krátka odpoveď",
+      "Podľa webu",
+      "Podľa dostupných"
+    ],
+    "minConfidence": "medium"
+  },
+  {
+    "id": "CC017",
+    "category": "disadvantages",
+    "query": "Má stropné chladenie pomalší nábeh?",
+    "expectedAnswerTerms": [
+      "pomalší nábeh"
+    ],
+    "expectedSourceTerms": [
+      "Nevýhody stropného chladenia"
+    ],
+    "forbiddenAnswerTerms": [
+      "okamžite",
+      "Krátka odpoveď",
+      "Podľa webu",
+      "Podľa dostupných"
+    ],
+    "minConfidence": "medium"
+  },
+  {
+    "id": "CC018",
+    "category": "disadvantages",
+    "query": "Kedy môže byť problém kondenzácia pri stropnom chladení?",
+    "expectedAnswerTerms": [
+      "kondenzácia",
+      "vlhkosti"
+    ],
+    "expectedSourceTerms": [
+      "Nevýhody stropného chladenia"
+    ],
+    "forbiddenAnswerTerms": [
+      "nikdy nehrozí",
+      "Krátka odpoveď",
+      "Podľa webu",
+      "Podľa dostupných"
+    ],
+    "minConfidence": "medium"
+  },
+  {
+    "id": "CC019",
+    "category": "disadvantages",
+    "query": "Je stropné chladenie drahšie ako klimatizácia?",
+    "expectedAnswerTerms": [
+      "vyššiu obstarávaciu cenu"
+    ],
+    "expectedSourceTerms": [
+      "Nevýhody stropného chladenia"
+    ],
+    "forbiddenAnswerTerms": [
+      "presne",
+      "Krátka odpoveď",
+      "Podľa webu",
+      "Podľa dostupných"
+    ],
+    "minConfidence": "medium"
+  },
+  {
+    "id": "CC020",
+    "category": "disadvantages",
+    "query": "Čo si mám dať pozor pri stropnom chladení?",
+    "expectedAnswerTerms": [
+      "kondenzácie",
+      "návrhu"
+    ],
+    "expectedSourceTerms": [
+      "Nevýhody stropného chladenia"
+    ],
+    "forbiddenAnswerTerms": [
+      "netreba návrh",
+      "Krátka odpoveď",
+      "Podľa webu",
+      "Podľa dostupných"
+    ],
+    "minConfidence": "medium"
+  },
+  {
+    "id": "CC021",
+    "category": "suitability",
+    "query": "Je stropné chladenie vhodné do novostavby?",
+    "expectedAnswerTerms": [
+      "novostavbe",
+      "betónovej"
+    ],
+    "expectedSourceTerms": [
+      "Stropné chladenie pre novostavbu aj rekonštrukciu"
+    ],
+    "forbiddenAnswerTerms": [
+      "nenašiel",
+      "Krátka odpoveď",
+      "Podľa webu",
+      "Podľa dostupných"
+    ],
+    "minConfidence": "medium"
+  },
+  {
+    "id": "CC022",
+    "category": "suitability",
+    "query": "Dá sa stropné chladenie použiť pri rekonštrukcii?",
+    "expectedAnswerTerms": [
+      "rekonštrukcii",
+      "sadrokartón"
+    ],
+    "expectedSourceTerms": [
+      "Stropné chladenie pre novostavbu aj rekonštrukciu"
+    ],
+    "forbiddenAnswerTerms": [
+      "nedá sa",
+      "Krátka odpoveď",
+      "Podľa webu",
+      "Podľa dostupných"
+    ],
+    "minConfidence": "medium"
+  },
+  {
+    "id": "CC023",
+    "category": "suitability",
+    "query": "Do akých objektov je vhodné stropné chladenie?",
+    "expectedAnswerTerms": [
+      "rodinné domy",
+      "byty"
+    ],
+    "expectedSourceTerms": [
+      "Stropné chladenie pre novostavbu aj rekonštrukciu"
+    ],
+    "forbiddenAnswerTerms": [
+      "iba rodinné domy",
+      "Krátka odpoveď",
+      "Podľa webu",
+      "Podľa dostupných"
+    ],
+    "minConfidence": "medium"
+  },
+  {
+    "id": "CC024",
+    "category": "suitability",
+    "query": "Kde stropné chladenie nie je vhodné?",
+    "expectedAnswerTerms": [
+      "vlhkosť",
+      "kondenzácie"
+    ],
+    "expectedSourceTerms": [
+      "Stropné chladenie pre novostavbu aj rekonštrukciu"
+    ],
+    "forbiddenAnswerTerms": [
+      "všade",
+      "Krátka odpoveď",
+      "Podľa webu",
+      "Podľa dostupných"
+    ],
+    "minConfidence": "medium"
+  },
+  {
+    "id": "CC025",
+    "category": "suitability",
+    "query": "Je stropné chladenie vhodné pri vysokých stropoch?",
+    "expectedAnswerTerms": [
+      "vysokými stropmi"
+    ],
+    "expectedSourceTerms": [
+      "Stropné chladenie pre novostavbu aj rekonštrukciu"
+    ],
+    "forbiddenAnswerTerms": [
+      "určite áno",
+      "Krátka odpoveď",
+      "Podľa webu",
+      "Podľa dostupných"
+    ],
+    "minConfidence": "medium"
+  },
+  {
+    "id": "CC026",
+    "category": "system_types",
+    "query": "Aké typy stropného chladenia web opisuje?",
+    "expectedAnswerTerms": [
+      "betónovej",
+      "sadrokartón",
+      "podomietkový"
+    ],
+    "expectedSourceTerms": [
+      "Stropné chladenie pod omietku"
+    ],
+    "forbiddenAnswerTerms": [
+      "iba jeden typ",
+      "Krátka odpoveď",
+      "Podľa webu",
+      "Podľa dostupných"
+    ],
+    "minConfidence": "medium"
+  },
+  {
+    "id": "CC027",
+    "category": "system_types",
+    "query": "Čo je stropné chladenie v sadrokartónovom podhľade?",
+    "expectedAnswerTerms": [
+      "sadrokartón",
+      "rekonštrukcii"
+    ],
+    "expectedSourceTerms": [
+      "Stropné chladenie v sadrokartónovom podhľade"
+    ],
+    "forbiddenAnswerTerms": [
+      "nenašiel",
+      "Krátka odpoveď",
+      "Podľa webu",
+      "Podľa dostupných"
+    ],
+    "minConfidence": "medium"
+  },
+  {
+    "id": "CC028",
+    "category": "system_types",
+    "query": "Čo znamená stropné chladenie pod omietku?",
+    "expectedAnswerTerms": [
+      "podomietkový",
+      "rúr"
+    ],
+    "expectedSourceTerms": [
+      "Stropné chladenie pod omietku"
+    ],
+    "forbiddenAnswerTerms": [
+      "nenašiel",
+      "Krátka odpoveď",
+      "Podľa webu",
+      "Podľa dostupných"
+    ],
+    "minConfidence": "medium"
+  },
+  {
+    "id": "CC029",
+    "category": "system_types",
+    "query": "Ako funguje stropné chladenie integrované v betónovej platni?",
+    "expectedAnswerTerms": [
+      "betónovej",
+      "akumulácia"
+    ],
+    "expectedSourceTerms": [
+      "Stropné chladenie integrované v betónovej platni stropu"
+    ],
+    "forbiddenAnswerTerms": [
+      "nenašiel",
+      "Krátka odpoveď",
+      "Podľa webu",
+      "Podľa dostupných"
+    ],
+    "minConfidence": "medium"
+  },
+  {
+    "id": "CC030",
+    "category": "system_types",
+    "query": "Čo je temperovanie betónového jadra pri chladení?",
+    "expectedAnswerTerms": [
+      "betónového jadra",
+      "akumulácia"
+    ],
+    "expectedSourceTerms": [
+      "Stropné chladenie integrované v betónovej platni stropu"
+    ],
+    "forbiddenAnswerTerms": [
+      "vymyslené",
+      "Krátka odpoveď",
+      "Podľa webu",
+      "Podľa dostupných"
+    ],
+    "minConfidence": "medium"
+  },
+  {
+    "id": "CC031",
+    "category": "price",
+    "query": "Koľko stojí stropné chladenie za m2?",
+    "expectedAnswerTerms": [
+      "orientačné",
+      "zdroj chladu"
+    ],
+    "expectedSourceTerms": [
+      "Cena a poradenstvo"
+    ],
+    "forbiddenAnswerTerms": [
+      "presne",
+      "garantujeme",
+      "Krátka odpoveď",
+      "Podľa webu",
+      "Podľa dostupných"
+    ],
+    "minConfidence": "medium"
+  },
+  {
+    "id": "CC032",
+    "category": "price",
+    "query": "Aká je cena sadrokartónového stropného chladenia?",
+    "expectedAnswerTerms": [
+      "sadrokartónový",
+      "orientačné"
+    ],
+    "expectedSourceTerms": [
+      "Cena a poradenstvo"
+    ],
+    "forbiddenAnswerTerms": [
+      "garantovaná cena",
+      "Krátka odpoveď",
+      "Podľa webu",
+      "Podľa dostupných"
+    ],
+    "minConfidence": "medium"
+  },
+  {
+    "id": "CC033",
+    "category": "price",
+    "query": "Je v cene stropného chladenia aj tepelné čerpadlo?",
+    "expectedAnswerTerms": [
+      "nezahŕňa",
+      "zdroj chladu"
+    ],
+    "expectedSourceTerms": [
+      "Cena a poradenstvo"
+    ],
+    "forbiddenAnswerTerms": [
+      "áno všetko",
+      "Krátka odpoveď",
+      "Podľa webu",
+      "Podľa dostupných"
+    ],
+    "minConfidence": "medium"
+  },
+  {
+    "id": "CC034",
+    "category": "price",
+    "query": "Prečo je cena stropného chladenia len orientačná?",
+    "expectedAnswerTerms": [
+      "systému",
+      "zdroj chladu"
+    ],
+    "expectedSourceTerms": [
+      "Cena a poradenstvo"
+    ],
+    "forbiddenAnswerTerms": [
+      "presná cena",
+      "Krátka odpoveď",
+      "Podľa webu",
+      "Podľa dostupných"
+    ],
+    "minConfidence": "medium"
+  },
+  {
+    "id": "CC035",
+    "category": "price",
+    "query": "Čo nie je zahrnuté v cene stropného chladenia?",
+    "expectedAnswerTerms": [
+      "nezahŕňa",
+      "stavebné práce"
+    ],
+    "expectedSourceTerms": [
+      "Cena a poradenstvo"
+    ],
+    "forbiddenAnswerTerms": [
+      "všetko je zahrnuté",
+      "Krátka odpoveď",
+      "Podľa webu",
+      "Podľa dostupných"
+    ],
+    "minConfidence": "medium"
+  },
+  {
+    "id": "CC036",
+    "category": "condensation",
+    "query": "Čo je rosný bod pri stropnom chladení?",
+    "expectedAnswerTerms": [
+      "rosný bod",
+      "kondenzácia"
+    ],
+    "expectedSourceTerms": [
+      "Vysoký komfort zachovaný"
+    ],
+    "forbiddenAnswerTerms": [
+      "netreba riešiť",
+      "Krátka odpoveď",
+      "Podľa webu",
+      "Podľa dostupných"
+    ],
+    "minConfidence": "medium"
+  },
+  {
+    "id": "CC037",
+    "category": "condensation",
+    "query": "Prečo treba pri stropnom chladení riešiť vlhkosť?",
+    "expectedAnswerTerms": [
+      "vlhkosť",
+      "kondenzácia"
+    ],
+    "expectedSourceTerms": [
+      "Nevýhody stropného chladenia"
+    ],
+    "forbiddenAnswerTerms": [
+      "vlhkosť nevadí",
+      "Krátka odpoveď",
+      "Podľa webu",
+      "Podľa dostupných"
+    ],
+    "minConfidence": "medium"
+  },
+  {
+    "id": "CC038",
+    "category": "condensation",
+    "query": "Môže stropné chladenie kvapkať?",
+    "expectedAnswerTerms": [
+      "kondenzácia",
+      "rosný bod"
+    ],
+    "expectedSourceTerms": [
+      "Nevýhody stropného chladenia"
+    ],
+    "forbiddenAnswerTerms": [
+      "nikdy",
+      "Krátka odpoveď",
+      "Podľa webu",
+      "Podľa dostupných"
+    ],
+    "minConfidence": "medium"
+  },
+  {
+    "id": "CC039",
+    "category": "condensation",
+    "query": "Ako sa predchádza kondenzácii pri stropnom chladení?",
+    "expectedAnswerTerms": [
+      "rosný bod",
+      "navrhnutý"
+    ],
+    "expectedSourceTerms": [
+      "Stropné chladenie pre novostavbu aj rekonštrukciu"
+    ],
+    "forbiddenAnswerTerms": [
+      "stačí hocijaké nastavenie",
+      "Krátka odpoveď",
+      "Podľa webu",
+      "Podľa dostupných"
+    ],
+    "minConfidence": "medium"
+  },
+  {
+    "id": "CC040",
+    "category": "condensation",
+    "query": "Prečo musí byť stropné chladenie odborne navrhnuté?",
+    "expectedAnswerTerms": [
+      "rosný bod",
+      "odborník"
+    ],
+    "expectedSourceTerms": [
+      "Stropné chladenie pre novostavbu aj rekonštrukciu"
+    ],
+    "forbiddenAnswerTerms": [
+      "netreba odborníka",
+      "Krátka odpoveď",
+      "Podľa webu",
+      "Podľa dostupných"
+    ],
+    "minConfidence": "medium"
+  },
+  {
+    "id": "CC041",
+    "category": "heat_pump",
+    "query": "Dá sa stropné chladenie kombinovať s tepelným čerpadlom?",
+    "expectedAnswerTerms": [
+      "tepelným čerpadlom",
+      "vykurovanie"
+    ],
+    "expectedSourceTerms": [
+      "Výhody stropného chladenia"
+    ],
+    "forbiddenAnswerTerms": [
+      "nedá sa",
+      "Krátka odpoveď",
+      "Podľa webu",
+      "Podľa dostupných"
+    ],
+    "minConfidence": "medium"
+  },
+  {
+    "id": "CC042",
+    "category": "heat_pump",
+    "query": "Prečo je tepelné čerpadlo vhodné k stropnému chladeniu?",
+    "expectedAnswerTerms": [
+      "tepelným čerpadlom",
+      "teplej vody"
+    ],
+    "expectedSourceTerms": [
+      "Výhody stropného chladenia"
+    ],
+    "forbiddenAnswerTerms": [
+      "nenašiel",
+      "Krátka odpoveď",
+      "Podľa webu",
+      "Podľa dostupných"
+    ],
+    "minConfidence": "medium"
+  },
+  {
+    "id": "CC043",
+    "category": "heat_pump",
+    "query": "Vie stropný systém aj vykurovať?",
+    "expectedAnswerTerms": [
+      "vykurovanie",
+      "sezóny"
+    ],
+    "expectedSourceTerms": [
+      "Stropné vykurovanie"
+    ],
+    "forbiddenAnswerTerms": [
+      "iba chladí",
+      "Krátka odpoveď",
+      "Podľa webu",
+      "Podľa dostupných"
+    ],
+    "minConfidence": "medium"
+  },
+  {
+    "id": "CC044",
+    "category": "heat_pump",
+    "query": "Ako súvisí stropné chladenie s pasívnym chladením?",
+    "expectedAnswerTerms": [
+      "pasívne",
+      "prevádzkové náklady"
+    ],
+    "expectedSourceTerms": [
+      "Výhody stropného chladenia"
+    ],
+    "forbiddenAnswerTerms": [
+      "presne garantované",
+      "Krátka odpoveď",
+      "Podľa webu",
+      "Podľa dostupných"
+    ],
+    "minConfidence": "medium"
+  },
+  {
+    "id": "CC045",
+    "category": "heat_pump",
+    "query": "Je stropné chladenie úsporné?",
+    "expectedAnswerTerms": [
+      "nízke prevádzkové náklady"
+    ],
+    "expectedSourceTerms": [
+      "Výhody stropného chladenia"
+    ],
+    "forbiddenAnswerTerms": [
+      "zadarmo",
+      "Krátka odpoveď",
+      "Podľa webu",
+      "Podľa dostupných"
+    ],
+    "minConfidence": "medium"
+  },
+  {
+    "id": "CC046",
+    "category": "typos",
+    "query": "ake vyhody ma stropne chladenie",
+    "expectedAnswerTerms": [
+      "tiché",
+      "rovnomerne"
+    ],
+    "expectedSourceTerms": [
+      "Stropné chladenie"
+    ],
+    "forbiddenAnswerTerms": [
+      "nenašiel",
+      "Krátka odpoveď",
+      "Podľa webu",
+      "Podľa dostupných"
+    ],
+    "minConfidence": "medium"
+  },
+  {
+    "id": "CC047",
+    "category": "typos",
+    "query": "stropne chlsdenie vs klima",
+    "expectedAnswerTerms": [
+      "klimatizácia",
+      "prúdením"
+    ],
+    "expectedSourceTerms": [
+      "Stropné chladenie verzus klimatizácia"
+    ],
+    "forbiddenAnswerTerms": [
+      "nenašiel",
+      "Krátka odpoveď",
+      "Podľa webu",
+      "Podľa dostupných"
+    ],
+    "minConfidence": "medium"
+  },
+  {
+    "id": "CC048",
+    "category": "typos",
+    "query": "kolko stoji stropne chladenie m2",
+    "expectedAnswerTerms": [
+      "orientačné",
+      "zdroj chladu"
+    ],
+    "expectedSourceTerms": [
+      "Cena a poradenstvo"
+    ],
+    "forbiddenAnswerTerms": [
+      "presne garantujem",
+      "Krátka odpoveď",
+      "Podľa webu",
+      "Podľa dostupných"
+    ],
+    "minConfidence": "medium"
+  },
+  {
+    "id": "CC049",
+    "category": "typos",
+    "query": "stropne chladenie do rekonstrukcie ide?",
+    "expectedAnswerTerms": [
+      "rekonštrukcii",
+      "sadrokartón"
+    ],
+    "expectedSourceTerms": [
+      "Stropné chladenie pre novostavbu aj rekonštrukciu"
+    ],
+    "forbiddenAnswerTerms": [
+      "nedá sa",
+      "Krátka odpoveď",
+      "Podľa webu",
+      "Podľa dostupných"
+    ],
+    "minConfidence": "medium"
+  },
+  {
+    "id": "CC050",
+    "category": "typos",
+    "query": "stropne chladenie kondenzacia problem?",
+    "expectedAnswerTerms": [
+      "kondenzácia",
+      "rosný bod"
+    ],
+    "expectedSourceTerms": [
+      "Nevýhody stropného chladenia"
+    ],
+    "forbiddenAnswerTerms": [
+      "nikdy nehrozí",
+      "Krátka odpoveď",
+      "Podľa webu",
+      "Podľa dostupných"
+    ],
+    "minConfidence": "medium"
+  }
+]

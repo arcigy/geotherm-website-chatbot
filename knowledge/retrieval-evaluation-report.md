@@ -6,7 +6,7 @@
 - top1 pass rate: 83%
 - top3 pass rate: 88%
 - fallback pass rate: 100%
-- average top score: 92.41
+- average top score: 90.21
 - verdict: PASS
 
 Confidence thresholds: `finalScore >= 35` is confident, `14-34.99` is uncertain, `< 14` is no answer.

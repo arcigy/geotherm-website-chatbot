@@ -114,6 +114,8 @@ const synonymGroups = [
   ["montaz", "instalacia", "realizacia", "osadenie", "zapojenie"],
   ["tepelne", "cerpadlo", "cerpadla", "heat", "pump"],
   ["podlahove", "kurenie", "vykurovanie", "podlahovka"],
+  ["stropne", "strop", "stropny", "stropneho", "strpne", "strpnom", "stropnom"],
+  ["chladenie", "chladit", "chladi", "chlad", "chladene", "klimatizacia"],
   ["voda", "vzduch", "zem", "vrt", "vrty", "studna"],
   ["nibe"],
   ["viessmann"],
@@ -124,6 +126,15 @@ const synonymGroups = [
   ["kontakt", "kontaktovat", "kontaktujem", "kontaktuj", "najdem", "najst", "telefon", "tel", "email", "mail", "adresa", "showroom"],
   ["znacka", "znacky", "vyrobca", "vyrobcovia", "nibe", "vaillant"],
   ["navrh", "poradit", "projekt", "podorys", "informacie", "udaje"],
+  ["huci", "hucia", "hucnost", "otravne", "hluk", "hlucnost"],
+  ["vyjde", "cenovka", "cena", "kolko", "stoji"],
+  ["serivs", "servisak", "oprava", "servis", "udrzba"],
+  ["cerpadllo", "tepelko", "cerpadlo", "tepelne"],
+  ["spotreba", "spotreb", "zere", "elektrina", "ucty", "naklady"],
+  ["radiator", "radiatory", "podlahovka", "podlahove"],
+  ["rekuperacia", "vetranie", "vzduch"],
+  ["barak", "dom", "rodinny"],
+  ["namontovat", "montaz", "instalacia"],
 ];
 
 const synonymMap = new Map<string, Set<string>>();
@@ -137,6 +148,23 @@ export function normalize(value: string): string {
     .toLowerCase()
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
+    .replace(/\bserivs\b/g, "servis")
+    .replace(/\bservisak\b/g, "servis")
+    .replace(/\bcerpadllo\b/g, "cerpadlo")
+    .replace(/\btepelko\b/g, "tepelne cerpadlo")
+    .replace(/\bstrpne\b/g, "stropne")
+    .replace(/\bstrpnom\b/g, "stropnom")
+    .replace(/\bstrpny\b/g, "stropny")
+    .replace(/\bhuci\b/g, "hluk")
+    .replace(/\bhucia\b/g, "hluk")
+    .replace(/\bhucnost\b/g, "hlucnost")
+    .replace(/\bcenovka\b/g, "cena")
+    .replace(/\bvyjde\b/g, "cena")
+    .replace(/\bbarak\b/g, "dom")
+    .replace(/\bchlsdenie\b/g, "chladenie")
+    .replace(/\bchladnie\b/g, "chladenie")
+    .replace(/\bklima\b/g, "klimatizacia")
+    .replace(/\bvykurovnie\b/g, "vykurovanie")
     .replace(/ľ/g, "l")
     .replace(/ť/g, "t")
     .replace(/ď/g, "d")
@@ -210,6 +238,39 @@ function confidence(finalScore: number): "confident" | "uncertain" | "no_answer"
   return "no_answer";
 }
 
+function boilerplatePenalty(chunk: KnowledgeChunk, contactIntent: boolean): number {
+  const haystack = normalize(`${chunk.pageTitle} ${chunk.sectionHeading} ${chunk.url} ${chunk.slug} ${chunk.text.slice(0, 900)}`);
+  const isNoisePage =
+    haystack.includes("sutaz") ||
+    haystack.includes("lego") ||
+    haystack.includes("centralne vysavac") ||
+    haystack.includes("/author/") ||
+    haystack.includes("geotherm sk author") ||
+    haystack.includes("dakujeme") ||
+    haystack.includes("vyberove konanie") ||
+    haystack.includes("obchodny zastupca") ||
+    haystack.includes("novy zavod") ||
+    haystack.includes("postavi pri senici") ||
+    haystack.includes("vyroba tepelnych cerpadiel") ||
+    haystack.includes("vyroba tepelných cerpadiel") ||
+    haystack.includes("simon") ||
+    haystack.includes("sportovcovi") ||
+    haystack.includes("inovato") ||
+    haystack.includes("podcast");
+  const isBoilerplate =
+    haystack.includes("ochrana osobnych udajov") ||
+    haystack.includes("zasady ochrany") ||
+    haystack.includes("cookie") ||
+    haystack.includes("gdpr") ||
+    haystack.includes("obchodne podmienky") ||
+    haystack.includes("formular") ||
+    haystack.includes("footer") ||
+    haystack.includes("menu");
+  if (isNoisePage) return 95;
+  if (!isBoilerplate) return 0;
+  return contactIntent ? 18 : 85;
+}
+
 function snippet(text: string, queryTokens: string[]): string {
   const normalizedText = normalize(text);
   let bestIndex = 0;
@@ -232,8 +293,30 @@ export function retrieveKnowledge(chunks: KnowledgeChunk[], query: string, limit
   const expandedTokens = expandTokens(queryTokens);
   const phrases = phraseVariants(query);
   const querySet = new Set(expandedTokens);
-  const priceIntent = ["cena", "cennik", "cenov", "ponuk", "naklad", "stoji"].some((token) => querySet.has(token));
+  const normalizedQuery = normalize(query);
+  const priceIntent = ["cena", "cennik", "cenov", "ponuk", "naklad", "stoji", "rozpocet", "orientac"].some((token) => querySet.has(token));
   const noiseIntent = ["hluk", "hlucnost", "hlucn", "tich"].some((token) => querySet.has(token));
+  const contactIntent = ["kontakt", "telefon", "email", "mail", "adresa"].some((token) => querySet.has(token));
+  const referenceIntent = ["realizac", "referenc", "praxi"].some((term) => normalizedQuery.includes(term));
+  const earthVsAirIntent = normalizedQuery.includes("zem voda") || normalizedQuery.includes("vzduch voda") || normalizedQuery.includes("pozemok");
+  const consumptionIntent = ["spotreb", "zere", "elektrin", "uct", "naklad"].some((term) => normalizedQuery.includes(term));
+  const radiatorIntent = ["radiator", "podlahov", "podlahu"].some((term) => normalizedQuery.includes(term));
+  const rekuperationIntent = ["rekuper", "vetranie", "vydychany"].some((term) => normalizedQuery.includes(term));
+  const ceilingCoolingIntent =
+    (normalizedQuery.includes("strop") && (normalizedQuery.includes("chladen") || normalizedQuery.includes("chladi") || normalizedQuery.includes("klimatiz"))) ||
+    (normalizedQuery.includes("temperovanie betonoveho jadra") && normalizedQuery.includes("chladen"));
+  const ceilingBenefitsIntent = ceilingCoolingIntent && ["vyhod", "tich", "skryt", "prach", "prievan", "komfort", "prijem", "zdrav"].some((term) => normalizedQuery.includes(term));
+  const ceilingComparisonIntent = ceilingCoolingIntent && ["klimatiz", "klim", "fuk", "pruden", "studen"].some((term) => normalizedQuery.includes(term));
+  const ceilingDisadvantageIntent = ceilingCoolingIntent && ["nevyhod", "minus", "rizik", "problem", "pomal", "pozor", "drahs"].some((term) => normalizedQuery.includes(term));
+  const ceilingPriceIntent = ceilingCoolingIntent && ["cena", "cen", "kolko", "stoji", "m2", "zahrn"].some((term) => normalizedQuery.includes(term));
+  const ceilingCondensationIntent = ceilingCoolingIntent && ["kondenz", "vlhk", "rosn", "kvapka", "odborn", "navrhn"].some((term) => normalizedQuery.includes(term));
+  const ceilingTypesIntent = ceilingCoolingIntent && ["typ", "druh", "system", "sadrokarton", "omiet", "beton", "temper"].some((term) => normalizedQuery.includes(term));
+  const ceilingGenericTypesIntent = ceilingCoolingIntent && ["typ", "druh", "system"].some((term) => normalizedQuery.includes(term));
+  const ceilingSadrokartonIntent = ceilingCoolingIntent && ["sadrokarton", "podhlad"].some((term) => normalizedQuery.includes(term));
+  const ceilingOmietkaIntent = ceilingCoolingIntent && normalizedQuery.includes("omiet");
+  const ceilingBetonIntent = ceilingCoolingIntent && ["beton", "temper"].some((term) => normalizedQuery.includes(term));
+  const ceilingSuitabilityIntent = ceilingCoolingIntent && ["novostav", "rekonstruk", "vhod", "objekt", "strop"].some((term) => normalizedQuery.includes(term));
+  const ceilingHeatPumpIntent = ceilingCoolingIntent && ["tepelne cerpadlo", "cerpadlo", "pasiv", "usporn"].some((term) => normalizedQuery.includes(term));
   const outOfDomainIntent = ["auto", "automobil", "hypotek", "pocasi", "pocas", "gulas", "futbal", "akci", "akcii", "akcie", "etf", "bitcoin", "praha"].some((token) =>
     querySet.has(token),
   );
@@ -244,6 +327,10 @@ export function retrieveKnowledge(chunks: KnowledgeChunk[], query: string, limit
     const normalizedHeading = normalize(chunk.sectionHeading);
     const normalizedText = normalize(chunk.text);
     const normalizedUrl = normalize(`${chunk.url} ${chunk.slug}`);
+    const isCeilingCoolingPage =
+      normalizedUrl.includes("stropne vykurovanie a chladenie") ||
+      normalizedUrl.includes("stropne vykurovanie chladenie") ||
+      normalizedTitle.includes("stropne chladenie");
     const titleTokens = new Set(tokenize(chunk.pageTitle));
     const headingTokens = new Set(tokenize(chunk.sectionHeading));
     const textTokens = new Set(tokenize(chunk.text));
@@ -267,15 +354,50 @@ export function retrieveKnowledge(chunks: KnowledgeChunk[], query: string, limit
       (priceIntent && (normalizedUrl.includes("cenova ponuka") || normalizedTitle.includes("cenova ponuka") || normalizedHeading.includes("cenova ponuka")) ? 55 : 0) +
       (priceIntent && normalizedText.includes("cenovu ponuku") ? 22 : 0) +
       (noiseIntent && normalizedUrl.includes("vzduch voda") ? 28 : 0) +
+      (noiseIntent && (normalizedTitle.includes("hlucnost") || normalizedHeading.includes("vonkajsej jednotky")) ? 75 : 0) +
       (querySet.has("navrh") && (normalizedTitle.includes("navrh") || normalizedHeading.includes("navrh")) ? 35 : 0) +
       (querySet.has("projekt") && normalizedText.includes("podorys") ? 28 : 0) +
-      (querySet.has("znack") && (normalizedText.includes("nibe") || normalizedText.includes("vaillant")) ? 20 : 0);
+      (querySet.has("znack") && (normalizedText.includes("nibe") || normalizedText.includes("vaillant")) ? 20 : 0) +
+      (referenceIntent && (normalizedUrl.includes("referencie") || normalizedTitle.includes("realizac") || normalizedHeading.includes("realizac")) ? 85 : 0) +
+      (earthVsAirIntent && (normalizedTitle.includes("zem") || normalizedHeading.includes("zem") || normalizedUrl.includes("zem-vs-vzduch")) ? 90 : 0) +
+      (consumptionIntent && (normalizedTitle.includes("spotreba") || normalizedHeading.includes("spotreba") || normalizedText.includes("spotreba elektrickej")) ? 70 : 0) +
+      (radiatorIntent && (normalizedTitle.includes("radiator") || normalizedHeading.includes("radiator") || normalizedText.includes("radiator")) ? 80 : 0) +
+      (rekuperationIntent && (normalizedTitle.includes("rekuper") || normalizedHeading.includes("rekuper") || normalizedUrl.includes("rekuper")) ? 95 : 0);
+    const ceilingCoolingScore =
+      (ceilingCoolingIntent && isCeilingCoolingPage ? 55 : 0) +
+      (ceilingBenefitsIntent && normalizedHeading.includes("vyhody stropneho chladenia") ? 130 : 0) +
+      (ceilingComparisonIntent && normalizedHeading.includes("verzus klimatizacia") ? 260 : 0) +
+      (ceilingDisadvantageIntent && normalizedHeading.includes("nevyhody stropneho chladenia") ? 180 : 0) +
+      (ceilingPriceIntent && normalizedHeading.includes("cena a poradenstvo") ? 520 : 0) +
+      (ceilingCondensationIntent && normalizedHeading.includes("nevyhody stropneho chladenia") ? 125 : 0) +
+      (ceilingCondensationIntent && normalizedHeading.includes("vysoky komfort") ? 260 : 0) +
+      (ceilingCondensationIntent && normalizedHeading.includes("novostavbu aj rekonstrukciu") ? 115 : 0) +
+      ((ceilingGenericTypesIntent || ceilingOmietkaIntent) && normalizedHeading.includes("pod omietku") ? 300 : 0) +
+      ((ceilingGenericTypesIntent || ceilingSadrokartonIntent) && normalizedHeading.includes("sadrokarton") ? 240 : 0) +
+      ((ceilingGenericTypesIntent || ceilingBetonIntent) && normalizedHeading.includes("betonovej platni") ? 280 : 0) +
+      (ceilingSuitabilityIntent && normalizedHeading.includes("novostavbu aj rekonstrukciu") ? 75 : 0) +
+      (ceilingSuitabilityIntent && normalizedHeading.includes("betonovej platni") ? 42 : 0) +
+      (ceilingHeatPumpIntent && isCeilingCoolingPage && normalizedText.includes("tepelne cerpadl") ? 150 : 0) +
+      (ceilingHeatPumpIntent && normalizedHeading.includes("vyhody stropneho chladenia") ? 120 : 0) +
+      (ceilingHeatPumpIntent && normalizedHeading.includes("stropne vykurovanie") ? 55 : 0);
     const outOfDomainPenalty = outOfDomainIntent ? 140 : 0;
     const densityBoost = queryTokens.length
       ? ((titleMatches + headingMatches + textMatches + urlMatches) / queryTokens.length) * 7
       : 0;
     const finalScore = Number(
-      (titleScore + headingScore + textScore + urlScore + synonymScore + phraseScore + densityBoost + intentScore - outOfDomainPenalty).toFixed(2),
+      (
+        titleScore +
+        headingScore +
+        textScore +
+        urlScore +
+        synonymScore +
+        phraseScore +
+        densityBoost +
+        intentScore +
+        ceilingCoolingScore -
+        outOfDomainPenalty -
+        boilerplatePenalty(chunk, contactIntent)
+      ).toFixed(2),
     );
 
     if (finalScore <= 0) continue;
@@ -301,11 +423,12 @@ export function retrieveKnowledge(chunks: KnowledgeChunk[], query: string, limit
   const diversified: RetrievalResult[] = [];
   const pageCounts = new Map<string, number>();
   const seenFingerprints = new Set<string>();
+  const maxChunksPerPage = ceilingCoolingIntent ? 5 : 2;
   for (const result of scored) {
     const pageKey = `${result.chunk.sourceType}:${result.chunk.sourceId}`;
     const currentPageCount = pageCounts.get(pageKey) || 0;
     const fingerprint = chunkFingerprint(result.chunk);
-    if (currentPageCount >= 2) continue;
+    if (currentPageCount >= maxChunksPerPage) continue;
     if (seenFingerprints.has(fingerprint)) continue;
     pageCounts.set(pageKey, currentPageCount + 1);
     seenFingerprints.add(fingerprint);

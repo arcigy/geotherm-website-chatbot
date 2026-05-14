@@ -8,6 +8,7 @@ export type SalesIntent =
   | "installation"
   | "noise"
   | "contact"
+  | "greeting"
   | "irrelevant"
   | "unknown";
 
@@ -28,6 +29,7 @@ export type QualificationState = {
   declined_contact?: boolean;
   contact_consent?: boolean;
   soft_handoff_offered?: boolean;
+  last_asked_question?: string;
 };
 
 export type ContactInfo = {
@@ -57,6 +59,10 @@ function includesAny(haystack: string, terms: string[]): boolean {
   return terms.some((term) => haystack.includes(term));
 }
 
+function hasToken(haystack: string, token: string): boolean {
+  return haystack.split(/\s+/).includes(token);
+}
+
 function isRelevantIntent(intent: SalesIntent): boolean {
   return intent !== "irrelevant" && intent !== "unknown";
 }
@@ -70,21 +76,87 @@ export function detectIntent(message: string, results: RetrievalResult[]): Sales
       .join(" "),
   );
   const combined = `${text} ${sourceText}`;
+  const asksProductOrModel =
+    includesAny(text, [
+      "tepelne cerpadlo",
+      "tepelne cerpadla",
+      "cerpadlo",
+      "cerpadla",
+      "vybrat",
+      "vyber",
+      "model",
+      "presny model",
+      "ake mate",
+      "ake ponukate",
+      "typy",
+      "znack",
+      "nibe",
+      "vaillant",
+      "daikin",
+      "ariston",
+      "viessmann",
+      "monoblok",
+      "split",
+    ]) || hasToken(text, "tc");
+  const asksSubsidy =
+    includesAny(text, ["dotacia", "dotacie", "prispevok", "poukazka", "zelena domacnostiam"]) || hasToken(text, "oze");
+  const combinedHintsSubsidy =
+    includesAny(combined, ["dotacia", "dotacie", "prispevok", "poukazka", "zelena domacnostiam"]) || hasToken(combined, "oze");
 
   if (includesAny(text, ["pocasie", "auto", "hypotek", "gulas", "futbal", "akcie", "bitcoin"])) return "irrelevant";
-  if (includesAny(text, ["cenova ponuka", "cenovu ponuku", "ponuku", "cenu", "cena", "cennik", "kolko stoji", "naklady", "rozpocet"])) return "quote";
-  if (includesAny(text, ["kontakt", "kontaktujem", "telefon", "email", "adresa", "zavolat", "kontaktovat"])) return "contact";
-  if (includesAny(text, ["servis", "udrzba", "revizia", "kontrola", "prehliadka"])) return "service";
-  if (includesAny(text, ["dotacia", "dotacie", "prispevok", "poukazka", "zelena domacnostiam", "oze"])) return "subsidy";
+  if (
+    includesAny(text, [
+      "cenova ponuka",
+      "cenovu ponuku",
+      "ponuku",
+      "cenu",
+      "cena",
+      "cennik",
+      "kolko stoji",
+      "naklady",
+      "rozpocet",
+      "navratnost",
+      "usetr",
+      "ucty",
+      "spotreb",
+      "zere",
+      "elektrin",
+    ])
+  )
+    return "quote";
+  if (includesAny(text, ["hluk", "hlucnost", "hlucne", "hlucny", "hucat", "huci", "tichy", "tiche", "akusticky", "pod oknom"])) return "noise";
   if (includesAny(text, ["montaz", "instalacia", "realizacia", "osadenie", "zapojenie"])) return "installation";
-  if (includesAny(text, ["hluk", "hlucnost", "hlucne", "hlucny", "tichy", "tiche", "akusticky"])) return "noise";
+  if (asksProductOrModel) return "product";
+  if (includesAny(text, ["nibe", "vaillant", "daikin", "ariston", "viessmann", "znack", "monoblok", "split"])) return "product";
+  if (
+    includesAny(text, [
+      "podorys",
+      "projekt",
+      "navrh",
+      "poradit",
+      "od zaciatku",
+      "nevyznam",
+      "neviem co potrebujem",
+      "vediet aby",
+      "vedeli poradit",
+      "vhodne pre moj dom",
+      "moj dom",
+      "bez plynu",
+      "kurenie",
+      "vykurovanie",
+    ])
+  )
+    return "product";
+  if (includesAny(text, ["kontakt", "kontaktujem", "telefon", "email", "adresa", "zavolat", "kontaktovat"])) return "contact";
+  if (includesAny(text, ["servis", "udrzba", "revizia", "kontrola", "prehliadka", "porucha", "chyba", "oprava", "kazit"])) return "service";
+  if (asksSubsidy) return "subsidy";
   if (includesAny(combined, ["kontakt", "telefon", "email", "adresa", "zavolat", "kontaktovat"])) return "contact";
   if (includesAny(combined, ["servis", "udrzba", "revizia", "kontrola", "prehliadka"])) return "service";
-  if (includesAny(combined, ["dotacia", "dotacie", "prispevok", "poukazka", "zelena domacnostiam", "oze"])) return "subsidy";
   if (includesAny(combined, ["cenova ponuka", "cena", "cennik", "kolko stoji", "naklady", "rozpocet"])) return "quote";
   if (includesAny(combined, ["montaz", "instalacia", "realizacia", "osadenie", "zapojenie"])) return "installation";
   if (includesAny(combined, ["hluk", "hlucnost", "hlucne", "hlucny", "tichy", "tiche", "akusticky"])) return "noise";
-  if (includesAny(combined, ["nibe", "vaillant", "tepelne cerpadlo", "rekuperacia", "fotovoltaika", "podlahove"])) return "product";
+  if (includesAny(combined, ["nibe", "vaillant", "tepelne cerpadlo", "rekuperacia", "fotovoltaika", "podlahove", "stropne", "chladenie", "radiator", "cop", "zem voda", "vzduch voda"])) return "product";
+  if (combinedHintsSubsidy) return "subsidy";
   return "unknown";
 }
 

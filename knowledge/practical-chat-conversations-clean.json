@@ -1,0 +1,635 @@
+{
+  "generatedAt": "2026-05-08T18:07:57.063Z",
+  "totalConversations": 30,
+  "totalTurns": 112,
+  "conversations": [
+    {
+      "id": "P01",
+      "title": "Starší dom 180 m2, plyn, návratnosť",
+      "turns": [
+        {
+          "user": "Dobrý deň, máme starší rodinný dom cca 180 m² a rozmýšľame nad tepelným čerpadlom. Aktuálne kúriť plynom. Má to vôbec zmysel alebo budú účty podobné?",
+          "assistant": "Spotreba tepelného čerpadla sa nedá povedať jedným číslom. Závisí od tepelnej straty domu, typu čerpadla, nastavenej teploty vody, zateplenia a spôsobu používania. Preto je lepšie porovnať konkrétny dom a dnešné účty, nie všeobecné internetové čísla.\n\n- Cena závisí od typu objektu, tepelných strát, rozsahu montáže a zvoleného riešenia.\n\n_Vieš približne ročnú spotrebu alebo aspoň aktuálne ročné náklady na kúrenie?_\n\n**Zdroje:**\n- [Pútnický kostol v Skalke pri Trenčíne je vykurovaný tepelným čerpadlom Vaillant](http://www.geotherm.sk/putnicky-kostol-v-skalke-pri-trencine-je-vykurovany-tepelnym-cerpadlom-vaillant/)\n- [Pútnický dom na Skalke vykuruje tepelné čerpadlo Vaillant](http://www.geotherm.sk/putnicky-dom-na-skalke-vykurovany-tepelnym-cerpadlom-vaillant/)"
+        },
+        {
+          "user": "A koľko približne stojí kompletná realizácia?",
+          "assistant": "Cena za kompletnú realizáciu tepelného čerpadla sa nedá určiť bez konkrétnych informácií o tvojom dome.\n\n- Cena závisí od typu objektu, jeho tepelných strát, rozsahu montáže a zvoleného riešenia.\n- Je potrebné zohľadniť aj náklady na inštaláciu a prípadné úpravy.\n- Pre presnejšiu cenovú ponuku je potrebné vypracovať projekt a obhliadku.\n\n_Vieš približne ročnú spotrebu alebo aspoň aktuálne ročné náklady na kúrenie?_\n\n**Zdroje:**\n- [Tepelné čerpadlo vzduch-voda](http://www.geotherm.sk/referencie/tepelne-cerpadla/tepelne-cerpadla-vzduch-voda/)\n- [Tepelné čerpadlá](http://www.geotherm.sk/referencie/tepelne-cerpadla/)"
+        },
+        {
+          "user": "Treba meniť radiátory?",
+          "assistant": "Áno, tepelné čerpadlo sa dá použiť aj s radiátormi, ale je dôležité zvážiť niekoľko faktorov.\n\n- Je potrebné posúdiť teplotný spád radiátorov a tepelné straty domu.\n- Podlahové kúrenie je síce pre tepelné čerpadlo prirodzenejšie, ale kombinácia s radiátormi nie je problém.\n- Výber konkrétneho riešenia by mal zodpovedať tvojmu domu, rozpočtu a očakávanému komfortu.\n\n_Ak chceš, môžeme to posunúť technikovi/odborníkovi, aby sa pozrel na tvoj konkrétny prípad. Chceš, aby ťa niekto kontaktoval?_\n\n**Zdroje:**\n- [Tepelné čerpadlo vzduch-voda](http://www.geotherm.sk/referencie/tepelne-cerpadla/tepelne-cerpadla-vzduch-voda/)\n- [Podlahové vykurovanie](http://www.geotherm.sk/referencie/podlahove-vykurovanie-chladenie/)"
+        },
+        {
+          "user": "Dom je zateplený len čiastočne.",
+          "assistant": "Pri starších domoch s čiastočným zateplením je dôležité zohľadniť tepelné straty a stav radiátorov. Nie vždy je nutné ich meniť, ale posúdenie technikom je kľúčové.\n\n- Výber tepelného čerpadla závisí od tepelných strát domu a jeho zateplenia.\n- Je možné použiť aj existujúce radiátory, ale ich účinnosť s tepelným čerpadlom sa musí posúdiť.\n- Podlahové kúrenie je síce prirodzenejšie, ale kombinácia s radiátormi nie je problém.\n\n_Riešiš to pre nový projekt alebo chceš upraviť existujúce kúrenie?_\n\n**Zdroje:**\n- [Tepelné čerpadlo vzduch-voda](http://www.geotherm.sk/referencie/tepelne-cerpadla/tepelne-cerpadla-vzduch-voda/)\n- [Tepelné čerpadlá](http://www.geotherm.sk/referencie/tepelne-cerpadla/)"
+        },
+        {
+          "user": "A viete povedať orientačne návratnosť?",
+          "assistant": "Návratnosť tepelného čerpadla závisí od mnohých faktorov, ako sú náklady na inštaláciu, aktuálne ceny energií a tepelné straty tvojho domu.\n\n- Presná návratnosť sa nedá určiť bez detailnej obhliadky a posúdenia tvojho konkrétneho domu.\n- Je dôležité porovnať nielen cenu technológie, ale aj dlhodobé prevádzkové náklady.\n- Zateplenie domu a stav radiátorov ovplyvňujú efektivitu tepelného čerpadla a tým aj návratnosť.\n\n_Vieš mi povedať, či je tvoj dom zateplený a aké máš aktuálne radiátory?_\n\n**Zdroje:**\n- [Tepelné čerpadlo vzduch-voda](http://www.geotherm.sk/referencie/tepelne-cerpadla/tepelne-cerpadla-vzduch-voda/)\n- [Tepelné čerpadlá](http://www.geotherm.sk/referencie/tepelne-cerpadla/)"
+        }
+      ]
+    },
+    {
+      "id": "P02",
+      "title": "NIBE vs Vaillant",
+      "turns": [
+        {
+          "user": "Aký je rozdiel medzi NIBE a Vaillant?",
+          "assistant": "NIBE je švédsky výrobca zameraný výlučne na tepelné čerpadlá, známy svojou kvalitou a efektivitou aj pri nízkych teplotách. Vaillant je nemecká značka s dlhou históriou, ktorá patrí medzi lídrov vo vývoji inovácií vo vykurovacej technike.\n\n- Výber značky má zmysel riešiť spolu so servisom, výkonom, hlučnosťou a vhodnosťou pre dom.\n- Pri NIBE aj iných značkách je dôležitý správny výkon pre konkrétny dom.\n- NIBE sa špecializuje len na tepelné čerpadlá a je technologickou špičkou.\n- Tepelné čerpadlá NIBE vzduch-voda fungujú efektívne až do -20°C.\n\n_Vyberáš podľa značky, hlučnosti, ceny alebo chceš najprv zistiť vhodný typ čerpadla pre dom?_\n\n**Zdroje:**\n- [Nibe](http://www.geotherm.sk/tepelne-cerpadla/svedske-nibe/)\n- [Vaillant](http://www.geotherm.sk/tepelne-cerpadla/nemecke-vaillant/)"
+        },
+        {
+          "user": "Čo je spoľahlivejšie?",
+          "assistant": "Spoľahlivosť tepelného čerpadla nestojí len na značke. Rozhoduje správny návrh, kvalitná montáž, rozumné nastavenie, dostupný servis a to, aby zariadenie neštartovalo zbytočne často.\n\n- Pri NIBE aj iných značkách je dôležitý správny výkon pre konkrétny dom.\n- Výber riešenia má sedieť k domu, rozpočtu, hlučnosti, servisu a očakávanému komfortu.\n\n_Vyberáš podľa značky, hlučnosti, ceny alebo chceš najprv zistiť vhodný typ čerpadla pre dom?_\n\n**Zdroje:**\n- [Hlučnosť tepelného čerpadla vzduch-voda](http://www.geotherm.sk/hlucnost-tepelneho-cerpadla-vzduch/)\n- [Tepelné čerpadlo SPLIT](http://www.geotherm.sk/tepelne-cerpadla/svedske-nibe/vzduch-voda/split/)"
+        },
+        {
+          "user": "Nechcem niečo čo sa bude každú chvíľu kaziť.",
+          "assistant": "Spoľahlivosť tepelného čerpadla závisí od viacerých faktorov, nielen od značky. Dôležitý je správny návrh, kvalitná montáž a nastavenie.\n\n- Pri NIBE aj iných značkách je dôležitý správny výkon pre konkrétny dom.\n- Pri výbere tepelného čerpadla je kľúčové zohľadniť správny výkon pre tvoj dom.\n- Celkové riešenie by malo zodpovedať tvojim potrebám, rozpočtu, očakávanej hlučnosti a dostupnosti servisu.\n- Moderné tepelné čerpadlá vzduch-voda majú hlučnosť porovnateľnú s umývačkou riadu (okolo 45 dB).\n\n_Vyberáš podľa značky, hlučnosti, ceny alebo chceš najprv zistiť vhodný typ čerpadla pre dom?_\n\n**Zdroje:**\n- [Hlučnosť tepelného čerpadla vzduch-voda](http://www.geotherm.sk/hlucnost-tepelneho-cerpadla-vzduch/)\n- [Umiestnenie, hlučnosť a veľkosť tepelného čerpadla – Vaillant showPOINT](http://www.geotherm.sk/hlucnost-velkost-a-umiestnenie-tepelneho-cerpadla-vaillant-showpoint/)"
+        },
+        {
+          "user": "A ktorá značka je tichšia?",
+          "assistant": "V dostupnom obsahu sa spomína najmä NIBE a Vaillant. Neberte to ako rebríček značiek, skôr ako značky, ktoré sa objavujú pri riešeniach tepelných čerpadiel.\n\n- Výber značky má zmysel riešiť spolu so servisom, výkonom, hlučnosťou a vhodnosťou pre dom.\n- Pri NIBE aj iných značkách je dôležitý správny výkon pre konkrétny dom.\n- Výber riešenia má sedieť k domu, rozpočtu, hlučnosti, servisu a očakávanému komfortu.\n\n_Ak chceš, môžeme to posunúť technikovi/odborníkovi, aby sa pozrel na váš konkrétny prípad. Chceš, aby ťa niekto kontaktoval?_\n\n**Zdroje:**\n- [Hlučnosť tepelného čerpadla vzduch-voda](http://www.geotherm.sk/hlucnost-tepelneho-cerpadla-vzduch/)\n- [Tepelné čerpadlo SPLIT](http://www.geotherm.sk/tepelne-cerpadla/svedske-nibe/vzduch-voda/split/)"
+        },
+        {
+          "user": "Máte s tým reálne skúsenosti alebo len predávate?",
+          "assistant": "NIBE sa spomína ako riešenie tepelných čerpadiel pre domy. Pri výbere je dôležitý výkon, hlučnosť, umiestnenie vonkajšej jednotky a vhodnosť pre konkrétny objekt.\n\n- Pri NIBE aj iných značkách je dôležitý správny výkon pre konkrétny dom.\n- Výber riešenia má sedieť k domu, rozpočtu, hlučnosti, servisu a očakávanému komfortu.\n\n_Vyberáš podľa značky, hlučnosti, ceny alebo chceš najprv zistiť vhodný typ čerpadla pre dom?_\n\n**Zdroje:**\n- [Hlučnosť tepelného čerpadla vzduch-voda](http://www.geotherm.sk/hlucnost-tepelneho-cerpadla-vzduch/)\n- [Umiestnenie, hlučnosť a veľkosť tepelného čerpadla – Vaillant showPOINT](http://www.geotherm.sk/hlucnost-velkost-a-umiestnenie-tepelneho-cerpadla-vaillant-showpoint/)"
+        }
+      ]
+    },
+    {
+      "id": "P03",
+      "title": "Novostavba bungalovu, kúrenie a chladenie",
+      "turns": [
+        {
+          "user": "Máme novostavbu bungalovu 140 m². Čo by ste odporučili ako kúrenie?",
+          "assistant": "Pri montáži rozhoduje pripravenosť domu, rozsah prác, zapojenie do existujúceho systému a odborné spustenie. Bez týchto detailov sa dá hovoriť len orientačne.\n\n- Výber riešenia má sedieť k domu, rozpočtu, hlučnosti, servisu a očakávanému komfortu.\n\n_Riešiš to pre nový projekt alebo chceš upraviť existujúce kúrenie?_\n\n**Zdroje:**\n- [Najväčšia chyba pri výbere kúrenia v novostavbe](http://www.geotherm.sk/najvacsia-chyba-pri-vybere-kurenia-v-novostavbe/)\n- [Podlahové kúrenie REHAU](http://www.geotherm.sk/podlahove-vykurovanie-a-chladenie/podlahove-kurenie/)"
+        },
+        {
+          "user": "Podlahovku už máme pripravenú.",
+          "assistant": "Skvelé, že máš pripravenú podlahovku! To je ideálny základ pre tepelné čerpadlo.\n\n- Podlahové kúrenie pracuje s nižšou teplotou vody (35-45°C) v porovnaní s radiátormi (50-60°C).\n- Táto nízka teplota je ideálna pre efektívnu prevádzku tepelného čerpadla.\n- Podlahové kúrenie poskytuje vyšší komfort a môže priniesť úsporu nákladov na kúrenie až 15% oproti radiátorom.\n- Systém je skrytý v podlahe, prakticky bezúdržbový a znižuje prašnosť v miestnosti.\n\n_Vieš, akú teplotu vody dnes radiátory potrebujú v zime, alebo máš aspoň projekt kúrenia?_\n\n**Zdroje:**\n- [Podlahové vykurovanie](http://www.geotherm.sk/referencie/podlahove-vykurovanie-chladenie/)\n- [Nastavenie podlahového vykurovania](http://www.geotherm.sk/podlahove-vykurovanie-a-chladenie/nastavenie-podlahoveho-vykurovania/)"
+        },
+        {
+          "user": "Chceme aj chladenie v lete.",
+          "assistant": "Bez kontextu by som to nechcel hádať.\n\n- Stačí doplniť, či riešiš nové tepelné čerpadlo, servis, dotáciu, montáž, chladenie alebo návrh vykurovania.\n\n_Riešiš nové tepelné čerpadlo, servis, dotácie, montáž alebo návrh vykurovania?_"
+        },
+        {
+          "user": "A ideálne niečo čo viem ovládať mobilom.",
+          "assistant": "Montáž nie je len osadenie zariadenia. Dôležitý je návrh, správne zapojenie, spustenie a nastavenie systému.\n\n- Pri montáži je dôležitý návrh, správny výkon a odborné spustenie systému.\n\n_Ak chceš, môžeme to posunúť technikovi/odborníkovi, aby sa pozrel na tvoj konkrétny prípad. Chceš, aby ťa niekto kontaktoval?_\n\n**Zdroje:**\n- [Inštalácia podlahového kúrenia Bratislava](http://www.geotherm.sk/instalacia-podlahoveho-kurenia-bratislava/)\n- [Prečo si vybrať tepelné čerpadlo aj pre radiátory](http://www.geotherm.sk/preco-si-vybrat-tepelne-cerpadlo/)"
+        }
+      ]
+    },
+    {
+      "id": "P04",
+      "title": "Spotreba elektriny a náklady",
+      "turns": [
+        {
+          "user": "Koľko elektriny reálne žerie tepelné čerpadlo?",
+          "assistant": "Cena, cenník a rozpočet sa pri vykurovaní nedajú brať univerzálne. Závisia od domu, tepelných strát, zvoleného riešenia, montáže a prevádzky. Bez týchto údajov sa dá hovoriť len orientačne.\n\n- Cena závisí od typu objektu, tepelných strát, rozsahu montáže a zvoleného riešenia.\n\n_Vieš približne ročnú spotrebu alebo aspoň aktuálne ročné náklady na kúrenie?_\n\n**Zdroje:**\n- [Tepelné čerpadlo IVT AIR Split](http://www.geotherm.sk/tepelne-cerpadla/ivt-tepelne-cerpadla/tepelne-cerpadlo-ivt-air-split/)\n- [Priemerná spotreba elektrickej energie v domácnosti – ako ušetriť za elektrinu](http://www.geotherm.sk/priemerna-spotreba-elektrickej-energie-v-domacnosti-ako-usetrit-za-elektrinu/)"
+        },
+        {
+          "user": "Lebo na internete každý píše niečo iné.",
+          "assistant": "Cena, cenník a rozpočet sa pri vykurovaní nedajú brať univerzálne. Závisia od domu, tepelných strát, zvoleného riešenia, montáže a prevádzky. Bez týchto údajov sa dá hovoriť len orientačne.\n\n- Cena závisí od typu objektu, tepelných strát, rozsahu montáže a zvoleného riešenia.\n\n_Vieš približne ročnú spotrebu alebo aspoň aktuálne ročné náklady na kúrenie?_\n\n**Zdroje:**\n- [Priemerná spotreba elektrickej energie v domácnosti – ako ušetriť za elektrinu](http://www.geotherm.sk/priemerna-spotreba-elektrickej-energie-v-domacnosti-ako-usetrit-za-elektrinu/)\n- [Tepelné čerpadlo IVT AIR Split](http://www.geotherm.sk/tepelne-cerpadla/ivt-tepelne-cerpadla/tepelne-cerpadlo-ivt-air-split/)"
+        },
+        {
+          "user": "Máme teraz elektrinu okolo 120 € mesačne.",
+          "assistant": "Cena, cenník a rozpočet sa pri vykurovaní nedajú brať univerzálne. Závisia od domu, tepelných strát, zvoleného riešenia, montáže a prevádzky. Bez týchto údajov sa dá hovoriť len orientačne.\n\n- Cena závisí od typu objektu, tepelných strát, rozsahu montáže a zvoleného riešenia.\n\n_Ak chceš, môžeme to posunúť technikovi/odborníkovi, aby sa pozrel na tvoj konkrétny prípad. Chceš, aby ťa niekto kontaktoval?_\n\n**Zdroje:**\n- [Priemerná spotreba elektrickej energie v domácnosti – ako ušetriť za elektrinu](http://www.geotherm.sk/priemerna-spotreba-elektrickej-energie-v-domacnosti-ako-usetrit-za-elektrinu/)\n- [Tepelné čerpadlo IVT AIR Split](http://www.geotherm.sk/tepelne-cerpadla/ivt-tepelne-cerpadla/tepelne-cerpadlo-ivt-air-split/)"
+        },
+        {
+          "user": "Vie mi to znížiť náklady alebo skôr nie?",
+          "assistant": "Tepelné čerpadlo ti môže znížiť náklady na kúrenie, ale presná úspora závisí od viacerých faktorov.\n\n- Spotreba elektriny tepelného čerpadla závisí od tepelných strát tvojho domu, zvoleného typu čerpadla a jeho inštalácie.\n- Je dôležité porovnať aktuálne náklady na elektrinu s potenciálnymi nákladmi na kúrenie s tepelným čerpadlom.\n- Pre presnejší odhad by bolo ideálne poznať tvoju ročnú spotrebu elektriny alebo súčasné ročné náklady na kúrenie.\n\n_Vieš približne ročnú spotrebu alebo aspoň aktuálne ročné náklady na kúrenie?_\n\n**Zdroje:**\n- [Priemerná spotreba elektrickej energie v domácnosti – ako ušetriť za elektrinu](http://www.geotherm.sk/priemerna-spotreba-elektrickej-energie-v-domacnosti-ako-usetrit-za-elektrinu/)\n- [Tepelné čerpadlo IVT AIR Split](http://www.geotherm.sk/tepelne-cerpadla/ivt-tepelne-cerpadla/tepelne-cerpadlo-ivt-air-split/)"
+        }
+      ]
+    },
+    {
+      "id": "P05",
+      "title": "Starý dom bez podlahovky",
+      "turns": [
+        {
+          "user": "Máme starý dom a vysoké radiátory.",
+          "assistant": "Tepelné čerpadlo sa dá riešiť aj pri starších domoch s vysokými radiátormi, ale treba to dobre posúdiť.\n\n- Výber vhodného riešenia závisí od domu, rozpočtu a očakávaného komfortu.\n- Pri radiátoroch je dôležité dimenzovať teplotný spád, ideálne do 55°/45 °C.\n- Tieto teploty sú vhodné pre úsporné vykurovanie s tepelným čerpadlom alebo kondenzačným kotlom.\n\n_Vieš, akú teplotu vody dnes radiátory potrebujú v zime, alebo máš aspoň projekt kúrenia?_\n\n**Zdroje:**\n- [Dizajnové radiátory](http://www.geotherm.sk/radiatory/dizajnove-radiatory/)\n- [Radiátory](http://www.geotherm.sk/radiatory/)"
+        },
+        {
+          "user": "Nechce sa mi sekať podlahu.",
+          "assistant": "Tepelné čerpadlo sa dá riešiť aj pri radiátoroch, ale treba posúdiť teplotný spád, veľkosť radiátorov a tepelné straty domu. Podlahové kúrenie je pre čerpadlo prirodzenejšie, no kombinácia radiátorov a podlahovky nemusí byť automaticky problém.\n\n- Výber riešenia má sedieť k domu, rozpočtu, hlučnosti, servisu a očakávanému komfortu.\n\n_Vieš, akú teplotu vody dnes radiátory potrebujú v zime, alebo máš aspoň projekt kúrenia?_\n\n**Zdroje:**\n- [Podlahové vykurovanie](http://www.geotherm.sk/podlahove-vykurovanie-a-chladenie/)\n- [Nastavenie podlahového vykurovania](http://www.geotherm.sk/podlahove-vykurovanie-a-chladenie/nastavenie-podlahoveho-vykurovania/)"
+        },
+        {
+          "user": "Dá sa tepelné čerpadlo napojiť aj bez podlahovky?",
+          "assistant": "Tepelné čerpadlo sa dá riešiť aj pri radiátoroch, ale treba posúdiť teplotný spád, veľkosť radiátorov a tepelné straty domu. Podlahové kúrenie je pre čerpadlo prirodzenejšie, no kombinácia radiátorov a podlahovky nemusí byť automaticky problém.\n\n- Výber riešenia má sedieť k domu, rozpočtu, hlučnosti, servisu a očakávanému komfortu.\n\n_Vieš, akú teplotu vody dnes radiátory potrebujú v zime, alebo máš aspoň projekt kúrenia?_\n\n**Zdroje:**\n- [Prečo si vybrať tepelné čerpadlo aj pre radiátory](http://www.geotherm.sk/preco-si-vybrat-tepelne-cerpadlo/)\n- [Výmena plynového kotla za tepelné čerpadlo](http://www.geotherm.sk/vymena-plynoveho-kotla-za-tepelne-cerpadlo/)"
+        },
+        {
+          "user": "A nebude potom slabý výkon?",
+          "assistant": "Pri výbere tepelného čerpadla by som nezačínal iba názvom modelu. Najprv treba trafiť typ systému, výkon, hlučnosť, montáž a servis podľa konkrétneho domu.\n\n- Výber riešenia má sedieť k domu, rozpočtu, hlučnosti, servisu a očakávanému komfortu.\n\n_Ak chceš, môžeme to posunúť technikovi/odborníkovi, aby sa pozrel na váš konkrétny prípad. Chceš, aby ťa niekto kontaktoval?_\n\n**Zdroje:**\n- [6 tipov, ako si správne vybrať tepelné čerpadlo do rodinného domu](http://www.geotherm.sk/6-tipov-ako-si-spravne-vybrat-tepelne-cerpadlo-do-rodinneho-domu/)\n- [Tepelné čerpadlo](http://www.geotherm.sk/tepelne-cerpadlo/)"
+        }
+      ]
+    },
+    {
+      "id": "P06",
+      "title": "Hlučnosť a susedia",
+      "turns": [
+        {
+          "user": "Ako hlučné sú tie vonkajšie jednotky?",
+          "assistant": "Bez kontextu by som to nechcel hádať.\n\n- Stačí doplniť, či riešiš nové tepelné čerpadlo, servis, dotáciu, montáž, chladenie alebo návrh vykurovania.\n\n_Kde by bola vonkajĹˇia jednotka umiestnenĂˇ voÄŤi obytnĂ˝m miestnostiam a susedom?_"
+        },
+        {
+          "user": "Máme susedov dosť blízko.",
+          "assistant": "Hlučnosť sa nedá posúdiť len podľa značky. V praxi rozhoduje najmä konkrétny model, výkon, umiestnenie vonkajšej jednotky a kvalita montáže.\n\n- Hlučnosť ovplyvňuje model, výkon, umiestnenie vonkajšej jednotky a kvalita montáže.\n\n_Kde by mala byť vonkajšia jednotka - pri obytných miestnostiach alebo skôr bokom od domu?_\n\n**Zdroje:**\n- [Hlučnosť tepelného čerpadla vzduch-voda](http://www.geotherm.sk/hlucnost-tepelneho-cerpadla-vzduch/)\n- [Tepelné čerpadlo vzduch-voda, umiestnenie vonkajšej jednotky](http://www.geotherm.sk/tepelne-cerpadlo-vzduch-voda-umiestnenie-vonkajsej-jednotky/)"
+        },
+        {
+          "user": "Je to počuť večer?",
+          "assistant": "Hlučnosť moderných tepelných čerpadiel je porovnateľná s umývačkou riadu, okolo 45 dB. Staršie a lacnejšie modely však môžu byť hlučnejšie.\n\n- Hlučnosť závisí od konkrétneho modelu, výkonu a kvality montáže.\n- Moderné jednotky majú nízkootáčkové ventilátory a antivibračné rámy pre zníženie hluku.\n- Je dôležité umiestniť vonkajšiu jednotku ďalej od spální a obytných priestorov.\n- Hluk môže byť vnímaný intenzívnejšie večer, keď je okolitý hluk nižší.\n\n_Máš predstavu, kde by bola vonkajšia jednotka umiestnená voči tvojim spálňam a spálňam susedov?_\n\n**Zdroje:**\n- [Hlučnosť tepelného čerpadla vzduch-voda](http://www.geotherm.sk/hlucnost-tepelneho-cerpadla-vzduch/)\n- [Tepelné čerpadlo vzduch-voda, umiestnenie vonkajšej jednotky](http://www.geotherm.sk/tepelne-cerpadlo-vzduch-voda-umiestnenie-vonkajsej-jednotky/)"
+        },
+        {
+          "user": "Dá sa to nejako odhlučniť?",
+          "assistant": "Hlučnosť sa nedá posúdiť len podľa značky. V praxi rozhoduje najmä konkrétny model, výkon, umiestnenie vonkajšej jednotky a kvalita montáže.\n\n- Hlučnosť ovplyvňuje model, výkon, umiestnenie vonkajšej jednotky a kvalita montáže.\n\n_Ak chceš, môžeme to posunúť technikovi/odborníkovi, aby sa pozrel na váš konkrétny prípad. Chceš, aby ťa niekto kontaktoval?_\n\n**Zdroje:**\n- [Hlučnosť tepelného čerpadla vzduch-voda](http://www.geotherm.sk/hlucnost-tepelneho-cerpadla-vzduch/)"
+        }
+      ]
+    },
+    {
+      "id": "P07",
+      "title": "Cenová ponuka a podklady",
+      "turns": [
+        {
+          "user": "Potrebujem cenovú ponuku na tepelné čerpadlo.",
+          "assistant": "Jasné, rád ti pomôžem s cenovou ponukou na tepelné čerpadlo. Aktuálne máme zaujímavé akcie na vybrané modely.\n\n- Máme akciu na tepelné čerpadlá NIBE so zľavou 1 500 € od výrobcu, platnú do 30. júna 2024 alebo do vypredania zásob.\n- Taktiež prebieha akcia na tepelné čerpadlá Vaillant aroTHERM plus, platná do 30. júna 2024.\n- Cena tepelného čerpadla závisí od konkrétneho modelu, výkonu a rozsahu inštalácie.\n\n_Pre aký objekt to riešiš - rodinný dom, byt alebo firemný priestor?_\n\n**Zdroje:**\n- [Tepelné čerpadlo NIBE, výhodná cena](http://www.geotherm.sk/tepelne-cerpadlo-nibe-vyhodna-cena/)\n- [Tepelné čerpadlo – akcia – výhodná cena](http://www.geotherm.sk/tepelne-cerpadlo-akcia-vyhodna-cena/)"
+        },
+        {
+          "user": "Čo všetko odo mňa potrebujete?",
+          "assistant": "Aby som ti mohol pripraviť presnú cenovú ponuku, potrebujem poznať pár detailov o tvojom objekte a súčasnom vykurovaní.\n\n- Odporúčam brať návrh orientačne, kým nie sú jasné základné podklady o dome a aktuálnom kúrení.\n- Potrebujem vedieť, či ide o rodinný dom, byt alebo firemný priestor.\n- Dôležité sú tepelné straty objektu a aký typ vykurovania momentálne máš.\n- Tiež potrebujem vedieť, aké sú tvoje požiadavky na ohrev teplej vody.\n\n_Pre aký objekt to riešiš - rodinný dom, byt alebo firemný priestor?_\n\n**Zdroje:**\n- [Tepelné čerpadlo NIBE, výhodná cena](http://www.geotherm.sk/tepelne-cerpadlo-nibe-vyhodna-cena/)\n- [Tepelné čerpadlá vzduch voda](http://www.geotherm.sk/tepelne-cerpadla-vzduch-voda/)"
+        },
+        {
+          "user": "Stačí pôdorys domu?",
+          "assistant": "Pri montáži rozhoduje pripravenosť domu, rozsah prác, zapojenie do existujúceho systému a odborné spustenie. Bez týchto detailov sa dá hovoriť len orientačne.\n\n- Pri návrhu pomáha typ domu, pôdorys, plocha, aktuálne kúrenie a tepelné straty.\n- Cena závisí od typu objektu, tepelných strát, rozsahu montáže a zvoleného riešenia.\n\n_Ak chceš, môžeme to posunúť technikovi/odborníkovi, aby sa pozrel na tvoj konkrétny prípad. Chceš, aby ťa niekto kontaktoval?_\n\n**Zdroje:**\n- [Inštalácia tepelného čerpadla](http://www.geotherm.sk/tepelne-cerpadla/instalacia-tepelneho-cerpadla/)\n- [Tepelné čerpadlá](http://www.geotherm.sk/tepelne-cerpadla/)"
+        },
+        {
+          "user": "Alebo potrebujete aj projekt?",
+          "assistant": "Na presnú cenovú ponuku potrebujeme viac informácií o tvojom objekte. Projekt nie je vždy nutný, ale pomôže nám to lepšie pochopiť tvoje potreby.\n\n- Odporúčam brať návrh orientačne, kým nie sú jasné základné podklady o dome a aktuálnom kúrení.\n- Cena tepelného čerpadla závisí od tepelných strát objektu, typu vykurovania a tvojich požiadaviek na ohrev teplej vody.\n- Pri návrhu je dôležitý typ domu, pôdorys, aktuálne kúrenie a tepelné straty.\n- Naši odborníci ti radi poradia a navrhnú najvhodnejší systém.\n\n_Potrebuješ aj návrh projektu, alebo ti stačí len cenová ponuka na základe technických parametrov?_\n\n**Zdroje:**\n- [Inštalácia tepelného čerpadla](http://www.geotherm.sk/tepelne-cerpadla/instalacia-tepelneho-cerpadla/)\n- [Tepelné čerpadlá](http://www.geotherm.sk/tepelne-cerpadla/)"
+        },
+        {
+          "user": "A ako dlho trvá pripraviť ponuku?",
+          "assistant": "Príprava cenovej ponuky zvyčajne trvá 1-2 pracovné dni po dodaní všetkých potrebných podkladov.\n\n- Montáž závisí od rozsahu prác, pripravenosti objektu a technického riešenia.\n- Na presnú ponuku potrebujeme poznať tepelné straty objektu a typ aktuálneho vykurovania.\n- Pomôže nám aj pôdorys domu a informácie o jeho zateplení.\n- Projekt nie je vždy nutný, ale pomôže nám lepšie pochopiť tvoje potreby.\n\n_Potrebuješ aj návrh projektu, alebo ti stačí len cenová ponuka na základe technických parametrov?_\n\n**Zdroje:**\n- [Tepelné čerpadlo NIBE, výhodná cena](http://www.geotherm.sk/tepelne-cerpadlo-nibe-vyhodna-cena/)\n- [Tepelné čerpadlá vzduch voda](http://www.geotherm.sk/tepelne-cerpadla-vzduch-voda/)"
+        }
+      ]
+    },
+    {
+      "id": "P08",
+      "title": "Servis existujúceho NIBE",
+      "turns": [
+        {
+          "user": "Viete robiť aj servis existujúceho tepelného čerpadla?",
+          "assistant": "Áno, poskytujeme servis aj existujúcich tepelných čerpadiel. Pravidelná údržba je dôležitá pre jeho spoľahlivosť a efektívnosť.\n\n- Odporúčame servis minimálne raz za dva roky, no závisí to od typu zariadenia a výrobcu.\n- Pravidelný servis predchádza zvýšenej spotrebe energie a možným poruchám.\n- Starostlivosť o tepelné čerpadlo predlžuje jeho životnosť a znižuje prevádzkové náklady.\n\n_Riešiš to pre nový projekt alebo chceš upraviť existujúce kúrenie?_\n\n**Zdroje:**\n- [Pravidelný servis tepelného čerpadla: prečo sa oplatí a prečo ho neodkladať](http://www.geotherm.sk/pravidelny-servis-tepelneho-cerpadla-preco-sa-oplati-a-preco-ho-neodkladat/)\n- [Servis tepelného čerpadla](http://www.geotherm.sk/tepelne-cerpadlo-servis/)"
+        },
+        {
+          "user": "Máme NIBE ale montovala to iná firma.",
+          "assistant": "Pri firemnej alebo kancelárskej budove treba riešiť výkon, prevádzkové režimy, chladenie, vykurovanie a komfort ľudí v budove. Tam už dáva zmysel pozerať sa na systém ako celok, nie iba na jedno zariadenie.\n\n- Pri NIBE aj iných značkách je dôležitý správny výkon pre konkrétny dom.\n- Výber riešenia má sedieť k domu, rozpočtu, hlučnosti, servisu a očakávanému komfortu.\n\n_Vyberáš podľa značky, hlučnosti, ceny alebo chceš najprv zistiť vhodný typ čerpadla pre dom?_\n\n**Zdroje:**\n- [Nibe](http://www.geotherm.sk/tepelne-cerpadla/svedske-nibe/)\n- [Tepelné čerpadlo NIBE, výhodná cena](http://www.geotherm.sk/tepelne-cerpadlo-nibe-vyhodna-cena/)"
+        },
+        {
+          "user": "Posledné dni vypisuje chybu.",
+          "assistant": "NIBE sa spomína ako riešenie tepelných čerpadiel pre domy. Pri výbere je dôležitý výkon, hlučnosť, umiestnenie vonkajšej jednotky a vhodnosť pre konkrétny objekt.\n\n- Pri NIBE aj iných značkách je dôležitý správny výkon pre konkrétny dom.\n- Výber riešenia má sedieť k domu, rozpočtu, hlučnosti, servisu a očakávanému komfortu.\n\n_Vyberáš podľa značky, hlučnosti, ceny alebo chceš najprv zistiť vhodný typ čerpadla pre dom?_\n\n**Zdroje:**\n- [Hlučnosť tepelného čerpadla vzduch-voda](http://www.geotherm.sk/hlucnost-tepelneho-cerpadla-vzduch/)\n- [Umiestnenie, hlučnosť a veľkosť tepelného čerpadla – Vaillant showPOINT](http://www.geotherm.sk/hlucnost-velkost-a-umiestnenie-tepelneho-cerpadla-vaillant-showpoint/)"
+        },
+        {
+          "user": "Prídete aj do Trnavy?",
+          "assistant": "Áno, poskytujeme servis aj v Trnave. Môžeme sa pozrieť na chybu, ktorú váš kotol vypisuje.\n\n- Pri NIBE aj iných značkách je dôležitý správny výkon pre konkrétny dom.\n- NIBE tepelné čerpadlá sú riešením pre domy.\n- Pri výbere je dôležitý výkon, hlučnosť a vhodnosť pre konkrétny objekt.\n- Výber riešenia má sedieť k domu, rozpočtu, hlučnosti a očakávanému komfortu.\n\n_Ak chceš, môžeme to posunúť technikovi/odborníkovi, aby sa pozrel na váš konkrétny prípad. Chceš, aby ťa niekto kontaktoval?_\n\n**Zdroje:**\n- [Hlučnosť tepelného čerpadla vzduch-voda](http://www.geotherm.sk/hlucnost-tepelneho-cerpadla-vzduch/)\n- [Tepelné čerpadlo SPLIT](http://www.geotherm.sk/tepelne-cerpadla/svedske-nibe/vzduch-voda/split/)"
+        }
+      ]
+    },
+    {
+      "id": "P09",
+      "title": "Zem-voda vs vzduch-voda",
+      "turns": [
+        {
+          "user": "Čo je lepšie — zem-voda alebo vzduch-voda?",
+          "assistant": "Zem-voda je stabilnejšie a účinnejšie celoročne, ale náročnejšie na realizáciu. Vzduch-voda je jednoduchšie na montáž a často lacnejšie na začiatku.\n\n- Zem-voda potrebuje pozemok alebo vrt a je menej závislé od vonkajšej teploty.\n- Vzduch-voda je jednoduchšie na inštaláciu, ale jeho účinnosť viac závisí od vonkajšej teploty.\n- Pri výbere zohľadni podmienky stavby, cenu, hlučnosť a očakávaný komfort.\n- Systém zem-voda je v horských oblastiach výhodnejší.\n\n_Riešiš to pre nový projekt alebo chceš upraviť existujúce kúrenie?_\n\n**Zdroje:**\n- [Tepelné čerpadlo vzduch / voda alebo zem / voda](http://www.geotherm.sk/tepelne-cerpadlo-zem-vs-vzduch/)\n- [zem-voda | voda-voda](http://www.geotherm.sk/tepelne-cerpadla-stiebel-eltron/zem-voda-voda-voda/)"
+        },
+        {
+          "user": "Máme dosť veľký pozemok.",
+          "assistant": "Keďže máš dostatočne veľký pozemok, tepelné čerpadlo zem-voda je pre teba vhodnejšie.\n\n- Systém zem-voda je účinnejší a stabilnejší počas celého roka.\n- Potrebuje pozemok na umiestnenie kolektora, čo u teba nie je problém.\n- Je menej závislý od vonkajšej teploty ako vzduch-voda.\n- Aj keď je náročnejší na realizáciu, dlhodobo sa ti môže oplatiť.\n\n_Riešiš to pre nový projekt alebo chceš upraviť existujúce kúrenie?_\n\n**Zdroje:**\n- [Tepelné čerpadlo vzduch / voda alebo zem / voda](http://www.geotherm.sk/tepelne-cerpadlo-zem-vs-vzduch/)\n- [Tepelné čerpadlo zem voda](http://www.geotherm.sk/tepelne-cerpadla/zem-voda/)"
+        },
+        {
+          "user": "Ale nechcem extrémne drahé riešenie.",
+          "assistant": "Keďže máš dostatočne veľký pozemok, tepelné čerpadlo zem-voda je pre teba vhodnejšie a býva účinnejšie.\n\n- Systém zem-voda je účinnejší a stabilnejší počas celého roka.\n- Je menej závislý od vonkajšej teploty ako vzduch-voda.\n- Aj keď je náročnejší na realizáciu, dlhodobo sa ti môže oplatiť.\n\n_Riešiš to pre nový projekt alebo chceš upraviť existujúce kúrenie?_\n\n**Zdroje:**\n- [Tepelné čerpadlo vzduch / voda alebo zem / voda](http://www.geotherm.sk/tepelne-cerpadlo-zem-vs-vzduch/)\n- [Tepelné čerpadlo zem voda](http://www.geotherm.sk/tepelne-cerpadla/zem-voda/)"
+        },
+        {
+          "user": "Je ten rozdiel v spotrebe veľký?",
+          "assistant": "Zem-voda býva stabilnejšie a účinnejšie riešenie počas roka, ale potrebuje pozemok alebo vrt a býva náročnejšie na realizáciu. Vzduch-voda je jednoduchšie na montáž a často lacnejšie na začiatku, no viac závisí od vonkajšej teploty a umiestnenia jednotky.\n\n- Cena závisí od typu objektu, tepelných strát, rozsahu montáže a zvoleného riešenia.\n\n_Ak chceš, môžeme to posunúť technikovi/odborníkovi, aby sa pozrel na tvoj konkrétny prípad. Chceš, aby ťa niekto kontaktoval?_\n\n**Zdroje:**\n- [Tepelné čerpadlo vzduch / voda alebo zem / voda](http://www.geotherm.sk/tepelne-cerpadlo-zem-vs-vzduch/)\n- [Tepelné čerpadlo zem voda](http://www.geotherm.sk/tepelne-cerpadla/zem-voda/)"
+        }
+      ]
+    },
+    {
+      "id": "P10",
+      "title": "Fotovoltaika a tepelné čerpadlo",
+      "turns": [
+        {
+          "user": "Má zmysel kombinovať tepelné čerpadlo s fotovoltaikou?",
+          "assistant": "Pri montáži rozhoduje pripravenosť domu, rozsah prác, zapojenie do existujúceho systému a odborné spustenie. Bez týchto detailov sa dá hovoriť len orientačne.\n\n- Výber riešenia má sedieť k domu, rozpočtu, hlučnosti, servisu a očakávanému komfortu.\n\n_Chceš fotovoltaiku hlavne na zníženie účtov, alebo už ju plánuješ aj kvôli tepelnému čerpadlu?_\n\n**Zdroje:**\n- [Fotovoltaika a tepelné čerpadlo](http://www.geotherm.sk/fotovoltaika-a-tepelne-cerpadlo/)\n- [Tepelné čerpadlá](http://www.geotherm.sk/tepelne-cerpadla/)"
+        },
+        {
+          "user": "Alebo to je len marketing?",
+          "assistant": "Tepelné čerpadlo a fotovoltaika môžu dávať zmysel spolu, hlavne ak vie dom časť elektriny spotrebovať priamo. Netreba to však brať ako automatickú úsporu pre každého; rozhoduje spotreba domu, orientácia strechy, veľkosť systému a spôsob riadenia.\n\n- Výber riešenia má sedieť k domu, rozpočtu, hlučnosti, servisu a očakávanému komfortu.\n\n_Chceš fotovoltaiku hlavne na zníženie účtov, alebo už ju plánuješ aj kvôli tepelnému čerpadlu?_\n\n**Zdroje:**\n- [Tepelné čerpadlo IVT AIR Split](http://www.geotherm.sk/tepelne-cerpadla/ivt-tepelne-cerpadla/tepelne-cerpadlo-ivt-air-split/)\n- [Priemerná spotreba elektrickej energie v domácnosti – ako ušetriť za elektrinu](http://www.geotherm.sk/priemerna-spotreba-elektrickej-energie-v-domacnosti-ako-usetrit-za-elektrinu/)"
+        },
+        {
+          "user": "Máme južnú strechu.",
+          "assistant": "Tepelné čerpadlo a fotovoltaika môžu dávať zmysel spolu, hlavne ak vie dom časť elektriny spotrebovať priamo. Netreba to však brať ako automatickú úsporu pre každého; rozhoduje spotreba domu, orientácia strechy, veľkosť systému a spôsob riadenia.\n\n- Výber riešenia má sedieť k domu, rozpočtu, hlučnosti, servisu a očakávanému komfortu.\n\n_Chceš fotovoltaiku hlavne na zníženie účtov, alebo už ju plánuješ aj kvôli tepelnému čerpadlu?_\n\n**Zdroje:**\n- [Tepelné čerpadlo IVT AIR Split](http://www.geotherm.sk/tepelne-cerpadla/ivt-tepelne-cerpadla/tepelne-cerpadlo-ivt-air-split/)\n- [Priemerná spotreba elektrickej energie v domácnosti – ako ušetriť za elektrinu](http://www.geotherm.sk/priemerna-spotreba-elektrickej-energie-v-domacnosti-ako-usetrit-za-elektrinu/)"
+        },
+        {
+          "user": "Koľko panelov by približne trebalo?",
+          "assistant": "Počet panelov závisí od tvojej aktuálnej spotreby elektriny a od toho, koľko energie chceš vyrobiť.\n\n- Na južnej streche môžeš dosiahnuť dobré výsledky.\n- Kombinácia tepelného čerpadla a fotovoltaiky môže byť výhodná, ak vieš elektrinu priamo spotrebovať.\n- Presný počet panelov určíme po zhodnotení tvojej konkrétnej spotreby a potrieb.\n\n_Ak chceš, môžeme to posunúť technikovi/odborníkovi, aby sa pozrel na váš konkrétny prípad. Chceš, aby ťa niekto kontaktoval?_\n\n**Zdroje:**\n- [Tepelné čerpadlo IVT AIR Split](http://www.geotherm.sk/tepelne-cerpadla/ivt-tepelne-cerpadla/tepelne-cerpadlo-ivt-air-split/)\n- [Priemerná spotreba elektrickej energie v domácnosti – ako ušetriť za elektrinu](http://www.geotherm.sk/priemerna-spotreba-elektrickej-energie-v-domacnosti-ako-usetrit-za-elektrinu/)"
+        }
+      ]
+    },
+    {
+      "id": "P11",
+      "title": "Dotácia",
+      "turns": [
+        {
+          "user": "Dá sa cez vás vybaviť aj dotácia?",
+          "assistant": "Pri dotácii alebo príspevku rozhodujú pravidlá programu, podmienok a konkrétny prípad. Najprv treba vedieť, aké riešenie chceš a či spĺňa podmienky podpory.\n\n- Pri dotácii alebo príspevku je dôležité overiť podmienok programu a konkrétnu oprávnenosť.\n- Dotácie závisia od programu, podmienok a konkrétneho projektu.\n\n_Riešiš dotáciu k novému tepelnému čerpadlu alebo už máš vybrané konkrétne riešenie?_\n\n**Zdroje:**\n- [Záujem o dotácie OZE stále rastie, avšak vyčlenené financie sa môžu rýchlo minúť](http://www.geotherm.sk/zaujem-o-dotacie-oze-stale-rastie-avsak-vyclenene-financie-sa-mozu-rychlo-minut/)\n- [Dotácie na OZE bez obáv: Ako fungujeme my v GEOTHERM Slovakia](http://www.geotherm.sk/dotacie-na-oze-bez-obav-ako-fungujeme-my-v-geotherm-slovakia/)"
+        },
+        {
+          "user": "Alebo si to musím riešiť sám?",
+          "assistant": "O dotácie sa môžeme postarať, ale závisí to od konkrétneho programu a tvojho výberu.\n\n- Pri dotácii alebo príspevku je dôležité overiť podmienok programu a konkrétnu oprávnenosť.\n- Dotácie sú viazané na pravidlá konkrétneho programu.\n- Je dôležité overiť si podmienky a oprávnenosť.\n- Niektoré dotácie sa dajú získať formou zľavy priamo pri kúpe.\n\n_Riešiš dotáciu k novému tepelnému čerpadlu alebo už máš vybrané konkrétne riešenie?_\n\n**Zdroje:**\n- [Tepelné čerpadlá – dotácie](http://www.geotherm.sk/dotacie-obnovitelne-zdroje/tepelne-cerpadla-dotacie/)\n- [Mimoriadna dotácia na tepelné čerpadlá](http://www.geotherm.sk/mimoriadna-dotacia-na-tepelne-cerpadla/)"
+        },
+        {
+          "user": "A koľko sa aktuálne dá dostať?",
+          "assistant": "Pri dotácii alebo príspevku rozhodujú pravidlá programu, podmienok a konkrétny prípad. Najprv treba vedieť, aké riešenie chceš a či spĺňa podmienky podpory.\n\n- Pri dotácii alebo príspevku je dôležité overiť podmienok programu a konkrétnu oprávnenosť.\n- Dotácie závisia od programu, podmienok a konkrétneho projektu.\n\n_Ak chceš, môžeme to posunúť technikovi/odborníkovi, aby sa pozrel na tvoj konkrétny prípad. Chceš, aby ťa niekto kontaktoval?_\n\n**Zdroje:**\n- [Tepelné čerpadlá – dotácie](http://www.geotherm.sk/dotacie-obnovitelne-zdroje/tepelne-cerpadla-dotacie/)\n- [Mimoriadna dotácia na tepelné čerpadlá](http://www.geotherm.sk/mimoriadna-dotacia-na-tepelne-cerpadla/)"
+        },
+        {
+          "user": "Je veľa papierovačiek?",
+          "assistant": "Áno, vybavujeme dotácie, ale proces môže byť spojený s administratívou. Záleží od konkrétneho programu a tvojho výberu.\n\n- Pri dotácii alebo príspevku je dôležité overiť podmienok programu a konkrétnu oprávnenosť.\n- Výška dotácie závisí od programu a konkrétneho projektu.\n- Niektoré dotácie je možné získať priamo ako zľavu z ceny.\n- Je dôležité overiť si podmienky a oprávnenosť na dotáciu.\n\n_Riešiš dotáciu k novému tepelnému čerpadlu alebo už máš vybrané konkrétne riešenie?_\n\n**Zdroje:**\n- [Tepelné čerpadlá – dotácie](http://www.geotherm.sk/dotacie-obnovitelne-zdroje/tepelne-cerpadla-dotacie/)\n- [Mimoriadna dotácia na tepelné čerpadlá](http://www.geotherm.sk/mimoriadna-dotacia-na-tepelne-cerpadla/)"
+        }
+      ]
+    },
+    {
+      "id": "P12",
+      "title": "Klimatizácie vs centrálne riešenie",
+      "turns": [
+        {
+          "user": "Máme v dome 3 klimatizácie.",
+          "assistant": "Klimatizácia vie rýchlo chladiť jednotlivé miestnosti, ale centrálne riešenie sa pozerá viac na komfort celého domu, prevádzkové náklady a prepojenie s vykurovaním. Výber závisí od toho, či chceš len chladiť miestnosti, alebo riešiť celý systém v dome.\n\n- Výber riešenia má sedieť k domu, rozpočtu, hlučnosti, servisu a očakávanému komfortu.\n\n_Riešiš to pre nový projekt alebo chceš upraviť existujúce kúrenie?_\n\n**Zdroje:**\n- [Klimatizácia](http://www.geotherm.sk/klimatizacia/)\n- [Klimatizácia TOSHIBA](http://www.geotherm.sk/klimatizacia/toshiba/)"
+        },
+        {
+          "user": "Neviem či sa nám oplatí prejsť na centrálne riešenie.",
+          "assistant": "Centrálne riešenie môže byť výhodnejšie pre celý dom, najmä ak zvažuješ prepojenie s vykurovaním a chceš optimalizovať náklady.\n\n- Centrálne systémy zaisťujú stabilnú teplotu v celom dome.\n- Môžu viesť k nižším prevádzkovým nákladom.\n- Sú navrhnuté ako prepojený systém pre maximálny komfort.\n- Pravidelný servis tepelného čerpadla je dôležitý pre jeho spoľahlivosť a môže byť aj podmienkou záruky.\n\n_Ide skôr o pravidelnú údržbu alebo už riešiš konkrétnu poruchu?_\n\n**Zdroje:**\n- [Komplexné riešenie budov, vykurovanie, vetranie, chladenie](http://www.geotherm.sk/referencie/komplexne-vykurovanie-vetranie-chladenie/)\n- [Pravidelný servis tepelného čerpadla: prečo sa oplatí a prečo ho neodkladať](http://www.geotherm.sk/pravidelny-servis-tepelneho-cerpadla-preco-sa-oplati-a-preco-ho-neodkladat/)"
+        },
+        {
+          "user": "Čo by ste odporučili?",
+          "assistant": "Bez kontextu by som to nechcel hádať.\n\n- Stačí doplniť, či riešiš nové tepelné čerpadlo, servis, dotáciu, montáž, chladenie alebo návrh vykurovania.\n\n_Riešiš nové tepelné čerpadlo, servis, dotácie, montáž alebo návrh vykurovania?_"
+        },
+        {
+          "user": "Ide nám hlavne o komfort a nízke náklady.",
+          "assistant": "Pre komfort a nízke náklady je dôležité zvoliť správne riešenie pre celý dom. Centrálne systémy môžu byť výhodnejšie.\n\n- Centrálne systémy zaisťujú stabilnú teplotu v celom dome.\n- Môžu viesť k nižším prevádzkovým nákladom.\n- Sú navrhnuté ako prepojený systém pre maximálny komfort.\n\n_Ak chceš, môžeme to posunúť technikovi/odborníkovi, aby sa pozrel na tvoj konkrétny prípad. Chceš, aby ťa niekto kontaktoval?_\n\n**Zdroje:**\n- [Priemerná spotreba elektrickej energie v domácnosti – ako ušetriť za elektrinu](http://www.geotherm.sk/priemerna-spotreba-elektrickej-energie-v-domacnosti-ako-usetrit-za-elektrinu/)\n- [ecoTEC pro VU / VUW](http://www.geotherm.sk/kotly/vaillant/kondenzacne/ecotec-pro-vu-vuw/)"
+        }
+      ]
+    },
+    {
+      "id": "P13",
+      "title": "Dĺžka montáže",
+      "turns": [
+        {
+          "user": "Ako dlho trvá montáž tepelného čerpadla?",
+          "assistant": "Dĺžka montáže tepelného čerpadla závisí od viacerých faktorov, ako je pripravenosť domu a rozsah prác.\n\n- Montáž závisí od rozsahu prác, pripravenosti objektu a technického riešenia.\n- Kvalita návrhu a inštalácie ovplyvňuje nízke účty a spoľahlivosť systému.\n- Dôležitý je nielen výber značky a ceny, ale aj odborný návrh, zapojenie a servis.\n- Profesionálna montáž zabezpečí tiché, úsporné a spoľahlivé vykurovanie.\n\n_Riešiš to pre nový projekt alebo chceš upraviť existujúce kúrenie?_\n\n**Zdroje:**\n- [Inštalácia tepelného čerpadla](http://www.geotherm.sk/tepelne-cerpadla/instalacia-tepelneho-cerpadla/)\n- [Ako vybrať a namontovať najvhodnejšie tepelné čerpadlo](http://www.geotherm.sk/ako-vybrat-a-namontovat-najvhodnejsie-tepelne-cerpadlo/)"
+        },
+        {
+          "user": "Musíme byť počas toho doma?",
+          "assistant": "Počas montáže tepelného čerpadla je zvyčajne potrebné, aby si bol/a doma, najmä pri dôležitých krokoch.\n\n- Montáž závisí od rozsahu prác, pripravenosti objektu a technického riešenia.\n- Prítomnosť je dôležitá pre konzultácie a odsúhlasenie detailov.\n- Potrebujeme prístup do domu a k rozvodom.\n- Odborná montáž zabezpečí správne fungovanie systému.\n\n_Riešiš to pre nový projekt alebo chceš upraviť existujúce kúrenie?_\n\n**Zdroje:**\n- [Inštalácia tepelného čerpadla](http://www.geotherm.sk/tepelne-cerpadla/instalacia-tepelneho-cerpadla/)\n- [Tepelné čerpadlo vzduch-voda](http://www.geotherm.sk/tepelne-cerpadlo-vzduch-voda/)"
+        },
+        {
+          "user": "A koľko dní budeme bez kúrenia?",
+          "assistant": "Pri montáži rozhoduje pripravenosť domu, rozsah prác, zapojenie do existujúceho systému a odborné spustenie. Bez týchto detailov sa dá hovoriť len orientačne.\n\n- Montáž závisí od rozsahu prác, pripravenosti objektu a technického riešenia.\n- Pri montáži je dôležitý návrh, správny výkon a odborné spustenie systému.\n\n_Ak chceš, môžeme to posunúť technikovi/odborníkovi, aby sa pozrel na tvoj konkrétny prípad. Chceš, aby ťa niekto kontaktoval?_\n\n**Zdroje:**\n- [Inštalácia tepelného čerpadla](http://www.geotherm.sk/tepelne-cerpadla/instalacia-tepelneho-cerpadla/)\n- [Ako vybrať a namontovať najvhodnejšie tepelné čerpadlo](http://www.geotherm.sk/ako-vybrat-a-namontovat-najvhodnejsie-tepelne-cerpadlo/)"
+        }
+      ]
+    },
+    {
+      "id": "P14",
+      "title": "COP jednoducho",
+      "turns": [
+        {
+          "user": "Môžete mi vysvetliť čo znamená COP?",
+          "assistant": "COP je jednoduchý ukazovateľ účinnosti: hovorí, koľko tepla vie tepelné čerpadlo dodať oproti spotrebovanej elektrine. Pri výbere však nestačí pozerať iba jedno číslo, lebo výkon závisí od teploty vonku, vykurovacej vody a konkrétneho domu.\n\n- Výber riešenia má sedieť k domu, rozpočtu, hlučnosti, servisu a očakávanému komfortu.\n\n_Riešiš to pre nový projekt alebo chceš upraviť existujúce kúrenie?_\n\n**Zdroje:**\n- [Tepelné čerpadlo vzduch-voda](http://www.geotherm.sk/tepelne-cerpadla/vzduch-voda/)\n- [Tepelné čerpadlo voda-voda](http://www.geotherm.sk/tepelne-cerpadla/voda-voda/)"
+        },
+        {
+          "user": "Vôbec sa v tom nevyznám.",
+          "assistant": "Výber správneho tepelného čerpadla závisí od viacerých faktorov a nie je to vždy jednoduché.\n\n- Je dôležité zvážiť, či ide o novostavbu alebo rekonštrukciu.\n- Cena sa môže líšiť v závislosti od značky, výkonu a dodatočných funkcií.\n- Niektoré ponuky môžu obsahovať menej štandardných riešení, čo sa môže prejaviť neskôr.\n\n_Riešiš to pre nový projekt alebo chceš upraviť existujúce kúrenie?_\n\n**Zdroje:**\n- [Tepelné čerpadlo vzduch-voda: Rýchly prehľad](http://www.geotherm.sk/tepelne-cerpadlo-vzduch-voda-rychly-prehlad/)\n- [Ako sa rozhodnúť pre správne tepelné čerpadlo vzduch-voda](http://www.geotherm.sk/ako-sa-rozhodnut-pre-spravne-tepelne-cerpadlo-vzduch-voda/)"
+        },
+        {
+          "user": "Na čo sa mám pozerať pri výbere?",
+          "assistant": "Cena, cenník a rozpočet sa pri vykurovaní nedajú brať univerzálne. Závisia od domu, tepelných strát, zvoleného riešenia, montáže a prevádzky. Bez týchto údajov sa dá hovoriť len orientačne.\n\n- Výber riešenia má sedieť k domu, rozpočtu, hlučnosti, servisu a očakávanému komfortu.\n\n_Riešiš to pre nový projekt alebo chceš upraviť existujúce kúrenie?_\n\n**Zdroje:**\n- [Výhody tepelného čerpadla v porovnaní s elektrokotlom](http://www.geotherm.sk/vyhody-tepelneho-cerpadla-v-porovnani-s-elektrokotlom/)\n- [Tepelné čerpadlá](http://www.geotherm.sk/tepelne-cerpadla/)"
+        }
+      ]
+    },
+    {
+      "id": "P15",
+      "title": "Vysoké účty za plyn, 250 m2",
+      "turns": [
+        {
+          "user": "Máme mesačne strašne vysoké účty za plyn.",
+          "assistant": "Cena tepelného čerpadla závisí od mnohých faktorov, preto ju nie je možné povedať univerzálne.\n\n- Spotreba tepelného čerpadla závisí od tepelnej straty domu, jeho zateplenia a spôsobu používania.\n- Pre presnú cenovú ponuku je potrebné zohľadniť konkrétny dom a jeho špecifiká.\n- Odporúčame porovnať konkrétne riešenia pre váš dom, nie všeobecné údaje.\n\n_Vieš približne ročnú spotrebu alebo aspoň aktuálne ročné náklady na kúrenie?_\n\n**Zdroje:**\n- [Priemerná spotreba elektrickej energie v domácnosti – ako ušetriť za elektrinu](http://www.geotherm.sk/priemerna-spotreba-elektrickej-energie-v-domacnosti-ako-usetrit-za-elektrinu/)\n- [Priemerná spotreba vody v domácnosti – ako ušetriť za vodu](http://www.geotherm.sk/usetrit-za-vodu/)"
+        },
+        {
+          "user": "Dom cca 250 m².",
+          "assistant": "Cena tepelného čerpadla závisí od mnohých faktorov, preto ju nie je možné povedať univerzálne. Pre dom s rozlohou 250 m² je potrebné zohľadniť konkrétne tepelné straty a zateplenie.\n\n- Spotreba tepelného čerpadla závisí od tepelnej straty domu, jeho zateplenia a spôsobu používania.\n- Pre presnú cenovú ponuku je potrebné zohľadniť špecifiká tvojho domu.\n- Odporúčame porovnať konkrétne riešenia pre váš dom, nie všeobecné údaje.\n\n_Vieš približne ročnú spotrebu alebo aspoň aktuálne ročné náklady na kúrenie?_\n\n**Zdroje:**\n- [Priemerná spotreba elektrickej energie v domácnosti – ako ušetriť za elektrinu](http://www.geotherm.sk/priemerna-spotreba-elektrickej-energie-v-domacnosti-ako-usetrit-za-elektrinu/)\n- [Tepelné čerpadlo IVT AIR Split](http://www.geotherm.sk/tepelne-cerpadla/ivt-tepelne-cerpadla/tepelne-cerpadlo-ivt-air-split/)"
+        },
+        {
+          "user": "Myslíte že tepelné čerpadlo je pre nás vhodné?",
+          "assistant": "Tepelné čerpadlo môže byť pre teba vhodné, ale závisí to od viacerých faktorov. Cena a spotreba sa líšia podľa konkrétneho domu.\n\n- Spotreba tepelného čerpadla závisí od tepelnej straty domu, jeho zateplenia a spôsobu používania.\n- Pre presnú cenovú ponuku je potrebné zohľadniť špecifiká tvojho domu.\n- Odporúčame porovnať konkrétne riešenia pre tvoj dom, nie všeobecné údaje.\n\n_Ak chceš, môžeme to posunúť technikovi/odborníkovi, aby sa pozrel na tvoj konkrétny prípad. Chceš, aby ťa niekto kontaktoval?_\n\n**Zdroje:**\n- [Priemerná spotreba elektrickej energie v domácnosti – ako ušetriť za elektrinu](http://www.geotherm.sk/priemerna-spotreba-elektrickej-energie-v-domacnosti-ako-usetrit-za-elektrinu/)\n- [Tepelné čerpadlo IVT AIR Split](http://www.geotherm.sk/tepelne-cerpadla/ivt-tepelne-cerpadla/tepelne-cerpadlo-ivt-air-split/)"
+        },
+        {
+          "user": "Alebo radšej ostať pri plyne?",
+          "assistant": "Vykurovanie je dobré riešiť ako celý systém, nie iba ako kúpu zariadenia. Pri dome bez plynu sa prirodzene ponúkajú riešenia okolo tepelného čerpadla a správneho návrhu vykurovania.\n\n- Výber riešenia má sedieť k domu, rozpočtu, hlučnosti, servisu a očakávanému komfortu.\n\n_Riešiš to pre nový projekt alebo chceš upraviť existujúce kúrenie?_\n\n**Zdroje:**\n- [Tepelné čerpadlo flexoTHERM exclusive](http://www.geotherm.sk/tepelne-cerpadla/nemecke-vaillant/zem-voda/flexotherm-exclusive/)\n- [Tepelné čerpadlo](http://www.geotherm.sk/tepelne-cerpadlo/)"
+        }
+      ]
+    },
+    {
+      "id": "P16",
+      "title": "Mráz -15 °C",
+      "turns": [
+        {
+          "user": "Čo sa stane keď bude -15 °C?",
+          "assistant": "Bez kontextu by som to nechcel hádať.\n\n- Stačí doplniť, či riešiš nové tepelné čerpadlo, servis, dotáciu, montáž, chladenie alebo návrh vykurovania.\n\n_Riešiš nové tepelné čerpadlo, servis, dotácie, montáž alebo návrh vykurovania?_"
+        },
+        {
+          "user": "Nebude to mať problém vykúriť dom?",
+          "assistant": "Áno, moderné tepelné čerpadlá sú navrhnuté tak, aby zvládli vykurovanie aj pri nízkych vonkajších teplotách.\n\n- Výkon tepelného čerpadla sa prispôsobuje vonkajšej teplote.\n- V prípade extrémne nízkych teplôt môže byť potrebný záložný zdroj tepla.\n- Správny návrh systému je kľúčový pre spoľahlivé vykurovanie.\n\n_Riešiš to pre nový projekt alebo chceš upraviť existujúce kúrenie?_\n\n**Zdroje:**\n- [Pútnický dom na Skalke vykuruje tepelné čerpadlo Vaillant](http://www.geotherm.sk/putnicky-dom-na-skalke-vykurovany-tepelnym-cerpadlom-vaillant/)\n- [Energetická trieda A0 alebo nízkoenergetický dom](http://www.geotherm.sk/energeticka-trieda-a0-alebo-nizkoenergeticky-dom/)"
+        },
+        {
+          "user": "Lebo známy vravel že tepelné čerpadlá v zime nestíhajú.",
+          "assistant": "Moderné tepelné čerpadlá zvládnu vykurovanie aj pri silných mrazoch. Správny návrh systému je kľúčový.\n\n- Výkon tepelného čerpadla sa prispôsobuje vonkajšej teplote.\n- V extrémnych mrazoch môže byť potrebný záložný zdroj tepla.\n- Dôležitý je správny návrh výkonu a nastavenia systému.\n- Výber riešenia musí zodpovedať domu, rozpočtu a očakávanému komfortu.\n\n_Riešiš to pre nový projekt alebo chceš upraviť existujúce kúrenie?_\n\n**Zdroje:**\n- [Tepelné čerpadlo](http://www.geotherm.sk/tepelne-cerpadlo/)\n- [Hľadáte tiché tepelné čerpadlo Pomôžeme vám vybrať to najlepšie](http://www.geotherm.sk/hladate-tiche-tepelne-cerpadlo-pomozeme-vam-vybrat-to-najlepsie/)"
+        }
+      ]
+    },
+    {
+      "id": "P17",
+      "title": "Životnosť a servis",
+      "turns": [
+        {
+          "user": "Aká je životnosť tepelného čerpadla?",
+          "assistant": "Spoľahlivosť tepelného čerpadla nestojí len na značke. Rozhoduje správny návrh, kvalitná montáž, rozumné nastavenie, dostupný servis a to, aby zariadenie neštartovalo zbytočne často.\n\n- Výber riešenia má sedieť k domu, rozpočtu, hlučnosti, servisu a očakávanému komfortu.\n\n_Riešiš to pre nový projekt alebo chceš upraviť existujúce kúrenie?_\n\n**Zdroje:**\n- [Tepelné čerpadlo, jeho životnosť a spoľahlivosť](http://www.geotherm.sk/tepelne-cerpadlo-zivotnost-spolahlivost/)\n- [Tepelné čerpadlo](http://www.geotherm.sk/tepelne-cerpadlo/)"
+        },
+        {
+          "user": "A čo servis?",
+          "assistant": "Bez kontextu by som to nechcel hádať.\n\n- Stačí doplniť, či riešiš nové tepelné čerpadlo, servis, dotáciu, montáž, chladenie alebo návrh vykurovania.\n\n_Ide o pravidelnú údržbu, poruchu alebo kontrolu pred vykurovacou sezónou?_"
+        },
+        {
+          "user": "Treba každý rok niečo kontrolovať?",
+          "assistant": "Servis a údržba tepelných čerpadiel dávajú zmysel kvôli spoľahlivosti a správnemu nastaveniu. Pri pravidelnej starostlivosti sa v zdrojoch objavuje aj interval raz za dva roky.\n\n- Servis a údržba pomáhajú držať zariadenie spoľahlivé a včas zachytiť problém.\n\n_Ide skôr o pravidelnú údržbu alebo už riešiš konkrétnu poruchu?_\n\n**Zdroje:**\n- [Servis tepelného čerpadla](http://www.geotherm.sk/tepelne-cerpadlo-servis/)\n- [Pravidelný servis tepelného čerpadla: prečo sa oplatí a prečo ho neodkladať](http://www.geotherm.sk/pravidelny-servis-tepelneho-cerpadla-preco-sa-oplati-a-preco-ho-neodkladat/)"
+        },
+        {
+          "user": "Koľko stojí bežný servis?",
+          "assistant": "Cena, cenník a rozpočet sa pri vykurovaní nedajú brať univerzálne. Závisia od domu, tepelných strát, zvoleného riešenia, montáže a prevádzky. Bez týchto údajov sa dá hovoriť len orientačne.\n\n- Cena závisí od typu objektu, tepelných strát, rozsahu montáže a zvoleného riešenia.\n\n_Ak chceš, môžeme to posunúť technikovi/odborníkovi, aby sa pozrel na tvoj konkrétny prípad. Chceš, aby ťa niekto kontaktoval?_\n\n**Zdroje:**\n- [Ponuka zdarma](http://www.geotherm.sk/cenova-ponuka/)\n- [Servis tepelného čerpadla](http://www.geotherm.sk/tepelne-cerpadlo-servis/)"
+        }
+      ]
+    },
+    {
+      "id": "P18",
+      "title": "Radiátory a podlahovka spolu",
+      "turns": [
+        {
+          "user": "Máme dvojpodlažný dom.",
+          "assistant": "Pre dvojpodlažný dom je možné inštalovať rekuperačnú jednotku, napríklad Zehnder ComfoAir Q350.\n\n- Pre dvojpodlažný rodinný dom s plochou 200 m2 sa používa jednotka Zehnder ComfoAir Q350.\n- Rozvody vzduchu môžu byť vedené v stropnom podhľade a stúpačky v stene.\n- Cena materiálu za takúto rekuperáciu bola v roku 2019 odporúčaná na 6.106 € bez ceny za inštaláciu.\n\n_Riešiš to pre nový projekt alebo chceš upraviť existujúce kúrenie?_\n\n**Zdroje:**\n- [Príklady inštalácie vetrania s rekuperáciou](http://www.geotherm.sk/rekuperacna-jednotka/priklady-instalacie-vetrania-s-rekuperaciou/)\n- [Pútnický dom na Skalke vykuruje tepelné čerpadlo Vaillant](http://www.geotherm.sk/putnicky-dom-na-skalke-vykurovany-tepelnym-cerpadlom-vaillant/)"
+        },
+        {
+          "user": "Na poschodí sú radiátory a dole podlahovka.",
+          "assistant": "Tepelné čerpadlo sa dá kombinovať s radiátormi aj podlahovým kúrením.\n\n- Pri radiátoroch je dôležité správne dimenzovať teplotný spád, ideálne do 55°/45 °C.\n- Tieto teploty sú vhodné pre úsporné vykurovanie s tepelným čerpadlom alebo plynovým kotlom.\n- V kúpeľni môže byť praktický aj rebríkový elektrický radiátor na sušenie uterákov.\n\n_Vieš, akú teplotu vody dnes radiátory potrebujú v zime, alebo máš aspoň projekt kúrenia?_\n\n**Zdroje:**\n- [Radiátory](http://www.geotherm.sk/radiatory/)\n- [Dizajnové radiátory](http://www.geotherm.sk/radiatory/dizajnove-radiatory/)"
+        },
+        {
+          "user": "Je to problém?",
+          "assistant": "Bez kontextu by som to nechcel hádať.\n\n- Stačí doplniť, či riešiš nové tepelné čerpadlo, servis, dotáciu, montáž, chladenie alebo návrh vykurovania.\n\n_Riešiš nové tepelné čerpadlo, servis, dotácie, montáž alebo návrh vykurovania?_"
+        },
+        {
+          "user": "Dá sa to kombinovať?",
+          "assistant": "Bez kontextu by som to nechcel hádať.\n\n- Stačí doplniť, či riešiš nové tepelné čerpadlo, servis, dotáciu, montáž, chladenie alebo návrh vykurovania.\n\n_Riešiš nové tepelné čerpadlo, servis, dotácie, montáž alebo návrh vykurovania?_"
+        }
+      ]
+    },
+    {
+      "id": "P19",
+      "title": "Rekuperácia",
+      "turns": [
+        {
+          "user": "Viete spraviť aj rekuperáciu?",
+          "assistant": "Áno, ponúkame aj inštaláciu rekuperácie. Rekuperácia je moderný spôsob vetrania, ktorý šetrí energiu.\n\n- Rekuperácia zabezpečuje kontrolovanú výmenu vzduchu bez zbytočných tepelných strát.\n- Systém minimalizuje straty tepla a zlepšuje kvalitu vnútorného vzduchu.\n- Vetracie jednotky môžu dosiahnuť účinnosť rekuperácie tepla až 95%, čo prináša úspory na vykurovaní.\n- Naše systémy sú energeticky úsporné vďaka moderným EC ventilátorom.\n\n_Je rekuperácia už zakreslená v projekte, alebo ju ešte len zvažuješ?_\n\n**Zdroje:**\n- [Rekuperácia – vetranie so spätným získavaním tepla](http://www.geotherm.sk/rekuperacia/)\n- [Rekuperácia – video](http://www.geotherm.sk/o-nas/rekuperacia-riadene-vetranie/)"
+        },
+        {
+          "user": "Staviame novostavbu.",
+          "assistant": "Pri montáži rozhoduje pripravenosť domu, rozsah prác, zapojenie do existujúceho systému a odborné spustenie. Bez týchto detailov sa dá hovoriť len orientačne.\n\n- Výber riešenia má sedieť k domu, rozpočtu, hlučnosti, servisu a očakávanému komfortu.\n\n_Je rekuperácia už zakreslená v projekte, alebo ju ešte len zvažuješ?_\n\n**Zdroje:**\n- [Rekuperácia – vetranie so spätným získavaním tepla](http://www.geotherm.sk/rekuperacia/)\n- [Rekuperácia – video](http://www.geotherm.sk/o-nas/rekuperacia-riadene-vetranie/)"
+        },
+        {
+          "user": "Nechceme mať vydýchaný vzduch.",
+          "assistant": "Rekuperácia rieši výmenu vzduchu bez zbytočných tepelných strát. Pri novostavbe dáva zmysel riešiť ju spolu s vykurovaním a chladením, aby dom fungoval ako jeden systém.\n\n- Výber riešenia má sedieť k domu, rozpočtu, hlučnosti, servisu a očakávanému komfortu.\n\n_Je rekuperácia už zakreslená v projekte, alebo ju ešte len zvažuješ?_\n\n**Zdroje:**\n- [Rekuperácia – vetranie so spätným získavaním tepla](http://www.geotherm.sk/rekuperacia/)\n- [Rekuperácia – video](http://www.geotherm.sk/o-nas/rekuperacia-riadene-vetranie/)"
+        },
+        {
+          "user": "Aké značky robíte?",
+          "assistant": "Rekuperácia rieši výmenu vzduchu bez zbytočných tepelných strát. Pri novostavbe dáva zmysel riešiť ju spolu s vykurovaním a chladením, aby dom fungoval ako jeden systém.\n\n- Výber značky má zmysel riešiť spolu so servisom, výkonom, hlučnosťou a vhodnosťou pre dom.\n- Výber riešenia má sedieť k domu, rozpočtu, hlučnosti, servisu a očakávanému komfortu.\n\n_Ak chceš, môžeme to posunúť technikovi/odborníkovi, aby sa pozrel na váš konkrétny prípad. Chceš, aby ťa niekto kontaktoval?_\n\n**Zdroje:**\n- [Vaillant rekuperácia](http://www.geotherm.sk/rekuperacna-jednotka/vaillant/)\n- [Rekuperácia – vetranie so spätným získavaním tepla](http://www.geotherm.sk/rekuperacia/)"
+        }
+      ]
+    },
+    {
+      "id": "P20",
+      "title": "Byt",
+      "turns": [
+        {
+          "user": "Poradíte mi čo je lepšie pre byt?",
+          "assistant": "Pri návrhu vykurovania je dôležité poznať typ domu, tepelné straty, požadovaný systém, projekt alebo pôdorys a to, či ide o novostavbu alebo úpravu existujúceho riešenia. Bez týchto údajov je odporúčanie len orientačné.\n\n- Odporúčam brať návrh orientačne, kým nie sú jasné základné podklady o dome a aktuálnom kúrení.\n- Pri návrhu pomáha typ domu, pôdorys, plocha, aktuálne kúrenie a tepelné straty.\n- Výber riešenia má sedieť k domu, rozpočtu, hlučnosti, servisu a očakávanému komfortu.\n\n_Ide o byt v bytovke alebo samostatnú bytovú jednotku s možnosťou vonkajšej jednotky?_\n\n**Zdroje:**\n- [Výhody tepelného čerpadla v porovnaní s elektrokotlom](http://www.geotherm.sk/vyhody-tepelneho-cerpadla-v-porovnani-s-elektrokotlom/)\n- [Plán obnovy](http://www.geotherm.sk/o-nas/plan-obnovy/)"
+        },
+        {
+          "user": "Má zmysel tepelné čerpadlo do bytu?",
+          "assistant": "Tepelné čerpadlo môže dávať zmysel aj do bytu, najmä ak nie je dostupný plyn a iné možnosti sú energeticky náročnejšie.\n\n- Pri byte je výber tepelného čerpadla špecifický a treba zvážiť priestor, hluk a možnosť umiestnenia vonkajšej jednotky.\n- Vhodnosť riešenia závisí od konkrétnej situácie, ako je typ bytovky, dostupný priestor a povolenia.\n- V niektorých prípadoch môže byť alternatívou klimatizácia alebo iné vykurovacie systémy.\n\n_Ide o byt v bytovke alebo samostatnú bytovú jednotku s možnosťou vonkajšej jednotky?_\n\n**Zdroje:**\n- [Tepelné čerpadlo vzduch-voda skúsenosti](http://www.geotherm.sk/tepelne-cerpadlo-vzduch-voda-skusenosti/)\n- [Prečo si vybrať tepelné čerpadlo aj pre radiátory](http://www.geotherm.sk/preco-si-vybrat-tepelne-cerpadlo/)"
+        },
+        {
+          "user": "Alebo iba klimatizácia?",
+          "assistant": "Klimatizácia vie rýchlo chladiť jednotlivé miestnosti, ale tepelné čerpadlo rieši komplexnejšie vykurovanie a chladenie celého domu.\n\n- Tepelné čerpadlá vzduch-voda sú úsporné a dokážu vykurovať, chladiť a ohrievať teplú úžitkovú vodu.\n- Niektoré modely, ako aroTHERM plus, používajú ekologické chladivo s nízkym GWP.\n- Existujú aj úsporné SPLIT tepelné čerpadlá s kompaktnou inštaláciou.\n\n_Riešiš to pre nový projekt alebo chceš upraviť existujúce kúrenie?_\n\n**Zdroje:**\n- [Tepelné čerpadlo vzduch-voda](http://www.geotherm.sk/tepelne-cerpadlo-vzduch-voda/)\n- [Tepelné čerpadlo aroTHERM plus](http://www.geotherm.sk/tepelne-cerpadla/nemecke-vaillant/vzduch-voda/tepelne-cerpadlo-arotherm-plus/)"
+        }
+      ]
+    },
+    {
+      "id": "P21",
+      "title": "Komerčný objekt",
+      "turns": [
+        {
+          "user": "Máme firmu a kancelársku budovu.",
+          "assistant": "Pre firemné a kancelárske budovy riešime komplexné systémy vykurovania, vetrania a chladenia.\n\n- Pri takýchto objektoch zohľadňujeme výkon, prevádzkové režimy a celkový komfort ľudí.\n- Naše riešenia zahŕňajú prepojenie na existujúcu technológiu, vzduchotechniku a rekuperáciu.\n- Cena závisí od konkrétneho objektu, tepelných strát a zvoleného riešenia.\n\n_Máš na mysli konkrétny typ budovy, napríklad administratívnu, výrobnú alebo inú?_\n\n**Zdroje:**\n- [Veľké stavby, polyfunkčné budovy](http://www.geotherm.sk/referencie/velke-stavby-polyfunkcne-budovy/)\n- [Cena za architektúru 2019](http://www.geotherm.sk/cena-za-architekturu/)"
+        },
+        {
+          "user": "Riešite aj komerčné objekty?",
+          "assistant": "Áno, riešime aj komerčné objekty, ako sú kancelárske budovy. Zameriavame sa na komplexné systémy.\n\n- Pri firemných objektoch zohľadňujeme výkon, prevádzkové režimy a celkový komfort ľudí.\n- Naše riešenia môžu zahŕňať prepojenie na vzduchotechniku a rekuperáciu.\n- Cena závisí od konkrétneho objektu, tepelných strát a zvoleného riešenia.\n\n_Pre aký typ komerčného objektu to riešiš – kanceláriu, výrobnú halu, alebo niečo iné?_\n\n**Zdroje:**\n- [Cena za architektúru 2019](http://www.geotherm.sk/cena-za-architekturu/)\n- [Rekuperácia – video](http://www.geotherm.sk/o-nas/rekuperacia-riadene-vetranie/)"
+        },
+        {
+          "user": "Potrebujeme kúrenie aj chladenie.",
+          "assistant": "Bez kontextu by som to nechcel hádať.\n\n- Stačí doplniť, či riešiš nové tepelné čerpadlo, servis, dotáciu, montáž, chladenie alebo návrh vykurovania.\n\n_Riešiš nové tepelné čerpadlo, servis, dotácie, montáž alebo návrh vykurovania?_"
+        },
+        {
+          "user": "Približne 600 m².",
+          "assistant": "Pri firemnej alebo kancelárskej budove treba riešiť výkon, prevádzkové režimy, chladenie, vykurovanie a komfort ľudí v budove. Tam už dáva zmysel pozerať sa na systém ako celok, nie iba na jedno zariadenie.\n\n**Pozor:** Beriem to opatrne, lebo zhoda v podkladoch nie je dosť silná."
+        }
+      ]
+    },
+    {
+      "id": "P22",
+      "title": "Chladenie cez podlahovku",
+      "turns": [
+        {
+          "user": "Ako funguje chladenie cez podlahovku?",
+          "assistant": "Chladenie cez podlahu vie pomôcť s letným komfortom, ale nie je to klimatizácia. Musí byť dobre regulované kvôli vlhkosti a rosnému bodu, aby sa podlaha nezačala rosiť.\n\n- Výber riešenia má sedieť k domu, rozpočtu, hlučnosti, servisu a očakávanému komfortu.\n\n_Máš už v dome podlahové kúrenie, alebo by sa systém ešte len navrhoval?_\n\n**Zdroje:**\n- [Stenové vykurovanie a chladenie REHAU](http://www.geotherm.sk/stenove-vykurovanie-a-chladenie-rehau/)\n- [Nastavenie podlahového vykurovania](http://www.geotherm.sk/podlahove-vykurovanie-a-chladenie/nastavenie-podlahoveho-vykurovania/)"
+        },
+        {
+          "user": "Nebude sa rosiť podlaha?",
+          "assistant": "Tepelné čerpadlo sa dá riešiť aj pri radiátoroch, ale treba posúdiť teplotný spád, veľkosť radiátorov a tepelné straty domu. Podlahové kúrenie je pre čerpadlo prirodzenejšie, no kombinácia radiátorov a podlahovky nemusí byť automaticky problém.\n\n- Pri montáži je dôležitý návrh, správny výkon a odborné spustenie systému.\n\n**Pozor:** Beriem to opatrne, lebo zhoda v podkladoch nie je dosť silná."
+        },
+        {
+          "user": "Je to príjemné aj v lete?",
+          "assistant": "Bez kontextu by som to nechcel hádať.\n\n- Stačí doplniť, či riešiš nové tepelné čerpadlo, servis, dotáciu, montáž, chladenie alebo návrh vykurovania.\n\n_Riešiš nové tepelné čerpadlo, servis, dotácie, montáž alebo návrh vykurovania?_"
+        }
+      ]
+    },
+    {
+      "id": "P23",
+      "title": "Technická miestnosť",
+      "turns": [
+        {
+          "user": "Mám malú technickú miestnosť.",
+          "assistant": "Pri vnútornej jednotke treba rátať nielen s miestom na zariadenie, ale aj s prístupom pre servis, rozvodmi a napojením na vykurovanie alebo zásobník. Či sa zmestí vedľa práčky, závisí od konkrétneho typu riešenia.\n\n- Pri montáži je dôležitý návrh, správny výkon a odborné spustenie systému.\n\n_Riešiš to pre nový projekt alebo chceš upraviť existujúce kúrenie?_\n\n**Zdroje:**\n- [Inštalácia tepelného čerpadla](http://www.geotherm.sk/tepelne-cerpadla/instalacia-tepelneho-cerpadla/)\n- [eloBLOCK VE 6 – 28](http://www.geotherm.sk/kotly/vaillant/elektricke/eloblock-ve-6-28/)"
+        },
+        {
+          "user": "Koľko priestoru potrebuje vnútorná jednotka?",
+          "assistant": "Cena, cenník a rozpočet sa pri vykurovaní nedajú brať univerzálne. Závisia od domu, tepelných strát, zvoleného riešenia, montáže a prevádzky. Bez týchto údajov sa dá hovoriť len orientačne.\n\n- Výber riešenia má sedieť k domu, rozpočtu, hlučnosti, servisu a očakávanému komfortu.\n\n_Riešiš to pre nový projekt alebo chceš upraviť existujúce kúrenie?_\n\n**Zdroje:**\n- [Tepelné čerpadlo vzduch-voda, umiestnenie vonkajšej jednotky](http://www.geotherm.sk/tepelne-cerpadlo-vzduch-voda-umiestnenie-vonkajsej-jednotky/)\n- [Ako sa zbaviť vlhkosti a plesní v dome pomocou vetracej jednotky Zehnder](http://www.geotherm.sk/ako-sa-zbavit-vlhkosti-a-plesni-v-dome-pomocou-vetracej-jednotky-zehnder/)"
+        },
+        {
+          "user": "Zmestí sa to vedľa práčky?",
+          "assistant": "Téma sa viaže hlavne na tepelné čerpadlá, vykurovanie, montáž, servis alebo návrh riešenia pre konkrétny dom.\n\n**Pozor:** Beriem to opatrne, lebo zhoda v podkladoch nie je dosť silná."
+        }
+      ]
+    },
+    {
+      "id": "P24",
+      "title": "Drahšie vs lacnejšie čerpadlo",
+      "turns": [
+        {
+          "user": "Je lepšie investovať do drahšieho tepelného čerpadla?",
+          "assistant": "Pri výbere tepelného čerpadla by som nezačínal iba názvom modelu. Najprv treba trafiť typ systému, výkon, hlučnosť, montáž a servis podľa konkrétneho domu.\n\n- Výber riešenia má sedieť k domu, rozpočtu, hlučnosti, servisu a očakávanému komfortu.\n\n_Riešiš to pre nový projekt alebo chceš upraviť existujúce kúrenie?_\n\n**Zdroje:**\n- [Tepelné čerpadlo vzduch / voda alebo zem / voda](http://www.geotherm.sk/tepelne-cerpadlo-zem-vs-vzduch/)\n- [Pravidelný servis tepelného čerpadla: prečo sa oplatí a prečo ho neodkladať](http://www.geotherm.sk/pravidelny-servis-tepelneho-cerpadla-preco-sa-oplati-a-preco-ho-neodkladat/)"
+        },
+        {
+          "user": "Alebo sú tie lacnejšie skoro rovnaké?",
+          "assistant": "Pri výbere tepelného čerpadla by som nezačínal iba názvom modelu. Najprv treba trafiť typ systému, výkon, hlučnosť, montáž a servis podľa konkrétneho domu.\n\n- Výber riešenia má sedieť k domu, rozpočtu, hlučnosti, servisu a očakávanému komfortu.\n\n_Riešiš to pre nový projekt alebo chceš upraviť existujúce kúrenie?_\n\n**Zdroje:**\n- [Tepelné čerpadlo vzduch / voda alebo zem / voda](http://www.geotherm.sk/tepelne-cerpadlo-zem-vs-vzduch/)\n- [Tepelné čerpadlo IVT AIR Split](http://www.geotherm.sk/tepelne-cerpadla/ivt-tepelne-cerpadla/tepelne-cerpadlo-ivt-air-split/)"
+        },
+        {
+          "user": "Nechcem zbytočne preplatiť značku.",
+          "assistant": "Pri výbere tepelného čerpadla je dôležité zamerať sa na celkové riešenie, nie len na značku. Lacnejšie modely môžu byť rovnako efektívne, ak sú správne dimenzované a nainštalované.\n\n- Výber značky má zmysel riešiť spolu so servisom, výkonom, hlučnosťou a vhodnosťou pre dom.\n- Výber tepelného čerpadla by mal zohľadňovať typ systému, výkon, hlučnosť, montáž a servis.\n- Cena nie je jediným kritériom, dôležitá je celková efektivita a vhodnosť pre tvoj dom.\n- Existujú značky ako Vaillant, ktoré ponúkajú vysokú účinnosť a nízku hlučnosť za výhodných podmienok.\n\n_Vyberáš podľa značky, hlučnosti, ceny alebo chceš najprv zistiť vhodný typ čerpadla pre dom?_\n\n**Zdroje:**\n- [Tepelné čerpadlo NIBE, výhodná cena](http://www.geotherm.sk/tepelne-cerpadlo-nibe-vyhodna-cena/)\n- [Tepelné čerpadlo Vaillant získalo zlatú medailu na veľtrhu Aquatherm](http://www.geotherm.sk/tepelne-cerpadlo-vaillant-ziskalo-zlatu-medailu-na-veltrhu-aquatherm/)"
+        }
+      ]
+    },
+    {
+      "id": "P25",
+      "title": "Orientácia ceny pre 160 m2",
+      "turns": [
+        {
+          "user": "Viete mi povedať približnú cenu pre dom 160 m²?",
+          "assistant": "Cenu tepelného čerpadla pre dom s plochou 160 m² ti presne určiť neviem bez ďalších informácií.\n\n- Cena závisí od mnohých faktorov, ako sú tepelné straty objektu, typ a výkon čerpadla, ako aj rozsah montáže.\n- Pre presnú cenovú ponuku je potrebné poznať viac detailov o tvojom dome a tvojich požiadavkách.\n\n_Pre aký objekt to riešiš - rodinný dom, byt alebo firemný priestor?_\n\n**Zdroje:**\n- [Pútnický dom na Skalke vykuruje tepelné čerpadlo Vaillant](http://www.geotherm.sk/putnicky-dom-na-skalke-vykurovany-tepelnym-cerpadlom-vaillant/)\n- [Energetická trieda A0 alebo nízkoenergetický dom](http://www.geotherm.sk/energeticka-trieda-a0-alebo-nizkoenergeticky-dom/)"
+        },
+        {
+          "user": "Aspoň orientačne.",
+          "assistant": "Orientačnú cenu ti môžem poskytnúť, ale presná ponuka závisí od konkrétnych podmienok tvojho domu.\n\n- Cena tepelného čerpadla závisí od typu, výkonu a rozsahu montáže.\n- Pre modernizáciu šetrnú ku klíme ponúkame napríklad tepelné čerpadlo aroTHERM plus.\n- Máme aj akciu na vybrané produkty NIBE s podporou 1 500 € od výrobcu.\n\n_Pre aký objekt to riešiš - rodinný dom, byt alebo firemný priestor?_\n\n**Zdroje:**\n- [Tepelné čerpadlo NIBE, výhodná cena](http://www.geotherm.sk/tepelne-cerpadlo-nibe-vyhodna-cena/)\n- [Tepelné čerpadlá vzduch voda](http://www.geotherm.sk/tepelne-cerpadla-vzduch-voda/)"
+        },
+        {
+          "user": "Nemusí byť presná.",
+          "assistant": "Pri montáži rozhoduje pripravenosť domu, rozsah prác, zapojenie do existujúceho systému a odborné spustenie. Bez týchto detailov sa dá hovoriť len orientačne.\n\n- Cena závisí od typu objektu, tepelných strát, rozsahu montáže a zvoleného riešenia.\n\n_Ak chceš, môžeme to posunúť technikovi/odborníkovi, aby sa pozrel na tvoj konkrétny prípad. Chceš, aby ťa niekto kontaktoval?_\n\n**Zdroje:**\n- [Tepelné čerpadlo NIBE, výhodná cena](http://www.geotherm.sk/tepelne-cerpadlo-nibe-vyhodna-cena/)\n- [6 tipov, ako si správne vybrať tepelné čerpadlo do rodinného domu](http://www.geotherm.sk/6-tipov-ako-si-spravne-vybrat-tepelne-cerpadlo-do-rodinneho-domu/)"
+        },
+        {
+          "user": "Len nech viem s čím rátať.",
+          "assistant": "Pri montáži rozhoduje pripravenosť domu, rozsah prác, zapojenie do existujúceho systému a odborné spustenie. Bez týchto detailov sa dá hovoriť len orientačne.\n\n- Cena závisí od typu objektu, tepelných strát, rozsahu montáže a zvoleného riešenia.\n\n_Pre aký objekt to riešiš - rodinný dom, byt alebo firemný priestor?_\n\n**Zdroje:**\n- [Tepelné čerpadlo NIBE, výhodná cena](http://www.geotherm.sk/tepelne-cerpadlo-nibe-vyhodna-cena/)\n- [Tepelné čerpadlá vzduch voda](http://www.geotherm.sk/tepelne-cerpadla-vzduch-voda/)"
+        }
+      ]
+    },
+    {
+      "id": "P26",
+      "title": "Hore teplo, dole zima",
+      "turns": [
+        {
+          "user": "Máme problém že hore je teplo a dole zima.",
+          "assistant": "Montáž nie je len osadenie zariadenia. Dôležitý je návrh, správne zapojenie, spustenie a nastavenie systému.\n\n- Pri montáži je dôležitý návrh, správny výkon a odborné spustenie systému.\n\n_Riešiš to pre nový projekt alebo chceš upraviť existujúce kúrenie?_\n\n**Zdroje:**\n- [Inštalácia podlahového kúrenia Bratislava](http://www.geotherm.sk/instalacia-podlahoveho-kurenia-bratislava/)\n- [Podlahové kúrenie REHAU](http://www.geotherm.sk/podlahove-vykurovanie-a-chladenie/podlahove-kurenie/)"
+        },
+        {
+          "user": "Vie toto vyriešiť nové kúrenie?",
+          "assistant": "Áno, nové kúrenie môže vyriešiť problém s rozdielnymi teplotami v dome.\n\n- Podlahové kúrenie prináša vysoký komfort a úsporu energie.\n- Je dôležité prenechať montáž odbornej firme.\n- Firma dokáže poskytnúť záruku a servis.\n- REHAU ponúka ucelené portfólio produktov pre rôzne typy výstavby.\n\n_Riešiš to pre nový projekt alebo chceš upraviť existujúce kúrenie?_\n\n**Zdroje:**\n- [Podlahové kúrenie cena](http://www.geotherm.sk/podlahove-vykurovanie-a-chladenie/podlahove-kurenie-cena/)\n- [Podlahové kúrenie REHAU](http://www.geotherm.sk/podlahove-vykurovanie-a-chladenie/podlahove-kurenie/)"
+        },
+        {
+          "user": "Alebo je problém inde?",
+          "assistant": "Bez kontextu by som to nechcel hádať.\n\n- Stačí doplniť, či riešiš nové tepelné čerpadlo, servis, dotáciu, montáž, chladenie alebo návrh vykurovania.\n\n_Riešiš nové tepelné čerpadlo, servis, dotácie, montáž alebo návrh vykurovania?_"
+        }
+      ]
+    },
+    {
+      "id": "P27",
+      "title": "Poruchy a rýchlosť servisu",
+      "turns": [
+        {
+          "user": "Čo sa pokazí najčastejšie na tepelných čerpadlách?",
+          "assistant": "Pri výbere tepelného čerpadla by som nezačínal iba názvom modelu. Najprv treba trafiť typ systému, výkon, hlučnosť, montáž a servis podľa konkrétneho domu.\n\n- Výber riešenia má sedieť k domu, rozpočtu, hlučnosti, servisu a očakávanému komfortu.\n\n_Riešiš to pre nový projekt alebo chceš upraviť existujúce kúrenie?_\n\n**Zdroje:**\n- [Hlučnosť tepelného čerpadla vzduch-voda](http://www.geotherm.sk/hlucnost-tepelneho-cerpadla-vzduch/)\n- [Pravidelný servis tepelného čerpadla: prečo sa oplatí a prečo ho neodkladať](http://www.geotherm.sk/pravidelny-servis-tepelneho-cerpadla-preco-sa-oplati-a-preco-ho-neodkladat/)"
+        },
+        {
+          "user": "A ako rýchlo viete riešiť servis?",
+          "assistant": "Servis tepelných čerpadiel riešime odborne a s dôrazom na starostlivosť o zákazníka. Pravidelný servis predlžuje životnosť zariadenia a znižuje náklady.\n\n- Servis pomáha predchádzať zvýšenej spotrebe energie a závažnejším poruchám.\n- Pravidelne servisované tepelné čerpadlá môžu pracovať viac ako 25 rokov.\n- Poskytujeme odborný záručný aj pozáručný servis.\n\n_Ide skôr o pravidelnú údržbu alebo už riešiš konkrétnu poruchu?_\n\n**Zdroje:**\n- [Servis](http://www.geotherm.sk/servis-tepelnych-cerpadiel/)\n- [Servis tepelného čerpadla](http://www.geotherm.sk/tepelne-cerpadlo-servis/)"
+        },
+        {
+          "user": "Lebo nechcem zostať v zime bez kúrenia.",
+          "assistant": "Cena, cenník a rozpočet sa pri vykurovaní nedajú brať univerzálne. Závisia od domu, tepelných strát, zvoleného riešenia, montáže a prevádzky. Bez týchto údajov sa dá hovoriť len orientačne.\n\n- Servis a údržba pomáhajú držať zariadenie spoľahlivé a včas zachytiť problém.\n\n_Ak chceš, môžeme to posunúť technikovi/odborníkovi, aby sa pozrel na tvoj konkrétny prípad. Chceš, aby ťa niekto kontaktoval?_\n\n**Zdroje:**\n- [Servis tepelného čerpadla](http://www.geotherm.sk/tepelne-cerpadlo-servis/)\n- [Pravidelný servis tepelného čerpadla: prečo sa oplatí a prečo ho neodkladať](http://www.geotherm.sk/pravidelny-servis-tepelneho-cerpadla-preco-sa-oplati-a-preco-ho-neodkladat/)"
+        }
+      ]
+    },
+    {
+      "id": "P28",
+      "title": "Plynový kotol vs tepelné čerpadlo",
+      "turns": [
+        {
+          "user": "Rozhodujeme sa medzi plynovým kotlom a tepelným čerpadlom.",
+          "assistant": "Tepelné čerpadlo je ekologickejšia a úspornejšia alternatíva k plynovému kotlu, najmä ak máš nízko-teplotný vykurovací systém.\n\n- Vysokoteplotné tepelné čerpadlá sú vhodné aj pre staršie budovy s radiátormi, často bez nutnosti meniť celé rozvody.\n- Tepelné čerpadlá môžu slúžiť na vykurovanie aj chladenie.\n- Pri výbere je dôležité zohľadniť typ budovy a existujúci vykurovací systém.\n\n_Riešiš to pre nový projekt alebo chceš upraviť existujúce kúrenie?_\n\n**Zdroje:**\n- [Pútnický kostol v Skalke pri Trenčíne je vykurovaný tepelným čerpadlom Vaillant](http://www.geotherm.sk/putnicky-kostol-v-skalke-pri-trencine-je-vykurovany-tepelnym-cerpadlom-vaillant/)\n- [Prečo si vybrať tepelné čerpadlo aj pre radiátory](http://www.geotherm.sk/preco-si-vybrat-tepelne-cerpadlo/)"
+        },
+        {
+          "user": "Čo by ste dali vy keby ste stavali vlastný dom?",
+          "assistant": "Pri výbere tepelného čerpadla by som nezačínal iba názvom modelu. Najprv treba trafiť typ systému, výkon, hlučnosť, montáž a servis podľa konkrétneho domu.\n\n- Výber riešenia má sedieť k domu, rozpočtu, hlučnosti, servisu a očakávanému komfortu.\n\n_Riešiš to pre nový projekt alebo chceš upraviť existujúce kúrenie?_\n\n**Zdroje:**\n- [Tepelné čerpadlo vzduch-voda](http://www.geotherm.sk/referencie/tepelne-cerpadla/tepelne-cerpadla-vzduch-voda/)\n- [Pútnický dom na Skalke vykuruje tepelné čerpadlo Vaillant](http://www.geotherm.sk/putnicky-dom-na-skalke-vykurovany-tepelnym-cerpadlom-vaillant/)"
+        },
+        {
+          "user": "A prečo?",
+          "assistant": "Pri výbere tepelného čerpadla je dôležité zohľadniť viacero faktorov, nielen konkrétny model.\n\n- Typ systému, výkon a hlučnosť musia zodpovedať tvojmu domu.\n- Dôležitá je aj možnosť montáže a dostupnosť servisu.\n- Zváž svoj rozpočet a očakávaný komfort.\n- Pravidelný servis je investícia do dlhej životnosti a nízkej spotreby.\n\n_Riešiš to pre nový projekt alebo chceš upraviť existujúce kúrenie?_\n\n**Zdroje:**\n- [Pravidelný servis tepelného čerpadla: prečo sa oplatí a prečo ho neodkladať](http://www.geotherm.sk/pravidelny-servis-tepelneho-cerpadla-preco-sa-oplati-a-preco-ho-neodkladat/)\n- [Prečo si vybrať tepelné čerpadlo aj pre radiátory](http://www.geotherm.sk/preco-si-vybrat-tepelne-cerpadlo/)"
+        }
+      ]
+    },
+    {
+      "id": "P29",
+      "title": "Realizácie",
+      "turns": [
+        {
+          "user": "Máte nejaké realizácie ktoré si viem pozrieť?",
+          "assistant": "Áno, máme realizácie, ktoré si môžeš pozrieť. Pri inštaláciách je dôležitý návrh a odborné spustenie systému.\n\n- Profesionálna realizácia zabezpečuje dlhú životnosť systému.\n- Získavaš návrh systému, projektovú prípravu a odbornú montáž.\n- Zabezpečíme ti tichý systém, stabilný komfort a nízke prevádzkové náklady.\n- Stabilný partner rozumie technickému riešeniu a vie ho dlhodobo servisovať.\n\n_Riešiš to pre nový projekt alebo chceš upraviť existujúce kúrenie?_\n\n**Zdroje:**\n- [Tepelné čerpadlo – komfort v dome](http://www.geotherm.sk/tepelne-cerpadlo-komfort-v-dome/)\n- [Inštalácie zdravotechniky](http://www.geotherm.sk/referencie/instalacie-zdravotechniky/)"
+        },
+        {
+          "user": "Ideálne niečo podobné nášmu domu.",
+          "assistant": "Pri výbere riešenia pre tvoj dom je dôležité zohľadniť jeho veľkosť, existujúcu vykurovaciu sústavu a požadované funkcie.\n\n- Pri realizáciách je najlepšie pozerať podobný typ objektu, nie iba peknú fotku technológie.\n- Dôležité je, či ide o podobnú veľkosť domu, vykurovaciu sústavu a požadované funkcie.\n- Výber riešenia má sedieť k domu, rozpočtu, hlučnosti, servisu a očakávanému komfortu.\n\n_Riešiš to pre nový projekt alebo chceš upraviť existujúce kúrenie?_\n\n**Zdroje:**\n- [Tepelné čerpadlo vzduch-voda](http://www.geotherm.sk/referencie/tepelne-cerpadla/tepelne-cerpadla-vzduch-voda/)\n- [Tepelné čerpadlá](http://www.geotherm.sk/referencie/tepelne-cerpadla/)"
+        },
+        {
+          "user": "Chcem vidieť ako to vyzerá v praxi.",
+          "assistant": "Pri realizáciách je najlepšie pozerať podobný typ objektu, nie iba peknú fotku technológie. Dôležité je, či ide o podobnú veľkosť domu, vykurovaciu sústavu a požadované funkcie.\n\n- Výber riešenia má sedieť k domu, rozpočtu, hlučnosti, servisu a očakávanému komfortu.\n\n_Ak chceš, môžeme to posunúť technikovi/odborníkovi, aby sa pozrel na tvoj konkrétny prípad. Chceš, aby ťa niekto kontaktoval?_\n\n**Zdroje:**\n- [Tepelné čerpadlo vzduch-voda](http://www.geotherm.sk/referencie/tepelne-cerpadla/tepelne-cerpadla-vzduch-voda/)\n- [Tepelné čerpadlá](http://www.geotherm.sk/referencie/tepelne-cerpadla/)"
+        }
+      ]
+    },
+    {
+      "id": "P30",
+      "title": "Úplne od začiatku",
+      "turns": [
+        {
+          "user": "Môžete mi poradiť úplne od začiatku?",
+          "assistant": "Pri návrhu vykurovania je dôležité poznať detaily o tvojom dome a tvojich potrebách.\n\n- Odporúčam brať návrh orientačne, kým nie sú jasné základné podklady o dome a aktuálnom kúrení.\n- Pri návrhu pomáha typ domu, pôdorys, plocha, aktuálne kúrenie a tepelné straty.\n- Potrebujeme poznať typ domu, jeho tepelné straty a tvoje požiadavky na systém.\n- Pomôže nám aj projekt alebo pôdorys domu, či ide o novostavbu alebo úpravu existujúceho riešenia.\n\n_Riešiš to pre nový projekt alebo chceš upraviť existujúce kúrenie?_\n\n**Zdroje:**\n- [Návrh vykurovania](http://www.geotherm.sk/navrh-vykurovanie/)\n- [Návrh vykurovania](http://www.geotherm.sk/navrh-vykurovania/)"
+        },
+        {
+          "user": "Lebo ja sa v tomto vôbec nevyznám.",
+          "assistant": "Cena, cenník a rozpočet sa pri vykurovaní nedajú brať univerzálne. Závisia od domu, tepelných strát, zvoleného riešenia, montáže a prevádzky. Bez týchto údajov sa dá hovoriť len orientačne.\n\n- Výber riešenia má sedieť k domu, rozpočtu, hlučnosti, servisu a očakávanému komfortu.\n\n_Riešiš to pre nový projekt alebo chceš upraviť existujúce kúrenie?_\n\n**Zdroje:**\n- [Výhody tepelného čerpadla v porovnaní s elektrokotlom](http://www.geotherm.sk/vyhody-tepelneho-cerpadla-v-porovnani-s-elektrokotlom/)\n- [Tepelné čerpadlá](http://www.geotherm.sk/tepelne-cerpadla/)"
+        },
+        {
+          "user": "Neviem čo potrebujem.",
+          "assistant": "Cena vykurovania závisí od mnohých faktorov, ako sú tepelné straty domu a zvolené riešenie. Bez týchto informácií je ťažké určiť presnú cenu.\n\n- Výber vykurovacieho systému by mal zodpovedať tvojmu domu, rozpočtu a očakávanému komfortu.\n- Naši odborníci ti radi pomôžu s návrhom najvhodnejšieho systému.\n- Je dôležité zohľadniť aj hlučnosť a servisné požiadavky.\n\n_Riešiš to pre nový projekt alebo chceš upraviť existujúce kúrenie?_\n\n**Zdroje:**\n- [Výhody tepelného čerpadla v porovnaní s elektrokotlom](http://www.geotherm.sk/vyhody-tepelneho-cerpadla-v-porovnani-s-elektrokotlom/)\n- [Tepelné čerpadlá](http://www.geotherm.sk/tepelne-cerpadla/)"
+        },
+        {
+          "user": "Len chcem aby dom dobre kúril, nech sú nízke účty a nech s tým nie sú problémy.",
+          "assistant": "Cena, cenník a rozpočet sa pri vykurovaní nedajú brať univerzálne. Závisia od domu, tepelných strát, zvoleného riešenia, montáže a prevádzky. Bez týchto údajov sa dá hovoriť len orientačne.\n\n- Výber riešenia má sedieť k domu, rozpočtu, hlučnosti, servisu a očakávanému komfortu.\n\n_Ak chceš, môžeme to posunúť technikovi/odborníkovi, aby sa pozrel na váš konkrétny prípad. Chceš, aby ťa niekto kontaktoval?_\n\n**Zdroje:**\n- [Návrh vykurovania](http://www.geotherm.sk/navrh-vykurovania/)\n- [Výhody tepelného čerpadla v porovnaní s elektrokotlom](http://www.geotherm.sk/vyhody-tepelneho-cerpadla-v-porovnani-s-elektrokotlom/)"
+        }
+      ]
+    }
+  ]
+}

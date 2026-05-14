@@ -1,43 +1,43 @@
-# Scoreboard V2
+﻿# Scoreboard V2
 
-Generated: 2026-05-07
+Generated: 2026-05-08
 
 ## Scores
 
 | Area | Score | Reason |
 | --- | ---: | --- |
-| Retrieval baseline | 75/100 | Local lexical retrieval now keeps fallback at 100% in the baseline eval and the hard RAG answer set has 0 WARN. Still no embeddings/reranker. |
-| Widget embed | 70/100 | Local E2E passes and API integration works. Production config/CDN/versioning is still weak. |
-| API maturity | 60/100 | `/chat` now has sessions, conversations, messages, events, leads, non-pushy advisory state and stronger grounded-answer policies. Still not framework-grade or production hardened. |
-| Security | 32/100 | Body limits, siteId validation and structured errors exist. No signed site key, no rate limit, no auth. |
-| Observability | 42/100 | Events and CLI analytics exist. No real logs, traces, Sentry, dashboards or alerts. |
-| Lead conversion | 62/100 | Lead capture now waits for explicit contact or contact consent, and the bot asks advisory follow-ups first. No CRM/email/booking/human handoff. |
-| Ingestion | 38/100 | Knowledge pipeline exists locally. No scheduled sync, approval workflow or versioned publishing process beyond seed metadata. |
-| Deployment readiness | 28/100 | Local services work. No production infra, migrations, CI deploy, secrets or rollback plan. |
-| Maintainability | 53/100 | Code is modular enough for MVP and has stricter RAG evaluation. Scripts are still growing into backend architecture without framework boundaries. |
-| Business readiness | 48/100 | System now captures leads locally. Still no client-facing ops, reporting, SLA, CRM or delivery workflow. |
+| Retrieval baseline | 84/100 | Baseline retrieval remains PASS and massive evaluation is now 184/200 PASS with 0 FAIL. Safety-sensitive queries bypass retrieval instead of relying on chunk ranking. |
+| Widget embed | 70/100 | Local E2E and API integration work. Production CDN/versioning/config governance still missing. |
+| API maturity | 66/100 | `/chat` now has a pre-retrieval safety router, sessions, events, retrieval, lead-safe advisory flow and confidence policy. Still no formal API schema or production auth/rate limit. |
+| Security | 39/100 | Safety router reduces unsafe technical guidance and guarantee risk. Still no signed site keys, no abuse throttling and no production WAF/rate limits. |
+| Observability | 47/100 | `safety_router_triggered` is logged and reports are stronger. Still no live traces, dashboards, alerts or incident workflow. |
+| Lead conversion | 62/100 | Non-pushy lead flow remains intact. Safety router avoids aggressive contact capture. No CRM/email/booking/human handoff. |
+| Ingestion | 40/100 | Boilerplate risk is penalized and reports flag contradiction/freshness risks. Still no scheduled sync or approval workflow. |
+| Deployment readiness | 28/100 | Local-only. No production infra, migrations, CI deploy, secrets or rollback plan. |
+| Maintainability | 58/100 | Reliability logic is stronger but policy/routing rules are growing inside the server and should be separated before production. |
+| Business readiness | 52/100 | Safer advisory sales intake MVP. Still missing operator workflow, CRM handoff and client reporting. |
 
 ## Production Readiness Score
 
-**47/100**
+**53/100**
 
-This phase materially improved the system from a knowledge chatbot demo to a local AI sales intake MVP. The latest RAG pass reduced hard answer WARN cases from 4 to 0 while preserving out-of-scope fallback, adversarial safety, contact restraint and sensitive-topic guardrails. It is still not production-ready. The biggest remaining blockers are security, rate limiting, CRM/email handoff, admin operations, and production deployment discipline.
+The system is materially safer after the safety router. It is still not production-grade: the core risks moved from hallucination/unsafe technical advice toward operations, monitoring, deployment, source governance and human handoff.
 
-## Brutal Notes
+## Safety Router Update
 
-- The lead database is local and unencrypted.
-- The sales flow is deterministic and less pushy now, but still brittle.
-- The hard RAG test set is green, but this is not proof of real-world 100% quality.
-- Analytics are static CLI reports, not operational monitoring.
-- A real client would still need manual lead extraction unless someone runs CLI commands.
-- This is now a more credible advisory sales intake MVP, not a SaaS platform.
+- Safety-sensitive massive category: 10/10 PASS, 0 FAIL.
+- Massive evaluation: 184 PASS / 16 WARN / 0 FAIL, 92% pass rate.
+- Hallucination incidents: 0.
+- Overconfidence incidents: 0.
+- Retrieval drift incidents: 0.
+- Hard RAG: PASS, 28 PASS / 4 WARN / 0 FAIL.
+- Long conversation: 0 FAIL, 16 WARN from repetitive fallback UX.
 
-## Next Production Gate
+## Remaining Production Blockers
 
-Do not add LLM polish before:
+1. Repetitive fallback behavior in long sessions.
+2. Some noisy/slang and unsupported claims still degrade to WARN.
+3. Safety/policy logic needs to move out of `chat-server.ts` into a dedicated policy module.
+4. No live monitoring or abuse controls.
+5. No production deployment, CRM handoff or operator workflow.
 
-1. Signed site keys.
-2. Rate limiting.
-3. Postgres migration path.
-4. CRM/email handoff.
-5. Operator-facing lead review workflow.

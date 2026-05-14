@@ -2,7 +2,7 @@
 
 Preview URL: `http://127.0.0.1:4321/embed-preview.html`
 API base: `http://127.0.0.1:4317`
-Generated: 2026-05-07T21:30:52.075Z
+Generated: 2026-05-08T15:01:49.266Z
 
 ## Summary
 
@@ -21,17 +21,15 @@ Generated: 2026-05-07T21:30:52.075Z
 
 Query: `aké hlučné je NIBE`
 
-Podľa nájdených informácií na webe:
+Krátka odpoveď: Hlučnosť tepelného čerpadla NIBE závisí od konkrétneho modelu a jeho nastavenia. Niektoré modely majú aj "tichý režim".
 
-u pri vykurovaní miestností, 35/55 °C A+++ Tichý režim Tepelné čerpadlo je možné prepnúť do „tichého režimu“, ktorý znižuje jeho h
+Pri NIBE aj iných značkách je
 
 ## Fallback Query
 
 Query: `aké je počasie`
 
-Na webe som nenašiel dostatočne jasnú odpoveď na túto otázku.
-
-Skúste sa opýtať konk
+Krátka odpoveď: Na toto nemám dostatočne jasný podklad.
 
 ## Console Errors
 

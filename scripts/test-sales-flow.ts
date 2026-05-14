@@ -61,6 +61,21 @@ function includesContactRequest(response: ChatResponse | undefined): boolean {
   );
 }
 
+function normalizeText(value: string): string {
+  return value
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9\s]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function includesSoftHandoffOffer(response: ChatResponse | undefined): boolean {
+  const text = normalizeText(`${response?.answer || ""} ${response?.leadCapture.nextQuestion || ""}`);
+  return text.includes("posun") && (text.includes("technik") || text.includes("odborn")) && text.includes("kontakt");
+}
+
 function mdTable(headers: string[], rows: Array<Array<string | number>>): string {
   const cell = (value: string | number): string => String(value).replace(/\|/g, "\\|").replace(/\s+/g, " ").trim();
   return [
@@ -153,7 +168,7 @@ async function main(): Promise<void> {
         ].every(Boolean);
       } else if (scenario.id === "C") {
         scenario.passed = [
-          requireCondition(notes, Boolean(last?.answer.includes(contactOffer)), "should make soft handoff offer"),
+          requireCondition(notes, scenario.steps.some((step) => includesSoftHandoffOffer(step.response)), "should make soft handoff offer"),
           requireCondition(notes, !includesContactRequest(last), "soft offer must not request email/phone yet"),
           requireCondition(notes, !last?.lead.captured, "must not capture lead before contact"),
         ].every(Boolean);

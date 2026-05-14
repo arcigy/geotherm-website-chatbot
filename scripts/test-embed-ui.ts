@@ -65,7 +65,9 @@ async function main(): Promise<void> {
       () => {
         const messages = document.querySelectorAll<HTMLElement>(".arcigy-chatbot__message.is-assistant");
         const last = messages[messages.length - 1];
-        return Boolean(last && last.innerText.length > 160 && (last.innerText.includes("Podľa nájdených informácií") || last.innerText.includes("NIBE")));
+        const text = last?.innerText || "";
+        const normalized = text.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+        return Boolean(last && text.length > 160 && (normalized.includes("nibe") || normalized.includes("hlucnost") || normalized.includes("hluk")));
       },
       undefined,
       { timeout: 20_000 },
@@ -81,7 +83,8 @@ async function main(): Promise<void> {
       () => {
         const messages = document.querySelectorAll<HTMLElement>(".arcigy-chatbot__message.is-assistant");
         const last = messages[messages.length - 1];
-        return Boolean(last && last.innerText.includes("nenašiel dostatočne jasnú odpoveď") && last.innerText.includes("Skúste sa opýtať"));
+        const normalized = (last?.innerText || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+        return Boolean(last && (normalized.includes("nemam dostatocne jasny podklad") || normalized.includes("nemam dost jasny podklad")));
       },
       undefined,
       { timeout: 20_000 },
@@ -91,7 +94,15 @@ async function main(): Promise<void> {
     const transcript = await page.evaluate(() => window.arcigyChatbot?.exportDebugTranscript({ download: false }));
     exportedTurns = transcript?.turns.length || 0;
     exportHasMetadata = Boolean(
-      transcript?.turns.every((turn) => "userMessage" in turn && "assistantAnswer" in turn && "sources" in turn && "fallbackUsed" in turn),
+      transcript?.turns.every(
+        (turn) =>
+          "userMessage" in turn &&
+          "assistantAnswer" in turn &&
+          "sources" in turn &&
+          "fallbackUsed" in turn &&
+          "responseTimeMs" in turn &&
+          "responseTimeSeconds" in turn,
+      ),
     );
 
     await mkdir(path.dirname(screenshotPath), { recursive: true });
@@ -110,7 +121,8 @@ async function main(): Promise<void> {
 
   const apiCallsPassed = apiCallCount >= 2;
   const firstAnswerPassed = /NIBE|hluč|hluk|tich/i.test(firstAnswer);
-  const fallbackPassed = fallbackAnswer.includes("nenašiel dostatočne jasnú odpoveď");
+  const normalizedFallback = fallbackAnswer.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  const fallbackPassed = normalizedFallback.includes("nemam dostatocne jasny podklad") || normalizedFallback.includes("nemam dost jasny podklad");
   const exportPassed = exportedTurns >= 2 && exportHasMetadata;
   const passed = !failureError && widgetLoaded && apiCallsPassed && firstAnswerPassed && fallbackPassed && exportPassed && consoleErrors.length === 0;
   const report = [

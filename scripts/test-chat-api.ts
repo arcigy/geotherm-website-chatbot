@@ -1,4 +1,4 @@
-import { mkdir, writeFile } from "node:fs/promises";
+﻿import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { startChatServer } from "./chat-server";
 
@@ -17,17 +17,34 @@ type ApiResponse = {
 
 const reportPath = path.join(process.cwd(), "knowledge", "chat-api-test-report.md");
 const testCases = [
-  "koľko stojí tepelné čerpadlo",
-  "aké hlučné je NIBE",
-  "dotácie na tepelné čerpadlá",
-  "robíte servis",
-  "ako vás kontaktovať",
-  "aké je počasie",
+  "kolko stoji tepelne cerpadlo",
+  "ake mate tepelne cerpadla chcem si vybrat presny model",
+  "ake hlucne je NIBE",
+  "dotacie na tepelne cerpadla",
+  "robite servis",
+  "ako vas kontaktovat",
+  "ake je pocasie",
 ];
 
 function passFor(query: string, response: ApiResponse): boolean {
-  if (query.includes("počasie")) {
-    return response.confidence === "low" && response.answer.includes("nenašiel dostatočne jasnú odpoveď");
+  if (query.includes("pocasie")) {
+    const normalizedAnswer = response.answer
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "");
+    return (
+      response.confidence === "low" &&
+      (normalizedAnswer.includes("nenasiel dostatocne jasnu odpoved") ||
+        normalizedAnswer.includes("nemam dostatocne jasny podklad") ||
+        normalizedAnswer.includes("nemam dost jasny podklad"))
+    );
+  }
+  if (query.includes("presny model")) {
+    const normalizedAnswer = response.answer
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "");
+    return response.confidence !== "low" && response.sources.length > 0 && response.topScore > 0 && !normalizedAnswer.includes("dotac");
   }
 
   return response.confidence !== "low" && response.sources.length > 0 && response.topScore > 0;
@@ -90,7 +107,7 @@ async function main(): Promise<void> {
     "",
     "## Fallback Check",
     "",
-    rows.find((row) => row.query.includes("počasie"))?.response.answer || "Fallback case missing.",
+    rows.find((row) => row.query.includes("pocasie"))?.response.answer || "Fallback case missing.",
     "",
   ].join("\n");
 

@@ -1,0 +1,16 @@
+.git
+.next
+.tmp-*
+.tmp-runtime
+.tmp-tests
+.tmp-wp-export
+node_modules
+data/*.db
+data/*.db-*
+*.log
+*-screenshot.png
+tsconfig.tsbuildinfo
+.env
+.env.*
+!.env.example
+knowledge/wordpress-export.json

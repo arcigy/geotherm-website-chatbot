@@ -1,0 +1,294 @@
+[
+  {
+    "id": "P01",
+    "title": "Starší dom 180 m2, plyn, návratnosť",
+    "messages": [
+      "Dobrý deň, máme starší rodinný dom cca 180 m² a rozmýšľame nad tepelným čerpadlom. Aktuálne kúriť plynom. Má to vôbec zmysel alebo budú účty podobné?",
+      "A koľko približne stojí kompletná realizácia?",
+      "Treba meniť radiátory?",
+      "Dom je zateplený len čiastočne.",
+      "A viete povedať orientačne návratnosť?"
+    ]
+  },
+  {
+    "id": "P02",
+    "title": "NIBE vs Vaillant",
+    "messages": [
+      "Aký je rozdiel medzi NIBE a Vaillant?",
+      "Čo je spoľahlivejšie?",
+      "Nechcem niečo čo sa bude každú chvíľu kaziť.",
+      "A ktorá značka je tichšia?",
+      "Máte s tým reálne skúsenosti alebo len predávate?"
+    ]
+  },
+  {
+    "id": "P03",
+    "title": "Novostavba bungalovu, kúrenie a chladenie",
+    "messages": [
+      "Máme novostavbu bungalovu 140 m². Čo by ste odporučili ako kúrenie?",
+      "Podlahovku už máme pripravenú.",
+      "Chceme aj chladenie v lete.",
+      "A ideálne niečo čo viem ovládať mobilom."
+    ]
+  },
+  {
+    "id": "P04",
+    "title": "Spotreba elektriny a náklady",
+    "messages": [
+      "Koľko elektriny reálne žerie tepelné čerpadlo?",
+      "Lebo na internete každý píše niečo iné.",
+      "Máme teraz elektrinu okolo 120 € mesačne.",
+      "Vie mi to znížiť náklady alebo skôr nie?"
+    ]
+  },
+  {
+    "id": "P05",
+    "title": "Starý dom bez podlahovky",
+    "messages": [
+      "Máme starý dom a vysoké radiátory.",
+      "Nechce sa mi sekať podlahu.",
+      "Dá sa tepelné čerpadlo napojiť aj bez podlahovky?",
+      "A nebude potom slabý výkon?"
+    ]
+  },
+  {
+    "id": "P06",
+    "title": "Hlučnosť a susedia",
+    "messages": [
+      "Ako hlučné sú tie vonkajšie jednotky?",
+      "Máme susedov dosť blízko.",
+      "Je to počuť večer?",
+      "Dá sa to nejako odhlučniť?"
+    ]
+  },
+  {
+    "id": "P07",
+    "title": "Cenová ponuka a podklady",
+    "messages": [
+      "Potrebujem cenovú ponuku na tepelné čerpadlo.",
+      "Čo všetko odo mňa potrebujete?",
+      "Stačí pôdorys domu?",
+      "Alebo potrebujete aj projekt?",
+      "A ako dlho trvá pripraviť ponuku?"
+    ]
+  },
+  {
+    "id": "P08",
+    "title": "Servis existujúceho NIBE",
+    "messages": [
+      "Viete robiť aj servis existujúceho tepelného čerpadla?",
+      "Máme NIBE ale montovala to iná firma.",
+      "Posledné dni vypisuje chybu.",
+      "Prídete aj do Trnavy?"
+    ]
+  },
+  {
+    "id": "P09",
+    "title": "Zem-voda vs vzduch-voda",
+    "messages": [
+      "Čo je lepšie — zem-voda alebo vzduch-voda?",
+      "Máme dosť veľký pozemok.",
+      "Ale nechcem extrémne drahé riešenie.",
+      "Je ten rozdiel v spotrebe veľký?"
+    ]
+  },
+  {
+    "id": "P10",
+    "title": "Fotovoltaika a tepelné čerpadlo",
+    "messages": [
+      "Má zmysel kombinovať tepelné čerpadlo s fotovoltaikou?",
+      "Alebo to je len marketing?",
+      "Máme južnú strechu.",
+      "Koľko panelov by približne trebalo?"
+    ]
+  },
+  {
+    "id": "P11",
+    "title": "Dotácia",
+    "messages": [
+      "Dá sa cez vás vybaviť aj dotácia?",
+      "Alebo si to musím riešiť sám?",
+      "A koľko sa aktuálne dá dostať?",
+      "Je veľa papierovačiek?"
+    ]
+  },
+  {
+    "id": "P12",
+    "title": "Klimatizácie vs centrálne riešenie",
+    "messages": [
+      "Máme v dome 3 klimatizácie.",
+      "Neviem či sa nám oplatí prejsť na centrálne riešenie.",
+      "Čo by ste odporučili?",
+      "Ide nám hlavne o komfort a nízke náklady."
+    ]
+  },
+  {
+    "id": "P13",
+    "title": "Dĺžka montáže",
+    "messages": [
+      "Ako dlho trvá montáž tepelného čerpadla?",
+      "Musíme byť počas toho doma?",
+      "A koľko dní budeme bez kúrenia?"
+    ]
+  },
+  {
+    "id": "P14",
+    "title": "COP jednoducho",
+    "messages": [
+      "Môžete mi vysvetliť čo znamená COP?",
+      "Vôbec sa v tom nevyznám.",
+      "Na čo sa mám pozerať pri výbere?"
+    ]
+  },
+  {
+    "id": "P15",
+    "title": "Vysoké účty za plyn, 250 m2",
+    "messages": [
+      "Máme mesačne strašne vysoké účty za plyn.",
+      "Dom cca 250 m².",
+      "Myslíte že tepelné čerpadlo je pre nás vhodné?",
+      "Alebo radšej ostať pri plyne?"
+    ]
+  },
+  {
+    "id": "P16",
+    "title": "Mráz -15 °C",
+    "messages": [
+      "Čo sa stane keď bude -15 °C?",
+      "Nebude to mať problém vykúriť dom?",
+      "Lebo známy vravel že tepelné čerpadlá v zime nestíhajú."
+    ]
+  },
+  {
+    "id": "P17",
+    "title": "Životnosť a servis",
+    "messages": [
+      "Aká je životnosť tepelného čerpadla?",
+      "A čo servis?",
+      "Treba každý rok niečo kontrolovať?",
+      "Koľko stojí bežný servis?"
+    ]
+  },
+  {
+    "id": "P18",
+    "title": "Radiátory a podlahovka spolu",
+    "messages": [
+      "Máme dvojpodlažný dom.",
+      "Na poschodí sú radiátory a dole podlahovka.",
+      "Je to problém?",
+      "Dá sa to kombinovať?"
+    ]
+  },
+  {
+    "id": "P19",
+    "title": "Rekuperácia",
+    "messages": [
+      "Viete spraviť aj rekuperáciu?",
+      "Staviame novostavbu.",
+      "Nechceme mať vydýchaný vzduch.",
+      "Aké značky robíte?"
+    ]
+  },
+  {
+    "id": "P20",
+    "title": "Byt",
+    "messages": [
+      "Poradíte mi čo je lepšie pre byt?",
+      "Má zmysel tepelné čerpadlo do bytu?",
+      "Alebo iba klimatizácia?"
+    ]
+  },
+  {
+    "id": "P21",
+    "title": "Komerčný objekt",
+    "messages": [
+      "Máme firmu a kancelársku budovu.",
+      "Riešite aj komerčné objekty?",
+      "Potrebujeme kúrenie aj chladenie.",
+      "Približne 600 m²."
+    ]
+  },
+  {
+    "id": "P22",
+    "title": "Chladenie cez podlahovku",
+    "messages": [
+      "Ako funguje chladenie cez podlahovku?",
+      "Nebude sa rosiť podlaha?",
+      "Je to príjemné aj v lete?"
+    ]
+  },
+  {
+    "id": "P23",
+    "title": "Technická miestnosť",
+    "messages": [
+      "Mám malú technickú miestnosť.",
+      "Koľko priestoru potrebuje vnútorná jednotka?",
+      "Zmestí sa to vedľa práčky?"
+    ]
+  },
+  {
+    "id": "P24",
+    "title": "Drahšie vs lacnejšie čerpadlo",
+    "messages": [
+      "Je lepšie investovať do drahšieho tepelného čerpadla?",
+      "Alebo sú tie lacnejšie skoro rovnaké?",
+      "Nechcem zbytočne preplatiť značku."
+    ]
+  },
+  {
+    "id": "P25",
+    "title": "Orientácia ceny pre 160 m2",
+    "messages": [
+      "Viete mi povedať približnú cenu pre dom 160 m²?",
+      "Aspoň orientačne.",
+      "Nemusí byť presná.",
+      "Len nech viem s čím rátať."
+    ]
+  },
+  {
+    "id": "P26",
+    "title": "Hore teplo, dole zima",
+    "messages": [
+      "Máme problém že hore je teplo a dole zima.",
+      "Vie toto vyriešiť nové kúrenie?",
+      "Alebo je problém inde?"
+    ]
+  },
+  {
+    "id": "P27",
+    "title": "Poruchy a rýchlosť servisu",
+    "messages": [
+      "Čo sa pokazí najčastejšie na tepelných čerpadlách?",
+      "A ako rýchlo viete riešiť servis?",
+      "Lebo nechcem zostať v zime bez kúrenia."
+    ]
+  },
+  {
+    "id": "P28",
+    "title": "Plynový kotol vs tepelné čerpadlo",
+    "messages": [
+      "Rozhodujeme sa medzi plynovým kotlom a tepelným čerpadlom.",
+      "Čo by ste dali vy keby ste stavali vlastný dom?",
+      "A prečo?"
+    ]
+  },
+  {
+    "id": "P29",
+    "title": "Realizácie",
+    "messages": [
+      "Máte nejaké realizácie ktoré si viem pozrieť?",
+      "Ideálne niečo podobné nášmu domu.",
+      "Chcem vidieť ako to vyzerá v praxi."
+    ]
+  },
+  {
+    "id": "P30",
+    "title": "Úplne od začiatku",
+    "messages": [
+      "Môžete mi poradiť úplne od začiatku?",
+      "Lebo ja sa v tomto vôbec nevyznám.",
+      "Neviem čo potrebujem.",
+      "Len chcem aby dom dobre kúril, nech sú nízke účty a nech s tým nie sú problémy."
+    ]
+  }
+]

@@ -1,12 +1,12 @@
 # Arcigy Chatbot Embed
 
-## A) Build
+## Build
 
 ```bash
 npm run build:embed
 ```
 
-## B) Výsledné súbory
+## Výsledné súbory
 
 ```
 dist-embed/chatbot.js
@@ -15,38 +15,70 @@ dist-embed/embed-preview.html
 dist-embed/README-EMBED.md
 ```
 
-## C) Lokálny test
-
-Otvorte:
+Na WordPress treba nahrať alebo hostovať iba tieto dva súbory:
 
 ```
-dist-embed/embed-preview.html
+chatbot.js
+chatbot.css
 ```
 
-V chate skúste: `nibe`, `dotácie`, `montáž`, `servis`, `hlučnosť`, `cena`, `kontakt`, `realizácie`.
+## Lokálny test
 
-## D) WPCode preview snippet
+Spustite:
 
-Widget sa má zobraziť iba na tajnej preview URL:
+```bash
+npm run dev:chat-api
+npm run preview:embed
+```
+
+Potom otvorte:
 
 ```
-?arcigy_preview=7f92k-test
+http://127.0.0.1:4321/embed-preview.html
 ```
 
-Snippet:
+## WordPress vloženie
+
+Vložte tento snippet cez WPCode alebo do pätičky stránky. Treba doplniť iba URL k API a URL k súborom.
+
+```html
+<script>
+(function () {
+  window.ARCIGY_CHATBOT_CONFIG = {
+    mode: "production",
+    apiBase: "https://YOUR-API-DOMAIN",
+    siteId: "geotherm",
+    siteUrl: window.location.origin,
+    debug: false
+  };
+
+  const css = document.createElement("link");
+  css.rel = "stylesheet";
+  css.href = "https://YOUR-CDN-URL/chatbot.css";
+  document.head.appendChild(css);
+
+  const script = document.createElement("script");
+  script.src = "https://YOUR-CDN-URL/chatbot.js";
+  script.defer = true;
+  document.body.appendChild(script);
+})();
+</script>
+```
+
+## Preview iba na tajnej URL
+
+Ak ho nechcete ukázať verejne, použite preview gate:
 
 ```html
 <script>
 (function () {
   const params = new URLSearchParams(window.location.search);
-
-  if (params.get("arcigy_preview") !== "7f92k-test") {
-    return;
-  }
+  if (params.get("arcigy_preview") !== "7f92k-test") return;
 
   window.ARCIGY_CHATBOT_CONFIG = {
-    mode: "preview",
-    siteId: "client-preview",
+    mode: "production",
+    apiBase: "https://YOUR-API-DOMAIN",
+    siteId: "geotherm",
     siteUrl: window.location.origin,
     debug: true
   };
@@ -64,24 +96,12 @@ Snippet:
 </script>
 ```
 
-## E) Rollback
+Preview URL:
+
+```
+https://example.com/?arcigy_preview=7f92k-test
+```
+
+## Rollback
 
 Vo WPCode snippet vypnite alebo zmažte. Keď sa `chatbot.js` nenačíta, React widget sa vôbec nespustí.
-
-## F) Console testy
-
-```js
-window.arcigyChatbot.test.runFakeAction("nibe")
-window.arcigyChatbot.test.validateSelector("#nibe-s2125")
-```
-
-## Backend režim neskôr
-
-Ak nastavíte `mode` na `local` alebo `production` a doplníte `apiBase`, widget pošle:
-
-```js
-POST `${apiBase}/chat`
-{ message, currentUrl: window.location.href, siteId }
-```
-
-Ak request zlyhá alebo `apiBase` chýba, widget bezpečne použije lokálnu fake odpoveď.
