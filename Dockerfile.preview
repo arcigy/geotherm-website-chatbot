@@ -1,4 +1,4 @@
-FROM node:24-slim
+FROM node:24-slim AS builder
 
 WORKDIR /app
 
@@ -6,12 +6,11 @@ COPY package*.json ./
 RUN npm install
 
 COPY . .
-RUN npm run build
+RUN npm run build:embed
 
-ENV NODE_ENV=production
-ENV HOSTNAME=0.0.0.0
-ENV PORT=3000
+FROM nginx:1.27-alpine
 
-EXPOSE 3000
+COPY --from=builder /app/dist-embed /usr/share/nginx/html
+RUN cp /usr/share/nginx/html/embed-preview.html /usr/share/nginx/html/index.html
 
-CMD ["npm", "run", "start"]
+EXPOSE 80
