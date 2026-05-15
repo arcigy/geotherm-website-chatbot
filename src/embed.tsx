@@ -1,4 +1,4 @@
-import { CSSProperties, KeyboardEvent, PointerEvent, useCallback, useEffect, useRef, useState } from "react";
+import { CSSProperties, KeyboardEvent, PointerEvent, useEffect, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -459,15 +459,11 @@ function Chatbot({ config }: { config: EmbedConfig }) {
   const [voiceLevels, setVoiceLevels] = useState<number[]>(() => idleVoiceLevels());
   const [visibleVoiceBarCount, setVisibleVoiceBarCount] = useState(0);
   const [composerLift, setComposerLift] = useState(0);
-  const [mobileComposerTop, setMobileComposerTop] = useState<number | null>(null);
   const [debugCopyLabel, setDebugCopyLabel] = useState("Copy JSON");
   const scrollRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const composerRef = useRef<HTMLDivElement>(null);
   const typingTimerRef = useRef<number | null>(null);
   const debugTurnsRef = useRef<DebugTurn[]>([]);
-  const keyboardUpdateTimersRef = useRef<number[]>([]);
-  const keyboardUpdateIntervalRef = useRef<number | null>(null);
   const recognitionRef = useRef<SpeechRecognitionLike | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
   const audioStreamRef = useRef<MediaStream | null>(null);
@@ -567,81 +563,10 @@ function Chatbot({ config }: { config: EmbedConfig }) {
   useEffect(() => {
     return () => {
       if (typingTimerRef.current) window.clearInterval(typingTimerRef.current);
-      keyboardUpdateTimersRef.current.forEach((timer) => window.clearTimeout(timer));
-      if (keyboardUpdateIntervalRef.current) window.clearInterval(keyboardUpdateIntervalRef.current);
       recognitionRef.current?.stop();
       stopVoiceMonitor();
     };
   }, []);
-
-  const clearKeyboardPositionMonitor = useCallback(() => {
-    keyboardUpdateTimersRef.current.forEach((timer) => window.clearTimeout(timer));
-    keyboardUpdateTimersRef.current = [];
-    if (keyboardUpdateIntervalRef.current) {
-      window.clearInterval(keyboardUpdateIntervalRef.current);
-      keyboardUpdateIntervalRef.current = null;
-    }
-  }, []);
-
-  const updateMobileComposerPosition = useCallback(() => {
-    const viewport = window.visualViewport;
-    const textarea = textareaRef.current;
-    const composer = composerRef.current;
-    const isMobile = window.matchMedia("(max-width: 640px)").matches;
-    const isFocused = document.activeElement === textarea;
-
-    if (!viewport || !textarea || !composer || !isMobile || !isFocused) {
-      setMobileComposerTop(null);
-      return;
-    }
-
-    const keyboardLooksOpen = window.innerHeight - viewport.height > 80 || viewport.offsetTop > 0;
-    if (!keyboardLooksOpen) {
-      setMobileComposerTop(null);
-      return;
-    }
-
-    const composerHeight = composer.getBoundingClientRect().height || 56;
-    const nextTop = Math.max(8, Math.round(viewport.offsetTop + viewport.height - composerHeight - 12));
-    setMobileComposerTop(nextTop);
-  }, []);
-
-  const startKeyboardPositionMonitor = useCallback(() => {
-    clearKeyboardPositionMonitor();
-
-    const update = () => window.requestAnimationFrame(updateMobileComposerPosition);
-    update();
-    keyboardUpdateTimersRef.current = [50, 120, 220, 380, 620, 900].map((delay) => window.setTimeout(update, delay));
-    keyboardUpdateIntervalRef.current = window.setInterval(update, 240);
-  }, [clearKeyboardPositionMonitor, updateMobileComposerPosition]);
-
-  const stopKeyboardPositionMonitor = useCallback(() => {
-    clearKeyboardPositionMonitor();
-    setMobileComposerTop(null);
-  }, [clearKeyboardPositionMonitor]);
-
-  useEffect(() => {
-    const textarea = textareaRef.current;
-    const viewport = window.visualViewport;
-    const update = () => window.requestAnimationFrame(updateMobileComposerPosition);
-
-    update();
-    textarea?.addEventListener("focus", startKeyboardPositionMonitor);
-    textarea?.addEventListener("pointerdown", startKeyboardPositionMonitor);
-    textarea?.addEventListener("blur", stopKeyboardPositionMonitor);
-    viewport?.addEventListener("resize", update);
-    viewport?.addEventListener("scroll", update);
-    window.addEventListener("orientationchange", update);
-
-    return () => {
-      textarea?.removeEventListener("focus", startKeyboardPositionMonitor);
-      textarea?.removeEventListener("pointerdown", startKeyboardPositionMonitor);
-      textarea?.removeEventListener("blur", stopKeyboardPositionMonitor);
-      viewport?.removeEventListener("resize", update);
-      viewport?.removeEventListener("scroll", update);
-      window.removeEventListener("orientationchange", update);
-    };
-  }, [composerLift, startKeyboardPositionMonitor, stopKeyboardPositionMonitor, updateMobileComposerPosition]);
 
   function stopVoiceMonitor() {
     if (waveFrameRef.current) {
@@ -671,7 +596,6 @@ function Chatbot({ config }: { config: EmbedConfig }) {
     textarea.style.height = `${nextHeight}px`;
     textarea.style.overflowY = textarea.scrollHeight > textareaMaxHeight ? "auto" : "hidden";
     setComposerLift(Math.max(0, Math.round((nextHeight - textareaMinHeight) * 0.75)));
-    window.requestAnimationFrame(updateMobileComposerPosition);
   }
 
   function startSyntheticVoiceWave() {
@@ -958,12 +882,11 @@ function Chatbot({ config }: { config: EmbedConfig }) {
 
   return (
     <div
-      className={`arcigy-chatbot arcigy-chatbot--codex ${mobileComposerTop !== null ? "arcigy-chatbot--mobile-keyboard" : ""}`}
+      className="arcigy-chatbot arcigy-chatbot--codex"
       aria-label="Arcigy Codex chatbot"
       style={
         {
           "--arcigy-composer-lift": `${composerLift}px`,
-          ...(mobileComposerTop !== null ? { "--arcigy-mobile-composer-top": `${mobileComposerTop}px` } : {}),
         } as CSSProperties
       }
     >
@@ -1015,7 +938,6 @@ function Chatbot({ config }: { config: EmbedConfig }) {
       ) : null}
 
       <div
-        ref={composerRef}
         className={`arcigy-chatbot__composer ${isCollapsed ? "is-collapsed" : ""} ${isDragging ? "is-dragging" : ""}`}
         aria-label="GEOTHERM AI Codex asistent"
         onPointerDown={startCloseDrag}
