@@ -252,7 +252,7 @@
 }
 
 .arcigy-chatbot__voiceWave {
-  grid-column: 2 / 4;
+  grid-column: 2;
   grid-row: 1;
   display: flex;
   width: 100%;
@@ -260,11 +260,10 @@
   min-width: 0;
   align-items: center;
   justify-content: stretch;
-  gap: 2px;
+  gap: 3px;
   overflow: hidden;
   opacity: 0;
   pointer-events: none;
-  padding-right: 40px;
   transform: translateY(2px);
   transition:
     opacity 140ms ease,
@@ -279,7 +278,7 @@
 .arcigy-chatbot__voiceBar {
   display: block;
   width: auto;
-  height: calc(3px + (var(--voice-level, 0.05) * 29px));
+  height: calc(4px + (var(--voice-level, 0.2) * 28px));
   flex: 1 1 0;
   min-width: 1px;
   border-radius: 999px;
@@ -297,8 +296,6 @@
 }
 
 .arcigy-chatbot__input button {
-  position: relative;
-  z-index: 1;
   display: grid;
   width: 36px;
   height: 36px;
