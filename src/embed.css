@@ -794,6 +794,11 @@
     transform: translateY(0) scale(1);
   }
 
+  .arcigy-chatbot--mobile-keyboard .arcigy-chatbot__composer:not(.is-collapsed) {
+    top: var(--arcigy-mobile-composer-top);
+    bottom: auto;
+  }
+
   .arcigy-chatbot__answer.is-open,
   .arcigy-chatbot__answer.is-closed {
     right: 12px;

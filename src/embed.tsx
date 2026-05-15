@@ -1,4 +1,4 @@
-import { CSSProperties, KeyboardEvent, PointerEvent, useEffect, useRef, useState } from "react";
+import { CSSProperties, KeyboardEvent, PointerEvent, useCallback, useEffect, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -459,9 +459,11 @@ function Chatbot({ config }: { config: EmbedConfig }) {
   const [voiceLevels, setVoiceLevels] = useState<number[]>(() => idleVoiceLevels());
   const [visibleVoiceBarCount, setVisibleVoiceBarCount] = useState(0);
   const [composerLift, setComposerLift] = useState(0);
+  const [mobileComposerTop, setMobileComposerTop] = useState<number | null>(null);
   const [debugCopyLabel, setDebugCopyLabel] = useState("Copy JSON");
   const scrollRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const composerRef = useRef<HTMLDivElement>(null);
   const typingTimerRef = useRef<number | null>(null);
   const debugTurnsRef = useRef<DebugTurn[]>([]);
   const recognitionRef = useRef<SpeechRecognitionLike | null>(null);
@@ -568,6 +570,51 @@ function Chatbot({ config }: { config: EmbedConfig }) {
     };
   }, []);
 
+  const updateMobileComposerPosition = useCallback(() => {
+    const viewport = window.visualViewport;
+    const textarea = textareaRef.current;
+    const composer = composerRef.current;
+    const isMobile = window.matchMedia("(max-width: 640px)").matches;
+    const isFocused = document.activeElement === textarea;
+
+    if (!viewport || !textarea || !composer || !isMobile || !isFocused) {
+      setMobileComposerTop(null);
+      return;
+    }
+
+    const keyboardLooksOpen = window.innerHeight - viewport.height > 80 || viewport.offsetTop > 0;
+    if (!keyboardLooksOpen) {
+      setMobileComposerTop(null);
+      return;
+    }
+
+    const composerHeight = composer.getBoundingClientRect().height || 56;
+    const nextTop = Math.max(8, Math.round(viewport.offsetTop + viewport.height - composerHeight - 12));
+    setMobileComposerTop(nextTop);
+  }, []);
+
+  useEffect(() => {
+    const textarea = textareaRef.current;
+    const viewport = window.visualViewport;
+    const update = () => window.requestAnimationFrame(updateMobileComposerPosition);
+    const clear = () => setMobileComposerTop(null);
+
+    update();
+    textarea?.addEventListener("focus", update);
+    textarea?.addEventListener("blur", clear);
+    viewport?.addEventListener("resize", update);
+    viewport?.addEventListener("scroll", update);
+    window.addEventListener("orientationchange", update);
+
+    return () => {
+      textarea?.removeEventListener("focus", update);
+      textarea?.removeEventListener("blur", clear);
+      viewport?.removeEventListener("resize", update);
+      viewport?.removeEventListener("scroll", update);
+      window.removeEventListener("orientationchange", update);
+    };
+  }, [composerLift, updateMobileComposerPosition]);
+
   function stopVoiceMonitor() {
     if (waveFrameRef.current) {
       window.cancelAnimationFrame(waveFrameRef.current);
@@ -596,6 +643,7 @@ function Chatbot({ config }: { config: EmbedConfig }) {
     textarea.style.height = `${nextHeight}px`;
     textarea.style.overflowY = textarea.scrollHeight > textareaMaxHeight ? "auto" : "hidden";
     setComposerLift(Math.max(0, Math.round((nextHeight - textareaMinHeight) * 0.75)));
+    window.requestAnimationFrame(updateMobileComposerPosition);
   }
 
   function startSyntheticVoiceWave() {
@@ -882,11 +930,12 @@ function Chatbot({ config }: { config: EmbedConfig }) {
 
   return (
     <div
-      className="arcigy-chatbot arcigy-chatbot--codex"
+      className={`arcigy-chatbot arcigy-chatbot--codex ${mobileComposerTop !== null ? "arcigy-chatbot--mobile-keyboard" : ""}`}
       aria-label="Arcigy Codex chatbot"
       style={
         {
           "--arcigy-composer-lift": `${composerLift}px`,
+          ...(mobileComposerTop !== null ? { "--arcigy-mobile-composer-top": `${mobileComposerTop}px` } : {}),
         } as CSSProperties
       }
     >
@@ -938,6 +987,7 @@ function Chatbot({ config }: { config: EmbedConfig }) {
       ) : null}
 
       <div
+        ref={composerRef}
         className={`arcigy-chatbot__composer ${isCollapsed ? "is-collapsed" : ""} ${isDragging ? "is-dragging" : ""}`}
         aria-label="GEOTHERM AI Codex asistent"
         onPointerDown={startCloseDrag}
