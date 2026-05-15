@@ -260,7 +260,7 @@
   min-width: 0;
   align-items: center;
   justify-content: stretch;
-  gap: 3px;
+  gap: 1px;
   overflow: hidden;
   opacity: 0;
   pointer-events: none;
@@ -280,7 +280,7 @@
   width: auto;
   height: calc(4px + (var(--voice-level, 0.2) * 28px));
   flex: 1 1 0;
-  min-width: 1px;
+  min-width: 0.5px;
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.92);
   box-shadow: 0 0 8px rgba(255, 255, 255, 0.16);

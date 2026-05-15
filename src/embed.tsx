@@ -127,7 +127,9 @@ declare global {
 const version = "0.1.0";
 const conversationMemoryMs = 2 * 60 * 60 * 1000;
 const anonymousIdStorageKey = "arcigy-chatbot-anonymous-id";
-const voiceWaveBarCount = 64;
+const voiceWaveBarCount = 96;
+const voiceWaveUpdateMs = 104;
+const voiceWaveRevealStep = 3;
 
 function idleVoiceLevels() {
   return Array.from({ length: voiceWaveBarCount }, (_, index) => 0.045 + ((index * 7) % 5) * 0.008);
@@ -453,6 +455,7 @@ function Chatbot({ config }: { config: EmbedConfig }) {
   const [isLoading, setIsLoading] = useState(false);
   const [isListening, setIsListening] = useState(false);
   const [voiceLevels, setVoiceLevels] = useState<number[]>(() => idleVoiceLevels());
+  const [visibleVoiceBarCount, setVisibleVoiceBarCount] = useState(0);
   const [debugCopyLabel, setDebugCopyLabel] = useState("Copy JSON");
   const scrollRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -465,6 +468,7 @@ function Chatbot({ config }: { config: EmbedConfig }) {
   const syntheticWaveTimerRef = useRef<number | null>(null);
   const audioNoiseFloorRef = useRef(0.018);
   const audioSmoothedLevelRef = useRef(0.05);
+  const lastVoiceWaveUpdateRef = useRef(0);
   const speechBaseTextRef = useRef("");
   const skipNextStorageWriteRef = useRef(false);
   const storageKey = conversationStorageKey(config);
@@ -576,7 +580,9 @@ function Chatbot({ config }: { config: EmbedConfig }) {
     audioContextRef.current = null;
     audioNoiseFloorRef.current = 0.018;
     audioSmoothedLevelRef.current = 0.05;
+    lastVoiceWaveUpdateRef.current = 0;
     setVoiceLevels(idleVoiceLevels());
+    setVisibleVoiceBarCount(0);
   }
 
   function resetTextareaHeight() {
@@ -586,11 +592,15 @@ function Chatbot({ config }: { config: EmbedConfig }) {
 
   function startSyntheticVoiceWave() {
     const levels = idleVoiceLevels();
+    let visibleBars = 0;
+    setVisibleVoiceBarCount(0);
     syntheticWaveTimerRef.current = window.setInterval(() => {
       levels.shift();
       levels.push(0.045 + Math.random() * 0.05);
+      visibleBars = Math.min(voiceWaveBarCount, visibleBars + voiceWaveRevealStep);
+      setVisibleVoiceBarCount(visibleBars);
       setVoiceLevels([...levels]);
-    }, 74);
+    }, voiceWaveUpdateMs);
   }
 
   async function startVoiceMonitor() {
@@ -615,8 +625,12 @@ function Chatbot({ config }: { config: EmbedConfig }) {
       source.connect(analyser);
       audioContextRef.current = audioContext;
       audioStreamRef.current = stream;
+      let visibleBars = 0;
+      lastVoiceWaveUpdateRef.current = 0;
+      setVisibleVoiceBarCount(0);
 
       const draw = () => {
+        const now = performance.now();
         analyser.getByteTimeDomainData(data);
         let sum = 0;
         let peak = 0;
@@ -648,10 +662,15 @@ function Chatbot({ config }: { config: EmbedConfig }) {
         }
 
         audioSmoothedLevelRef.current = audioSmoothedLevelRef.current * 0.62 + targetLevel * 0.38;
-        const level = audioSmoothedLevelRef.current;
-        levels.shift();
-        levels.push(level);
-        setVoiceLevels([...levels]);
+        if (now - lastVoiceWaveUpdateRef.current >= voiceWaveUpdateMs) {
+          lastVoiceWaveUpdateRef.current = now;
+          const level = audioSmoothedLevelRef.current;
+          levels.shift();
+          levels.push(level);
+          visibleBars = Math.min(voiceWaveBarCount, visibleBars + voiceWaveRevealStep);
+          setVisibleVoiceBarCount(visibleBars);
+          setVoiceLevels([...levels]);
+        }
         waveFrameRef.current = window.requestAnimationFrame(draw);
       };
 
@@ -955,13 +974,21 @@ function Chatbot({ config }: { config: EmbedConfig }) {
               placeholder="Napíšte správu..."
             />
             <div className="arcigy-chatbot__voiceWave" aria-hidden={!isListening}>
-              {voiceLevels.map((level, index) => (
-                <span
-                  className="arcigy-chatbot__voiceBar"
-                  key={index}
-                  style={{ "--voice-level": level.toFixed(3) } as CSSProperties}
-                />
-              ))}
+              {voiceLevels.map((level, index) => {
+                const isVisible = index >= voiceWaveBarCount - visibleVoiceBarCount;
+                return (
+                  <span
+                    className="arcigy-chatbot__voiceBar"
+                    key={index}
+                    style={
+                      {
+                        "--voice-level": isVisible ? level.toFixed(3) : "0.01",
+                        opacity: isVisible ? undefined : 0,
+                      } as CSSProperties
+                    }
+                  />
+                );
+              })}
             </div>
             <button
               className={`arcigy-chatbot__mic ${isListening ? "is-listening" : ""}`}
