@@ -459,6 +459,7 @@ function Chatbot({ config }: { config: EmbedConfig }) {
   const [voiceLevels, setVoiceLevels] = useState<number[]>(() => idleVoiceLevels());
   const [visibleVoiceBarCount, setVisibleVoiceBarCount] = useState(0);
   const [composerLift, setComposerLift] = useState(0);
+  const [keyboardOffset, setKeyboardOffset] = useState(0);
   const [debugCopyLabel, setDebugCopyLabel] = useState("Copy JSON");
   const scrollRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -565,6 +566,29 @@ function Chatbot({ config }: { config: EmbedConfig }) {
       if (typingTimerRef.current) window.clearInterval(typingTimerRef.current);
       recognitionRef.current?.stop();
       stopVoiceMonitor();
+    };
+  }, []);
+
+  useEffect(() => {
+    const viewport = window.visualViewport;
+    const updateKeyboardOffset = () => {
+      if (!viewport || !window.matchMedia("(max-width: 640px)").matches) {
+        setKeyboardOffset(0);
+        return;
+      }
+      const offset = Math.max(0, window.innerHeight - viewport.height - viewport.offsetTop);
+      setKeyboardOffset(Math.round(offset));
+    };
+
+    updateKeyboardOffset();
+    viewport?.addEventListener("resize", updateKeyboardOffset);
+    viewport?.addEventListener("scroll", updateKeyboardOffset);
+    window.addEventListener("orientationchange", updateKeyboardOffset);
+
+    return () => {
+      viewport?.removeEventListener("resize", updateKeyboardOffset);
+      viewport?.removeEventListener("scroll", updateKeyboardOffset);
+      window.removeEventListener("orientationchange", updateKeyboardOffset);
     };
   }, []);
 
@@ -884,7 +908,12 @@ function Chatbot({ config }: { config: EmbedConfig }) {
     <div
       className="arcigy-chatbot arcigy-chatbot--codex"
       aria-label="Arcigy Codex chatbot"
-      style={{ "--arcigy-composer-lift": `${composerLift}px` } as CSSProperties}
+      style={
+        {
+          "--arcigy-composer-lift": `${composerLift}px`,
+          "--arcigy-keyboard-offset": `${keyboardOffset}px`,
+        } as CSSProperties
+      }
     >
       {showAnswerShell ? (
         <div className={`arcigy-chatbot__answer ${isAnswerVisible ? "is-open" : "is-closed"}`} aria-label="Najnovší príspevok">
