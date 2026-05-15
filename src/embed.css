@@ -172,9 +172,9 @@
 .arcigy-chatbot__composer.is-collapsed {
   left: calc(100vw - 78px);
   bottom: 18px;
-  width: 44px;
-  min-width: 44px;
-  height: 96px;
+  width: 54px;
+  min-width: 54px;
+  height: 54px;
   border-radius: 999px;
   border-color: rgba(255, 255, 255, 0.12);
   background: rgba(92, 94, 92, 0.66);
@@ -805,19 +805,19 @@
   }
 
   .arcigy-chatbot__answer {
-    bottom: calc(86px + var(--arcigy-composer-lift));
+    bottom: calc(78px + var(--arcigy-composer-lift));
     max-height: min(62dvh, calc(100dvh - 142px));
     animation: arcigyAnswerGrowInMobile 360ms cubic-bezier(0.2, 0.9, 0.18, 1);
   }
 
   .arcigy-chatbot__answer.is-open {
-    bottom: calc(86px + var(--arcigy-composer-lift));
+    bottom: calc(78px + var(--arcigy-composer-lift));
     max-height: min(62dvh, calc(100dvh - 142px));
     border-radius: 14px;
   }
 
   .arcigy-chatbot__answer.is-closed {
-    bottom: calc(86px + var(--arcigy-composer-lift));
+    bottom: calc(78px + var(--arcigy-composer-lift));
     max-height: 34px;
   }
 
@@ -856,7 +856,11 @@
   }
 
   .arcigy-chatbot__context {
-    bottom: calc(74px + var(--arcigy-composer-lift));
+    bottom: calc(78px + var(--arcigy-composer-lift));
+  }
+
+  .arcigy-chatbot__composer.is-collapsed {
+    left: calc(100vw - 66px);
   }
 
   .arcigy-chatbot__input {
