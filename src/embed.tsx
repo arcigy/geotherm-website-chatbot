@@ -130,6 +130,8 @@ const anonymousIdStorageKey = "arcigy-chatbot-anonymous-id";
 const voiceWaveBarCount = 96;
 const voiceWaveUpdateMs = 92;
 const voiceWaveRevealStep = 3;
+const textareaMinHeight = 34;
+const textareaMaxHeight = 74;
 
 function idleVoiceLevels() {
   return Array.from({ length: voiceWaveBarCount }, (_, index) => 0.045 + ((index * 7) % 5) * 0.008);
@@ -585,9 +587,13 @@ function Chatbot({ config }: { config: EmbedConfig }) {
     setVisibleVoiceBarCount(0);
   }
 
-  function resetTextareaHeight() {
+  function resizeTextareaHeight() {
     if (!textareaRef.current) return;
-    textareaRef.current.style.height = "34px";
+    const textarea = textareaRef.current;
+    textarea.style.height = `${textareaMinHeight}px`;
+    const nextHeight = Math.max(textareaMinHeight, Math.min(textarea.scrollHeight, textareaMaxHeight));
+    textarea.style.height = `${nextHeight}px`;
+    textarea.style.overflowY = textarea.scrollHeight > textareaMaxHeight ? "auto" : "hidden";
   }
 
   function startSyntheticVoiceWave() {
@@ -725,7 +731,7 @@ function Chatbot({ config }: { config: EmbedConfig }) {
     setIsCollapsed(false);
     setInput("");
     if (textareaRef.current) textareaRef.current.value = "";
-    resetTextareaHeight();
+    resizeTextareaHeight();
     setIsLoading(true);
 
     try {
@@ -771,14 +777,14 @@ function Chatbot({ config }: { config: EmbedConfig }) {
 
   function onInputChange(value: string) {
     setInput(value);
-    resetTextareaHeight();
+    resizeTextareaHeight();
   }
 
   function setTextareaValue(value: string) {
     setInput(value);
     if (!textareaRef.current) return;
     textareaRef.current.value = value;
-    resetTextareaHeight();
+    resizeTextareaHeight();
     textareaRef.current.focus();
   }
 

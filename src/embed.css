@@ -226,7 +226,7 @@
   width: 100%;
   height: 34px;
   min-height: 34px;
-  max-height: 34px;
+  max-height: 74px;
   resize: none;
   border: 0;
   outline: 0;
@@ -234,7 +234,10 @@
   color: #fff;
   font-size: 15px;
   line-height: 20px;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: hidden;
+  scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
+  scrollbar-width: thin;
   padding: 8px 0 6px;
   transition:
     opacity 140ms ease,
@@ -243,6 +246,19 @@
 
 .arcigy-chatbot__input textarea::placeholder {
   color: rgba(255, 255, 255, 0.72);
+}
+
+.arcigy-chatbot__input textarea::-webkit-scrollbar {
+  width: 3px;
+}
+
+.arcigy-chatbot__input textarea::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.arcigy-chatbot__input textarea::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.1);
 }
 
 .arcigy-chatbot__input.is-listening textarea {
