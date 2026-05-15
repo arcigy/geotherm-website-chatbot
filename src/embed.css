@@ -5,6 +5,7 @@
 
 .arcigy-chatbot {
   --lime: #b7ff00;
+  --arcigy-composer-lift: 0px;
   position: fixed;
   inset: auto 0 0 0;
   z-index: 2147483000;
@@ -373,7 +374,7 @@
 .arcigy-chatbot__context {
   position: fixed;
   left: 50%;
-  bottom: 78px;
+  bottom: calc(78px + var(--arcigy-composer-lift));
   z-index: 2147482999;
   display: flex;
   width: min(620px, calc(100vw - 540px));
@@ -405,7 +406,7 @@
 .arcigy-chatbot__answer {
   position: fixed;
   left: 50%;
-  bottom: 78px;
+  bottom: calc(78px + var(--arcigy-composer-lift));
   z-index: 2147482998;
   width: min(620px, calc(100vw - 540px));
   min-width: 440px;
@@ -435,7 +436,7 @@
 }
 
 .arcigy-chatbot__answer.is-open {
-  bottom: 78px;
+  bottom: calc(78px + var(--arcigy-composer-lift));
   width: min(660px, calc(100vw - 500px));
   min-width: 480px;
   max-width: calc(100vw - 24px);
@@ -445,7 +446,7 @@
 }
 
 .arcigy-chatbot__answer.is-closed {
-  bottom: 78px;
+  bottom: calc(78px + var(--arcigy-composer-lift));
   width: min(620px, calc(100vw - 540px));
   min-width: 440px;
   max-width: calc(100vw - 24px);
@@ -804,19 +805,19 @@
   }
 
   .arcigy-chatbot__answer {
-    bottom: 86px;
+    bottom: calc(86px + var(--arcigy-composer-lift));
     max-height: min(62dvh, calc(100dvh - 142px));
     animation: arcigyAnswerGrowInMobile 360ms cubic-bezier(0.2, 0.9, 0.18, 1);
   }
 
   .arcigy-chatbot__answer.is-open {
-    bottom: 86px;
+    bottom: calc(86px + var(--arcigy-composer-lift));
     max-height: min(62dvh, calc(100dvh - 142px));
     border-radius: 14px;
   }
 
   .arcigy-chatbot__answer.is-closed {
-    bottom: 86px;
+    bottom: calc(86px + var(--arcigy-composer-lift));
     max-height: 34px;
   }
 
@@ -855,7 +856,7 @@
   }
 
   .arcigy-chatbot__context {
-    bottom: 74px;
+    bottom: calc(74px + var(--arcigy-composer-lift));
   }
 
   .arcigy-chatbot__input {

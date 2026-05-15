@@ -458,6 +458,7 @@ function Chatbot({ config }: { config: EmbedConfig }) {
   const [isListening, setIsListening] = useState(false);
   const [voiceLevels, setVoiceLevels] = useState<number[]>(() => idleVoiceLevels());
   const [visibleVoiceBarCount, setVisibleVoiceBarCount] = useState(0);
+  const [composerLift, setComposerLift] = useState(0);
   const [debugCopyLabel, setDebugCopyLabel] = useState("Copy JSON");
   const scrollRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -594,6 +595,7 @@ function Chatbot({ config }: { config: EmbedConfig }) {
     const nextHeight = Math.max(textareaMinHeight, Math.min(textarea.scrollHeight, textareaMaxHeight));
     textarea.style.height = `${nextHeight}px`;
     textarea.style.overflowY = textarea.scrollHeight > textareaMaxHeight ? "auto" : "hidden";
+    setComposerLift(Math.max(0, nextHeight - textareaMinHeight));
   }
 
   function startSyntheticVoiceWave() {
@@ -879,7 +881,11 @@ function Chatbot({ config }: { config: EmbedConfig }) {
   const isAnswerVisible = showAnswerShell && (isOpen || isLoading);
 
   return (
-    <div className="arcigy-chatbot arcigy-chatbot--codex" aria-label="Arcigy Codex chatbot">
+    <div
+      className="arcigy-chatbot arcigy-chatbot--codex"
+      aria-label="Arcigy Codex chatbot"
+      style={{ "--arcigy-composer-lift": `${composerLift}px` } as CSSProperties}
+    >
       {showAnswerShell ? (
         <div className={`arcigy-chatbot__answer ${isAnswerVisible ? "is-open" : "is-closed"}`} aria-label="Najnovší príspevok">
           <button className="arcigy-chatbot__answerTop" type="button" onClick={() => !isLoading && setIsOpen((current) => !current)}>
