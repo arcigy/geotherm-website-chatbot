@@ -466,6 +466,8 @@ function Chatbot({ config }: { config: EmbedConfig }) {
   const composerRef = useRef<HTMLDivElement>(null);
   const typingTimerRef = useRef<number | null>(null);
   const debugTurnsRef = useRef<DebugTurn[]>([]);
+  const keyboardUpdateTimersRef = useRef<number[]>([]);
+  const keyboardUpdateIntervalRef = useRef<number | null>(null);
   const recognitionRef = useRef<SpeechRecognitionLike | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
   const audioStreamRef = useRef<MediaStream | null>(null);
@@ -565,9 +567,20 @@ function Chatbot({ config }: { config: EmbedConfig }) {
   useEffect(() => {
     return () => {
       if (typingTimerRef.current) window.clearInterval(typingTimerRef.current);
+      keyboardUpdateTimersRef.current.forEach((timer) => window.clearTimeout(timer));
+      if (keyboardUpdateIntervalRef.current) window.clearInterval(keyboardUpdateIntervalRef.current);
       recognitionRef.current?.stop();
       stopVoiceMonitor();
     };
+  }, []);
+
+  const clearKeyboardPositionMonitor = useCallback(() => {
+    keyboardUpdateTimersRef.current.forEach((timer) => window.clearTimeout(timer));
+    keyboardUpdateTimersRef.current = [];
+    if (keyboardUpdateIntervalRef.current) {
+      window.clearInterval(keyboardUpdateIntervalRef.current);
+      keyboardUpdateIntervalRef.current = null;
+    }
   }, []);
 
   const updateMobileComposerPosition = useCallback(() => {
@@ -593,27 +606,42 @@ function Chatbot({ config }: { config: EmbedConfig }) {
     setMobileComposerTop(nextTop);
   }, []);
 
+  const startKeyboardPositionMonitor = useCallback(() => {
+    clearKeyboardPositionMonitor();
+
+    const update = () => window.requestAnimationFrame(updateMobileComposerPosition);
+    update();
+    keyboardUpdateTimersRef.current = [50, 120, 220, 380, 620, 900].map((delay) => window.setTimeout(update, delay));
+    keyboardUpdateIntervalRef.current = window.setInterval(update, 240);
+  }, [clearKeyboardPositionMonitor, updateMobileComposerPosition]);
+
+  const stopKeyboardPositionMonitor = useCallback(() => {
+    clearKeyboardPositionMonitor();
+    setMobileComposerTop(null);
+  }, [clearKeyboardPositionMonitor]);
+
   useEffect(() => {
     const textarea = textareaRef.current;
     const viewport = window.visualViewport;
     const update = () => window.requestAnimationFrame(updateMobileComposerPosition);
-    const clear = () => setMobileComposerTop(null);
 
     update();
-    textarea?.addEventListener("focus", update);
-    textarea?.addEventListener("blur", clear);
+    textarea?.addEventListener("focus", startKeyboardPositionMonitor);
+    textarea?.addEventListener("pointerdown", startKeyboardPositionMonitor);
+    textarea?.addEventListener("blur", stopKeyboardPositionMonitor);
     viewport?.addEventListener("resize", update);
     viewport?.addEventListener("scroll", update);
     window.addEventListener("orientationchange", update);
 
     return () => {
-      textarea?.removeEventListener("focus", update);
-      textarea?.removeEventListener("blur", clear);
+      textarea?.removeEventListener("focus", startKeyboardPositionMonitor);
+      textarea?.removeEventListener("pointerdown", startKeyboardPositionMonitor);
+      textarea?.removeEventListener("blur", stopKeyboardPositionMonitor);
       viewport?.removeEventListener("resize", update);
       viewport?.removeEventListener("scroll", update);
       window.removeEventListener("orientationchange", update);
     };
-  }, [composerLift, updateMobileComposerPosition]);
+  }, [composerLift, startKeyboardPositionMonitor, stopKeyboardPositionMonitor, updateMobileComposerPosition]);
 
   function stopVoiceMonitor() {
     if (waveFrameRef.current) {
