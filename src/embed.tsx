@@ -128,7 +128,7 @@ const version = "0.1.0";
 const conversationMemoryMs = 2 * 60 * 60 * 1000;
 const anonymousIdStorageKey = "arcigy-chatbot-anonymous-id";
 const voiceWaveBarCount = 96;
-const voiceWaveUpdateMs = 104;
+const voiceWaveUpdateMs = 92;
 const voiceWaveRevealStep = 3;
 
 function idleVoiceLevels() {
