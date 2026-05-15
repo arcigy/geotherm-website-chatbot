@@ -127,10 +127,10 @@ declare global {
 const version = "0.1.0";
 const conversationMemoryMs = 2 * 60 * 60 * 1000;
 const anonymousIdStorageKey = "arcigy-chatbot-anonymous-id";
-const voiceWaveBarCount = 52;
+const voiceWaveBarCount = 64;
 
 function idleVoiceLevels() {
-  return Array.from({ length: voiceWaveBarCount }, (_, index) => 0.16 + ((index * 7) % 5) * 0.018);
+  return Array.from({ length: voiceWaveBarCount }, (_, index) => 0.045 + ((index * 7) % 5) * 0.008);
 }
 
 const fakeResponses: Record<string, ChatResponse> = {
@@ -463,6 +463,8 @@ function Chatbot({ config }: { config: EmbedConfig }) {
   const audioStreamRef = useRef<MediaStream | null>(null);
   const waveFrameRef = useRef<number | null>(null);
   const syntheticWaveTimerRef = useRef<number | null>(null);
+  const audioNoiseFloorRef = useRef(0.018);
+  const audioSmoothedLevelRef = useRef(0.05);
   const speechBaseTextRef = useRef("");
   const skipNextStorageWriteRef = useRef(false);
   const storageKey = conversationStorageKey(config);
@@ -572,6 +574,8 @@ function Chatbot({ config }: { config: EmbedConfig }) {
     audioStreamRef.current = null;
     void audioContextRef.current?.close().catch(() => undefined);
     audioContextRef.current = null;
+    audioNoiseFloorRef.current = 0.018;
+    audioSmoothedLevelRef.current = 0.05;
     setVoiceLevels(idleVoiceLevels());
   }
 
@@ -584,7 +588,7 @@ function Chatbot({ config }: { config: EmbedConfig }) {
     const levels = idleVoiceLevels();
     syntheticWaveTimerRef.current = window.setInterval(() => {
       levels.shift();
-      levels.push(0.18 + Math.random() * 0.72);
+      levels.push(0.045 + Math.random() * 0.05);
       setVoiceLevels([...levels]);
     }, 74);
   }
@@ -600,6 +604,7 @@ function Chatbot({ config }: { config: EmbedConfig }) {
     try {
       const stream = await window.navigator.mediaDevices.getUserMedia({ audio: true });
       const audioContext = new AudioContextConstructor();
+      if (audioContext.state === "suspended") await audioContext.resume();
       const analyser = audioContext.createAnalyser();
       const source = audioContext.createMediaStreamSource(stream);
       const levels = idleVoiceLevels();
@@ -615,15 +620,35 @@ function Chatbot({ config }: { config: EmbedConfig }) {
         analyser.getByteTimeDomainData(data);
         let sum = 0;
         let peak = 0;
+        let min = 255;
+        let max = 0;
         for (const sample of data) {
+          min = Math.min(min, sample);
+          max = Math.max(max, sample);
           const value = (sample - 128) / 128;
           peak = Math.max(peak, Math.abs(value));
           sum += value * value;
         }
         const rms = Math.sqrt(sum / data.length);
-        const noiseFloor = 0.012;
-        const signal = Math.max(0, rms - noiseFloor);
-        const level = Math.max(0.08, Math.min(1, Math.pow(signal * 18 + peak * 0.9, 0.72)));
+        const hasInvalidFrame = min === 0 && max === 0;
+        let targetLevel = 0.045;
+
+        if (!hasInvalidFrame) {
+          const noiseFloor = audioNoiseFloorRef.current;
+          if (rms < noiseFloor * 1.4) {
+            audioNoiseFloorRef.current = noiseFloor * 0.96 + rms * 0.04;
+          } else if (rms < noiseFloor) {
+            audioNoiseFloorRef.current = noiseFloor * 0.9 + rms * 0.1;
+          }
+
+          const signal = Math.max(0, rms - audioNoiseFloorRef.current * 1.35);
+          const normalized = Math.min(1, signal / 0.085);
+          const peakBoost = signal > 0 ? Math.min(0.22, peak * 0.12) : 0;
+          targetLevel = Math.max(0.045, Math.min(1, Math.pow(normalized, 0.68) + peakBoost));
+        }
+
+        audioSmoothedLevelRef.current = audioSmoothedLevelRef.current * 0.62 + targetLevel * 0.38;
+        const level = audioSmoothedLevelRef.current;
         levels.shift();
         levels.push(level);
         setVoiceLevels([...levels]);
