@@ -132,6 +132,7 @@ const voiceWaveUpdateMs = 92;
 const voiceWaveRevealStep = 3;
 const textareaMinHeight = 34;
 const textareaMaxHeight = 74;
+const composerMinHeight = 54;
 
 function idleVoiceLevels() {
   return Array.from({ length: voiceWaveBarCount }, (_, index) => 0.045 + ((index * 7) % 5) * 0.008);
@@ -595,7 +596,8 @@ function Chatbot({ config }: { config: EmbedConfig }) {
     const nextHeight = Math.max(textareaMinHeight, Math.min(textarea.scrollHeight, textareaMaxHeight));
     textarea.style.height = `${nextHeight}px`;
     textarea.style.overflowY = textarea.scrollHeight > textareaMaxHeight ? "auto" : "hidden";
-    setComposerLift(Math.max(0, nextHeight - textareaMinHeight));
+    const inputHeight = textarea.closest(".arcigy-chatbot__input")?.getBoundingClientRect().height ?? composerMinHeight;
+    setComposerLift(Math.max(0, inputHeight - composerMinHeight));
   }
 
   function startSyntheticVoiceWave() {
