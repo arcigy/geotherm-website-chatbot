@@ -550,11 +550,12 @@ function normalizeGeminiModel(model: string): string {
 
 function geminiCandidateModels(): string[] {
   const primary = llmModel("gemini");
+  const stable = process.env.GEMINI_STABLE_MODEL || "gemini-2.5-flash";
   const fallback = (process.env.GEMINI_FALLBACK_MODELS || "gemini-2.5-flash-lite")
     .split(",")
     .map((model) => model.trim())
     .filter(Boolean);
-  return [...new Set([primary, ...fallback])];
+  return [...new Set([stable, primary, ...fallback])];
 }
 
 function requestTimeoutSignal(timeoutMs?: number): AbortSignal {
@@ -688,6 +689,7 @@ export async function callLlmText(input: {
   timeoutMs?: number;
   responseMimeType?: "application/json" | "text/plain";
   provider?: LlmProvider;
+  singleCandidate?: boolean;
 }): Promise<RawLlmResult> {
   loadLocalEnv();
   return callRaw(
@@ -696,7 +698,7 @@ export async function callLlmText(input: {
       systemPrompt: input.systemPrompt,
       maxOutputTokens: input.maxOutputTokens,
       timeoutMs: input.timeoutMs,
-      singleCandidate: false,
+      singleCandidate: input.singleCandidate ?? false,
       responseMimeType: input.responseMimeType || "text/plain",
     },
     input.provider,

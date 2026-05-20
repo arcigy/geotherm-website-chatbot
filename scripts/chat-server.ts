@@ -2276,7 +2276,7 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
   const responseStartedAt = Date.now();
   loadLocalEnv();
 
-  const parseRouterResponse = (content: string | undefined): { needsRetrieval: boolean; retrievalQuery: string | null } => {
+  const parseRouterResponse = (content: string | undefined): { needsRetrieval: boolean; retrievalQuery: string | null; directAnswer: string | null } => {
     const fixMojibake = (str: string): string => {
       try {
         const repaired = Buffer.from(str, "latin1").toString("utf8");
@@ -2286,23 +2286,25 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
         return str;
       }
     };
-    if (!content) return { needsRetrieval: false, retrievalQuery: null };
+    if (!content) return { needsRetrieval: false, retrievalQuery: null, directAnswer: null };
     const trimmed = content.trim();
     const jsonStart = trimmed.indexOf("{");
     const jsonEnd = trimmed.lastIndexOf("}");
-    if (jsonStart < 0 || jsonEnd < jsonStart) return { needsRetrieval: false, retrievalQuery: null };
+    if (jsonStart < 0 || jsonEnd < jsonStart) return { needsRetrieval: false, retrievalQuery: null, directAnswer: null };
 
     try {
       const parsed = JSON.parse(trimmed.slice(jsonStart, jsonEnd + 1)) as {
         needsRetrieval?: unknown;
         retrievalQuery?: unknown;
+        directAnswer?: unknown;
       };
       const needsRetrieval = parsed.needsRetrieval === true;
       const retrievalQuery =
         typeof parsed.retrievalQuery === "string" && parsed.retrievalQuery.trim() ? fixMojibake(parsed.retrievalQuery.trim()) : null;
-      return { needsRetrieval, retrievalQuery };
+      const directAnswer = typeof parsed.directAnswer === "string" && parsed.directAnswer.trim() ? parsed.directAnswer.trim() : null;
+      return { needsRetrieval, retrievalQuery, directAnswer };
     } catch {
-      return { needsRetrieval: false, retrievalQuery: null };
+      return { needsRetrieval: false, retrievalQuery: null, directAnswer: null };
     }
   };
 
@@ -2465,7 +2467,7 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     };
 
     answer = compactOversizedTables(answer);
-    if (!/^#{1,3}\s+/m.test(answer) && !/^(ahoj|dobry den|dobrý deň|cau|čau|hello|hi)[!.]?\s*$/i.test(userMessage.trim())) {
+    if (!/^#{1,3}\s+/m.test(answer) && !isGreetingOnlyMessage(userMessage) && !/^(ahoj|dobry den|dobrý deň|cau|čau|hello|hi)[!.]?\s*$/i.test(userMessage.trim())) {
       answer = `### Stručne k otázke\n\n${answer}`;
     }
     if (!shouldPreferTable(userMessage) || /\|.+\|\s*\r?\n\s*\|[-:\s|]+\|/.test(answer)) return limitAnswerLength(compactOversizedTables(answer));
@@ -2514,72 +2516,6 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
   const conversation = getOrCreateActiveConversation(site, session);
   const previousMessages = getConversationMessages(conversation.id);
   const previousState = parseState(conversation.qualification_state_json);
-
-  if (isGreetingOnlyMessage(message)) {
-    const answer = "Ahoj! Som tu pre teba, keď chceš poradiť s tepelným čerpadlom, klimatizáciou, servisom alebo dotáciami.\n\nČo chceš riešiť ako prvé?";
-    const sources: ChatSource[] = [];
-
-    if (!previousMessages.length) {
-      insertEvent({
-        siteId: site.id,
-        sessionId: session.id,
-        conversationId: conversation.id,
-        eventType: "widget_opened",
-        payload: { inferredFromFirstMessage: true, currentUrl: requestBody.currentUrl },
-      });
-    }
-    insertEvent({
-      siteId: site.id,
-      sessionId: session.id,
-      conversationId: conversation.id,
-      eventType: "message_sent",
-      payload: { currentUrl: requestBody.currentUrl, referrer: requestBody.metadata?.referrer, messageLength: message.length },
-    });
-    insertMessage({ conversationId: conversation.id, role: "user", content: message });
-    insertEvent({
-      siteId: site.id,
-      sessionId: session.id,
-      conversationId: conversation.id,
-      eventType: "retrieval_skipped",
-      payload: { reason: "greeting_fast_path", routerUsed: false },
-    });
-    updateConversation(conversation.id, {
-      intent: "greeting",
-      qualificationStateJson: JSON.stringify(previousState),
-    });
-    insertMessage({ conversationId: conversation.id, role: "assistant", content: answer, confidence: "high", sources });
-    insertEvent({
-      siteId: site.id,
-      sessionId: session.id,
-      conversationId: conversation.id,
-      eventType: "answer_returned",
-      payload: { confidence: "high", intent: "greeting", retrievalUsed: false, llmUsed: false },
-    });
-
-    return {
-      conversationId: conversation.id,
-      answer,
-      intent: "greeting",
-      confidence: "high",
-      topScore: 0,
-      sources,
-      leadCapture: { shouldAsk: false, nextQuestion: null },
-      lead: { captured: false, score: 0 },
-      debug: {
-        answerMode: "general_chat",
-        llmAttempted: false,
-        llmUsed: false,
-        llmRouterUsed: false,
-        llmRouterError: null,
-        retrievalQuery: "",
-        contextTopic: null,
-        contextCarried: false,
-      },
-      action: null,
-      fallbackUsed: false,
-      responseTimeMs: Date.now() - responseStartedAt,
-    };
-  }
 
   const safetyRoute = detectSafetyRoute(message);
   if (safetyRoute.triggered) {
@@ -2708,7 +2644,7 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
 
   const routerSystemPrompt = [
     "You are a routing assistant. Decide if external knowledge retrieval is needed to answer the user's message well.",
-    "Return JSON only: { needsRetrieval: boolean, retrievalQuery: string | null }",
+    "Return JSON only: { needsRetrieval: boolean, retrievalQuery: string | null, directAnswer: string | null }",
     "",
     "needsRetrieval = true for ANY of these:",
     "- questions about products, models, brands, specifications",
@@ -2721,12 +2657,14 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     "- when the user mentions a specific product type (vzduch-voda, zem-voda etc.)",
     "",
     "needsRetrieval = false ONLY for:",
-    "- pure greetings (ahoj, dobrý deň)",
+    "- pure greetings, including typo/stretch variants like ahooooj, cauuu, čauuu, hellooo",
     "- very short follow-up answers to a direct question (áno, nie, ok, dobre)",
     "- user providing personal data only (name, email, phone, address)",
     "",
     "For city/location availability questions, use a stable query about Geotherm service area, districts and where they come to install, not the city name alone.",
+    "For product, price, model, efficiency or installation questions, do not add the company name Geotherm to retrievalQuery unless the user asks about contact, company, creator, or service area. The word Geotherm can collide with geoTHERM product pages.",
     "retrievalQuery: if needsRetrieval is true, write a specific Slovak search query that would find relevant information. If false, set to null.",
+    "directAnswer: if needsRetrieval is false, write the final short Slovak answer yourself in a natural friendly tone with tykanie and max one question. If needsRetrieval is true, set directAnswer to null.",
   ].join("\n");
   const routerInput = JSON.stringify(
     {
@@ -2738,25 +2676,15 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     null,
     2,
   );
-  const routerLlm = await callLlmText({
+  let routerLlm = await callLlmText({
     systemPrompt: routerSystemPrompt,
     prompt: routerInput,
-    maxOutputTokens: 120,
-    timeoutMs: Number.parseInt(process.env.LLM_ROUTER_TIMEOUT_MS || "5000", 10),
+    maxOutputTokens: 240,
+    timeoutMs: Math.min(Number.parseInt(process.env.LLM_ROUTER_TIMEOUT_MS || "2500", 10), 2500),
     responseMimeType: "application/json",
   });
   const route = parseRouterResponse(routerLlm.content);
   const serviceAreaQuestion = isServiceAreaQuestion(message);
-  if (serviceAreaQuestion) {
-    route.needsRetrieval = true;
-    route.retrievalQuery = serviceAreaRetrievalQuery;
-  }
-  const wordCount = message.trim().split(/\s+/).length;
-  const isObviousGreeting = /^(ahoj|čau|cau|hello|hi|hey|dobrý deň|zdravím|zdravim)$/i.test(message.trim());
-  if (!serviceAreaQuestion && !isObviousGreeting && wordCount >= 3 && !route.needsRetrieval) {
-    route.needsRetrieval = true;
-    route.retrievalQuery = message;
-  }
   const retrievalQuery = route.needsRetrieval ? route.retrievalQuery || message : null;
 
   let sources: ChatSource[] = [];
@@ -2837,20 +2765,33 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     null,
     2,
   );
-  const composerLlm = await callLlmText({
-    systemPrompt: composerSystemPrompt,
-    prompt: composerInput,
-    maxOutputTokens: 650,
-    timeoutMs: Number.parseInt(process.env.LLM_ANSWER_TIMEOUT_MS || "10000", 10),
-    responseMimeType: "text/plain",
-  });
-  const cleanedAnswer = cleanAnswerText(composerLlm.content);
+  const routerDirectAnswer = route.directAnswer ? cleanAnswerText(route.directAnswer) : "";
+  const useRouterDirectAnswer = !route.needsRetrieval && routerDirectAnswer && !isIncompleteAnswer(routerDirectAnswer);
+  let composerLlm = useRouterDirectAnswer
+    ? routerLlm
+    : await callLlmText({
+        systemPrompt: composerSystemPrompt,
+        prompt: composerInput,
+        maxOutputTokens: 650,
+        timeoutMs: route.needsRetrieval
+          ? Number.parseInt(process.env.LLM_ANSWER_TIMEOUT_MS || "10000", 10)
+          : Math.min(Number.parseInt(process.env.LLM_FAST_REQUEST_TIMEOUT_MS || "3500", 10), 3500),
+        responseMimeType: "text/plain",
+      });
+  const cleanedAnswer = !useRouterDirectAnswer && (composerLlm.error || !composerLlm.content)
+    ? ""
+    : useRouterDirectAnswer
+      ? routerDirectAnswer
+      : cleanAnswerText(composerLlm.content);
   const answer = enforceMarkdownPresentation(isIncompleteAnswer(cleanedAnswer) ? fallbackCompleteAnswer(message, sources) : cleanedAnswer, message);
-  const qualificationUpdate = await extractQualificationUpdate({
-    userMessage: message,
-    assistantAnswer: answer,
-    currentState: previousState,
-  });
+  const qualificationUpdate =
+    isGreetingOnlyMessage(message) && !route.needsRetrieval
+      ? {}
+      : await extractQualificationUpdate({
+          userMessage: message,
+          assistantAnswer: answer,
+          currentState: previousState,
+        });
   const nextState: QualificationState = {
     ...previousState,
     relevant_turns: (previousState.relevant_turns || 0) + 1,
