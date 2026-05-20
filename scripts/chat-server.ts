@@ -1794,6 +1794,13 @@ function isGreetingMessage(message: string): boolean {
   ].includes(text);
 }
 
+function isGreetingOnlyMessage(message: string): boolean {
+  const text = normalizePolicyText(message);
+  if (!text) return false;
+  if (["dobry den", "dobry vecer", "dobry rano", "zdravim", "hello", "hi", "hey"].includes(text)) return true;
+  return /^(a+h+o+j+|c+a+u+|c+a+w+)$/.test(text);
+}
+
 type RoutingPlan = {
   needsRetrieval: boolean;
   retrievalQuery: string;
@@ -2372,10 +2379,13 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     return /\b(aby|aby som|že|a|alebo|pre|k|ku|s|so|na|do|od|ak|keď|ktorý|ktorá|ktoré|čo|by|ti|som|mohol|pomohol)$/i.test(lower);
   };
   const fallbackCompleteAnswer = (userMessage: string, answerSources: ChatSource[]): string => {
-    if (/^(ahoj|čau|cau|hello|hi|hey|dobrý deň|zdravím|zdravim)$/i.test(userMessage.trim())) {
+    if (isGreetingOnlyMessage(userMessage)) {
       return "Ahoj! Som tu pre teba, keď chceš poradiť s tepelným čerpadlom, klimatizáciou, servisom alebo dotáciami.\n\nČo chceš riešiť ako prvé?";
     }
     const source = answerSources[0];
+    if (!source) {
+      return "Prepáč, odpoveď sa teraz nedokončila správne. Skús mi to napísať ešte raz, pokojne úplne jednoducho.\n\nRiešiš skôr tepelné čerpadlo, klimatizáciu alebo servis?";
+    }
     const sentence = source?.snippet?.replace(/\s+/g, " ").split(/(?<=[.!?])\s+/)[0]?.trim();
     return [
       "### Stručne k otázke",
@@ -2504,6 +2514,72 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
   const conversation = getOrCreateActiveConversation(site, session);
   const previousMessages = getConversationMessages(conversation.id);
   const previousState = parseState(conversation.qualification_state_json);
+
+  if (isGreetingOnlyMessage(message)) {
+    const answer = "Ahoj! Som tu pre teba, keď chceš poradiť s tepelným čerpadlom, klimatizáciou, servisom alebo dotáciami.\n\nČo chceš riešiť ako prvé?";
+    const sources: ChatSource[] = [];
+
+    if (!previousMessages.length) {
+      insertEvent({
+        siteId: site.id,
+        sessionId: session.id,
+        conversationId: conversation.id,
+        eventType: "widget_opened",
+        payload: { inferredFromFirstMessage: true, currentUrl: requestBody.currentUrl },
+      });
+    }
+    insertEvent({
+      siteId: site.id,
+      sessionId: session.id,
+      conversationId: conversation.id,
+      eventType: "message_sent",
+      payload: { currentUrl: requestBody.currentUrl, referrer: requestBody.metadata?.referrer, messageLength: message.length },
+    });
+    insertMessage({ conversationId: conversation.id, role: "user", content: message });
+    insertEvent({
+      siteId: site.id,
+      sessionId: session.id,
+      conversationId: conversation.id,
+      eventType: "retrieval_skipped",
+      payload: { reason: "greeting_fast_path", routerUsed: false },
+    });
+    updateConversation(conversation.id, {
+      intent: "greeting",
+      qualificationStateJson: JSON.stringify(previousState),
+    });
+    insertMessage({ conversationId: conversation.id, role: "assistant", content: answer, confidence: "high", sources });
+    insertEvent({
+      siteId: site.id,
+      sessionId: session.id,
+      conversationId: conversation.id,
+      eventType: "answer_returned",
+      payload: { confidence: "high", intent: "greeting", retrievalUsed: false, llmUsed: false },
+    });
+
+    return {
+      conversationId: conversation.id,
+      answer,
+      intent: "greeting",
+      confidence: "high",
+      topScore: 0,
+      sources,
+      leadCapture: { shouldAsk: false, nextQuestion: null },
+      lead: { captured: false, score: 0 },
+      debug: {
+        answerMode: "general_chat",
+        llmAttempted: false,
+        llmUsed: false,
+        llmRouterUsed: false,
+        llmRouterError: null,
+        retrievalQuery: "",
+        contextTopic: null,
+        contextCarried: false,
+      },
+      action: null,
+      fallbackUsed: false,
+      responseTimeMs: Date.now() - responseStartedAt,
+    };
+  }
 
   const safetyRoute = detectSafetyRoute(message);
   if (safetyRoute.triggered) {
