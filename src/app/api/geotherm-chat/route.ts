@@ -27,9 +27,8 @@ function cleanMarkdownResponse(value: string) {
     .trim();
 }
 
-function ensureMarkdownHeading(value: string) {
-  if (/^#{1,3}\s+/m.test(value)) return value;
-  return `### GEOTHERM odpoveď\n\n${value}`;
+function normalizeAnswerFormat(value: string) {
+  return value.replace(/^#{1,3}\s*(GEOTHERM odpoveď|Stručne k otázke)\s*\n+/i, "").trim();
 }
 
 function enforceSingleFollowUpQuestion(value: string, followUpQuestion: string) {
@@ -79,7 +78,7 @@ function deterministicAnswerFromPlan(plan: ChatAnswerPlan) {
   }
 
   if (plan.intent === "price_question") {
-    return `### Cena závisí od návrhu\n\nPresnú cenu nemám v podkladoch bezpečne určenú. Pri dome rozhoduje hlavne plocha, aktuálne kúrenie, typ systému a rozsah montáže.\n\n${plan.followupQuestion}`;
+    return `Cena tepelného čerpadla sa nedá povedať jednou univerzálnou sumou. Závisí hlavne od domu, tepelných strát, výkonu, značky a modelu, či sa rieši aj teplá voda, od existujúceho kúrenia, rozsahu montáže, úprav kotolne, elektroprípravy a prípadných dotácií.\n\nCenníkové akcie sú len orientačný podklad pre konkrétne zostavy, nie finálna cena pre každý dom.\n\n${plan.followupQuestion}`;
   }
 
   if (plan.intent === "image_meta_question" && plan.selectedImages.length) {
@@ -231,6 +230,89 @@ function answerImageMetaQuestion(messages: ChatMessage[]) {
   return `### Čo zobrazujú poslané obrázky\n\n| Obrázok | Čo je na ňom | Prečo sa hodí |\n|---|---|---|\n${rows}\n\nChcete, aby som pri ďalších odpovediach zobrazoval pod obrázkami vždy aj takýto krátky popis?`;
 }
 
+function operationalFaqAnswer(raw: string) {
+  const text = normalizeText(raw);
+  const finalQuestion = "Chcete riešiť konkrétnu zákazku alebo len overujete možnosti?";
+
+  if (/(havarijn|havari|poruch).*vyjazd|vyjazd.*(havarijn|havari|poruch)/.test(text)) {
+    return `Havarijné výjazdy robíme u našich zákazníkov. Pri nových dopytoch je najlepšie najprv stručne popísať problém a lokalitu, aby sa dalo povedať, či je výjazd reálny.\n\n${finalQuestion}`;
+  }
+
+  if (/(ake|ktore|do akych).*(mesta|miest|okres|lokalit)|kam chodite|posobite|rakus/.test(text)) {
+    return `Pracujeme v mestách na západnom a strednom Slovensku a aj v pohraničí Rakúska. Pri konkrétnej obci je dobré overiť dostupnosť podľa termínu a typu práce.\n\n${finalQuestion}`;
+  }
+
+  if (/(este dnes|dnes prist|prist dnes|termin dnes)/.test(text)) {
+    return `Práce je ideálne naplánovať aspoň 24 hodín vopred. V ojedinelých prípadoch vieme prísť aj dnes, ale závisí to od lokality, rozsahu práce a vyťaženia technikov.\n\n${finalQuestion}`;
+  }
+
+  if (/(vikend|sobot|nedel)/.test(text)) {
+    return `Cez víkendy zväčša nerobíme. Pri špecifickej situácii sa dá overiť dostupnosť individuálne, ale štandardne je lepšie počítať s pracovnými dňami.\n\n${finalQuestion}`;
+  }
+
+  if (/(ake sluzby|co robite|poskytujete|ponukate)/.test(text)) {
+    return `Robíme rozvody kúrenia a chladenia, podlahové kúrenie a chladenie, stropné kúrenie a chladenie, vrty pre tepelné čerpadlá, rekuperácie a všetky typy tepelných čerpadiel.\n\n${finalQuestion}`;
+  }
+
+  if (/(novy|nove|novych|vymen).*kotol|plynovy kotol|montaz kotl/.test(text)) {
+    return `Áno, vieme vymeniť aj plynový kotol. Dĺžka a rozsah práce závisí od kotolne, napojenia a toho, čo treba pri výmene upraviť.\n\n${finalQuestion}`;
+  }
+
+  if (/(bytove jad|jadra|jadro)/.test(text)) {
+    return `Bytové jadrá nerobíme. Zameriavame sa na vykurovanie, chladenie, tepelné čerpadlá, rekuperácie a súvisiace technické riešenia.\n\n${finalQuestion}`;
+  }
+
+  if (/(kominar|kominarsk)/.test(text)) {
+    return `Kominárske práce nerobíme. Vieme však riešiť vykurovanie, kotolňu alebo výmenu zdroja tepla v rozsahu našich služieb.\n\n${finalQuestion}`;
+  }
+
+  if (/(elektroinstal|elektrik).*kotl|kotl.*(elektroinstal|elektrik)/.test(text)) {
+    return `Elektroinštaláciu ku kotlom robíme občas, no zákazníci si ju zväčša zabezpečia vlastným elektrikárom. Pri ponuke sa dá povedať, čo presne bude treba pripraviť.\n\n${finalQuestion}`;
+  }
+
+  if (/(pre firmy|firmam|firem|komerc)/.test(text)) {
+    return `Áno, robíme aj pre firmy. Pri firemných priestoroch závisí návrh najmä od typu objektu, prevádzky a očakávaného vykurovania alebo chladenia.\n\n${finalQuestion}`;
+  }
+
+  if (/(male zakazky|mala zakazka|mensie zakazky|drobne)/.test(text)) {
+    return `Áno, robíme aj malé zákazky. Najrýchlejšie je popísať rozsah práce a lokalitu, aby sa dalo povedať, ako ju zaradiť do plánu.\n\n${finalQuestion}`;
+  }
+
+  if (/(certifikac|opravnenie).*(plyn|plynove)|plynove zariadenia/.test(text)) {
+    return `Áno, máme certifikáciu na plynové zariadenia.\n\n${finalQuestion}`;
+  }
+
+  if (/(poistenie|zodpovednosti|poisteni)/.test(text)) {
+    return `Áno, máme poistenie zodpovednosti.\n\n${finalQuestion}`;
+  }
+
+  if (/(ako dlho|kolko trva|trva).*(montaz|vymena).*kotl|montaz kotl/.test(text)) {
+    return `Montáž kotla závisí od zložitosti kotolne. Pri jednoduchej výmene kotla to môže byť od jedného dňa, pri zložitejšej kotolni treba počítať s individuálnym plánom.\n\n${finalQuestion}`;
+  }
+
+  if (/(nacenit|ponuka|odhad).*(fot|obraz)|fot.*(nacenit|ponuka|odhad)/.test(text)) {
+    return `Áno, ak sú fotografie dobré a kvalitné, orientačná ponuka sa dá pripraviť aj podľa fotiek. Presnejšie nacenenie však závisí od toho, či je z fotiek vidieť kotolňu, napojenia a rozsah úprav.\n\n${finalQuestion}`;
+  }
+
+  if (/whatsapp|whats app/.test(text)) {
+    return `Áno, cez WhatsApp komunikovať vieme, ale preferujeme email alebo telefón. Pri technických veciach je email praktickejší, lebo sa k nemu dajú priložiť fotky a podklady.\n\n${finalQuestion}`;
+  }
+
+  if (/(email|mailom|e mail)/.test(text)) {
+    return `Áno, emailom komunikujeme. Je to vhodné hlavne pri fotkách, projekte, pôdoryse alebo podkladoch k naceneniu.\n\n${finalQuestion}`;
+  }
+
+  if (/(zaloha|zalohy|preddavok)/.test(text)) {
+    return `Áno, zálohy berieme. Konkrétna výška závisí od typu zákazky, materiálu a dohodnutého rozsahu prác.\n\n${finalQuestion}`;
+  }
+
+  if (/(faktura|fakturu|na fakturu)/.test(text)) {
+    return `Áno, dá sa platiť na faktúru.\n\n${finalQuestion}`;
+  }
+
+  return null;
+}
+
 function deterministicResponse(latestUserMessage: ChatMessage, state: ConversationState) {
   const text = normalizeText(latestUserMessage.content);
   const topic = topicLabel(state.lastTopic);
@@ -291,6 +373,15 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Message is required." }, { status: 400 });
   }
 
+  const faqAnswer = operationalFaqAnswer(latestUserMessage.content);
+  if (faqAnswer) {
+    return NextResponse.json({
+      message: enforceSingleFollowUpQuestion(normalizeAnswerFormat(faqAnswer), followUpQuestion),
+      conversationState,
+      followupQuestion: followUpQuestion,
+    });
+  }
+
   if (isImageMetaQuestion(latestUserMessage.content)) {
     return NextResponse.json({
       message: enforceSingleFollowUpQuestion(answerImageMetaQuestion(messages), followUpQuestion),
@@ -299,10 +390,11 @@ export async function POST(request: Request) {
   }
 
   if (body.testMode) {
-    const testQueryContext = messages
-      .slice(-4)
+    const testRecentContext = messages
+      .slice(-4, -1)
       .map((message) => `${message.role}: ${message.content}`)
       .join("\n");
+    const testQueryContext = `latest user question: ${latestUserMessage.content}\nrecent context:\n${testRecentContext}`;
     const testKnowledge = getRelevantGeothermKnowledge(testQueryContext);
     const { plan, debug } = buildGeothermAnswerPlanWithDebug({
       userMessage: latestUserMessage.content,
@@ -313,7 +405,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({
       message: enforceSingleFollowUpQuestion(
-        ensureMarkdownHeading(deterministicResponse(latestUserMessage, conversationState)),
+        normalizeAnswerFormat(deterministicResponse(latestUserMessage, conversationState)),
         followUpQuestion,
       ),
       conversationState,
@@ -324,10 +416,11 @@ export async function POST(request: Request) {
     });
   }
 
-  const queryContext = messages
-    .slice(-4)
+  const recentContext = messages
+    .slice(-4, -1)
     .map((message) => `${message.role}: ${message.content}`)
     .join("\n");
+  const queryContext = `latest user question: ${latestUserMessage.content}\nrecent context:\n${recentContext}`;
   const knowledge = getRelevantGeothermKnowledge(queryContext);
   const { plan, debug } = buildGeothermAnswerPlanWithDebug({
     userMessage: latestUserMessage.content,
@@ -347,8 +440,8 @@ export async function POST(request: Request) {
   );
   const conversationGuide = `${conversationGuideInstruction(messages)} Aktuálne platí finálna otázka: "${followUpQuestion}"`;
   const formatInstruction = wantsComparison
-    ? "Použi presne tento kompaktný formát: ### Krátky nadpis\n1 veta úvodu.\n| Položka | Kedy dáva zmysel | Hlavný prínos |\n|---|---|---|\n| Názov | krátky text | krátky text |\nPotom 1 krátku otázku na pokračovanie. Celkovo max 100 slov. Nikdy nezarovnávaj tabuľku medzerami. Nepouži vnorené odrážky."
-    : "Použi krátky nadpis, 1 stručnú sekciu a najviac jeden krátky zoznam. Celkovo max 75 slov. Nepoužívaj tabuľku, ak používateľ výslovne nežiada porovnanie. Skonči jednou otázkou, ktorá posunie zákazníka k výberu riešenia.";
+    ? "Použi kompaktný formát s krátkym nadpisom iba ak pomáha čitateľnosti, potom 1 veta úvodu a Markdown tabuľku. Celkovo max 100 slov. Nikdy nezarovnávaj tabuľku medzerami. Nepouži vnorené odrážky."
+    : "Začni priamo odpoveďou na poslednú otázku používateľa. Nadpis použi len vtedy, keď odpoveď naozaj potrebuje štruktúru. Celkovo max 85 slov. Nepoužívaj tabuľku, ak používateľ výslovne nežiada porovnanie. Skonči jednou prirodzenou otázkou.";
 
   const answerPlanPrompt = `ANSWER PLAN:
 Intent: ${plan.intent}
@@ -405,6 +498,7 @@ Práca so zdrojmi:
 - Ak confidence v Answer Plane je nízka, priznaj neistotu a polož spresňujúcu otázku.
 
 Konverzačné riadenie:
+Najdôležitejšia je posledná otázka používateľa. Starší kontext použi len ako doplnok, nie ako dôvod odpovedať na inú tému.
 ${conversationGuide}
 
 Aktuálna pamäť rozhovoru:
@@ -439,7 +533,7 @@ ${knowledge.context}`,
   }
 
   const message = stripMarkdownImagesFromMessage(
-    ensureMarkdownHeading(
+    normalizeAnswerFormat(
       cleanMarkdownResponse(
         generatedText,
       ),

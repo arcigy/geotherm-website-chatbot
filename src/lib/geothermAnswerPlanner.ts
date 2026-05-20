@@ -119,6 +119,7 @@ function confidenceFor(input: {
   topic?: string;
   chunks: RetrievedKnowledgeChunk[];
 }) {
+  if (input.chunks[0]?.id.startsWith("geotherm-custom-")) return 0.86;
   if (input.entities.some((entity) => entity.type === "product") && input.intent === "product_question") return 0.88;
   if (input.entities.length && input.intent === "comparison_question") return 0.84;
   if (input.entities.length) return 0.82;

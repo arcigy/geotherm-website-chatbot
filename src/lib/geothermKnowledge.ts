@@ -1,4 +1,5 @@
 import knowledge from "@/data/geotherm-knowledge.json";
+import { geothermSupplementalKnowledgePages } from "./geothermSupplementalKnowledge";
 import type { RetrievedKnowledgeChunk } from "./geothermTypes";
 
 type KnowledgeImage = {
@@ -55,7 +56,7 @@ export type KnowledgeInspectionImage = RetrievedImage & {
   tags: string[];
 };
 
-const pages = knowledge.pages as KnowledgePage[];
+const pages = [...geothermSupplementalKnowledgePages, ...(knowledge.pages as KnowledgePage[])];
 
 const genericImagePattern =
   /logo|avatar|gravatar|sport|armwrestling|sutaz|lego|malovanka|nadej|svetielko|autor|author|coneco|racioenergia|aurel|stodola|simon-podpora|pf-|diplom|skolenie|vyroba/i;
@@ -175,6 +176,14 @@ const synonymGroups = [
   ["servis", "montaz", "montáž", "instalacia", "inštalácia"],
 ];
 
+const supplementalSynonymGroups = [
+  ["havarijny", "havarijne", "vyjazd", "porucha", "servis"],
+  ["vikend", "vikendy", "sobota", "nedela"],
+  ["whatsapp", "email", "telefon", "komunikacia"],
+  ["faktura", "fakturu", "zaloha", "zalohy", "platba"],
+  ["kominarske", "kominar", "bytove", "jadro", "jadra"],
+];
+
 function normalize(value: string) {
   return value
     .toLowerCase()
@@ -232,7 +241,11 @@ function tokensFrom(value: string) {
       ["tepelne", "cerpadlo", "rekuperacia", "podlahove", "vykurovanie"].forEach((synonym) => expanded.add(synonym));
     }
 
-    for (const group of synonymGroups) {
+    if (["cena", "stoji", "stalo", "stat", "nacenit", "ponuka", "rozpocet"].includes(token)) {
+      ["tepelne", "cerpadlo", "nacenenie", "ponuka", "rozpocet"].forEach((synonym) => expanded.add(synonym));
+    }
+
+    for (const group of [...synonymGroups, ...supplementalSynonymGroups]) {
       if (group.map(normalize).includes(token)) {
         group.map(normalize).forEach((synonym) => expanded.add(synonym));
       }
@@ -250,6 +263,13 @@ function tokenScore(value: string, tokens: string[], weight: number) {
 function scoreChunk(page: KnowledgePage, chunk: KnowledgeChunk, tokens: string[]) {
   const archivePenalty = /(^|\/)(blog|category|tag)\//i.test(page.slug) || /arch/i.test(normalize(page.title)) ? 4 : 0;
   const haystack = normalize(`${page.url} ${page.title} ${page.headings.join(" ")} ${chunk.content}`);
+  const supplementalBaseScore =
+    tokenScore(page.title, tokens, 10) +
+    tokenScore(page.tags.join(" "), tokens, 8) +
+    tokenScore(page.headings.join(" "), tokens, 5) +
+    tokenScore(page.description, tokens, 4) +
+    tokenScore(chunk.content, tokens, 1);
+  const supplementalBoost = chunk.id.startsWith("geotherm-custom-") && supplementalBaseScore > 0 ? 55 : 0;
   const exactProductBoost =
     (tokens.includes("comfoair") && haystack.includes("comfoair q") ? 70 : 0) +
     (tokens.includes("railfix") && haystack.includes("railfix") ? 60 : 0) +
@@ -261,11 +281,8 @@ function scoreChunk(page: KnowledgePage, chunk: KnowledgeChunk, tokens: string[]
     (tokens.includes("wpl") && haystack.includes("wpl") ? 45 : 0);
 
   return (
-    tokenScore(page.title, tokens, 10) +
-    tokenScore(page.tags.join(" "), tokens, 8) +
-    tokenScore(page.headings.join(" "), tokens, 5) +
-    tokenScore(page.description, tokens, 4) +
-    tokenScore(chunk.content, tokens, 1) +
+    supplementalBaseScore +
+    supplementalBoost +
     exactProductBoost -
     archivePenalty
   );
