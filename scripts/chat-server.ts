@@ -1842,6 +1842,33 @@ function isContactQuestion(message: string): boolean {
   );
 }
 
+const serviceAreaRetrievalQuery =
+  "Kvalitné vykurovanie tepelné čerpadlo prídeme nainštalovať do týchto okresov Geotherm pôsobnosť mestá okresy";
+
+function isServiceAreaQuestion(message: string): boolean {
+  const text = normalizePolicyText(message);
+  const hasVisitIntent = [
+    "pridete",
+    "prist",
+    "dojdete",
+    "chodite",
+    "vyjazd",
+    "obhliad",
+    "servis",
+    "montaz",
+    "namont",
+    "nainstal",
+    "instalac",
+    "spravit",
+    "urobit",
+    "realizac",
+  ].some((term) => text.includes(term));
+  const hasLocationSignal =
+    /\b(som|sme|byvam|byvame|nachadzam|nachadzame)\s+(z|zo|v|vo)\s+[a-z]/.test(text) ||
+    /\b(do|v|vo)\s+[a-z][a-z\s-]{2,}/.test(text);
+  return hasVisitIntent && hasLocationSignal;
+}
+
 function inferTopicFromHistory(messages: Array<{ role: string; content: string }>): { topic: string; query: string; intent: SalesIntent } | null {
   for (const message of [...messages].reverse().slice(0, 8)) {
     if (message.role !== "user") continue;
@@ -2019,6 +2046,21 @@ function deterministicRoutingPlan(message: string, previousMessages: Array<{ rol
       contextCarried: false,
     };
   }
+  if (isServiceAreaQuestion(message)) {
+    const text = normalizePolicyText(message);
+    const intentHint: SalesIntent = text.includes("servis") || text.includes("vyjazd") ? "service" : "installation";
+    return {
+      needsRetrieval: true,
+      retrievalQuery: serviceAreaRetrievalQuery,
+      answerMessage: message,
+      contextTopic: "pôsobnosť Geotherm podľa okresov",
+      intentHint,
+      answerMode: "rag_answer",
+      confidence: "high",
+      reason: "service_area_question",
+      contextCarried: false,
+    };
+  }
   if (isContactQuestion(message)) {
     return {
       needsRetrieval: true,
@@ -2080,6 +2122,7 @@ function routingPlanFromLlm(decision: RetrievalRouteDecision | undefined, fallba
 function mergeRoutingPlans(message: string, fallback: RoutingPlan, llmDecision: RetrievalRouteDecision | undefined): RoutingPlan {
   const llmPlan = routingPlanFromLlm(llmDecision, fallback, message);
   if (fallback.reason === "page_overview_without_retrieval") return fallback;
+  if (fallback.reason === "service_area_question") return fallback;
   if (!fallback.contextCarried) return llmPlan;
 
   const fallbackTopicKey = normalizePolicyText(fallback.contextTopic || "").split(" ")[0];
@@ -2595,6 +2638,7 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     "- questions about products, models, brands, specifications",
     "- questions about price, cost, budget",
     "- questions about installation, process, timeline",
+    "- questions asking whether Geotherm can come to a city, town, district, or location for service, installation, visit, or inspection",
     "- questions about subsidies or grants",
     "- questions about efficiency, COP, energy savings",
     "- any question that would benefit from factual information about heat pumps or air conditioning",
@@ -2605,6 +2649,7 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     "- very short follow-up answers to a direct question (áno, nie, ok, dobre)",
     "- user providing personal data only (name, email, phone, address)",
     "",
+    "For city/location availability questions, use a stable query about Geotherm service area, districts and where they come to install, not the city name alone.",
     "retrievalQuery: if needsRetrieval is true, write a specific Slovak search query that would find relevant information. If false, set to null.",
   ].join("\n");
   const routerInput = JSON.stringify(
@@ -2625,9 +2670,14 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     responseMimeType: "application/json",
   });
   const route = parseRouterResponse(routerLlm.content);
+  const serviceAreaQuestion = isServiceAreaQuestion(message);
+  if (serviceAreaQuestion) {
+    route.needsRetrieval = true;
+    route.retrievalQuery = serviceAreaRetrievalQuery;
+  }
   const wordCount = message.trim().split(/\s+/).length;
   const isObviousGreeting = /^(ahoj|čau|cau|hello|hi|hey|dobrý deň|zdravím|zdravim)$/i.test(message.trim());
-  if (!isObviousGreeting && wordCount >= 3 && !route.needsRetrieval) {
+  if (!serviceAreaQuestion && !isObviousGreeting && wordCount >= 3 && !route.needsRetrieval) {
     route.needsRetrieval = true;
     route.retrievalQuery = message;
   }
@@ -2643,6 +2693,7 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     const topResults = retrieval.results.slice(0, 5);
     topScore = topResults[0]?.score.finalScore ?? 0;
     sources = topResults.slice(0, 3).map(sourceFromResult);
+    const ragSnippetLimit = serviceAreaQuestion ? 2400 : 1200;
     ragContext = topResults
       .map((result, index) =>
         [
@@ -2650,7 +2701,7 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
           `Title: ${result.chunk.pageTitle}`,
           `Section: ${result.chunk.sectionHeading}`,
           `URL: ${result.chunk.url}`,
-          `Text: ${(result.snippet || result.chunk.text).replace(/\s+/g, " ").slice(0, 1200)}`,
+          `Text: ${(result.snippet || result.chunk.text).replace(/\s+/g, " ").slice(0, ragSnippetLimit)}`,
         ].join("\n"),
       )
       .join("\n\n");
@@ -2683,6 +2734,8 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     "Ak použiješ tabuľku, musí mať najviac 3 riadky a 2 stĺpce. Každá bunka musí byť krátka, maximálne jedna krátka veta. Nikdy nerob široké tabuľky ani dlhé texty v bunkách.",
     "",
     "Ak sa používateľ pýta „aké predávate“, „aké máte“, „aké typy“, „rozdiel“, „porovnaj“, „čo je lepšie“ alebo chce vybrať produkt, môžeš použiť krátku tabuľku, ale iba ak ostane prehľadná.",
+    "",
+    "Ak sa používateľ pýta, či prídete do konkrétneho mesta, obce alebo okresu, rozhoduj iba podľa RAG kontextu s okresmi. Ak je miesto jasne v zozname, povedz prirodzene, že podľa webu tam Geotherm chodí alebo vie prísť. Ak miesto v zozname nevidíš alebo si nie si istý, netvrď áno; povedz, že dostupnosť treba overiť podľa presnej adresy.",
     "",
     "Markdown nepreháňaj: žiadne dlhé články, žiadne marketingové frázy, žiadne zbytočné emoji. Odpoveď drž stručnú, zvyčajne do 120–180 slov, a vždy sa pýtaj maximálne jednu otázku.",
     "",

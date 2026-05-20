@@ -1,11 +1,11 @@
 # Router Test Report
 
-Generated: 2026-05-08T18:18:50.172Z
+Generated: 2026-05-20T09:23:47.280Z
 
 ## Summary
 
-- total tests: 53
-- passed: 53
+- total tests: 57
+- passed: 57
 - failed: 0
 - pass rate: 100%
 - verdict: PASS
@@ -43,6 +43,7 @@ Generated: 2026-05-08T18:18:50.172Z
 | not_context_reply | 1 | 1 | 0 |
 | greeting_plus_direct | 1 | 1 | 0 |
 | greeting_plus_contact | 1 | 1 | 0 |
+| service_area | 4 | 4 | 0 |
 
 ## Failed Cases
 

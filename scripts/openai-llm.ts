@@ -370,6 +370,7 @@ function routePayload(input: { message: string; previousMessages: Message[] }): 
         "CRITICAL: act as the AI decision layer before retrieval. Decide if the website search tool is needed and how to query it.",
         "If the user gives a short follow-up like novy, novy projekt, ano, nie, rekonstrukcia, inherit the prior HVAC topic and rewrite the retrieval query with that context.",
         "For novy/novy projekt after heat-pump advice, use a query about tepelne cerpadlo novostavba navrh domu podlahove kurenie chladenie tepla voda projekt, not news or factory pages.",
+        "If the user asks whether Geotherm can come to, service, install, inspect, or do work in any city/town/district/location, needsRetrieval must be true and retrievalQuery must be about Geotherm posobnost okresy prideme nainstalovat, not the city alone.",
         "Never search one generic word alone.",
         "Return JSON only.",
         "Use the whole recent conversation, not only the latest user message.",

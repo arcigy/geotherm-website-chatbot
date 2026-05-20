@@ -16606,5 +16606,17 @@
     "chunkIndex": 1,
     "text": "Ak sa návštevník pýta: aké tepelné čerpadlá predávate, aké čerpadlá máte, aké typy čerpadiel ponúkate alebo aký je prehľad tepelných čerpadiel, odpoveď má byť najprv všeobecná. Geotherm rieši najmä tepelné čerpadlá vzduch-voda, zem-voda a voda-voda; v niektorých témach sa spomína aj vzduch-vzduch. V knowledge sa nachádzajú značky a modely NIBE, Vaillant a niektoré IVT riešenia. Netreba hneď tlačiť jeden konkrétny model, pretože vhodný výber závisí od domu, pozemku, rozvodov kúrenia, požadovaného výkonu, hlučnosti, rozpočtu a toho, či ide o novostavbu alebo rekonštrukciu. Správna odpoveď má nechať používateľovi výber smeru a položiť jednu otázku o dome alebo type projektu.",
     "textLength": 680
+  },
+  {
+    "sourceType": "manual",
+    "sourceId": 900022,
+    "pageTitle": "Pôsobnosť Geotherm - mestá a okresy",
+    "url": "manual://geotherm/manual-posobnost-mesta-okresy",
+    "slug": "manual-posobnost-mesta-okresy",
+    "modified": "2026-05-20T00:00:00",
+    "sectionHeading": "Kam vie Geotherm prísť na montáž, obhliadku alebo riešenie",
+    "chunkIndex": 1,
+    "text": "Ak sa návštevník pýta, či Geotherm príde do konkrétneho mesta, obce alebo okresu, odpoveď sa má rozhodovať podľa zoznamu okresov z webu. Geotherm uvádza, že kvalitné vykurovanie tepelným čerpadlom, vykurovanie, chladenie, podlahové kúrenie, stropné chladenie a vetranie s rekuperáciou vie prísť nainštalovať do týchto okresov: Bánovce nad Bebravou, Banská Bystrica, Banská Štiavnica, Bratislava, Brezno, Bytča, Detva, Dolný Kubín, Dunajská Streda, Galanta, Hlohovec, Ilava, Komárno, Košice, Krupina, Kysucké Nové Mesto, Levice, Levoča, Liptovský Mikuláš, Lučenec, Malacky, Martin, Myjava, Námestovo, Nitra, Nové Mesto nad Váhom, Nové Zámky, Partizánske, Pezinok, Piešťany, Poltár, Poprad, Považská Bystrica, Prešov, Prievidza, Púchov, Revúca, Rimavská Sobota, Rožňava, Ružomberok, Senec, Senica, Skalica, Šaľa, Topoľčany, Trenčín, Trnava, Turčianske Teplice, Tvrdošín, Veľký Krtíš, Zlaté Moravce, Zvolen, Žarnovica a Žiar nad Hronom. Ak je používateľovo mesto alebo okres v tomto zozname, odpoveď môže povedať, že podľa webu tam Geotherm chodí alebo vie prísť. Ak miesto v zozname nie je alebo nie je jasné, netreba tvrdiť áno; povedz, že dostupnosť treba overiť podľa presnej adresy a opýtaj sa, či ide o montáž, servis alebo obhliadku.",
+    "textLength": 1376
   }
 ]

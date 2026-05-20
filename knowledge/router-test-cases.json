@@ -369,5 +369,61 @@
     "history": [],
     "message": "ahoj, ako vás kontaktovať?",
     "expected": { "needsRetrieval": true, "answerMode": "contact_intent", "contextCarried": false, "retrievalQueryIncludes": ["kontakt"] }
+  },
+  {
+    "id": "RT054",
+    "category": "service_area",
+    "history": [],
+    "message": "som z Trnavy, viete mi prísť namontovať tepelné čerpadlo?",
+    "expected": {
+      "needsRetrieval": true,
+      "answerMode": "rag_answer",
+      "contextCarried": false,
+      "intentHint": "installation",
+      "retrievalQueryIncludes": ["prídeme", "nainštalovať", "okresov"],
+      "retrievalQueryNotIncludes": ["Trnavy"]
+    }
+  },
+  {
+    "id": "RT055",
+    "category": "service_area",
+    "history": [],
+    "message": "som z Košíc, dokážete sem prísť spraviť servis?",
+    "expected": {
+      "needsRetrieval": true,
+      "answerMode": "rag_answer",
+      "contextCarried": false,
+      "intentHint": "service",
+      "retrievalQueryIncludes": ["Geotherm", "okresy"],
+      "retrievalQueryNotIncludes": ["Košíc"]
+    }
+  },
+  {
+    "id": "RT056",
+    "category": "service_area",
+    "history": [],
+    "message": "chodíte aj do Pezinka na obhliadku?",
+    "expected": {
+      "needsRetrieval": true,
+      "answerMode": "rag_answer",
+      "contextCarried": false,
+      "intentHint": "installation",
+      "retrievalQueryIncludes": ["pôsobnosť", "mestá", "okresy"],
+      "retrievalQueryNotIncludes": ["Pezinka"]
+    }
+  },
+  {
+    "id": "RT057",
+    "category": "service_area",
+    "history": [],
+    "message": "bývam v Michalovciach, spravíte tu montáž klimatizácie?",
+    "expected": {
+      "needsRetrieval": true,
+      "answerMode": "rag_answer",
+      "contextCarried": false,
+      "intentHint": "installation",
+      "retrievalQueryIncludes": ["prídeme", "okresov"],
+      "retrievalQueryNotIncludes": ["Michalovciach"]
+    }
   }
 ]
