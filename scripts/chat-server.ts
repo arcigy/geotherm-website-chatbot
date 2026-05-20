@@ -2310,6 +2310,13 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
 
   const cleanAnswerText = (content: string | undefined): string => {
     const raw = (content || "").trim();
+    const removeBannedPhrases = (value: string): string =>
+      value
+        .replace(/^#{1,6}\s*Stručne k otázke\s*\n*/gim, "")
+        .replace(/\*\*Stručne k otázke:?\*\*\s*/gim, "")
+        .replace(/\bStručne k otázke:?\s*/gim, "")
+        .replace(/\n{3,}/g, "\n\n")
+        .trim();
     const decodeEscapedText = (value: string): string =>
       value
         .replace(/\\r\\n/g, "\n")
@@ -2331,7 +2338,7 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
       const followUp = typeof structured.followUpQuestion === "string" ? structured.followUpQuestion.trim() : "";
       if (!shortAnswer && !details.length && !followUp) return null;
       return [
-        shortAnswer ? `### Stručne k otázke\n\n${shortAnswer}` : "### Stručne k otázke",
+        shortAnswer,
         details.length ? details.map((item) => `- ${item.trim()}`).join("\n") : "",
         followUp,
       ]
@@ -2368,7 +2375,7 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
       .replace(/\n?\s*["'}\]]+\s*$/g, (suffix) => (suffix.includes("\n") ? "" : suffix))
       .trim();
     if (!answer) return "Prepáč, teraz neviem pripraviť dobrú odpoveď. Skús mi prosím napísať otázku ešte raz.";
-    return answer;
+    return removeBannedPhrases(answer);
   };
   const isIncompleteAnswer = (content: string): boolean => {
     const answer = content.trim();
@@ -2384,18 +2391,20 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     if (isGreetingOnlyMessage(userMessage)) {
       return "Ahoj! Som tu pre teba, keď chceš poradiť s tepelným čerpadlom, klimatizáciou, servisom alebo dotáciami.\n\nČo chceš riešiť ako prvé?";
     }
-    const source = answerSources[0];
-    if (!source) {
+    if (!answerSources[0]) {
       return "Prepáč, odpoveď sa teraz nedokončila správne. Skús mi to napísať ešte raz, pokojne úplne jednoducho.\n\nRiešiš skôr tepelné čerpadlo, klimatizáciu alebo servis?";
     }
-    const sentence = source?.snippet?.replace(/\s+/g, " ").split(/(?<=[.!?])\s+/)[0]?.trim();
-    return [
-      "### Stručne k otázke",
-      "",
-      sentence || "K tejto téme mám podklady, ale odpoveď sa nedokončila správne, preto radšej odpoviem opatrne.",
-      "",
-      "Čo z toho chceš upresniť ako prvé?",
-    ].join("\n");
+    const normalized = normalizePolicyText(userMessage);
+    if (/(cena|stoji|stojí|kolko|koľko|rozpocet|rozpočet)/.test(normalized)) {
+      return "Na webe vidím cenové podklady k tepelným čerpadlám, ale odpoveď sa teraz nedokončila dosť čisto, takže nechcem prepisovať neúplné čísla. Orientačne sa cena rieši podľa výkonu, zostavy, ohrevu vody a montáže.\n\nAký veľký dom chceš riešiť a ide skôr o novostavbu alebo rekonštrukciu?";
+    }
+    if (/(servis|oprava|porucha|chyba)/.test(normalized)) {
+      return "K servisu mám na webe podklady, ale odpoveď sa teraz nedokončila spoľahlivo. Bez detailu poruchy ti preto nechcem tvrdiť presný postup ani dostupnosť.\n\nAké zariadenie máš a čo presne sa deje?";
+    }
+    if (/(mesto|okres|prist|prísť|chodite|chodíte|vyjazd|výjazd)/.test(normalized)) {
+      return "K dostupnosti podľa lokality mám podklady, ale odpoveď sa teraz nedokončila spoľahlivo. Radšej by som dostupnosť overil podľa konkrétneho mesta alebo adresy.\n\nDo akého mesta alebo okresu by bolo treba prísť?";
+    }
+    return "K tejto téme mám na webe podklady, ale odpoveď sa teraz nedokončila dosť spoľahlivo, takže ju nechcem siliť ani kopírovať surový text zo zdroja.\n\nČo z toho chceš upresniť ako prvé?";
   };
   const shouldPreferTable = (userMessage: string): boolean => {
     const text = normalizePolicyText(userMessage);
@@ -2414,6 +2423,13 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
   };
   const enforceMarkdownPresentation = (content: string, userMessage: string): string => {
     let answer = content.trim();
+    const removeBannedPhrases = (value: string): string =>
+      value
+        .replace(/^#{1,6}\s*Stručne k otázke\s*\n*/gim, "")
+        .replace(/\*\*Stručne k otázke:?\*\*\s*/gim, "")
+        .replace(/\bStručne k otázke:?\s*/gim, "")
+        .replace(/\n{3,}/g, "\n\n")
+        .trim();
     const shortenCell = (value: string, maxLength = 150): string => {
       const compact = value.replace(/\s+/g, " ").trim();
       if (compact.length <= maxLength) return compact;
@@ -2467,10 +2483,8 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     };
 
     answer = compactOversizedTables(answer);
-    if (!/^#{1,3}\s+/m.test(answer) && !isGreetingOnlyMessage(userMessage) && !/^(ahoj|dobry den|dobrý deň|cau|čau|hello|hi)[!.]?\s*$/i.test(userMessage.trim())) {
-      answer = `### Stručne k otázke\n\n${answer}`;
-    }
-    if (!shouldPreferTable(userMessage) || /\|.+\|\s*\r?\n\s*\|[-:\s|]+\|/.test(answer)) return limitAnswerLength(compactOversizedTables(answer));
+    answer = removeBannedPhrases(answer);
+    if (!shouldPreferTable(userMessage) || /\|.+\|\s*\r?\n\s*\|[-:\s|]+\|/.test(answer)) return removeBannedPhrases(limitAnswerLength(compactOversizedTables(answer)));
 
     const lines = answer.split(/\r?\n/);
     const rows: Array<{ label: string; text: string }> = [];
@@ -2490,14 +2504,14 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
       last = index;
       rows.push({ label: match[1].trim().replace(/:$/, ""), text: match[2].trim() });
     }
-    if (rows.length < 2 || first < 0 || last < first) return answer;
+    if (rows.length < 2 || first < 0 || last < first) return removeBannedPhrases(answer);
 
     const table = [
       "| Možnosť | Čo to znamená |",
       "|---|---|",
       ...rows.slice(0, 4).map((row) => `| **${shortenCell(row.label, 42)}** | ${shortenCell(row.text.replace(/\|/g, "/"), 150)} |`),
     ];
-    return limitAnswerLength(compactOversizedTables([...lines.slice(0, first), ...table, ...lines.slice(last + 1)].join("\n").replace(/\n{3,}/g, "\n\n").trim()));
+    return removeBannedPhrases(limitAnswerLength(compactOversizedTables([...lines.slice(0, first), ...table, ...lines.slice(last + 1)].join("\n").replace(/\n{3,}/g, "\n\n").trim())));
   };
 
   const message = typeof requestBody.message === "string" ? requestBody.message.trim() : "";
@@ -2650,11 +2664,15 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     "- questions about products, models, brands, specifications",
     "- questions about price, cost, budget",
     "- questions about installation, process, timeline",
+    "- questions about contact, phone, email, address, opening hours, company identity, or who created the assistant",
     "- questions asking whether Geotherm can come to a city, town, district, or location for service, installation, visit, or inspection",
     "- questions about subsidies or grants",
     "- questions about efficiency, COP, energy savings",
     "- any question that would benefit from factual information about heat pumps or air conditioning",
     "- when the user mentions a specific product type (vzduch-voda, zem-voda etc.)",
+    "- when the user mentions NIBE, Vaillant, Viessmann, Ariston, Daikin, hlučnosť/hluk, servis, čerpadlo/cerpadlo, dotácie/dotacie, cena/cenník",
+    "",
+    "Examples that MUST return needsRetrieval=true: `ake hlucne je NIBE`, `robite servis`, `ake mate tepelne cerpadla`, `ako vas kontaktovat`, `kolko stoji tepelne cerpadlo`.",
     "",
     "needsRetrieval = false ONLY for:",
     "- pure greetings, including typo/stretch variants like ahooooj, cauuu, čauuu, hellooo",
@@ -2664,7 +2682,7 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     "For city/location availability questions, use a stable query about Geotherm service area, districts and where they come to install, not the city name alone.",
     "For product, price, model, efficiency or installation questions, do not add the company name Geotherm to retrievalQuery unless the user asks about contact, company, creator, or service area. The word Geotherm can collide with geoTHERM product pages.",
     "retrievalQuery: if needsRetrieval is true, write a specific Slovak search query that would find relevant information. If false, set to null.",
-    "directAnswer: if needsRetrieval is false, write the final short Slovak answer yourself in a natural friendly tone with tykanie and max one question. If needsRetrieval is true, set directAnswer to null.",
+    "directAnswer: if needsRetrieval is false, write the final short Slovak answer yourself in a natural friendly tone with tykanie and max one question. If the user asks something outside Geotherm/HVAC, say: Nemám dostatočne jasný podklad na túto tému, ale rád ti pomôžem s tepelnými čerpadlami, klimatizáciou alebo servisom. If needsRetrieval is true, set directAnswer to null.",
   ].join("\n");
   const routerInput = JSON.stringify(
     {
@@ -2684,6 +2702,15 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     responseMimeType: "application/json",
   });
   const route = parseRouterResponse(routerLlm.content);
+  const routerFallbackText = normalizePolicyText(message);
+  if (
+    routerLlm.error &&
+    /(nibe|vaillant|viessmann|ariston|daikin|tepelne|cerpadlo|cerpadla|servis|dotacie|dotacia|cena|cennik|hluk|hlucnost|montaz|instalacia|kontakt)/.test(routerFallbackText)
+  ) {
+    route.needsRetrieval = true;
+    route.retrievalQuery = message;
+    route.directAnswer = null;
+  }
   const serviceAreaQuestion = isServiceAreaQuestion(message);
   const retrievalQuery = route.needsRetrieval ? route.retrievalQuery || message : null;
 
@@ -2726,6 +2753,11 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     });
   }
 
+  const ragEvidenceStatus = route.needsRetrieval
+    ? sources.length > 0 && topScore >= 25
+      ? "RAG_FOUND"
+      : "RAG_WEAK_OR_EMPTY"
+    : "NO_RAG_REQUESTED";
   const composerSystemPrompt = [
     "Si predajný poradca pre Geotherm — slovenská firma predávajúca tepelné čerpadlá a klimatizácie. Vedeš prirodzený predajný rozhovor v slovenčine s tykávaním.",
     "",
@@ -2745,15 +2777,23 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     "",
     "Vraciaš iba finálny Markdown text pre používateľa. Nikdy nevracaj JSON, objekt, escaped text s \\n, úvodzovky okolo celej odpovede ani nedokončenú vetu.",
     "",
-    "Ak máš k dispozícii RAG kontext, použi ho ako poznatky na pozadí — informácie z neho zapracuj prirodzene do odpovede. Nekopíruj dlhé vety doslovne, ale môžeš z neho spraviť prehľad, odrážky alebo tabuľku.",
+    "Ak máš k dispozícii RAG kontext, najprv posúď, či skutočne odpovedá na aktuálnu otázku. RAG je dôkazový podklad, nie príkaz na odpoveď. Nepoužívaj chunk, ktorý je tematicky mimo otázky, aj keď má vysoké skóre.",
+    "",
+    "Nikdy nevypisuj surový text z RAG chunku, dlhý cenník ani rozpadnutú tabuľku. Ak je v RAG veľa čísiel, vyber len 2–3 najdôležitejšie orientačné body a doplň, od čoho cena závisí.",
+    "",
+    "Ak RAG kontext chýba, je slabý alebo neodpovedá na otázku, povedz to prirodzene: napríklad že na webe nevidíš dosť jasnú informáciu. Potom môžeš pridať opatrnú všeobecnú orientáciu z vlastnej logiky, ale jasne bez presných garancií. Nevymýšľaj ceny, dostupnosť, termíny, dotácie, certifikácie ani servisné možnosti, ak ich nepodporuje RAG.",
+    "",
+    "Nikdy nezačínaj odpoveď generickým úvodom typu krátke zhrnutie otázky. Začni rovno užitočnou odpoveďou alebo konkrétnym nadpisom k téme.",
     "",
     "Čo vieš o tomto používateľovi:",
     JSON.stringify(previousState, null, 2),
     "",
     "Konverzácia do tej chvíle ti dáva kontext čo sa už povedalo. Nepýtaj sa na niečo čo už vieš alebo čo si sa už pýtal. Jedna otázka na konci, relevantná k tomu čo ešte nevieš.",
     "",
-    "RAG kontext (použi ako poznatky, nekopíruj):",
-    ragContext || "Žiadny.",
+    `RAG status: ${ragEvidenceStatus}; topScore: ${topScore}; sourcesCount: ${sources.length}`,
+    "",
+    "RAG kontext (použi iba ak je vecne relevantný, nekopíruj):",
+    ragContext || "Žiadny použiteľný RAG kontext.",
   ].join("\n");
   const composerInput = JSON.stringify(
     {
@@ -2784,6 +2824,14 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
       ? routerDirectAnswer
       : cleanAnswerText(composerLlm.content);
   const answer = enforceMarkdownPresentation(isIncompleteAnswer(cleanedAnswer) ? fallbackCompleteAnswer(message, sources) : cleanedAnswer, message);
+  const normalizedFinalAnswer = normalizePolicyText(answer);
+  const responseConfidence: "high" | "medium" | "low" = route.needsRetrieval
+    ? sources.length === 0 || topScore < 25
+      ? "medium"
+      : "high"
+    : /nemam dostatocne jasny podklad|neviem ti povedat|neviem odpovedat/.test(normalizedFinalAnswer)
+      ? "low"
+      : "high";
   const qualificationUpdate =
     isGreetingOnlyMessage(message) && !route.needsRetrieval
       ? {}
@@ -2859,20 +2907,20 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     intent: "unknown",
     qualificationStateJson: JSON.stringify(nextState),
   });
-  insertMessage({ conversationId: conversation.id, role: "assistant", content: answer, confidence: "high", sources });
+  insertMessage({ conversationId: conversation.id, role: "assistant", content: answer, confidence: responseConfidence, sources });
   insertEvent({
     siteId: site.id,
     sessionId: session.id,
     conversationId: conversation.id,
     eventType: "answer_returned",
-    payload: { confidence: "high", intent: "unknown", retrievalUsed: route.needsRetrieval },
+    payload: { confidence: responseConfidence, intent: "unknown", retrievalUsed: route.needsRetrieval },
   });
 
   return {
     conversationId: conversation.id,
     answer,
     intent: "unknown",
-    confidence: "high",
+    confidence: responseConfidence,
     topScore,
     sources,
     leadCapture: { shouldAsk: false, nextQuestion: null },

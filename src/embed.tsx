@@ -298,6 +298,13 @@ function sanitizeMarkdown(value: string) {
 }
 
 function cleanAssistantContent(value: string) {
+  const removeBannedPhrases = (content: string) =>
+    content
+      .replace(/^#{1,6}\s*Stru\S+ne k ot\S+zke\s*\n*/gim, "")
+      .replace(/\*\*Stru\S+ne k ot\S+zke:?\*\*\s*/gim, "")
+      .replace(/\bStru\S+ne k ot\S+zke:?\s*/gim, "")
+      .replace(/\n{3,}/g, "\n\n")
+      .trim();
   const renderStructured = (object: Record<string, unknown>): string | null => {
     const structured =
       object.structuredAnswer && typeof object.structuredAnswer === "object"
@@ -310,7 +317,7 @@ function cleanAssistantContent(value: string) {
     const followUp = typeof structured.followUpQuestion === "string" ? structured.followUpQuestion.trim() : "";
     if (!shortAnswer && !details.length && !followUp) return null;
     return [
-      shortAnswer ? `### Stručne k otázke\n\n${shortAnswer}` : "### Stručne k otázke",
+      shortAnswer,
       details.length ? details.map((item) => `- ${item.trim()}`).join("\n") : "",
       followUp,
     ]
