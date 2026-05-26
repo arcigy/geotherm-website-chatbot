@@ -1,4 +1,5 @@
 ﻿import { createServer, type IncomingMessage, type Server, type ServerResponse } from "node:http";
+import { execFileSync } from "node:child_process";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { type KnowledgeChunk, retrieveKnowledge, tokenize, type RetrievalResult } from "./local-retrieval";
@@ -81,8 +82,12 @@ export type ChatResponse = {
     llmRouterUsed?: boolean;
     llmRouterError?: string | null;
     retrievalQuery?: string;
+    enrichedRetrievalQuery?: string;
+    storedSlots?: Record<string, unknown>;
     serviceType?: string;
     serviceIntent?: string;
+    diagnosticFlowVersion?: string;
+    serverCommit?: string;
     contextTopic?: string | null;
     contextCarried?: boolean;
   };
@@ -106,8 +111,26 @@ type AnswerPolicy = {
 const defaultKnowledgePath = path.join(process.cwd(), "knowledge", "chatbot-knowledge.json");
 const localOriginPattern = /^https?:\/\/(?:localhost|127\.0\.0\.1|\[::1\])(?::\d+)?$/i;
 const safetyFollowUp = "Ide o poruchu existujúceho zariadenia alebo plánujete novú montáž?";
+const diagnosticFlowVersion = "diagnostic-v3-stateful-live";
 
 let knowledgeCache: KnowledgeChunk[] | null = null;
+let serverCommitCache: string | null = null;
+
+function serverCommit(): string {
+  if (serverCommitCache) return serverCommitCache;
+  serverCommitCache =
+    process.env.GIT_COMMIT ||
+    process.env.COMMIT_SHA ||
+    process.env.SOURCE_VERSION ||
+    (() => {
+      try {
+        return execFileSync("git", ["rev-parse", "--short", "HEAD"], { cwd: process.cwd(), encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] }).trim();
+      } catch {
+        return "unknown";
+      }
+    })();
+  return serverCommitCache;
+}
 
 async function loadKnowledge(knowledgePath = defaultKnowledgePath): Promise<KnowledgeChunk[]> {
   if (!knowledgeCache) {
@@ -2071,6 +2094,15 @@ function buildStateSignals(state: QualificationState): string[] {
   ].filter((value): value is string => Boolean(value));
 }
 
+function debugStoredSlots(state: QualificationState): Record<string, unknown> {
+  const slots: Record<string, unknown> = {};
+  for (const key of qualificationUpdateFields) {
+    const value = state[key];
+    if (value !== undefined && value !== null && value !== "") slots[key] = value;
+  }
+  return slots;
+}
+
 function scenarioSearchKeywords(state: QualificationState): string[] {
   const normalizedProject = normalizePolicyText(state.project_type || "");
   const normalizedDistribution = normalizePolicyText(state.heating_distribution || "");
@@ -3416,6 +3448,25 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
   ) {
     route.serviceType = "heat_pump";
   }
+  const contextualSlotReply =
+    hasActiveDiagnosticState(stateForTurn) &&
+    !isServiceAreaQuestion(message) &&
+    (isShortContextReply(message) ||
+      /^(?:[a-z\s-]+,\s*)?(?:nemam|nemám|neviem)\s+(?:odhad|tepelnu stratu|tepelnú stratu)/i.test(message.trim()) ||
+      /^[A-ZÁÄČĎÉÍĽĹŇÓÔŔŠŤÚÝŽ][\p{L}\s-]{2,},\s*/u.test(message.trim()));
+  const previousServiceType = normalizeServiceType(previousState.service_type, "unknown");
+  const previousServiceIntent = normalizeServiceIntent(previousState.service_intent, "general");
+  const complaintAboutRecommendation = /(nepovedal|neodpovedal|najleps|najlepší|konkretne|konkrétne)/.test(routerFallbackText);
+  if (contextualSlotReply && previousServiceType !== "unknown") {
+    route.serviceType = previousServiceType;
+  }
+  if (contextualSlotReply && previousServiceIntent !== "general" && route.serviceIntent === "location") {
+    route.serviceIntent = previousServiceIntent;
+  }
+  if (complaintAboutRecommendation && previousServiceType !== "unknown") {
+    route.serviceType = previousServiceType;
+    route.serviceIntent = "recommendation";
+  }
   if (
     routerLlm.error &&
     /(nibe|vaillant|viessmann|ariston|daikin|tepelne|cerpadlo|cerpadla|servis|dotacie|dotacia|cena|cennik|hluk|hlucnost|montaz|instalacia|kontakt|klimatizacia|rekuperacia|podlahov|stropne|chladenie|kurenie|vykurovanie)/.test(routerFallbackText)
@@ -3592,8 +3643,13 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     !isGreetingOnlyMessage(message) &&
     !isPageOverviewQuestion(message) &&
     !isContactQuestion(message);
+  const baseAnswer = isIncompleteAnswer(cleanedAnswer) && requiresHardVerdict(stateForTurn, route, message)
+    ? expectedVerdictAnswer(stateForTurn)
+    : isIncompleteAnswer(cleanedAnswer)
+      ? fallbackCompleteAnswer(message, sources)
+      : cleanedAnswer;
   let answer = enforceMarkdownPresentation(
-    validateAndRepairAnswer(isIncompleteAnswer(cleanedAnswer) ? fallbackCompleteAnswer(message, sources) : cleanedAnswer, stateForTurn, route, message),
+    validateAndRepairAnswer(baseAnswer, stateForTurn, route, message),
     message,
   );
   if (isOutOfScopeGeneral && !/nemám dostatočne jasný podklad|nemam dostatocne jasny podklad/i.test(answer)) {
@@ -3705,8 +3761,12 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
       llmRouterUsed: true,
       llmRouterError: routerLlm.error || null,
       retrievalQuery: retrievalQuery || message,
+      enrichedRetrievalQuery: contextualRetrieval.query || retrievalQuery || message,
+      storedSlots: debugStoredSlots(stateForTurn),
       serviceType: route.serviceType,
       serviceIntent: route.serviceIntent,
+      diagnosticFlowVersion,
+      serverCommit: serverCommit(),
       contextTopic: route.serviceType !== "unknown" ? serviceLabel(route.serviceType) : null,
       contextCarried: contextualRetrieval.contextCarried,
     },
@@ -4495,7 +4555,7 @@ export async function startChatServer(options: StartOptions = {}): Promise<Serve
     }
 
     if (request.method === "GET" && request.url === "/health") {
-      writeJson(response, 200, { ok: true }, origin);
+      writeJson(response, 200, { ok: true, commit: serverCommit(), diagnosticFlowVersion }, origin);
       return;
     }
 

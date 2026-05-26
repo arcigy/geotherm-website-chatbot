@@ -11,8 +11,12 @@ type ChatBody = {
   debug?: {
     answerMode?: string;
     retrievalQuery?: string;
+    enrichedRetrievalQuery?: string;
+    storedSlots?: Record<string, unknown>;
     serviceType?: string;
     serviceIntent?: string;
+    diagnosticFlowVersion?: string;
+    serverCommit?: string;
     contextCarried?: boolean;
     llmError?: string | null;
     llmRouterError?: string | null;
@@ -54,7 +58,7 @@ function wordCount(value: string): number {
 function checkTurn(index: number, body: ChatBody): string[] {
   const failures: string[] = [];
   const answer = body.answer || "";
-  const query = body.debug?.retrievalQuery || "";
+  const query = body.debug?.enrichedRetrievalQuery || body.debug?.retrievalQuery || "";
 
   if (wordCount(answer) > 260) failures.push(`answer too long: ${wordCount(answer)} words`);
 
@@ -95,10 +99,11 @@ function checkTurn(index: number, body: ChatBody): string[] {
 }
 
 async function main(): Promise<void> {
-  const server = await startChatServer({ port: 0 });
-  const address = server.address();
+  const configuredEndpoint = process.env.CHAT_TEST_ENDPOINT || "";
+  const server = configuredEndpoint ? null : await startChatServer({ port: 0 });
+  const address = server?.address();
   const port = typeof address === "object" && address ? address.port : 0;
-  const endpoint = `http://127.0.0.1:${port}/chat`;
+  const endpoint = configuredEndpoint || `http://127.0.0.1:${port}/chat`;
   const anonymousId = `diagnostic_${Date.now()}`;
   const messages = [
     "ahoj, aké tep. čerpadlo je najlepšie?",
@@ -127,7 +132,7 @@ async function main(): Promise<void> {
       turns.push({ message, response: body, failures: checkTurn(index, body) });
     }
   } finally {
-    await new Promise<void>((resolve, reject) => server.close((error) => (error ? reject(error) : resolve())));
+    if (server) await new Promise<void>((resolve, reject) => server.close((error) => (error ? reject(error) : resolve())));
   }
 
   const failed = turns.filter((turn) => turn.failures.length).length;
@@ -152,6 +157,9 @@ async function main(): Promise<void> {
     lines.push(`serviceType: ${turn.response.debug?.serviceType || "n/a"}`);
     lines.push(`serviceIntent: ${turn.response.debug?.serviceIntent || "n/a"}`);
     lines.push(`retrievalQuery: ${turn.response.debug?.retrievalQuery || "n/a"}`);
+    lines.push(`enrichedRetrievalQuery: ${turn.response.debug?.enrichedRetrievalQuery || "n/a"}`);
+    lines.push(`storedSlots: ${JSON.stringify(turn.response.debug?.storedSlots || {})}`);
+    lines.push(`flow: ${turn.response.debug?.diagnosticFlowVersion || "n/a"} @ ${turn.response.debug?.serverCommit || "n/a"}`);
     lines.push(`sources: ${turn.response.sources?.length || 0}`);
     lines.push("");
     lines.push(turn.response.answer);

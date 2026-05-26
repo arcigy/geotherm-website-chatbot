@@ -1,6 +1,6 @@
 # Diagnostic Conversation Test Report
 
-Generated: 2026-05-26T12:38:33.082Z
+Generated: 2026-05-26T12:55:59.960Z
 
 Verdict: PASS
 Failed turns: 0/5
@@ -9,11 +9,14 @@ Failed turns: 0/5
 
 User: ahoj, aké tep. čerpadlo je najlepšie?
 Pass: yes
-responseTimeMs: 15392
+responseTimeMs: 14333
 answerMode: rag_answer
 serviceType: heat_pump
 serviceIntent: recommendation
 retrievalQuery: service router verdict gate service-card-heat-pump tepelne cerpadla tepelné čerpadlá recommendation služba tepelné čerpadlá zámer recommendation ahoj, aké tep. čerpadlo je najlepšie?
+enrichedRetrievalQuery: service router verdict gate service-card-heat-pump tepelne cerpadla tepelné čerpadlá recommendation služba tepelné čerpadlá zámer recommendation ahoj, aké tep. čerpadlo je najlepšie?
+storedSlots: {"service_type":"heat_pump","service_intent":"recommendation"}
+flow: diagnostic-v3-stateful-live @ 687ed5f
 sources: 3
 
 ### Predbežný smer
@@ -29,11 +32,14 @@ Aby som ťa zaradil správne, napíš mi:
 
 User: 1. novostavbu, 2. 120, 3. podlahovka
 Pass: yes
-responseTimeMs: 14942
+responseTimeMs: 14198
 answerMode: rag_answer
 serviceType: heat_pump
 serviceIntent: recommendation
 retrievalQuery: service router verdict gate service-card-heat-pump tepelne cerpadla tepelné čerpadlá recommendation scenar-novostavba-podlahove-kurenie novostavba podlahove kurenie nizkoteplotne vzduch-voda služba tepelné čerpadlá zámer recommendation projekt novostavba plocha 120 m2 vykurovanie podlahové kúrenie ahoj, aké tep. čerpadlo je najlepšie? 1. novostavbu, 2. 120, 3. podlahovka
+enrichedRetrievalQuery: service router verdict gate service-card-heat-pump tepelne cerpadla tepelné čerpadlá recommendation scenar-novostavba-podlahove-kurenie novostavba podlahove kurenie nizkoteplotne vzduch-voda služba tepelné čerpadlá zámer recommendation projekt novostavba plocha 120 m2 vykurovanie podlahové kúrenie ahoj, aké tep. čerpadlo je najlepšie? 1. novostavbu, 2. 120, 3. podlahovka
+storedSlots: {"service_type":"heat_pump","service_intent":"recommendation","project_type":"novostavba","area_m2":120,"heating_distribution":"podlahové kúrenie"}
+flow: diagnostic-v3-stateful-live @ 687ed5f
 sources: 3
 
 ### Predbežný verdikt
@@ -47,11 +53,14 @@ Koľko osôb bude v dome a chceš riešiť aj chladenie v lete?
 
 User: 1. 5, 2. áno
 Pass: yes
-responseTimeMs: 13477
+responseTimeMs: 14841
 answerMode: rag_answer
 serviceType: heat_pump
 serviceIntent: recommendation
 retrievalQuery: service router verdict gate service-card-heat-pump tepelne cerpadla tepelné čerpadlá recommendation scenar-novostavba-podlahove-kurenie novostavba podlahove kurenie nizkoteplotne vzduch-voda scenar-kurenie-aj-chladenie chladenie cez tepelne cerpadlo stropne chladenie fancoily podlahove chladenie rosny bod zasobnik TUV tepla voda pocet osob 5 služba tepelné čerpadlá zámer recommendation projekt novostavba plocha 120 m2 vykurovanie podlahové kúrenie počet osôb 5 zásobník TÚV pre 5 osôb rieši teplú vodu TÚV rieši chladenie ahoj, aké tep. čerpadlo je najlepšie? 1. novostavbu, 2. 120, 3. podlahovka 1. 5, 2. áno
+enrichedRetrievalQuery: service router verdict gate service-card-heat-pump tepelne cerpadla tepelné čerpadlá recommendation scenar-novostavba-podlahove-kurenie novostavba podlahove kurenie nizkoteplotne vzduch-voda scenar-kurenie-aj-chladenie chladenie cez tepelne cerpadlo stropne chladenie fancoily podlahove chladenie rosny bod zasobnik TUV tepla voda pocet osob 5 služba tepelné čerpadlá zámer recommendation projekt novostavba plocha 120 m2 vykurovanie podlahové kúrenie počet osôb 5 zásobník TÚV pre 5 osôb rieši teplú vodu TÚV rieši chladenie ahoj, aké tep. čerpadlo je najlepšie? 1. novostavbu, 2. 120, 3. podlahovka 1. 5, 2. áno
+storedSlots: {"service_type":"heat_pump","service_intent":"recommendation","project_type":"novostavba","area_m2":120,"heating_distribution":"podlahové kúrenie","wants_cooling":true,"occupants":5}
+flow: diagnostic-v3-stateful-live @ 687ed5f
 sources: 3
 
 ### Predbežný verdikt
@@ -63,47 +72,26 @@ Konkrétny výkon a model by som vybral až podľa projektu, energetického cert
 
 Máš projekt, tepelnú stratu alebo energetický certifikát?
 
-### Ďalšie kroky k výberu tepelného čerpadla
+### Odporúčanie pre tvoju novostavbu
 
-Super, ďakujem za doplnenie. Pre novostavbu s podlahovým kúrením a 5 osobami, kde chceš riešiť aj letné chladenie, je tepelné čerpadlo vzduch-voda stále dobrou voľbou.
+Super, ďakujem za upresnenie. Pre tvoju novostavbu s podlahovým kúrením, 120 m² a 5 osobami, ktoré chcú aj chladenie, by som sa zameral na tepelné čerpadlo **vzduch-voda**. Je to efektívne riešenie, ktoré zvládne vykurovanie aj príjemné chladenie v lete.
 
-Aby som ti vedel odporučiť konkrétnejší model a výkon, potreboval by som ešte vedieť:
-* Máš k dispozícii projekt domu, kde je uvedená tepelná strata, alebo energetický certifikát?
-* Aký typ ohrevu teplej úžitkovej vody preferuješ (napr. externý zásobník, integrovaný v jednotke)?
+Pre presnejší návrh by som potreboval vidieť projekt domu, energetický certifikát alebo presnú tepelnú stratu. Tieto údaje nám pomôžu určiť ideálny výkon čerpadla.
+
+Máš už projekt domu pripravený, alebo riešiš aj tento krok s nami?
 
 ## Turn 4
 
 User: Bratislava, nemám odhad
 Pass: yes
-responseTimeMs: 16183
+responseTimeMs: 13326
 answerMode: rag_answer
 serviceType: heat_pump
 serviceIntent: recommendation
 retrievalQuery: service router verdict gate service-card-heat-pump tepelne cerpadla tepelné čerpadlá recommendation scenar-novostavba-podlahove-kurenie novostavba podlahove kurenie nizkoteplotne vzduch-voda scenar-kurenie-aj-chladenie chladenie cez tepelne cerpadlo stropne chladenie fancoily podlahove chladenie rosny bod zasobnik TUV tepla voda pocet osob 5 projekt energeticky certifikat tepelna strata chyba odhad vykonu služba tepelné čerpadlá zámer recommendation projekt novostavba plocha 120 m2 vykurovanie podlahové kúrenie tepelná strata alebo odhad nie je k dispozícii počet osôb 5 zásobník TÚV pre 5 osôb rieši teplú vodu TÚV rieši chladenie lokalita Bratislava ahoj, aké tep. čerpadlo je najlepšie? 1. n
-sources: 3
-
-### Predbežný verdikt
-
-Pre novostavbu s podlahovým kúrením, 120 m², 5 osobami a požiadavkou na chladenie v Bratislave, by som predbežne odporučil tepelné čerpadlo **vzduch-voda**. Tento typ je vhodný pre nízkoteplotné systémy ako podlahové kúrenie a dokáže zabezpečiť aj letné chladenie.
-
-Keďže nemáš presný odhad tepelnej straty, budeme sa musieť oprieť o projekt domu alebo energetický certifikát. Ak ani tie nemáš k dispozícii, budeme musieť tepelnú stratu odhadnúť na základe štandardov pre novostavby v danej lokalite.
-
-Pre komplexné riešenie a presný návrh by bolo ideálne mať k dispozícii projektovú dokumentáciu.
-
-**Ďalšie kroky:**
-
-* Máš k dispozícii projektovú dokumentáciu domu, kde by mohla byť uvedená tepelná strata?
-* Ak nie, bol by si ochotný dohodnúť si obhliadku, aby sme mohli priestor posúdiť priamo na mieste?
-
-## Turn 5
-
-User: si mi nepovedal najlepšie čerpadlo pre mňa
-Pass: yes
-responseTimeMs: 10153
-answerMode: rag_answer
-serviceType: heat_pump
-serviceIntent: recommendation
-retrievalQuery: service router verdict gate service-card-heat-pump tepelne cerpadla tepelné čerpadlá recommendation scenar-novostavba-podlahove-kurenie novostavba podlahove kurenie nizkoteplotne vzduch-voda scenar-kurenie-aj-chladenie chladenie cez tepelne cerpadlo stropne chladenie fancoily podlahove chladenie rosny bod zasobnik TUV tepla voda pocet osob 5 projekt energeticky certifikat tepelna strata chyba odhad vykonu služba tepelné čerpadlá zámer recommendation projekt novostavba plocha 120 m2 vykurovanie podlahové kúrenie tepelná strata alebo odhad nie je k dispozícii počet osôb 5 zásobník TÚV pre 5 osôb rieši teplú vodu TÚV rieši chladenie lokalita Bratislava ahoj, aké tep. čerpadlo je najlepšie? 1. n
+enrichedRetrievalQuery: service router verdict gate service-card-heat-pump tepelne cerpadla tepelné čerpadlá recommendation scenar-novostavba-podlahove-kurenie novostavba podlahove kurenie nizkoteplotne vzduch-voda scenar-kurenie-aj-chladenie chladenie cez tepelne cerpadlo stropne chladenie fancoily podlahove chladenie rosny bod zasobnik TUV tepla voda pocet osob 5 projekt energeticky certifikat tepelna strata chyba odhad vykonu služba tepelné čerpadlá zámer recommendation projekt novostavba plocha 120 m2 vykurovanie podlahové kúrenie tepelná strata alebo odhad nie je k dispozícii počet osôb 5 zásobník TÚV pre 5 osôb rieši teplú vodu TÚV rieši chladenie lokalita Bratislava ahoj, aké tep. čerpadlo je najlepšie? 1. n
+storedSlots: {"service_type":"heat_pump","service_intent":"recommendation","project_type":"novostavba","area_m2":120,"location":"Bratislava","heating_distribution":"podlahové kúrenie","wants_cooling":true,"occupants":5,"heat_loss_known":false}
+flow: diagnostic-v3-stateful-live @ 687ed5f
 sources: 3
 
 ### Predbežný verdikt
@@ -115,16 +103,51 @@ Konkrétny výkon a model by som vybral až podľa projektu, energetického cert
 
 Máš projekt, tepelnú stratu alebo energetický certifikát?
 
-### Prečo zatiaľ nemám konkrétny model
+### Predbežný verdikt
 
-Rozumiem, že chceš vedieť konkrétny model, ktorý je pre teba "najlepší". Chápem tvoju netrpezlivosť.
+Pre tvoju novostavbu v Bratislave s podlahovým kúrením (120 m², 5 osôb) a požiadavkou na chladenie by som predbežne odporučil tepelné čerpadlo **vzduch-voda**. Je to efektívne riešenie pre nízko-teplotné systémy ako podlahovka a zvládne aj letné chladenie.
 
-Dôvod, prečo ti zatiaľ neviem povedať presný model tepelného čerpadla, je ten, že **"najlepšie" čerpadlo neexistuje univerzálne pre každého**. Vždy závisí od veľmi konkrétnych technických parametrov tvojho domu.
+Keďže nemáš odhad tepelnej straty, najlepšie by bolo vychádzať z **projektovej dokumentácie domu**. Tá nám dá presné údaje o tom, aký výkon bude potrebný na vykurovanie a chladenie.
 
-Už viem, že ide o novostavbu s podlahovým kúrením, 120 m², pre 5 osôb a chceš aj chladenie. Na základe týchto informácií je **tepelné čerpadlo vzduch-voda** stále najpravdepodobnejšou a najvhodnejšou voľbou.
+### Ďalšie kroky
 
-### Čo potrebujem na konkrétne odporúčanie
+1. **Projektová dokumentácia:** Máš už k dispozícii projekt domu? Ak áno, pozrieme sa naň.
+2. **Obhliadka:** Ak projekt nemáš, alebo by si chcel vidieť možnosti naživo, môžeme dohodnúť obhliadku tvojho pozemku/domu.
 
-Aby som ti mohol odporučiť konkrétny model (napríklad od značiek NIBE alebo Vaillant, s ktorými máme dobré skúsenosti), potrebujem poznať **presnú tepelnú stratu tvojho domu**. Bez nej by bolo akékoľvek odporúčanie len odhadom a nemuselo by byť správne dimenzované.
+Tieto kroky nám pomôžu určiť presný typ a výkon tepelného čerpadla, ktoré bude pre tvoju novostavbu najvhodnejšie.
 
-Tepelná strata je kľúčový údaj, ktorý určuje potrebný výkon čerpadla. Zvyčajne je uvedená v projekte domu alebo v energetickom certifikáte.
+## Turn 5
+
+User: si mi nepovedal najlepšie čerpadlo pre mňa
+Pass: yes
+responseTimeMs: 13082
+answerMode: rag_answer
+serviceType: heat_pump
+serviceIntent: recommendation
+retrievalQuery: service router verdict gate service-card-heat-pump tepelne cerpadla tepelné čerpadlá recommendation scenar-novostavba-podlahove-kurenie novostavba podlahove kurenie nizkoteplotne vzduch-voda scenar-kurenie-aj-chladenie chladenie cez tepelne cerpadlo stropne chladenie fancoily podlahove chladenie rosny bod zasobnik TUV tepla voda pocet osob 5 projekt energeticky certifikat tepelna strata chyba odhad vykonu služba tepelné čerpadlá zámer recommendation projekt novostavba plocha 120 m2 vykurovanie podlahové kúrenie tepelná strata alebo odhad nie je k dispozícii počet osôb 5 zásobník TÚV pre 5 osôb rieši teplú vodu TÚV rieši chladenie lokalita Bratislava ahoj, aké tep. čerpadlo je najlepšie? 1. n
+enrichedRetrievalQuery: service router verdict gate service-card-heat-pump tepelne cerpadla tepelné čerpadlá recommendation scenar-novostavba-podlahove-kurenie novostavba podlahove kurenie nizkoteplotne vzduch-voda scenar-kurenie-aj-chladenie chladenie cez tepelne cerpadlo stropne chladenie fancoily podlahove chladenie rosny bod zasobnik TUV tepla voda pocet osob 5 projekt energeticky certifikat tepelna strata chyba odhad vykonu služba tepelné čerpadlá zámer recommendation projekt novostavba plocha 120 m2 vykurovanie podlahové kúrenie tepelná strata alebo odhad nie je k dispozícii počet osôb 5 zásobník TÚV pre 5 osôb rieši teplú vodu TÚV rieši chladenie lokalita Bratislava ahoj, aké tep. čerpadlo je najlepšie? 1. n
+storedSlots: {"service_type":"heat_pump","service_intent":"recommendation","project_type":"novostavba","area_m2":120,"location":"Bratislava","heating_distribution":"podlahové kúrenie","wants_cooling":true,"occupants":5,"heat_loss_known":false}
+flow: diagnostic-v3-stateful-live @ 687ed5f
+sources: 3
+
+### Predbežný verdikt
+
+Pre teba by som predbežne išiel do tepelného čerpadla **vzduch-voda** pre **novostavbu s nízkoteplotným podlahovým kúrením** pri dome cca 120 m². Dáva to zmysel hlavne preto, že podlahovka pracuje s nízkou teplotou vody, čo tepelnému čerpadlu vyhovuje.
+Pri 5 osobách by som v návrhu rátal aj so **zásobníkom TÚV** primeraným spotrebe domácnosti.
+Chladenie treba navrhnúť cielene: podlahové chladenie vie dom jemne ochladiť, ale má limity a treba riešiť rosný bod; komfortnejšie býva stropné chladenie, fancoily alebo klimatizácia podľa projektu.
+Konkrétny výkon a model by som vybral až podľa projektu, energetického certifikátu alebo tepelnej straty.
+
+Máš projekt, tepelnú stratu alebo energetický certifikát?
+
+### Predbežný verdikt
+
+Pre tvoju novostavbu v Bratislave s podlahovým kúrením (120 m², 5 osôb) a požiadavkou na chladenie by som predbežne odporučil tepelné čerpadlo **vzduch-voda**. Je to efektívne riešenie pre nízko-teplotné systémy ako podlahovka a zvládne aj letné chladenie.
+
+Keďže nemáš odhad tepelnej straty, najlepšie by bolo vychádzať z **projektovej dokumentácie domu**. Tá nám dá presné údaje o tom, aký výkon bude potrebný na vykurovanie a chladenie.
+
+### Ďalšie kroky
+
+1. **Projektová dokumentácia:** Máš už k dispozícii projekt domu? Ak áno, pozrieme sa naň.
+2. **Obhliadka:** Ak projekt nemáš, alebo by si chcel vidieť možnosti naživo, môžeme dohodnúť obhliadku tvojho pozemku/domu.
+
+Tieto kroky nám pomôžu určiť presný typ a výkon tepelného čerpadla, ktoré bude pre tvoju novostavbu najvhodnejšie.
