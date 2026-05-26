@@ -327,6 +327,7 @@ export function retrieveKnowledge(chunks: KnowledgeChunk[], query: string, limit
     const normalizedHeading = normalize(chunk.sectionHeading);
     const normalizedText = normalize(chunk.text);
     const normalizedUrl = normalize(`${chunk.url} ${chunk.slug}`);
+    const isManualChunk = chunk.sourceType === "manual" || normalizedUrl.includes("manual geotherm");
     const isCeilingCoolingPage =
       normalizedUrl.includes("stropne vykurovanie a chladenie") ||
       normalizedUrl.includes("stropne vykurovanie chladenie") ||
@@ -363,6 +364,16 @@ export function retrieveKnowledge(chunks: KnowledgeChunk[], query: string, limit
       (consumptionIntent && (normalizedTitle.includes("spotreba") || normalizedHeading.includes("spotreba") || normalizedText.includes("spotreba elektrickej")) ? 70 : 0) +
       (radiatorIntent && (normalizedTitle.includes("radiator") || normalizedHeading.includes("radiator") || normalizedText.includes("radiator")) ? 80 : 0) +
       (rekuperationIntent && (normalizedTitle.includes("rekuper") || normalizedHeading.includes("rekuper") || normalizedUrl.includes("rekuper")) ? 95 : 0);
+    const manualIntentScore = isManualChunk
+      ? (priceIntent && (normalizedTitle.includes("cena") || normalizedHeading.includes("cena")) ? 145 : 0) +
+        (priceIntent && (normalizedTitle.includes("ponuka") || normalizedHeading.includes("ponuka")) ? 90 : 0) +
+        (radiatorIntent && (normalizedTitle.includes("radiator") || normalizedHeading.includes("radiator")) ? 125 : 0) +
+        (consumptionIntent && (normalizedTitle.includes("spotreba") || normalizedTitle.includes("uspora") || normalizedTitle.includes("navratnost")) ? 120 : 0) +
+        (querySet.has("znack") && (normalizedTitle.includes("znack") || normalizedHeading.includes("znack")) ? 135 : 0) +
+        (querySet.has("model") && (normalizedTitle.includes("model") || normalizedHeading.includes("model")) ? 125 : 0) +
+        (rekuperationIntent && (normalizedTitle.includes("rekuper") || normalizedHeading.includes("rekuper")) ? 100 : 0) +
+        (titleMatches + headingMatches >= 2 ? 40 : 0)
+      : 0;
     const ceilingCoolingScore =
       (ceilingCoolingIntent && isCeilingCoolingPage ? 55 : 0) +
       (ceilingBenefitsIntent && normalizedHeading.includes("vyhody stropneho chladenia") ? 130 : 0) +
@@ -394,6 +405,7 @@ export function retrieveKnowledge(chunks: KnowledgeChunk[], query: string, limit
         phraseScore +
         densityBoost +
         intentScore +
+        manualIntentScore +
         ceilingCoolingScore -
         outOfDomainPenalty -
         boilerplatePenalty(chunk, contactIntent)

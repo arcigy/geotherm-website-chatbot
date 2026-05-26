@@ -31,9 +31,14 @@ type KnowledgeChunk = {
   textLength: number;
 };
 
+type ManualKnowledgeChunk = Omit<KnowledgeChunk, "textLength"> & {
+  textLength?: number;
+};
+
 const inputPath = path.join(process.cwd(), "knowledge", "wordpress-export.json");
 const outputPath = path.join(process.cwd(), "knowledge", "chatbot-knowledge.json");
 const reportPath = path.join(process.cwd(), "knowledge", "chatbot-knowledge-report.md");
+const manualChunksPath = path.join(process.cwd(), "knowledge", "manual-rag-chunks.json");
 
 const importantTitlePattern =
   /tepel|cerpad|čerpad|rekuper|vykurov|kuren|kúren|fotovol|dotac|dotác|servis|nibe|vaillant|drazice|dražice|rehau|zehnder|vrty|studne/i;
@@ -209,6 +214,34 @@ function markdownTable(headers: string[], rows: Array<Array<string | number>>): 
   ].join("\n");
 }
 
+async function readManualChunks(): Promise<KnowledgeChunk[]> {
+  try {
+    const manual = JSON.parse(await readFile(manualChunksPath, "utf8")) as ManualKnowledgeChunk[];
+    return manual
+      .map((chunk, index) => {
+        const text = cleanText(chunk.text || "");
+        return {
+          sourceType: chunk.sourceType || "manual",
+          sourceId: chunk.sourceId || 900000 + index + 1,
+          pageTitle: cleanText(chunk.pageTitle || "Manual knowledge"),
+          url: chunk.url || `manual://geotherm/manual-${index + 1}`,
+          slug: cleanText(chunk.slug || `manual-${index + 1}`).toLowerCase().replace(/[^a-z0-9]+/g, "-"),
+          modified: chunk.modified || new Date().toISOString(),
+          sectionHeading: cleanText(chunk.sectionHeading || chunk.pageTitle || "Manual knowledge"),
+          chunkIndex: chunk.chunkIndex || 1,
+          text,
+          textLength: text.length,
+        };
+      })
+      .filter((chunk) => chunk.textLength >= 120);
+  } catch (error) {
+    if (error && typeof error === "object" && "code" in error && (error as NodeJS.ErrnoException).code === "ENOENT") {
+      return [];
+    }
+    throw error;
+  }
+}
+
 async function main(): Promise<void> {
   const items = JSON.parse(await readFile(inputPath, "utf8")) as ExportItem[];
   const repeated = repeatedBoilerplate(items);
@@ -267,10 +300,21 @@ async function main(): Promise<void> {
     }
   }
 
+  const manualChunks = await readManualChunks();
+  let manualDeduplicated = 0;
+  for (const chunk of manualChunks) {
+    if (isNearDuplicate(chunk.text, seenFingerprints)) {
+      manualDeduplicated += 1;
+      continue;
+    }
+    chunks.push(chunk);
+  }
+
   if (!chunks.length) warnings.push("No chunks were created.");
   if (excludedBoilerplate > 0) warnings.push(`${excludedBoilerplate} cookie/privacy/boilerplate-like items were excluded.`);
   if (repeated.size > 0) warnings.push(`${repeated.size} repeated sentence-level boilerplate candidates were removed before chunking.`);
   if (chunks.some((chunk) => chunk.textLength > 1500)) warnings.push("Some chunks are over 1,500 characters because long source sentences could not be split cleanly.");
+  if (manualChunks.length > 0) warnings.push(`${manualChunks.length - manualDeduplicated} manual diagnostic/company chunks were appended from \`knowledge/manual-rag-chunks.json\`.`);
 
   const chunkCounts = new Map<string, { title: string; url: string; count: number }>();
   for (const chunk of chunks) {
@@ -305,6 +349,8 @@ async function main(): Promise<void> {
       ["Deduplicated chunks", deduplicatedChunks],
       ["Average chunk length", `${avgChunkLength} characters`],
       ["Repeated boilerplate sentences removed", repeated.size],
+      ["Manual chunks appended", manualChunks.length - manualDeduplicated],
+      ["Manual chunks deduplicated", manualDeduplicated],
     ]),
     "",
     "## Top Pages by Chunk Count",

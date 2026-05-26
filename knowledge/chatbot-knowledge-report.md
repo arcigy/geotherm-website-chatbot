@@ -2,20 +2,22 @@
 
 Input: `knowledge/wordpress-export.json`
 Output: `knowledge/chatbot-knowledge.json`
-Generated: 2026-05-07T16:57:25.279Z
+Generated: 2026-05-26T10:50:13.436Z
 
 ## Summary
 
 | Metric | Value |
 | --- | --- |
 | Input items count | 312 |
-| Output chunks count | 1371 |
+| Output chunks count | 1407 |
 | Excluded empty items | 3 |
 | Excluded thin items | 9 |
 | Excluded boilerplate/cookie-like items | 3 |
 | Deduplicated chunks | 77 |
-| Average chunk length | 787 characters |
+| Average chunk length | 783 characters |
 | Repeated boilerplate sentences removed | 14 |
+| Manual chunks appended | 36 |
+| Manual chunks deduplicated | 0 |
 
 ## Top Pages by Chunk Count
 
@@ -46,6 +48,7 @@ Generated: 2026-05-07T16:57:25.279Z
 
 - 3 cookie/privacy/boilerplate-like items were excluded.
 - 14 repeated sentence-level boilerplate candidates were removed before chunking.
+- 36 manual diagnostic/company chunks were appended from `knowledge/manual-rag-chunks.json`.
 
 ## Verdict
 

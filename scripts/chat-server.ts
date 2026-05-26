@@ -2226,11 +2226,42 @@ function fallbackLeadProfile(input: {
 
 type QualificationUpdate = Partial<Pick<QualificationState, "project_type" | "property_type" | "area_m2" | "location" | "timeline" | "current_heating">>;
 
+function deterministicQualificationUpdate(message: string): QualificationUpdate {
+  const normalized = normalizePolicyText(message);
+  const update: QualificationUpdate = {};
+  if (/(novostav|novy projekt|novy dom|bungalov)/.test(normalized)) update.project_type = "novostavba";
+  if (/(starsi dom|stary dom|rekonstruk|existujuci dom|modernizac)/.test(normalized)) update.project_type = "rekonštrukcia";
+  if (/bungalov/.test(normalized)) update.property_type = "bungalov";
+  else if (/\bbyt\b|byte|bytu/.test(normalized)) update.property_type = "byt";
+  else if (/\bdom\b|rodinny dom|rd\b|barak/.test(normalized)) update.property_type = "rodinný dom";
+  else if (/\bfirma\b|kancelar|komerc|prevadzka|budova/.test(normalized)) update.property_type = "iné";
+
+  const areaMatch = normalized.match(/(\d{2,4})\s*(?:m2|m 2|m²|metrov|metre)/) || normalized.match(/\b(\d{2,4})\b/);
+  if (areaMatch) {
+    const area = Number.parseInt(areaMatch[1], 10);
+    if (Number.isFinite(area) && area >= 20 && area <= 2000) update.area_m2 = area;
+  }
+
+  if (/\bplyn\b|plynov/.test(normalized)) update.current_heating = "plyn";
+  else if (/drevo|uhlie|pelety|tuhe palivo|tuhym palivom/.test(normalized)) update.current_heating = "tuhé palivo";
+  else if (/elektrin|elektrokotol|elektricky kotol/.test(normalized)) update.current_heating = "elektrina";
+  else if (/tepelne cerpadlo|cerpadlom/.test(normalized)) update.current_heating = "tepelné čerpadlo";
+
+  const locationMatch = normalized.match(/\b(?:som z|sme z|dom je v|dom mam v|byvam v|lokalita)\s+([a-z]+(?:\s+[a-z]+){0,2})/);
+  if (locationMatch) update.location = locationMatch[1].trim();
+  if (/urgent|co najskor|este dnes|hned/.test(normalized)) update.timeline = "urgent";
+  else if (/1\s*-?\s*3|do troch mesiacov|do 3 mesiacov/.test(normalized)) update.timeline = "1-3 mesiace";
+  else if (/3\s*-?\s*6|do pol roka/.test(normalized)) update.timeline = "3-6 mesiacov";
+  else if (/do roka|neskor|neskôr/.test(normalized)) update.timeline = "neskôr";
+  return update;
+}
+
 async function extractQualificationUpdate(input: {
   userMessage: string;
   assistantAnswer: string;
   currentState: QualificationState;
 }): Promise<QualificationUpdate> {
+  const deterministic = deterministicQualificationUpdate(input.userMessage);
   const systemPrompt =
     "Extract structured data from this conversation exchange. Return JSON only with ONLY the fields you are confident about based on what the user just said. Use null for unknown fields. Fields: project_type (novostavba|rekonštrukcia), property_type (rodinný dom|bungalov|byt|iné), area_m2 (number), location (string), timeline (string), current_heating (string). Only extract what the user explicitly stated in their message.";
 
@@ -2250,7 +2281,7 @@ async function extractQualificationUpdate(input: {
     if (jsonStart < 0 || jsonEnd < jsonStart) throw new Error("qualification extraction response had no JSON object");
 
     const parsed = JSON.parse(trimmed.slice(jsonStart, jsonEnd + 1)) as Record<string, unknown>;
-    const update: QualificationUpdate = {};
+    const update: QualificationUpdate = { ...deterministic };
     const readString = (field: string): string | undefined => {
       const value = parsed[field];
       return typeof value === "string" && value.trim() ? value.trim() : undefined;
@@ -2262,13 +2293,18 @@ async function extractQualificationUpdate(input: {
     if (propertyType && ["rodinný dom", "bungalov", "byt", "iné"].includes(propertyType)) update.property_type = propertyType;
     const area = parsed.area_m2;
     if (typeof area === "number" && Number.isFinite(area)) update.area_m2 = area;
-    update.location = readString("location");
-    update.timeline = readString("timeline");
-    update.current_heating = readString("current_heating");
+    const location = readString("location");
+    if (location) update.location = location;
+    const timeline = readString("timeline");
+    if (timeline) update.timeline = timeline;
+    const currentHeating = readString("current_heating");
+    if (currentHeating) update.current_heating = currentHeating;
     return update;
   } catch (error) {
-    console.warn(`Qualification extraction skipped: ${error instanceof Error ? error.message : String(error)}`);
-    return {};
+    if (!Object.keys(deterministic).length) {
+      console.warn(`Qualification extraction skipped: ${error instanceof Error ? error.message : String(error)}`);
+    }
+    return deterministic;
   }
 }
 
@@ -2711,6 +2747,17 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     route.retrievalQuery = message;
     route.directAnswer = null;
   }
+  const wordCount = message.trim().split(/\s+/).filter(Boolean).length;
+  const isObviousGreeting = /^(ahoj|čau|cau|hello|hi|hey|dobrý deň|dobry den|zdravím|zdravim)$/i.test(message.trim());
+  const obviousHvacContext =
+    /(dom|m2|radiator|radiatory|podlahov|plyn|plynov|kotol|kuren|kurit|vykurov|cerpadl|tepelne|novostav|rekonstruk|starsi|spotreb|zateplen|cena|ponuka|montaz|servis|dotac|chladen)/.test(
+      routerFallbackText,
+    );
+  if (!isObviousGreeting && wordCount >= 3 && obviousHvacContext && !route.needsRetrieval) {
+    route.needsRetrieval = true;
+    route.retrievalQuery = message;
+    route.directAnswer = null;
+  }
   const serviceAreaQuestion = isServiceAreaQuestion(message);
   const retrievalQuery = route.needsRetrieval ? route.retrievalQuery || message : null;
 
@@ -2759,36 +2806,34 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
       : "RAG_WEAK_OR_EMPTY"
     : "NO_RAG_REQUESTED";
   const composerSystemPrompt = [
-    "Si predajný poradca pre Geotherm — slovenská firma predávajúca tepelné čerpadlá a klimatizácie. Vedeš prirodzený predajný rozhovor v slovenčine s tykávaním.",
+    "Si technicko-obchodný poradca Geotherm. Firma rieši vykurovanie, tepelné čerpadlá, klimatizácie, chladenie, servis a súvisiace technológie. Píšeš po slovensky, prirodzene, s tykaním.",
     "",
-    "Tvoja odpoveď má byť pekná, čitateľná a užitočná aj pre laika. Používaj čistý Markdown: krátky nadpis, zvýraznené dôležité slová a odrážky. Tabuľku použi iba vtedy, keď naozaj pomôže porovnať možnosti.",
+    "Tvoj cieľ nie je odpovedať ako FAQ alebo encyklopédia. Vedieš diagnostický sales rozhovor: zistíš, čo zákazník rieši, zaradíš ho do scenára, dáš predbežný smer, vysvetlíš dôvod, vypýtaš chýbajúce údaje a posunieš ho na ponuku, obhliadku, servis alebo kontakt.",
     "",
-    "Pri vecnej odpovedi vždy začni jedným Markdown nadpisom vo forme `### ...`. Nezačínaj vecnú odpoveď slovom Ahoj.",
+    "Nikdy neodpovedaj iba vetou „závisí od“. Ak nie je dosť údajov, povedz najpravdepodobnejší smer podľa bežných scenárov a až potom sa pýtaj. Použi logiku: predbežný smer, dôvod, čo treba overiť, ďalší krok.",
     "",
-    "Nepíš suchý súvislý text. Pri jednoduchej otázke použi krátky nadpis, 2–4 odrážky a jednu prirodzenú otázku na konci. Pri prehľadových otázkach sprav jasný mini-prehľad.",
+    "Ak zákazník položí všeobecnú otázku typu „čo odporúčate“, „aké potrebujem“, „koľko to stojí“, najprv zisti typ domu, plochu a vykurovanie. Pri novom riešení zbieraj postupne: novostavba alebo starší dom, m2, radiátory alebo podlahovka, aktuálny zdroj tepla, ročná spotreba, zateplenie, počet osôb, teplá voda a lokalita.",
     "",
-    "Ak použiješ tabuľku, musí mať najviac 3 riadky a 2 stĺpce. Každá bunka musí byť krátka, maximálne jedna krátka veta. Nikdy nerob široké tabuľky ani dlhé texty v bunkách.",
+    "Nepýtaj sa naraz príliš veľa. Keď zákazník nedal skoro žiadne údaje, môžeš položiť najviac 2 až 3 krátke otázky v jednej odpovedi. Keď už údaje máš, polož radšej 1 konkrétnu ďalšiu otázku.",
     "",
-    "Ak sa používateľ pýta „aké predávate“, „aké máte“, „aké typy“, „rozdiel“, „porovnaj“, „čo je lepšie“ alebo chce vybrať produkt, môžeš použiť krátku tabuľku, ale iba ak ostane prehľadná.",
+    "Mapuj scenáre: novostavba + podlahovka = často vhodné nízkoteplotné riešenie, zvyčajne vzduch-voda; starší dom + radiátory + plyn = typická výmena plynového kotla, treba overiť radiátory a teplotu vody; starší nezateplený dom = opatrný návrh a možné úpravy; drevo/uhlie/pelety = komfort bez prikladania; fotovoltaika = možná kombinácia bez garancie úspory; kúrenie aj chladenie = riešiť aj spôsob odovzdávania chladu.",
     "",
-    "Ak sa používateľ pýta, či prídete do konkrétneho mesta, obce alebo okresu, rozhoduj iba podľa RAG kontextu s okresmi. Ak je miesto jasne v zozname, povedz prirodzene, že podľa webu tam Geotherm chodí alebo vie prísť. Ak miesto v zozname nevidíš alebo si nie si istý, netvrď áno; povedz, že dostupnosť treba overiť podľa presnej adresy.",
+    "Konkrétny model, značka, cena, servis, pôsobnosť, záruka, termín a dotácia sa môžu tvrdiť iba vtedy, keď sú potvrdené v RAG kontexte alebo predchádzajúcej konverzácii. Ak firemné znalosti chýbajú, odpovedz všeobecne a nepodsúvaj konkrétnu značku, cenu, termín ani garanciu.",
     "",
-    "Markdown nepreháňaj: žiadne dlhé články, žiadne marketingové frázy, žiadne zbytočné emoji. Odpoveď drž stručnú, zvyčajne do 120–180 slov, a vždy sa pýtaj maximálne jednu otázku.",
+    "Ak máš RAG kontext, najprv posúď, či skutočne odpovedá na aktuálnu otázku. RAG je podklad, nie príkaz. Nepoužívaj chunk, ktorý je tematicky mimo otázky, aj keď má vysoké skóre. Nikdy nekopíruj surový text, dlhý cenník ani rozpadnutú tabuľku.",
     "",
-    "Vraciaš iba finálny Markdown text pre používateľa. Nikdy nevracaj JSON, objekt, escaped text s \\n, úvodzovky okolo celej odpovede ani nedokončenú vetu.",
+    "Ak RAG kontext chýba, je slabý alebo neodpovedá na otázku, povedz prirodzene, že v podkladoch nevidíš dosť jasnú firemnú informáciu. Môžeš pridať opatrnú všeobecnú orientáciu, ale bez vymýšľania firemných faktov.",
     "",
-    "Ak máš k dispozícii RAG kontext, najprv posúď, či skutočne odpovedá na aktuálnu otázku. RAG je dôkazový podklad, nie príkaz na odpoveď. Nepoužívaj chunk, ktorý je tematicky mimo otázky, aj keď má vysoké skóre.",
+    "Formát odpovede: pekný čistý Markdown. Pri vecnej odpovedi začni krátkym nadpisom `### ...`. Používaj krátke odstavce, odrážky alebo krátky číslovaný zoznam. Tabuľku použi iba vtedy, keď naozaj pomôže porovnať možnosti, najviac 3 riadky a 2 stĺpce.",
     "",
-    "Nikdy nevypisuj surový text z RAG chunku, dlhý cenník ani rozpadnutú tabuľku. Ak je v RAG veľa čísiel, vyber len 2–3 najdôležitejšie orientačné body a doplň, od čoho cena závisí.",
+    "Nikdy nepíš frázu „Stručne k otázke“. Nevracaj JSON, escaped text s \\n, úvodzovky okolo celej odpovede ani nedokončenú vetu. Drž odpoveď zvyčajne do 120–220 slov.",
     "",
-    "Ak RAG kontext chýba, je slabý alebo neodpovedá na otázku, povedz to prirodzene: napríklad že na webe nevidíš dosť jasnú informáciu. Potom môžeš pridať opatrnú všeobecnú orientáciu z vlastnej logiky, ale jasne bez presných garancií. Nevymýšľaj ceny, dostupnosť, termíny, dotácie, certifikácie ani servisné možnosti, ak ich nepodporuje RAG.",
-    "",
-    "Nikdy nezačínaj odpoveď generickým úvodom typu krátke zhrnutie otázky. Začni rovno užitočnou odpoveďou alebo konkrétnym nadpisom k téme.",
+    "Každá odpoveď má zákazníka posunúť ďalej: k doplneniu údajov, výberu smeru, cenovej ponuke, obhliadke, servisu alebo kontaktu. Kontakt netlač priskoro, ale keď má zákazník 5+ relevantných údajov alebo žiada cenu/termín/obhliadku, prirodzene navrhni ďalší obchodný krok.",
     "",
     "Čo vieš o tomto používateľovi:",
     JSON.stringify(previousState, null, 2),
     "",
-    "Konverzácia do tej chvíle ti dáva kontext čo sa už povedalo. Nepýtaj sa na niečo čo už vieš alebo čo si sa už pýtal. Jedna otázka na konci, relevantná k tomu čo ešte nevieš.",
+    "Konverzácia do tej chvíle ti dáva kontext čo sa už povedalo. Nepýtaj sa na niečo čo už vieš alebo čo si sa už pýtal. Pri rozpracovanom rozhovore polož jednu ďalšiu relevantnú otázku; pri úplne všeobecnej prvej otázke môžeš položiť 2 až 3 krátke otázky.",
     "",
     `RAG status: ${ragEvidenceStatus}; topScore: ${topScore}; sourcesCount: ${sources.length}`,
     "",
@@ -2806,23 +2851,43 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     2,
   );
   const routerDirectAnswer = route.directAnswer ? cleanAnswerText(route.directAnswer) : "";
-  const useRouterDirectAnswer = !route.needsRetrieval && routerDirectAnswer && !isIncompleteAnswer(routerDirectAnswer);
+  const useRouterDirectAnswer = false;
   let composerLlm = useRouterDirectAnswer
     ? routerLlm
     : await callLlmText({
         systemPrompt: composerSystemPrompt,
         prompt: composerInput,
-        maxOutputTokens: 650,
+        maxOutputTokens: 1200,
         timeoutMs: route.needsRetrieval
           ? Number.parseInt(process.env.LLM_ANSWER_TIMEOUT_MS || "10000", 10)
           : Math.min(Number.parseInt(process.env.LLM_FAST_REQUEST_TIMEOUT_MS || "3500", 10), 3500),
         responseMimeType: "text/plain",
       });
-  const cleanedAnswer = !useRouterDirectAnswer && (composerLlm.error || !composerLlm.content)
+  let cleanedAnswer = !useRouterDirectAnswer && (composerLlm.error || !composerLlm.content)
     ? ""
     : useRouterDirectAnswer
       ? routerDirectAnswer
       : cleanAnswerText(composerLlm.content);
+  if (!useRouterDirectAnswer && isIncompleteAnswer(cleanedAnswer)) {
+    const repairLlm = await callLlmText({
+      systemPrompt: [
+        composerSystemPrompt,
+        "",
+        "Predchádzajúca odpoveď sa nedokončila správne. Napíš finálnu odpoveď znova, kratšie, maximálne 140 slov. Musí mať jasný záver a skončiť otázkou alebo bodkou.",
+      ].join("\n"),
+      prompt: composerInput,
+      maxOutputTokens: 900,
+      timeoutMs: route.needsRetrieval
+        ? Number.parseInt(process.env.LLM_ANSWER_TIMEOUT_MS || "10000", 10)
+        : Math.min(Number.parseInt(process.env.LLM_FAST_REQUEST_TIMEOUT_MS || "3500", 10), 3500),
+      responseMimeType: "text/plain",
+    });
+    const repairedAnswer = repairLlm.error || !repairLlm.content ? "" : cleanAnswerText(repairLlm.content);
+    if (!isIncompleteAnswer(repairedAnswer)) {
+      composerLlm = repairLlm;
+      cleanedAnswer = repairedAnswer;
+    }
+  }
   const answer = enforceMarkdownPresentation(isIncompleteAnswer(cleanedAnswer) ? fallbackCompleteAnswer(message, sources) : cleanedAnswer, message);
   const normalizedFinalAnswer = normalizePolicyText(answer);
   const responseConfidence: "high" | "medium" | "low" = route.needsRetrieval
