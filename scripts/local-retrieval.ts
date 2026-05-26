@@ -374,6 +374,22 @@ export function retrieveKnowledge(chunks: KnowledgeChunk[], query: string, limit
         (rekuperationIntent && (normalizedTitle.includes("rekuper") || normalizedHeading.includes("rekuper")) ? 100 : 0) +
         (titleMatches + headingMatches >= 2 ? 40 : 0)
       : 0;
+    const serviceCardScore = isManualChunk
+      ? [
+          "service card heat pump",
+          "service card air conditioning",
+          "service card heat recovery",
+          "service card floor heating",
+          "service card ceiling cooling",
+          "service card service",
+          "service card subsidy",
+          "service card complex house solution",
+          "service router rozpoznanie sluzby",
+          "verdict gate vsetky sluzby",
+        ].some((term) => normalizedQuery.includes(term) && (normalizedUrl.includes(term) || normalizedTitle.includes(term) || normalizedHeading.includes(term)))
+        ? 150
+        : 0
+      : 0;
     const ceilingCoolingScore =
       (ceilingCoolingIntent && isCeilingCoolingPage ? 55 : 0) +
       (ceilingBenefitsIntent && normalizedHeading.includes("vyhody stropneho chladenia") ? 130 : 0) +
@@ -406,6 +422,7 @@ export function retrieveKnowledge(chunks: KnowledgeChunk[], query: string, limit
         densityBoost +
         intentScore +
         manualIntentScore +
+        serviceCardScore +
         ceilingCoolingScore -
         outOfDomainPenalty -
         boilerplatePenalty(chunk, contactIntent)

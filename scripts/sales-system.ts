@@ -17,12 +17,21 @@ export type AssistantMode = "informative" | "advisory" | "soft_handoff_offer" | 
 export type QualificationState = {
   assistant_mode?: AssistantMode;
   relevant_turns?: number;
+  service_type?: string;
+  service_intent?: string;
   project_type?: string;
   property_type?: string;
   area_m2?: number;
   location?: string;
   timeline?: string;
   current_heating?: string;
+  heating_distribution?: string;
+  wants_cooling?: boolean;
+  hot_water?: boolean;
+  occupants?: number;
+  insulation?: string;
+  annual_consumption?: string;
+  project_available?: boolean;
   contact_name?: string;
   contact_email?: string;
   contact_phone?: string;

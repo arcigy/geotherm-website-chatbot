@@ -1,7 +1,7 @@
 # Chat API Test Report
 
 Endpoint: `POST /chat`
-Generated: 2026-05-08T18:21:57.592Z
+Generated: 2026-05-26T12:17:27.768Z
 
 ## Summary
 
@@ -14,18 +14,22 @@ Generated: 2026-05-08T18:21:57.592Z
 
 | Query | Pass | Confidence | Top score | Sources | Top source |
 | --- | --- | --- | --- | --- | --- |
-| kolko stoji tepelne cerpadlo | yes | high | 118.67 | 3 | Tepelné čerpadlo – akcia – výhodná cena - Tepelné čerpadlo vzduch-voda aroTHERM plus |
-| ake mate tepelne cerpadla chcem si vybrat presny model | yes | high | 124.17 | 3 | Hľadáte tiché tepelné čerpadlo? Pomôžeme vám vybrať to najlepšie - Hľadáte tiché tepelné čerpadlo vzduch-voda? Pomôžeme vám vybrať to najvhodnejšie |
-| ake hlucne je NIBE | yes | medium | 283.75 | 2 | Hlučnosť tepelného čerpadla vzduch-voda - Hlučnosť tepelného čerpadla vzduch-voda |
-| dotacie na tepelne cerpadla | yes | high | 129.17 | 3 | Tepelné čerpadlá – dotácie - Tepelné čerpadlá – zariadenia pre dotácie |
-| robite servis | yes | medium | 141 | 2 | Stiebel Eltron otvoril novú halu na výrobu tepelných čerpadiel a ohrievačov - Nemecká spoločnosť Stiebel Eltron rozširuje výrobu tepelných čerpadiel |
-| ako vas kontaktovat | yes | medium | 89.17 | 2 | Kontakt - Kontakt GEOTHERM Slovakia s.r.o. |
+| kolko stoji tepelne cerpadlo | yes | high | 305.64 | 3 | Service card - tepelne cerpadla - Minimalne udaje a verdikty pre tepelne cerpadla |
+| ake mate tepelne cerpadla chcem si vybrat presny model | yes | high | 304 | 3 | Service card - tepelne cerpadla - Minimalne udaje a verdikty pre tepelne cerpadla |
+| ake hlucne je NIBE | yes | high | 398.23 | 3 | Aké značky a modely tepelných čerpadiel máte - NIBE, Vaillant, IVT a modely v knowledge |
+| dotacie na tepelne cerpadla | yes | high | 256.44 | 3 | Service card - dotacie - Pomoc s dotaciami bez garancii |
+| robite servis | yes | high | 332.3 | 3 | Service card - servis - Servis, porucha a bezpecne odovzdanie technikovi |
+| ako vas kontaktovat | yes | high | 334.8 | 3 | Service card - servis - Servis, porucha a bezpecne odovzdanie technikovi |
 | ake je pocasie | yes | low | 0 | 0 | n/a |
 
 ## Fallback Check
 
-Na toto nemám dostatočne jasný podklad v obsahu webu.
+Nemám dostatočne jasný podklad na túto tému.
 
-- Viem ti pomôcť hlavne s vykurovaním, chladením, tepelnými čerpadlami, servisom, montážou alebo dotáciami.
+Ahoj, som diagnostický poradca Geotherm a venujem sa technickým riešeniam pre domy.
 
-_Chceš riešiť vykurovanie, chladenie alebo tepelné čerpadlo?_
+### Počasie
+
+Na otázky o počasí ti bohužiaľ neviem odpovedať, nemám na to podklady.
+
+Ak by si ale potreboval poradiť s kúrením, chladením, vetraním, servisom alebo dotáciami pre tvoj dom, som tu pre teba. Čo konkrétne ťa zaujíma?
