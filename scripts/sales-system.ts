@@ -32,6 +32,7 @@ export type QualificationState = {
   insulation?: string;
   annual_consumption?: string;
   project_available?: boolean;
+  heat_loss_known?: boolean;
   contact_name?: string;
   contact_email?: string;
   contact_phone?: string;
