@@ -17,14 +17,24 @@ import {
 import {
   getConversationMessages,
   getOrCreateActiveConversation,
+  getAdminConversation,
+  getLeadById,
   getSiteByPublicId,
   initDb,
   insertEvent,
   insertMessage,
   insertRetrievalEvent,
+  listAdminConversations,
+  listOutreachItems,
+  listRecentLeads,
+  createOrUpdateOutreachItem,
   updateConversation,
+  updateLeadById,
+  updateOutreachItem,
   upsertLead,
   upsertSession,
+  type LeadRecord,
+  type OutreachRecord,
 } from "./local-db";
 import {
   detectIntent,
@@ -66,10 +76,22 @@ export type ChatResponse = {
   leadCapture: {
     shouldAsk: boolean;
     nextQuestion: string | null;
+    reason?: string | null;
+    requestedFields?: string[];
   };
   lead: {
     captured: boolean;
     score: number;
+    id?: string | null;
+    temperature?: string | null;
+    status?: string | null;
+    extractedContact?: {
+      name?: string;
+      email?: string;
+      phone?: string;
+    };
+    missingFields?: string[];
+    nextAction?: string | null;
   };
   debug?: {
     answerMode?: AnswerMode;
@@ -105,6 +127,33 @@ export type ChatResponse = {
     closureReason?: string | null;
     recommendationOptions?: string[];
     remainingCriticalUnknowns?: string[];
+    leadCapture?: {
+      shouldAsk: boolean;
+      reason: string | null;
+      requestedFields: string[];
+      nextQuestion: string | null;
+    };
+    lead?: {
+      id: string | null;
+      captured: boolean;
+      score: number;
+      temperature: string;
+      status: string;
+      extractedContact: Record<string, string>;
+      missingFields: string[];
+      nextAction: string | null;
+    };
+    outreach?: {
+      created: boolean;
+      priority: string | null;
+      reason: string | null;
+      id: string | null;
+    };
+    persistence?: {
+      conversationSaved: boolean;
+      leadSaved: boolean;
+      outreachSaved: boolean;
+    };
   };
   fallbackUsed?: boolean;
   action: null;
@@ -166,8 +215,8 @@ function corsHeaders(origin: string | undefined): Record<string, string> {
 
   return {
     ...(allowedOrigin ? { "Access-Control-Allow-Origin": allowedOrigin } : {}),
-    "Access-Control-Allow-Methods": "POST, OPTIONS",
-    "Access-Control-Allow-Headers": "Content-Type",
+    "Access-Control-Allow-Methods": "GET, POST, PATCH, OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Admin-Token",
     "Access-Control-Max-Age": "86400",
     Vary: "Origin",
   };
@@ -266,6 +315,101 @@ async function readJsonBody(request: IncomingMessage): Promise<unknown> {
   const raw = Buffer.concat(chunks).toString("utf8").trim();
   if (!raw) return {};
   return JSON.parse(raw) as unknown;
+}
+
+function adminTokenConfigured(): string | null {
+  return process.env.ADMIN_TOKEN?.trim() || null;
+}
+
+function isAdminRequestAuthorized(request: IncomingMessage): boolean {
+  const token = adminTokenConfigured();
+  if (!token) return false;
+  const auth = request.headers.authorization || "";
+  const bearer = auth.match(/^Bearer\s+(.+)$/i)?.[1]?.trim();
+  const headerToken = Array.isArray(request.headers["x-admin-token"]) ? request.headers["x-admin-token"][0] : request.headers["x-admin-token"];
+  return bearer === token || headerToken === token;
+}
+
+function parseLimit(url: URL, fallback = 50): number {
+  const parsed = Number.parseInt(url.searchParams.get("limit") || "", 10);
+  return Number.isFinite(parsed) && parsed > 0 && parsed <= 500 ? parsed : fallback;
+}
+
+async function handleAdminRequest(request: IncomingMessage, response: ServerResponse, url: URL, origin?: string): Promise<boolean> {
+  if (!url.pathname.startsWith("/admin/") && url.pathname !== "/webhooks/lead-created") return false;
+  if (!adminTokenConfigured()) {
+    writeError(response, 503, "admin_token_missing", "ADMIN_TOKEN is required for admin endpoints.", origin);
+    return true;
+  }
+  if (!isAdminRequestAuthorized(request)) {
+    writeError(response, 401, "unauthorized", "Admin token is required.", origin);
+    return true;
+  }
+
+  if (request.method === "GET" && url.pathname === "/admin/conversations") {
+    writeJson(response, 200, { items: listAdminConversations(parseLimit(url)) }, origin);
+    return true;
+  }
+  const conversationMatch = url.pathname.match(/^\/admin\/conversations\/([^/]+)$/);
+  if (request.method === "GET" && conversationMatch) {
+    const detail = getAdminConversation(decodeURIComponent(conversationMatch[1]));
+    if (!detail) writeError(response, 404, "not_found", "Conversation not found.", origin);
+    else writeJson(response, 200, detail, origin);
+    return true;
+  }
+
+  if (request.method === "GET" && url.pathname === "/admin/leads") {
+    writeJson(response, 200, { items: listRecentLeads(parseLimit(url)) }, origin);
+    return true;
+  }
+  const leadMatch = url.pathname.match(/^\/admin\/leads\/([^/]+)$/);
+  if (leadMatch && request.method === "GET") {
+    const lead = getLeadById(decodeURIComponent(leadMatch[1]));
+    if (!lead) writeError(response, 404, "not_found", "Lead not found.", origin);
+    else writeJson(response, 200, lead, origin);
+    return true;
+  }
+  if (leadMatch && request.method === "PATCH") {
+    const body = (await readJsonBody(request)) as Partial<LeadRecord>;
+    const lead = updateLeadById(decodeURIComponent(leadMatch[1]), {
+      status: typeof body.status === "string" ? body.status : undefined,
+      owner: typeof body.owner === "string" ? body.owner : undefined,
+      next_action: typeof body.next_action === "string" ? body.next_action : undefined,
+      next_action_at: typeof body.next_action_at === "string" ? body.next_action_at : undefined,
+      last_contacted_at: typeof body.last_contacted_at === "string" ? body.last_contacted_at : undefined,
+      notes: typeof body.notes === "string" ? body.notes : undefined,
+    });
+    if (!lead) writeError(response, 404, "not_found", "Lead not found.", origin);
+    else writeJson(response, 200, lead, origin);
+    return true;
+  }
+
+  if (request.method === "GET" && url.pathname === "/admin/outreach") {
+    writeJson(response, 200, { items: listOutreachItems(url.searchParams.get("status") || "open", parseLimit(url)) }, origin);
+    return true;
+  }
+  const outreachMatch = url.pathname.match(/^\/admin\/outreach\/([^/]+)$/);
+  if (outreachMatch && request.method === "PATCH") {
+    const body = (await readJsonBody(request)) as Partial<OutreachRecord>;
+    const item = updateOutreachItem(decodeURIComponent(outreachMatch[1]), {
+      status: typeof body.status === "string" ? body.status : undefined,
+      priority: typeof body.priority === "string" ? body.priority : undefined,
+      suggested_action: typeof body.suggested_action === "string" ? body.suggested_action : undefined,
+      due_at: typeof body.due_at === "string" ? body.due_at : undefined,
+    });
+    if (!item) writeError(response, 404, "not_found", "Outreach item not found.", origin);
+    else writeJson(response, 200, item, origin);
+    return true;
+  }
+
+  if (request.method === "POST" && url.pathname === "/webhooks/lead-created") {
+    const body = await readJsonBody(request);
+    writeJson(response, 202, { ok: true, accepted: true, payload: body }, origin);
+    return true;
+  }
+
+  writeError(response, 404, "not_found", "Admin endpoint not found.", origin);
+  return true;
 }
 
 function confidenceFromResult(result: RetrievalResult | undefined): "high" | "medium" | "low" {
@@ -2676,7 +2820,9 @@ function deterministicTurnQualificationUpdate(
 
   if (!update.location) {
     const rawLocation = message.match(/^\s*([A-ZÁÄČĎÉÍĽĹŇÓÔŔŠŤÚÝŽ][\p{L} -]{2,})(?:,|$)/u)?.[1]?.trim();
-    if (rawLocation && !/^(ano|nie|nemam|neviem)$/i.test(rawLocation)) update.location = rawLocation;
+    const hasContact = Boolean(extractCrmContact(message).phone || extractCrmContact(message).email);
+    const looksLikePersonName = rawLocation ? /^[\p{Lu}][\p{L}'-]+(?:\s+[\p{Lu}][\p{L}'-]+){1,3}$/u.test(rawLocation) : false;
+    if (rawLocation && !hasContact && !looksLikePersonName && !/^(ano|nie|nemam|neviem)$/i.test(rawLocation)) update.location = rawLocation;
   }
 
   const numericValues = numberedValues
@@ -2905,6 +3051,381 @@ function expectedServiceFaultAnswer(): string {
     "",
     "Pošli mi prosím model alebo fotku štítku, chybový kód z displeja a mesto, kde je zariadenie.",
   ].join("\n");
+}
+
+type CrmContact = {
+  name?: string;
+  email?: string;
+  phone?: string;
+};
+
+type CrmLeadIntent = "inspection" | "quote" | "service_fault" | "callback" | "project" | "general";
+
+type CrmOutcome = {
+  leadCapture: {
+    shouldAsk: boolean;
+    nextQuestion: string | null;
+    reason: string | null;
+    requestedFields: string[];
+  };
+  lead: {
+    id: string | null;
+    captured: boolean;
+    score: number;
+    temperature: string;
+    status: string;
+    extractedContact: CrmContact;
+    missingFields: string[];
+    nextAction: string | null;
+  };
+  outreach: {
+    created: boolean;
+    priority: string | null;
+    reason: string | null;
+    id: string | null;
+  };
+  persistence: {
+    conversationSaved: boolean;
+    leadSaved: boolean;
+    outreachSaved: boolean;
+  };
+  nextState: QualificationState;
+  answer: string;
+  leadRecord: LeadRecord | null;
+  outreachRecord: OutreachRecord | null;
+};
+
+const crmPhonePattern = /(?:\+421|00421)[\s.-]*(?:\d[\s.-]*){9}|0[\s.-]*(?:\d[\s.-]*){9}|(?<!\d)(?:\d[\s.-]*){9}(?!\d)/;
+const crmPhonePatternGlobal = /(?:\+421|00421)[\s.-]*(?:\d[\s.-]*){9}|0[\s.-]*(?:\d[\s.-]*){9}|(?<!\d)(?:\d[\s.-]*){9}(?!\d)/g;
+
+function normalizePhone(value: string | undefined): string | undefined {
+  if (!value) return undefined;
+  const compact = value.replace(/[()\s.-]/g, "");
+  if (/^00421\d{9}$/.test(compact)) return `+421${compact.slice(5)}`;
+  if (/^\+421\d{9}$/.test(compact)) return compact;
+  if (/^0\d{9}$/.test(compact)) return compact;
+  if (/^\d{9}$/.test(compact)) return `0${compact}`;
+  return compact;
+}
+
+function extractCrmContact(message: string): CrmContact {
+  const email = message.match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i)?.[0];
+  const phone = normalizePhone(message.match(crmPhonePattern)?.[0]);
+  let name: string | undefined;
+  const explicitName = message.match(/\b(?:vol[aá]m sa|meno je|som)\s+([\p{Lu}][\p{L}'-]+(?:\s+[\p{Lu}][\p{L}'-]+){1,3})/u)?.[1];
+  if (explicitName) {
+    name = explicitName.trim();
+  } else if (phone || email) {
+    const stripped = message
+      .replace(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi, " ")
+      .replace(crmPhonePatternGlobal, " ")
+      .split(/[,;\n]/)
+      .map((part) => part.trim())
+      .find((part) => /^[\p{Lu}][\p{L}'-]+(?:\s+[\p{Lu}][\p{L}'-]+){1,3}$/u.test(part));
+    if (stripped && !/(bratislava|nitra|trnava|kosice|košice|zilina|žilina|nibe|vaillant)/i.test(stripped)) name = stripped;
+  }
+  return { ...(name ? { name } : {}), ...(email ? { email } : {}), ...(phone ? { phone } : {}) };
+}
+
+function extractCrmLocation(message: string, contact: CrmContact): string | undefined {
+  const withoutContact = message
+    .replace(contact.email || "\u0000", " ")
+    .replace(contact.phone || "\u0000", " ")
+    .replace(crmPhonePatternGlobal, " ");
+  const match = withoutContact.match(/\b(?:som|sme|byvam|bývam|dom je|zariadenie je)\s+(?:z|zo|v|vo)\s+([\p{Lu}][\p{L}'-]+(?:\s+[\p{Lu}][\p{L}'-]+){0,2})/u);
+  return match?.[1]?.trim();
+}
+
+function detectCrmLeadIntent(message: string, route: Pick<ServiceRoute, "serviceType" | "serviceIntent">): CrmLeadIntent {
+  const text = normalizePolicyText(message);
+  if (/(obhliad|prehliad|prist pozriet|prist sa pozriet|dohodnut termin|dohodnut obhliad|chcem aby ste prisli)/.test(text)) return "inspection";
+  if (/(cenova ponuka|cenovu ponuku|ponuku|nacenit|nacenenie|poslite cenu|chcem cenu)/.test(text) || route.serviceIntent === "price") return "quote";
+  if (/(zavolajte|ozvite|kontaktujte|nech mi zavola|telefonicky)/.test(text)) return "callback";
+  if (route.serviceType === "service" || route.serviceIntent === "service_fault" || /(porucha|chyba|hlasi chybu|servis|diagnostik)/.test(text)) return "service_fault";
+  if (route.serviceType !== "unknown" || route.serviceIntent !== "general") return "project";
+  return "general";
+}
+
+function inferCrmLeadIntentFromHistory(messages: Array<{ role: string; content: string }>): CrmLeadIntent {
+  const text = messages
+    .slice(-8)
+    .map((message) => normalizePolicyText(message.content))
+    .join(" ");
+  if (/(obhliad|prehliad|dohodnut termin|technik alebo obchodnik|technik obchodnik)/.test(text)) return "inspection";
+  if (/(cenova ponuka|cenovu ponuku|ponuku|nacenit|nacenenie)/.test(text)) return "quote";
+  if (/(porucha|chyba|servis|diagnostik)/.test(text)) return "service_fault";
+  if (/(zavolajte|ozvite|kontaktujte|spatny kontakt|spatne ozvanie)/.test(text)) return "callback";
+  return "general";
+}
+
+function leadTemperature(score: number): "cold" | "warm" | "hot" {
+  if (score >= 61) return "hot";
+  if (score >= 31) return "warm";
+  return "cold";
+}
+
+function boolSlot(value: boolean | undefined): boolean | null {
+  return value === undefined ? null : value;
+}
+
+function scoreCrmLead(input: {
+  state: QualificationState;
+  route: Pick<ServiceRoute, "serviceType" | "serviceIntent">;
+  contact: CrmContact;
+  leadIntent: CrmLeadIntent;
+}): number {
+  let score = 0;
+  if (input.route.serviceType !== "unknown" || input.state.service_type) score += 10;
+  if (input.state.project_type) score += 10;
+  if (input.state.location) score += 10;
+  if (input.state.area_m2 || input.state.heating_distribution || input.state.current_heating) score += 10;
+  if (input.leadIntent === "quote") score += 15;
+  if (input.leadIntent === "inspection") score += 20;
+  if (input.contact.phone || input.contact.email) score += 25;
+  if (input.state.timeline) score += 10;
+  if (input.leadIntent === "service_fault") score += 10;
+  if (input.leadIntent === "general" && !input.state.project_type && input.route.serviceType === "unknown") score -= 20;
+  return Math.max(0, Math.min(100, score));
+}
+
+function leadStatus(input: {
+  leadIntent: CrmLeadIntent;
+  hasContact: boolean;
+  score: number;
+}): string {
+  if (input.leadIntent === "service_fault" && input.hasContact) return "service_requested";
+  if (input.leadIntent === "inspection" && input.hasContact) return "inspection_requested";
+  if (input.leadIntent === "quote" && input.hasContact) return "quote_requested";
+  if (input.hasContact) return "contact_captured";
+  if (["inspection", "quote", "callback", "service_fault"].includes(input.leadIntent)) return "missing_contact";
+  if (input.score >= 45) return "missing_contact";
+  if (input.score >= 30) return "qualified";
+  return "new";
+}
+
+function statusNextAction(status: string, contact: CrmContact): string | null {
+  if (status === "inspection_requested") return "Zavolať zákazníkovi a dohodnúť obhliadku.";
+  if (status === "quote_requested") return "Kontaktovať zákazníka a vyžiadať podklady na cenovú ponuku.";
+  if (status === "service_requested") return "Zavolať zákazníkovi a dohodnúť servisný postup.";
+  if (status === "contact_captured") return contact.phone ? "Zavolať zákazníkovi a upresniť dopyt." : "Napísať zákazníkovi a upresniť dopyt.";
+  if (status === "missing_contact") return "Vypýtať telefón alebo e-mail pre spätný kontakt.";
+  return null;
+}
+
+function buildLeadSummary(input: {
+  state: QualificationState;
+  route: Pick<ServiceRoute, "serviceType" | "serviceIntent">;
+  contact: CrmContact;
+  leadIntent: CrmLeadIntent;
+  status: string;
+}): string {
+  const who = input.contact.name || "Zákazník";
+  const facts = [
+    `${who} rieši ${serviceLabel(input.route.serviceType)}.`,
+    input.state.project_type ? `Typ projektu: ${input.state.project_type}.` : null,
+    input.state.area_m2 ? `Plocha približne ${input.state.area_m2} m².` : null,
+    input.state.heating_distribution ? `Vykurovanie: ${input.state.heating_distribution}.` : null,
+    input.state.current_heating ? `Aktuálny zdroj: ${input.state.current_heating}.` : null,
+    input.state.wants_cooling ? "Zaujíma ho aj chladenie." : null,
+    input.state.location ? `Lokalita: ${input.state.location}.` : null,
+    input.leadIntent === "inspection" ? "Požiadal o obhliadku." : null,
+    input.leadIntent === "quote" ? "Požiadal o cenovú ponuku." : null,
+    input.leadIntent === "service_fault" ? "Rieši servis alebo poruchu." : null,
+    input.contact.phone ? `Telefón: ${input.contact.phone}.` : null,
+    input.contact.email ? `E-mail: ${input.contact.email}.` : null,
+    `Status: ${input.status}.`,
+  ].filter(Boolean);
+  return facts.join(" ");
+}
+
+function shouldPersistLead(input: { score: number; contact: CrmContact; leadIntent: CrmLeadIntent; closureTriggered: boolean }): boolean {
+  return Boolean(input.contact.phone || input.contact.email || input.score >= 30 || input.closureTriggered || ["inspection", "quote", "callback", "service_fault"].includes(input.leadIntent));
+}
+
+function retentionDate(): string {
+  const days = Number.parseInt(process.env.LEAD_RETENTION_DAYS || "730", 10);
+  const date = new Date();
+  date.setDate(date.getDate() + (Number.isFinite(days) && days > 0 ? days : 730));
+  return date.toISOString();
+}
+
+function buildCrmOutcome(input: {
+  siteId: string;
+  conversationId: string;
+  visitorId: string;
+  message: string;
+  answer: string;
+  route: Pick<ServiceRoute, "serviceType" | "serviceIntent">;
+  responseIntent: SalesIntent;
+  state: QualificationState;
+  previousMessages: Array<{ role: string; content: string; created_at?: string }>;
+  closureTriggered: boolean;
+  currentUrl?: string;
+  referrer?: string;
+}): CrmOutcome {
+  const currentContact = extractCrmContact(input.message);
+  const hasNewContact = Boolean(currentContact.phone || currentContact.email);
+  const contact: CrmContact = {
+    name: currentContact.name || input.state.contact_name,
+    email: currentContact.email || input.state.contact_email,
+    phone: currentContact.phone || input.state.contact_phone,
+  };
+  const location = extractCrmLocation(input.message, contact);
+  const directLeadIntent = detectCrmLeadIntent(input.message, input.route);
+  const historyLeadIntent = inferCrmLeadIntentFromHistory(input.previousMessages);
+  const hasContact = Boolean(contact.phone || contact.email);
+  const leadIntent = hasContact && ["general", "project"].includes(directLeadIntent) && historyLeadIntent !== "general" ? historyLeadIntent : directLeadIntent;
+  const nextState: QualificationState = {
+    ...input.state,
+    ...(contact.name ? { contact_name: contact.name } : {}),
+    ...(contact.phone ? { contact_phone: contact.phone } : {}),
+    ...(contact.email ? { contact_email: contact.email } : {}),
+    ...(location && !input.state.location ? { location } : {}),
+    ...(hasNewContact && ["inspection", "quote", "callback", "service_fault"].includes(leadIntent) ? { contact_consent: true } : {}),
+  };
+  const score = scoreCrmLead({ state: nextState, route: input.route, contact, leadIntent });
+  const temperature = leadTemperature(score);
+  const status = leadStatus({ leadIntent, hasContact, score });
+  const missingFields = hasContact ? [] : ["phone_or_email"];
+  const shouldAskContact = !hasContact && (["inspection", "quote", "callback", "service_fault"].includes(leadIntent) || score >= 60);
+  const requestedFields = shouldAskContact ? ["phone_or_email", "name"] : [];
+  const nextQuestion = shouldAskContact
+    ? "Jasné, ďalší krok je, aby sa vám vedel ozvať technik alebo obchodník a dohodol postup. Pošlite prosím telefón alebo e-mail, prípadne aj meno. Kontakt použijeme iba na spätné ozvanie k tomuto dopytu."
+    : null;
+  const nextAction = statusNextAction(status, contact);
+  let answer = input.answer;
+  if (hasNewContact) {
+    const context = [
+      nextState.project_type ? nextState.project_type : null,
+      input.route.serviceType !== "unknown" ? serviceLabel(input.route.serviceType) : null,
+      nextState.heating_distribution ? nextState.heating_distribution : null,
+      nextState.wants_cooling ? "chladenie" : null,
+    ]
+      .filter(Boolean)
+      .join(", ");
+    answer = [
+      "### Kontakt mám poznačený",
+      "",
+      `Ďakujem, kontakt som si poznačil${contact.name ? `, ${contact.name}` : ""}. Kolega sa vám ozve, aby s vami dohodol ďalší postup${leadIntent === "inspection" ? " k obhliadke" : ""}.`,
+      "",
+      context ? `Pre istotu: evidujem, že riešime ${context}.` : "Kontakt použijeme iba na spätné ozvanie k tomuto dopytu.",
+    ].join("\n");
+  } else if (shouldAskContact && nextQuestion && !/(telef[oó]n|e-mail|email|kontakt pouzijeme|kontakt použijeme)/i.test(answer)) {
+    answer = `${answer.trim()}\n\n${nextQuestion}`;
+  }
+
+  const persistLead = shouldPersistLead({ score, contact, leadIntent, closureTriggered: input.closureTriggered });
+  let leadRecord: LeadRecord | null = null;
+  let outreachRecord: OutreachRecord | null = null;
+  if (persistLead) {
+    const summary = buildLeadSummary({ state: nextState, route: input.route, contact, leadIntent, status });
+    leadRecord = upsertLead({
+      conversationId: input.conversationId,
+      siteId: input.siteId,
+      visitorId: input.visitorId,
+      name: contact.name,
+      email: contact.email,
+      phone: contact.phone,
+      preferredContactMethod: contact.phone ? "phone" : contact.email ? "email" : null,
+      serviceType: input.route.serviceType !== "unknown" ? input.route.serviceType : nextState.service_type ?? null,
+      serviceIntent: input.route.serviceIntent,
+      projectType: nextState.project_type ?? null,
+      location: nextState.location ?? null,
+      areaM2: nextState.area_m2 ?? null,
+      heatingDistribution: nextState.heating_distribution ?? null,
+      currentHeatSource: nextState.current_heating ?? null,
+      wantsCooling: boolSlot(nextState.wants_cooling),
+      wantsHotWater: boolSlot(nextState.hot_water),
+      projectAvailable: boolSlot(nextState.project_available),
+      heatLossKnown: boolSlot(nextState.heat_loss_known),
+      timeline: nextState.timeline ?? null,
+      intent: leadIntent,
+      score,
+      temperature,
+      status,
+      nextAction,
+      source: input.currentUrl || input.referrer || "chat",
+      tags: [input.route.serviceType, leadIntent, temperature].filter((value) => value && value !== "unknown"),
+      summary,
+      notes: summary,
+      consentToContact: hasContact && ["inspection", "quote", "callback", "service_fault"].includes(leadIntent),
+      contactRequestedByUser: hasNewContact && ["inspection", "quote", "callback", "service_fault"].includes(leadIntent) ? true : null,
+      marketingConsent: false,
+      privacyNoticeShown: hasContact || shouldAskContact,
+      dataRetentionUntil: retentionDate(),
+      transcript: {
+        messages: [
+          ...input.previousMessages.map((item) => ({ role: item.role, content: item.content, created_at: item.created_at })),
+          { role: "user", content: input.message },
+          { role: "assistant", content: answer },
+        ],
+        summary,
+        storedSlots: nextState,
+        leadIntent,
+        status,
+      },
+    });
+  }
+
+  if (leadRecord && (hasContact || shouldAskContact || status === "missing_contact")) {
+    const priority: "low" | "medium" | "high" = hasContact && (temperature === "hot" || ["inspection_requested", "quote_requested", "service_requested"].includes(status))
+      ? "high"
+      : status === "missing_contact"
+        ? "medium"
+        : "medium";
+    const reason = hasContact
+      ? contact.phone
+        ? "Zákazník poslal telefón"
+        : "Zákazník poslal e-mail"
+      : leadIntent === "inspection"
+        ? "Zákazník požiadal o obhliadku bez kontaktu"
+        : leadIntent === "quote"
+          ? "Dopyt na cenu bez kontaktu"
+          : "Kvalifikovaný lead bez kontaktu";
+    outreachRecord = createOrUpdateOutreachItem({
+      leadId: leadRecord.id,
+      conversationId: input.conversationId,
+      siteId: input.siteId,
+      priority,
+      reason,
+      suggestedAction: nextAction || (hasContact ? "Kontaktovať zákazníka." : "Vypýtať kontakt v chate."),
+      dueAt: priority === "high" ? new Date(Date.now() + 60 * 60 * 1000).toISOString() : null,
+    });
+  }
+
+  return {
+    leadCapture: {
+      shouldAsk: shouldAskContact,
+      nextQuestion,
+      reason: shouldAskContact ? `${leadIntent}_missing_contact` : null,
+      requestedFields,
+    },
+    lead: {
+      id: leadRecord?.id ?? null,
+      captured: hasContact,
+      score,
+      temperature,
+      status,
+      extractedContact: contact,
+      missingFields,
+      nextAction,
+    },
+    outreach: {
+      created: Boolean(outreachRecord),
+      priority: outreachRecord?.priority ?? null,
+      reason: outreachRecord?.reason ?? null,
+      id: outreachRecord?.id ?? null,
+    },
+    persistence: {
+      conversationSaved: true,
+      leadSaved: Boolean(leadRecord),
+      outreachSaved: Boolean(outreachRecord),
+    },
+    nextState,
+    answer,
+    leadRecord,
+    outreachRecord,
+  };
 }
 
 type RecommendationClosureDecision = {
@@ -4228,7 +4749,7 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
           currentState: stateForTurn,
           route,
         });
-  const nextState: QualificationState = {
+  let nextState: QualificationState = {
     ...mergeQualificationState(stateForTurn, qualificationUpdate),
     service_type: route.serviceType !== "unknown" ? route.serviceType : previousState.service_type,
     service_intent: route.serviceIntent !== "general" ? route.serviceIntent : previousState.service_intent,
@@ -4236,6 +4757,22 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     recommendation_closure_offered: previousState.recommendation_closure_offered || closureDecision.triggered || undefined,
     relevant_turns: (previousState.relevant_turns || 0) + 1,
   };
+  const crmOutcome = buildCrmOutcome({
+    siteId: site.id,
+    conversationId: conversation.id,
+    visitorId: anonymousId,
+    message,
+    answer,
+    route,
+    responseIntent,
+    state: nextState,
+    previousMessages,
+    closureTriggered: closureDecision.triggered,
+    currentUrl: requestBody.currentUrl,
+    referrer: requestBody.metadata?.referrer,
+  });
+  answer = crmOutcome.answer;
+  nextState = crmOutcome.nextState;
 
   if (!previousMessages.length) {
     insertEvent({
@@ -4287,6 +4824,8 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     ? "recommendation_closure"
     : route.serviceType === "service" || route.serviceIntent === "service_fault"
       ? "service_fault_triage"
+      : crmOutcome.leadCapture.shouldAsk || ["inspection_requested", "quote_requested", "contact_captured"].includes(crmOutcome.lead.status)
+        ? "handoff_cta"
       : answerDiagnostics.fallbackType
         ? "ai_fallback"
         : requiresHardVerdict(stateForTurn, route, message)
@@ -4315,8 +4854,38 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
       answerMode: finalAnswerMode,
       closureGateTriggered: closureDecision.triggered,
       closureReason: closureDecision.reason,
+      lead: crmOutcome.lead,
+      outreach: crmOutcome.outreach,
     },
   });
+  if (crmOutcome.leadRecord) {
+    insertEvent({
+      siteId: site.id,
+      sessionId: session.id,
+      conversationId: conversation.id,
+      eventType: crmOutcome.lead.captured ? "lead_captured" : "lead_updated",
+      payload: {
+        leadId: crmOutcome.leadRecord.id,
+        status: crmOutcome.lead.status,
+        score: crmOutcome.lead.score,
+        temperature: crmOutcome.lead.temperature,
+        summary: crmOutcome.leadRecord.summary,
+      },
+    });
+    if (crmOutcome.lead.temperature === "hot" && crmOutcome.lead.captured) {
+      insertEvent({
+        siteId: site.id,
+        sessionId: session.id,
+        conversationId: conversation.id,
+        eventType: "lead_notification_queued",
+        payload: {
+          leadId: crmOutcome.leadRecord.id,
+          subject: `Nový hot lead: ${crmOutcome.lead.status}`,
+          nextAction: crmOutcome.lead.nextAction,
+        },
+      });
+    }
+  }
 
   return {
     conversationId: conversation.id,
@@ -4325,8 +4894,8 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     confidence: responseConfidence,
     topScore,
     sources,
-    leadCapture: { shouldAsk: false, nextQuestion: null },
-    lead: { captured: false, score: 0 },
+    leadCapture: crmOutcome.leadCapture,
+    lead: crmOutcome.lead,
     debug: {
       answerMode: finalAnswerMode,
       llmAttempted: true,
@@ -4360,6 +4929,13 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
       closureReason: closureDecision.reason,
       recommendationOptions: closureDecision.options,
       remainingCriticalUnknowns: closureDecision.remainingCriticalUnknowns,
+      leadCapture: crmOutcome.leadCapture,
+      lead: {
+        ...crmOutcome.lead,
+        extractedContact: Object.fromEntries(Object.entries(crmOutcome.lead.extractedContact).filter(([, value]) => Boolean(value))) as Record<string, string>,
+      },
+      outreach: crmOutcome.outreach,
+      persistence: crmOutcome.persistence,
     },
     action: null,
     fallbackUsed: Boolean(answerDiagnostics.fallbackType),
@@ -5139,6 +5715,7 @@ export async function startChatServer(options: StartOptions = {}): Promise<Serve
 
   const server = createServer(async (request, response) => {
     const origin = request.headers.origin;
+    const requestUrl = new URL(request.url || "/", "http://localhost");
 
     if (request.method === "OPTIONS") {
       response.writeHead(204, corsHeaders(origin));
@@ -5146,12 +5723,16 @@ export async function startChatServer(options: StartOptions = {}): Promise<Serve
       return;
     }
 
-    if (request.method === "GET" && request.url === "/health") {
+    if (request.method === "GET" && requestUrl.pathname === "/health") {
       writeJson(response, 200, { ok: true, commit: serverCommit(), diagnosticFlowVersion }, origin);
       return;
     }
 
-    if (request.method === "GET" && (request.url === "/" || request.url === "/preview" || request.url === "/embed-preview.html")) {
+    if (await handleAdminRequest(request, response, requestUrl, origin)) {
+      return;
+    }
+
+    if (request.method === "GET" && (requestUrl.pathname === "/" || requestUrl.pathname === "/preview" || requestUrl.pathname === "/embed-preview.html")) {
       if (!isPreviewEnabled()) {
         writeError(response, 404, "not_found", "Preview is disabled.", origin);
         return;
@@ -5160,11 +5741,11 @@ export async function startChatServer(options: StartOptions = {}): Promise<Serve
       return;
     }
 
-    if (request.method === "GET" && request.url && (await writeEmbedAsset(request.url, response))) {
+    if (request.method === "GET" && (await writeEmbedAsset(requestUrl.pathname, response))) {
       return;
     }
 
-    if (request.method !== "POST" || request.url !== "/chat") {
+    if (request.method !== "POST" || requestUrl.pathname !== "/chat") {
       writeError(response, 404, "not_found", "Not found", origin);
       return;
     }

@@ -32,6 +32,7 @@
     "test:router": "tsx scripts/test-router.ts",
     "test:practical-chat": "tsx scripts/test-practical-conversations.ts",
     "test:chat-api": "tsx scripts/test-chat-api.ts",
+    "test:crm-leads": "tsx scripts/test-crm-leads.ts",
     "test:diagnostic-conversation": "tsx scripts/test-diagnostic-conversation.ts",
     "preview:embed": "vite dist-embed --host 127.0.0.1 --port 4321",
     "test:embed-ui": "tsx scripts/test-embed-ui.ts",
