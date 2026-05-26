@@ -31,6 +31,7 @@ export type QualificationState = {
   occupants?: number;
   insulation?: string;
   annual_consumption?: string;
+  annual_consumption_unknown?: boolean;
   project_available?: boolean;
   heat_loss_known?: boolean;
   contact_name?: string;

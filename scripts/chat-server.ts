@@ -84,12 +84,22 @@ export type ChatResponse = {
     retrievalQuery?: string;
     enrichedRetrievalQuery?: string;
     storedSlots?: Record<string, unknown>;
+    rawUserMessage?: string;
+    normalizedUserMessage?: string;
+    newlyExtractedSlots?: Record<string, unknown>;
+    inferredFromLastQuestion?: boolean;
     serviceType?: string;
     serviceIntent?: string;
+    legacyIntent?: string;
     diagnosticFlowVersion?: string;
     serverCommit?: string;
+    retrievalSourcesCount?: number;
     contextTopic?: string | null;
     contextCarried?: boolean;
+    fallbackUsed?: boolean;
+    fallbackType?: string | null;
+    validatorsTriggered?: string[];
+    bannedClaimsRemoved?: string[];
   };
   fallbackUsed?: boolean;
   action: null;
@@ -111,7 +121,7 @@ type AnswerPolicy = {
 const defaultKnowledgePath = path.join(process.cwd(), "knowledge", "chatbot-knowledge.json");
 const localOriginPattern = /^https?:\/\/(?:localhost|127\.0\.0\.1|\[::1\])(?::\d+)?$/i;
 const safetyFollowUp = "Ide o poruchu existujúceho zariadenia alebo plánujete novú montáž?";
-const diagnosticFlowVersion = "diagnostic-v3-stateful-live";
+const diagnosticFlowVersion = "diagnostic-v4-ai-first-rag-context";
 
 let knowledgeCache: KnowledgeChunk[] | null = null;
 let serverCommitCache: string | null = null;
@@ -340,7 +350,7 @@ function detectSafetyRoute(message: string): SafetyRoute {
       /\bporuch\w*\b/.test(text) ||
       /\bnefunguje\b/.test(text) ||
       /\balarm\w*\b/.test(text) ||
-      /\bchyb\w*\b/.test(text) ||
+      (/\bchyb\w*\b/.test(text) && /(ako|mozem|môžem|mam|mám|sam|sám|oprav|reset|vymaz|odstran|odstráň)/.test(text)) ||
       /\btecie\b/.test(text) ||
       /\bkvapka\w*\b/.test(text) ||
       padded.includes(" smrdi elektrika ") ||
@@ -2082,6 +2092,7 @@ function buildStateSignals(state: QualificationState): string[] {
     state.heating_distribution ? `vykurovanie ${state.heating_distribution}` : null,
     state.current_heating ? `aktuálne kúrenie ${state.current_heating}` : null,
     state.annual_consumption ? `spotreba ${state.annual_consumption}` : null,
+    state.annual_consumption_unknown ? "ročná spotreba nie je známa" : null,
     state.insulation ? `zateplenie ${state.insulation}` : null,
     state.heat_loss_known === false ? "tepelná strata alebo odhad nie je k dispozícii" : null,
     state.heat_loss_known === true ? "má tepelnú stratu alebo energetický odhad" : null,
@@ -2103,6 +2114,15 @@ function debugStoredSlots(state: QualificationState): Record<string, unknown> {
   return slots;
 }
 
+function debugQualificationUpdate(update: QualificationUpdate): Record<string, unknown> {
+  const slots: Record<string, unknown> = {};
+  for (const key of qualificationUpdateFields) {
+    const value = update[key];
+    if (value !== undefined && value !== null && value !== "") slots[key] = value;
+  }
+  return slots;
+}
+
 function scenarioSearchKeywords(state: QualificationState): string[] {
   const normalizedProject = normalizePolicyText(state.project_type || "");
   const normalizedDistribution = normalizePolicyText(state.heating_distribution || "");
@@ -2112,6 +2132,9 @@ function scenarioSearchKeywords(state: QualificationState): string[] {
   }
   if (normalizedProject.includes("rekon") && normalizedDistribution.includes("radiator")) {
     terms.push("scenar-starsi-dom-radiatory-plyn radiatorovy system vyssia teplota vody");
+  }
+  if (normalizedDistribution.includes("radiator") && normalizePolicyText(state.current_heating || "").includes("tuhe palivo")) {
+    terms.push("scenar-vymena-kotla-na-drevo tuhe palivo radiatory akumulacna nadrz tepelne cerpadlo vzduch-voda");
   }
   if (state.wants_cooling) {
     terms.push("scenar-kurenie-aj-chladenie chladenie cez tepelne cerpadlo stropne chladenie fancoily podlahove chladenie rosny bod");
@@ -2576,6 +2599,7 @@ type QualificationUpdate = Partial<
     | "occupants"
     | "insulation"
     | "annual_consumption"
+    | "annual_consumption_unknown"
     | "project_available"
     | "heat_loss_known"
   >
@@ -2599,13 +2623,16 @@ function deterministicQualificationUpdate(message: string, route?: Pick<ServiceR
   if (/projekt|podorys|pôdorys/.test(normalized)) update.project_available = true;
   if (/tepelna strata|tepelnú stratu|energeticky certifikat|energetický certifikát|odhad vykonu|odhad výkonu/.test(normalized)) update.heat_loss_known = true;
   if (/nemam odhad|nemám odhad|neviem odhad|nemam tepelnu stratu|nemám tepelnú stratu|nemam energeticky|nemám energetický/.test(normalized)) update.heat_loss_known = false;
+  if (/(neviem|netusim|netuším|nemam|nemám).*(spotreb|odhad|drevo|plyn|m3|kwh)|(?:spotreb|odhad).*(neviem|netusim|netuším|nemam|nemám)/.test(normalized)) {
+    update.annual_consumption_unknown = true;
+  }
   if (/zateplen/.test(normalized)) update.insulation = /nezateplen|nie je zateplen/.test(normalized) ? "nezateplený" : "zateplený alebo čiastočne zateplený";
   const occupantsMatch = normalized.match(/(\d{1,2})\s*(?:osob|ludi|clen)/);
   if (occupantsMatch) update.occupants = Number.parseInt(occupantsMatch[1], 10);
   const consumptionMatch = normalized.match(/(\d[\d\s.,]{2,})\s*(?:m3|kwh|kw h|eur|€)/);
   if (consumptionMatch) update.annual_consumption = consumptionMatch[0].trim();
 
-  const areaMatch = normalized.match(/(\d{2,4})\s*(?:m2|m 2|m²|metrov|metre)/) || normalized.match(/\b(\d{2,4})\b/);
+  const areaMatch = normalized.match(/(\d{2,4})\s*(?:m2|m 2|m²|m\b|metrov|metre)/) || normalized.match(/\b(\d{2,4})\b/);
   if (areaMatch) {
     const area = Number.parseInt(areaMatch[1], 10);
     if (Number.isFinite(area) && area >= 20 && area <= 2000) update.area_m2 = area;
@@ -2680,6 +2707,7 @@ const qualificationUpdateFields: Array<keyof QualificationUpdate> = [
   "occupants",
   "insulation",
   "annual_consumption",
+  "annual_consumption_unknown",
   "project_available",
   "heat_loss_known",
 ];
@@ -2714,6 +2742,19 @@ function hasActiveDiagnosticState(state: QualificationState): boolean {
 
 function isNewBuildFloorHeating(state: QualificationState): boolean {
   return normalizePolicyText(state.project_type || "").includes("novostav") && normalizePolicyText(state.heating_distribution || "").includes("podlah");
+}
+
+function isExistingRadiatorSolidFuel(state: QualificationState): boolean {
+  const project = normalizePolicyText(state.project_type || "");
+  const distribution = normalizePolicyText(state.heating_distribution || "");
+  const heating = normalizePolicyText(state.current_heating || "");
+  return (project.includes("rekon") || project.includes("starsi") || project.includes("existuj")) && distribution.includes("radiator") && heating.includes("tuhe palivo");
+}
+
+function isExistingRadiatorHeatPump(state: QualificationState): boolean {
+  const project = normalizePolicyText(state.project_type || "");
+  const distribution = normalizePolicyText(state.heating_distribution || "");
+  return (project.includes("rekon") || project.includes("starsi") || project.includes("existuj")) && distribution.includes("radiator");
 }
 
 function requiresHardVerdict(state: QualificationState, route: Pick<ServiceRoute, "serviceType" | "serviceIntent">, message: string): boolean {
@@ -2777,6 +2818,32 @@ function expectedVerdictAnswer(state: QualificationState): string {
     return parts.join("\n");
   }
 
+  if (isExistingRadiatorSolidFuel(state)) {
+    const area = state.area_m2 ? ` pri dome cca ${state.area_m2} m²` : "";
+    return [
+      "### Predbežný verdikt",
+      "",
+      `Podľa toho, čo píšeš, ide predbežne o výmenu kotla na drevo alebo tuhé palivo za tepelné čerpadlo **vzduch-voda vhodné pre radiátorový systém**${area}. Dôvod je, že radiátory často potrebujú vyššiu teplotu vody než podlahovka, takže treba overiť výkon radiátorov a tepelné straty domu.`,
+      "",
+      "Typicky by sa riešilo tepelné čerpadlo, úprava kotolne, regulácia, prípadne akumulačná nádrž a ohrev teplej vody. Keďže pri dreve býva spotreba nepresná, stačí orientačne koľko dreva spáliš za sezónu.",
+      "",
+      "Je dom zateplený a máš už v systéme akumulačnú nádrž?",
+    ].join("\n");
+  }
+
+  if (isExistingRadiatorHeatPump(state)) {
+    const area = state.area_m2 ? ` pri dome cca ${state.area_m2} m²` : "";
+    return [
+      "### Predbežný verdikt",
+      "",
+      `Pri staršom alebo existujúcom dome s radiátormi${area} by som predbežne riešil tepelné čerpadlo **vzduch-voda vhodné pre radiátorový systém**. Dôležité je overiť, či radiátory vykúria dom aj pri nižšej teplote vody, alebo či bude treba upraviť časť vykurovania.`,
+      "",
+      "Pred finálnym návrhom treba poznať aktuálny zdroj tepla, zateplenie a aspoň orientačnú spotrebu alebo náhradný odhad.",
+      "",
+      "Čím kúriš teraz a je dom zateplený?",
+    ].join("\n");
+  }
+
   return [
     "### Predbežný verdikt",
     "",
@@ -2786,11 +2853,53 @@ function expectedVerdictAnswer(state: QualificationState): string {
   ].join("\n");
 }
 
+function expectedAirConditioningAnswer(): string {
+  return [
+    "### Predbežný smer",
+    "",
+    "Do obývačky a spálne by som predbežne porovnal dve riešenia: buď dve samostatné klimatizačné jednotky, alebo multisplit s jednou vonkajšou jednotkou. Dôvod je, že pri dvoch miestnostiach rozhoduje dispozícia, vzdialenosť potrubia, hlučnosť a miesto pre vonkajšiu jednotku.",
+    "",
+    "Typicky treba overiť plochu miestností, orientáciu na slnko a kadiaľ sa dajú viesť rozvody.",
+    "",
+    "Koľko m² má obývačka a spálňa a kde by mohla byť vonkajšia jednotka?",
+  ].join("\n");
+}
+
+function expectedHeatRecoveryAnswer(): string {
+  return [
+    "### Predbežný smer",
+    "",
+    "Ak staviaš dom a chceš lepší vzduch bez otvárania okien, predbežne dáva zmysel riešiť **rekuperáciu už v projekte**. Dôvod je, že pri novostavbe sa dajú správne navrhnúť rozvody, technická miestnosť, prívod čerstvého vzduchu aj odťah z kúpeľní a kuchyne.",
+    "",
+    "Typicky by sa riešila centrálna rekuperácia pre celý dom, ale treba overiť dispozíciu a priestor pre jednotku.",
+    "",
+    "Máš už projekt domu a chceš vetrať celý dom alebo len vybrané miestnosti?",
+  ].join("\n");
+}
+
+function expectedServiceFaultAnswer(): string {
+  return [
+    "### Servisný smer",
+    "",
+    "Rozumiem, NIBE hlási chybu. Pri poruche by som neradil žiadny svojpomocný zásah do zariadenia; najprv treba zistiť presný model, chybový kód a lokalitu, aby sa dalo posúdiť, či ide o servisný zásah a aký postup je bezpečný.",
+    "",
+    "Pri zariadeniach montovaných inou firmou treba dostupnosť servisu potvrdiť podľa značky a prípadu.",
+    "",
+    "Pošli mi prosím model alebo fotku štítku, chybový kód z displeja a mesto, kde je zariadenie.",
+  ].join("\n");
+}
+
 function answerHasRequiredVerdict(answer: string, state: QualificationState): boolean {
   const normalized = normalizePolicyText(answer);
   if (!/(predbez|verdikt|isiel|odporucal|dava zmysel|vhodn)/.test(normalized)) return false;
   if (isNewBuildFloorHeating(state)) {
     return normalized.includes("vzduch voda") && normalized.includes("podlah") && /(nizkoteplot|nizkou teplotou)/.test(normalized);
+  }
+  if (isExistingRadiatorSolidFuel(state)) {
+    return normalized.includes("vzduch voda") && normalized.includes("radiator") && /(drevo|tuhe palivo|tuhym palivom)/.test(normalized);
+  }
+  if (isExistingRadiatorHeatPump(state)) {
+    return normalized.includes("vzduch voda") && normalized.includes("radiator");
   }
   return true;
 }
@@ -2815,77 +2924,180 @@ function replaceMatchingSentences(answer: string, matcher: (normalizedSentence: 
     .trim();
 }
 
+type AnswerDiagnostics = {
+  validatorsTriggered: string[];
+  bannedClaimsRemoved: string[];
+  fallbackType: string | null;
+};
+
+function recordDiagnostic(list: string[], value: string): void {
+  if (!list.includes(value)) list.push(value);
+}
+
+function applySanitizerRule(
+  answer: string,
+  diagnostics: AnswerDiagnostics | undefined,
+  trigger: string,
+  bannedClaim: string | null,
+  matcher: (normalizedSentence: string) => boolean,
+  replacement: string,
+): string {
+  const next = replaceMatchingSentences(answer, matcher, replacement);
+  if (next !== answer && diagnostics) {
+    recordDiagnostic(diagnostics.validatorsTriggered, trigger);
+    if (bannedClaim) recordDiagnostic(diagnostics.bannedClaimsRemoved, bannedClaim);
+  }
+  return next;
+}
+
 function sanitizeAnswerForDiagnosticRules(
   answer: string,
   state: QualificationState,
   route: Pick<ServiceRoute, "serviceType" | "serviceIntent">,
+  diagnostics?: AnswerDiagnostics,
 ): string {
-  let next = answer
-    .replace(
-      /oveľa komfortnejšie a úspornejšie ako klasická klimatizácia/gi,
-      "komfortné iba vtedy, keď je chladenie správne navrhnuté pre konkrétny dom",
-    )
-    .replace(/máš záujem o montáž a servis od nás\??/gi, "máš projekt, tepelnú stratu alebo energetický certifikát?");
+  let next = answer;
+  const coolingSanitized = next.replace(
+    /(?:oveľa\s+)?komfortnejšie\s+a\s+úspornejšie\s+ako\s+klasická\s+klimatizácia/gi,
+    "jemné, ale má limity; komfortné chladenie treba navrhnúť cielene podľa projektu",
+  );
+  if (coolingSanitized !== next && diagnostics) {
+    recordDiagnostic(diagnostics.validatorsTriggered, "cooling_claim_sanitized");
+    recordDiagnostic(diagnostics.bannedClaimsRemoved, "podlahové chladenie lepšie ako klimatizácia");
+  }
+  next = coolingSanitized;
+  const serviceQuestionSanitized = next.replace(/máš záujem o montáž a servis od nás\??/gi, "máš projekt, tepelnú stratu alebo energetický certifikát?");
+  if (serviceQuestionSanitized !== next && diagnostics) {
+    recordDiagnostic(diagnostics.validatorsTriggered, "weak_sales_question_replaced");
+  }
+  next = serviceQuestionSanitized;
 
-  next = replaceMatchingSentences(
+  next = applySanitizerRule(
     next,
+    diagnostics,
+    "inspection_claim_sanitized",
+    "bezplatná alebo nezáväzná obhliadka",
     (sentence) => sentence.includes("obhliad") && /(bezplatn|zadarmo|nezavazn)/.test(sentence) && !sentence.includes("nie je"),
-    "Podmienky obhliadky treba potvrdiť podľa konkrétneho prípadu.",
+    "Ďalší krok je preveriť podklady alebo dohodnúť posúdenie s technikom podľa aktuálnych podmienok firmy.",
   );
-  next = replaceMatchingSentences(
+  next = applySanitizerRule(
     next,
+    diagnostics,
+    "third_party_service_claim_sanitized",
+    "servis cudzej montáže",
     (sentence) => sentence.includes("cudzi") && sentence.includes("montaz") && sentence.includes("servis") && !sentence.includes("treba potvrdit"),
-    "Servis cudzej montáže treba overiť podľa značky a konkrétneho prípadu.",
+    "Pri zariadeniach montovaných inou firmou treba servis najprv potvrdiť podľa značky a dostupnosti.",
   );
-  next = replaceMatchingSentences(
+  next = applySanitizerRule(
     next,
+    diagnostics,
+    "complete_subsidy_claim_sanitized",
+    "dotácie vybavíme kompletne",
     (sentence) => sentence.includes("dotac") && /(kompletne vybav|vybavime komplet|vybavujeme komplet)/.test(sentence),
-    "Pri dotáciách vieme komunikovať asistenciu alebo nasmerovanie podľa aktuálnych pravidiel.",
+    "S dotáciou vieme pomôcť alebo asistovať podľa aktuálnych podmienok.",
   );
-  next = replaceMatchingSentences(
+  next = applySanitizerRule(
     next,
+    diagnostics,
+    "subsidy_price_deduction_claim_sanitized",
+    "odpočítanie dotácie z ceny",
     (sentence) => sentence.includes("dotac") && /(odpocit|odrat|odratame|znizime cenu)/.test(sentence),
-    "Odpočítanie dotácie z ceny treba potvrdiť podľa konkrétneho prípadu.",
+    "Zohľadnenie dotácie v cene treba potvrdiť podľa konkrétneho prípadu.",
   );
   if (isNewBuildFloorHeating(state)) {
-    next = replaceMatchingSentences(
+    next = applySanitizerRule(
       next,
+      diagnostics,
+      "new_build_annual_consumption_question_replaced",
+      null,
       (sentence) => sentence.includes("rocna spotreba") || sentence.includes("rocnu spotrebu") || sentence.includes("spotrebu za rok"),
       "Pri novostavbe je dôležitejší projekt, energetický certifikát alebo tepelná strata.",
     );
   }
   if (route.serviceIntent === "recommendation") {
-    next = replaceMatchingSentences(
+    next = applySanitizerRule(
       next,
+      diagnostics,
+      "recommendation_budget_question_replaced",
+      null,
       (sentence) => sentence.includes("rozpocet"),
       "Rozpočet by som riešil až pri cenovej ponuke; teraz je dôležitý správny technický smer.",
+    );
+  }
+  if (route.serviceIntent === "brand_model") {
+    next = applySanitizerRule(
+      next,
+      diagnostics,
+      "brand_model_subsidy_removed",
+      "dotácie pri otázke na model",
+      (sentence) => sentence.includes("dotac"),
+      "",
     );
   }
   return next.replace(/\n{3,}/g, "\n\n").trim();
 }
 
-function validateAndRepairAnswer(answer: string, state: QualificationState, route: Pick<ServiceRoute, "serviceType" | "serviceIntent">, message: string): string {
-  let next = sanitizeAnswerForDiagnosticRules(answer, state, route);
+function validateAndRepairAnswer(
+  answer: string,
+  state: QualificationState,
+  route: Pick<ServiceRoute, "serviceType" | "serviceIntent">,
+  message: string,
+  diagnostics?: AnswerDiagnostics,
+): string {
+  let next = sanitizeAnswerForDiagnosticRules(answer, state, route, diagnostics);
   if (requiresInitialHeatPumpRecommendation(state, route, message)) {
     const normalized = normalizePolicyText(next);
     if (!normalized.includes("vzduch voda") || !normalized.includes("m2") || !/(radiator|podlah)/.test(normalized)) {
+      if (diagnostics) recordDiagnostic(diagnostics.validatorsTriggered, "initial_heat_pump_recommendation_repaired");
       next = expectedInitialHeatPumpRecommendation();
     }
   }
   if (isNewBuildFloorHeating(state) && !state.occupants && state.wants_cooling === undefined) {
     const normalized = normalizePolicyText(next);
     if (!normalized.includes("osob") || !normalized.includes("chladen")) {
+      if (diagnostics) recordDiagnostic(diagnostics.validatorsTriggered, "new_build_followup_repaired");
       next = expectedVerdictAnswer(state);
     }
   }
+  if (isNewBuildFloorHeating(state) && state.occupants && !/(TÚV|TUV|tepl[áa] voda|zásobník|zasobnik)/i.test(next)) {
+    if (diagnostics) recordDiagnostic(diagnostics.validatorsTriggered, "new_build_hot_water_repaired");
+    next = expectedVerdictAnswer(state);
+  }
+  if (isNewBuildFloorHeating(state) && state.wants_cooling && !/(rosn|kondenz|limit|fancoil|stropn|klimatiz)/i.test(next)) {
+    if (diagnostics) recordDiagnostic(diagnostics.validatorsTriggered, "new_build_cooling_caveat_repaired");
+    next = expectedVerdictAnswer(state);
+  }
+  if (route.serviceType === "air_conditioning") {
+    const normalized = normalizePolicyText(next);
+    if (!/(multisplit|samostatn).*(jednot|klimatiz)/.test(normalized) || !/(vonkajsia jednotka|plocha|m2)/.test(normalized)) {
+      if (diagnostics) recordDiagnostic(diagnostics.validatorsTriggered, "air_conditioning_verdict_repaired");
+      next = expectedAirConditioningAnswer();
+    }
+  }
+  if (route.serviceType === "heat_recovery") {
+    const normalized = normalizePolicyText(next);
+    if (!normalized.includes("rekuper") || !normalized.includes("projekt") || !/(cely dom|celý dom|miestnost)/.test(normalized)) {
+      if (diagnostics) recordDiagnostic(diagnostics.validatorsTriggered, "heat_recovery_verdict_repaired");
+      next = expectedHeatRecoveryAnswer();
+    }
+  }
+  if (route.serviceType === "service" || route.serviceIntent === "service_fault") {
+    const normalized = normalizePolicyText(next);
+    if (!normalized.includes("model") || !/(chybovy kod|chybový kód|chybu|chyba)/.test(normalized) || !/(lokalit|mesto|kde je)/.test(normalized)) {
+      if (diagnostics) recordDiagnostic(diagnostics.validatorsTriggered, "service_fault_data_request_repaired");
+      next = expectedServiceFaultAnswer();
+    }
+  }
   if (requiresHardVerdict(state, route, message) && !answerHasRequiredVerdict(next, state)) {
+    if (diagnostics) recordDiagnostic(diagnostics.validatorsTriggered, "hard_verdict_inserted");
     next = `${expectedVerdictAnswer(state)}\n\n${next}`.trim();
   }
   const complaint = /nepovedal|neodpovedal|najleps|konkretne/.test(normalizePolicyText(message));
   if (complaint && requiresHardVerdict(state, route, message) && state.occupants && !/(TÚV|TUV|tepl[áa] voda|zásobník|zasobnik)/i.test(next)) {
+    if (diagnostics) recordDiagnostic(diagnostics.validatorsTriggered, "complaint_context_repaired");
     next = `${expectedVerdictAnswer(state)}\n\n${next}`.trim();
   }
-  return sanitizeAnswerForDiagnosticRules(next, state, route);
+  return sanitizeAnswerForDiagnosticRules(next, state, route, diagnostics);
 }
 
 function rankRetrievalResultsForState(results: RetrievalResult[], state: QualificationState): RetrievalResult[] {
@@ -2914,7 +3126,7 @@ async function extractQualificationUpdate(input: {
 }): Promise<QualificationUpdate> {
   const deterministic = deterministicQualificationUpdate(input.userMessage, input.route);
   const systemPrompt =
-    "Extract structured data from this conversation exchange. Return JSON only with ONLY the fields you are confident about based on what the user just said. Use null for unknown fields. Fields: service_type (heat_pump|air_conditioning|heat_recovery|floor_heating|ceiling_cooling|service|subsidy|complex_solution), service_intent (recommendation|price|service_fault|brand_model|location|subsidy|comparison|process|general), project_type (novostavba|rekonštrukcia), property_type (rodinný dom|bungalov|byt|iné), area_m2 (number), location (string), timeline (string), current_heating (string), heating_distribution (radiátory|podlahové kúrenie), wants_cooling (boolean), hot_water (boolean), occupants (number), insulation (string), annual_consumption (string), project_available (boolean), heat_loss_known (boolean). Only extract what the user explicitly stated in their message.";
+    "Extract structured data from this conversation exchange. Return JSON only with ONLY the fields you are confident about based on what the user just said. Use null for unknown fields. Fields: service_type (heat_pump|air_conditioning|heat_recovery|floor_heating|ceiling_cooling|service|subsidy|complex_solution), service_intent (recommendation|price|service_fault|brand_model|location|subsidy|comparison|process|general), project_type (novostavba|rekonštrukcia), property_type (rodinný dom|bungalov|byt|iné), area_m2 (number), location (string), timeline (string), current_heating (string), heating_distribution (radiátory|podlahové kúrenie), wants_cooling (boolean), hot_water (boolean), occupants (number), insulation (string), annual_consumption (string), annual_consumption_unknown (boolean), project_available (boolean), heat_loss_known (boolean). Only extract what the user explicitly stated in their message.";
 
   try {
     const result = await callLlmText({
@@ -2962,7 +3174,7 @@ async function extractQualificationUpdate(input: {
     if (annualConsumption) update.annual_consumption = annualConsumption;
     const occupants = parsed.occupants;
     if (typeof occupants === "number" && Number.isFinite(occupants)) update.occupants = occupants;
-    for (const field of ["wants_cooling", "hot_water", "project_available", "heat_loss_known"] as const) {
+    for (const field of ["wants_cooling", "hot_water", "annual_consumption_unknown", "project_available", "heat_loss_known"] as const) {
       if (typeof parsed[field] === "boolean") update[field] = parsed[field];
     }
     return update;
@@ -3100,24 +3312,94 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     if (/[{[]\s*$/.test(compact) || /\\n/.test(compact)) return true;
     return /\b(aby|aby som|že|a|alebo|pre|k|ku|s|so|na|do|od|ak|keď|ktorý|ktorá|ktoré|čo|by|ti|som|mohol|pomohol)$/i.test(lower);
   };
-  const fallbackCompleteAnswer = (userMessage: string, answerSources: ChatSource[]): string => {
+  const fallbackCompleteAnswer = (
+    userMessage: string,
+    state: QualificationState,
+    currentRoute: Pick<ServiceRoute, "serviceType" | "serviceIntent">,
+  ): string => {
     if (isGreetingOnlyMessage(userMessage)) {
-      return "Ahoj! Som tu pre teba, keď chceš poradiť s tepelným čerpadlom, klimatizáciou, servisom alebo dotáciami.\n\nČo chceš riešiť ako prvé?";
+      return "### Ahoj\n\nSom tu pre teba, keď chceš poradiť s tepelným čerpadlom, klimatizáciou, rekuperáciou, servisom alebo dotáciami.\n\nČo chceš riešiť ako prvé?";
     }
-    if (!answerSources[0]) {
-      return "Prepáč, odpoveď sa teraz nedokončila správne. Skús mi to napísať ešte raz, pokojne úplne jednoducho.\n\nRiešiš skôr tepelné čerpadlo, klimatizáciu alebo servis?";
+    if (requiresHardVerdict(state, currentRoute, userMessage)) {
+      return expectedVerdictAnswer(state);
     }
     const normalized = normalizePolicyText(userMessage);
+    const serviceType = normalizeServiceType(state.service_type || currentRoute.serviceType, "unknown");
+    const serviceIntent = normalizeServiceIntent(state.service_intent || currentRoute.serviceIntent, "general");
+    if (serviceType === "air_conditioning") {
+      return [
+        "### Predbežný smer",
+        "",
+        "Pri klimatizácii do viacerých miestností by som predbežne porovnal dve možnosti: viac samostatných jednotiek alebo multisplit. Dôvod je, že rozhoduje dispozícia, dĺžka rozvodov, hluk, servis a miesto pre vonkajšiu jednotku.",
+        "",
+        "Typicky sa overuje plocha miestností, orientácia na slnko a kde môže byť vonkajšia jednotka.",
+        "",
+        "Koľko m² má obývačka a spálňa a kam by sa dala dať vonkajšia jednotka?",
+      ].join("\n");
+    }
+    if (serviceType === "heat_recovery") {
+      return [
+        "### Predbežný smer",
+        "",
+        "Ak staviaš dom a chceš lepší vzduch bez otvárania okien, predbežne dáva zmysel riešiť rekuperáciu už v projekte. Pri novostavbe sa dá najčistejšie navrhnúť centrálna jednotka s rozvodmi pre celý dom.",
+        "",
+        "Treba ešte overiť dispozíciu, technickú miestnosť a či chceš vetrať celý dom alebo len vybrané priestory.",
+        "",
+        "Máš už projekt a chceš riešiť rekuperáciu pre celý dom?",
+      ].join("\n");
+    }
+    if (serviceType === "service" || serviceIntent === "service_fault") {
+      return [
+        "### Servisný smer",
+        "",
+        "Pri poruche je najdôležitejšie najprv identifikovať zariadenie a chybu, nie radiť zásahy do jednotky. Všeobecne treba preveriť značku, model, chybový kód a lokalitu; pri cudzej montáži sa dostupnosť servisu musí potvrdiť podľa značky a prípadu.",
+        "",
+        "Pošli mi prosím značku/model alebo fotku štítku a chybový kód z displeja.",
+      ].join("\n");
+    }
+    if (serviceType === "subsidy" || serviceIntent === "subsidy") {
+      return [
+        "### Dotácie",
+        "",
+        "Pri dotáciách treba rozlišovať všeobecné pravidlá programu a konkrétne firemné podmienky. Bez aktuálneho potvrdenia by som nesľuboval kompletné vybavenie ani odpočítanie dotácie z ceny, ale s dotáciou sa dá zvyčajne pomôcť alebo zákazníka nasmerovať.",
+        "",
+        "Riešiš rodinný dom a nové zariadenie, alebo výmenu existujúceho zdroja?",
+      ].join("\n");
+    }
     if (/(cena|stoji|stojí|kolko|koľko|rozpocet|rozpočet)/.test(normalized)) {
-      return "Na webe vidím cenové podklady k tepelným čerpadlám, ale odpoveď sa teraz nedokončila dosť čisto, takže nechcem prepisovať neúplné čísla. Orientačne sa cena rieši podľa výkonu, zostavy, ohrevu vody a montáže.\n\nAký veľký dom chceš riešiť a ide skôr o novostavbu alebo rekonštrukciu?";
+      return [
+        "### Predbežný smer k cene",
+        "",
+        "Pri cene treba rozlíšiť samotné zariadenie a kompletnú realizáciu. Typicky do nej vstupuje výkon, montáž, materiál, regulácia, ohrev teplej vody, prípadná akumulačná nádrž, elektropráce a uvedenie do prevádzky.",
+        "",
+        "Aby bola cena reálnejšia, stačí mi zatiaľ plocha domu a či máš radiátory alebo podlahové kúrenie.",
+      ].join("\n");
     }
     if (/(servis|oprava|porucha|chyba)/.test(normalized)) {
-      return "K servisu mám na webe podklady, ale odpoveď sa teraz nedokončila spoľahlivo. Bez detailu poruchy ti preto nechcem tvrdiť presný postup ani dostupnosť.\n\nAké zariadenie máš a čo presne sa deje?";
+      return [
+        "### Servisný smer",
+        "",
+        "Pri poruche by som najprv nerobil žiadny zásah do zariadenia. Potrebné je zistiť značku, model, chybový kód a lokalitu; pri zariadení montovanom inou firmou treba servis potvrdiť podľa značky a dostupnosti.",
+        "",
+        "Aký model alebo fotku štítku vieš poslať a aký chybový kód sa zobrazuje?",
+      ].join("\n");
     }
     if (/(mesto|okres|prist|prísť|chodite|chodíte|vyjazd|výjazd)/.test(normalized)) {
-      return "K dostupnosti podľa lokality mám podklady, ale odpoveď sa teraz nedokončila spoľahlivo. Radšej by som dostupnosť overil podľa konkrétneho mesta alebo adresy.\n\nDo akého mesta alebo okresu by bolo treba prísť?";
+      return [
+        "### Lokalita",
+        "",
+        "Pri dostupnosti treba rozlišovať montáž, servis a prípadný výjazd. Všeobecne sa dá technický smer určiť aj bez lokality, ale či firma príde do konkrétneho mesta treba potvrdiť podľa aktuálnej pôsobnosti.",
+        "",
+        "O aké mesto a službu ide: montáž, servis alebo obhliadka?",
+      ].join("\n");
     }
-    return "K tejto téme mám na webe podklady, ale odpoveď sa teraz nedokončila dosť spoľahlivo, takže ju nechcem siliť ani kopírovať surový text zo zdroja.\n\nČo z toho chceš upresniť ako prvé?";
+    return [
+      "### Predbežný smer",
+      "",
+      "Podľa toho, čo píšeš, by som najprv určil vhodnú službu a technický scenár, potom až konkrétnu značku, cenu alebo termín. Ak chýba presný firemný fakt, dá sa stále povedať všeobecný technický smer, ale firemné podmienky treba potvrdiť.",
+      "",
+      "Riešiš kúrenie, chladenie, vetranie, servis alebo dotáciu?",
+    ].join("\n");
   };
   const shouldPreferTable = (userMessage: string): boolean => {
     const text = normalizePolicyText(userMessage);
@@ -3362,6 +3644,21 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
         llmRouterUsed: false,
         llmRouterError: null,
         retrievalQuery: message,
+        rawUserMessage: message,
+        normalizedUserMessage: normalizePolicyText(message),
+        newlyExtractedSlots: {},
+        inferredFromLastQuestion: false,
+        serviceType: "service",
+        serviceIntent: "service_fault",
+        legacyIntent: safetyRoute.intent,
+        diagnosticFlowVersion,
+        serverCommit: serverCommit(),
+        retrievalSourcesCount: 0,
+        contextCarried: false,
+        fallbackUsed: !safetyLlmUsed,
+        fallbackType: safetyLlmUsed ? null : "safety_hardcoded",
+        validatorsTriggered: safetyLlmUsed ? [] : ["safety_fallback"],
+        bannedClaimsRemoved: [],
       },
       action: null,
       fallbackUsed: !safetyLlmUsed,
@@ -3428,6 +3725,10 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
   const route = parseRouterResponse(routerLlm.content);
   route.serviceType = route.serviceType === "unknown" ? deterministicRoute.serviceType : route.serviceType;
   route.serviceIntent = route.serviceIntent === "general" ? deterministicRoute.serviceIntent : route.serviceIntent;
+  if (deterministicRoute.serviceType === "service" || deterministicRoute.serviceIntent === "service_fault") {
+    route.serviceType = "service";
+    route.serviceIntent = "service_fault";
+  }
   const immediateQualificationUpdate = deterministicTurnQualificationUpdate(message, previousState, previousMessages, route);
   let stateForTurn = mergeQualificationState(previousState, immediateQualificationUpdate);
   stateForTurn = mergeQualificationState(stateForTurn, {
@@ -3506,6 +3807,12 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     ? buildContextualRetrievalQuery({ message, route, state: stateForTurn, previousMessages })
     : { query: "", contextCarried: false };
   const retrievalQuery = route.needsRetrieval ? contextualRetrieval.query || route.retrievalQuery || message : null;
+  const inferredFromLastQuestion = Boolean(contextualSlotReply || (isShortContextReply(message) && hasActiveDiagnosticState(previousState)));
+  const answerDiagnostics: AnswerDiagnostics = {
+    validatorsTriggered: [],
+    bannedClaimsRemoved: [],
+    fallbackType: null,
+  };
 
   let sources: ChatSource[] = [];
   let topScore = 0;
@@ -3556,6 +3863,10 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     "",
     "Nie si FAQ ani produktový katalóg. Najprv pracuj so service_type a intentom, potom použi pipeline danej služby. Ak zákazník nepovie presnú službu, odhadni cieľ: kúrenie, chladenie, vetranie, servis, dotácia alebo celé riešenie domu.",
     "",
+    "Hierarchia odpovede: 1. firemná pravda z RAGu pre značky, služby, ceny, pôsobnosť, servis, dotácie, obhliadky, záruky a interné pravidlá; 2. konverzačný stav a uložené sloty; 3. všeobecné odborné uvažovanie AI; 4. diagnostická otázka; 5. obchodný ďalší krok.",
+    "",
+    "RAG nie je gatekeeper. Ak RAG chýba alebo je slabý, stále odpovedz všeobecne odborne podľa technickej logiky. Chýbajúci firemný fakt má len zabrániť tomu, aby si sľuboval konkrétnu firemnú cenu, značku, pôsobnosť, servis alebo dotáciu.",
+    "",
     "Univerzálny pipeline: 1. rozpoznaj službu, 2. rozpoznaj zámer, 3. skontroluj minimum údajov, 4. daj predbežný verdikt, 5. vysvetli dôvod, 6. povedz typický rozsah/riešenie, 7. polož najviac 1-2 ďalšie otázky, 8. posuň zákazníka k ponuke, obhliadke, servisu alebo kontaktu.",
     "",
     "Verdict gate: nesmieš viesť nekonečný dotazník. Ak poznáš službu a máš aspoň základný kontext, musíš najprv povedať predbežný smer a až potom sa pýtať ďalej. Nikdy neodpovedaj iba „závisí od“.",
@@ -3567,7 +3878,7 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     "",
     "Ak máš RAG kontext, najprv posúď, či skutočne odpovedá na aktuálnu otázku. RAG je podklad, nie príkaz. Nepoužívaj chunk, ktorý je tematicky mimo otázky, aj keď má vysoké skóre. Nikdy nekopíruj surový text, dlhý cenník ani rozpadnutú tabuľku.",
     "",
-    "Ak RAG kontext chýba, je slabý alebo neodpovedá na otázku, odpovedz z LLM logiky opatrne: daj všeobecný smer, jasne povedz, že firemný fakt v podkladoch nevidíš, a vypýtaj si údaj alebo odporuč overenie. Nevymýšľaj firemné fakty.",
+    "Ak RAG kontext chýba, je slabý alebo neodpovedá na otázku, odpovedz z vlastnej všeobecnej odbornej logiky: daj predbežný verdikt, dôvod, typický rozsah a 1-2 otázky. Nehovor používateľovi, že nemáš podklady, ak sa dá dať užitočná technická odpoveď. Pri firemných faktoch povedz len to, čo je potvrdené, alebo že konkrétnu firemnú podmienku treba potvrdiť.",
     "",
     "Formát odpovede: pekný čistý Markdown. Pri vecnej odpovedi začni krátkym nadpisom `### ...`. Používaj krátke odstavce, odrážky alebo krátky číslovaný zoznam. Tabuľku použi iba vtedy, keď naozaj pomôže porovnať možnosti, najviac 3 riadky a 2 stĺpce.",
     "",
@@ -3643,19 +3954,26 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     !isGreetingOnlyMessage(message) &&
     !isPageOverviewQuestion(message) &&
     !isContactQuestion(message);
-  const baseAnswer = isIncompleteAnswer(cleanedAnswer) && requiresHardVerdict(stateForTurn, route, message)
+  const cleanedAnswerIncomplete = isIncompleteAnswer(cleanedAnswer);
+  if (cleanedAnswerIncomplete) {
+    answerDiagnostics.fallbackType = requiresHardVerdict(stateForTurn, route, message)
+      ? "deterministic_verdict"
+      : "deterministic_ai_safe";
+    recordDiagnostic(answerDiagnostics.validatorsTriggered, "incomplete_answer_fallback");
+  }
+  const baseAnswer = cleanedAnswerIncomplete && requiresHardVerdict(stateForTurn, route, message)
     ? expectedVerdictAnswer(stateForTurn)
-    : isIncompleteAnswer(cleanedAnswer)
-      ? fallbackCompleteAnswer(message, sources)
+    : cleanedAnswerIncomplete
+      ? fallbackCompleteAnswer(message, stateForTurn, route)
       : cleanedAnswer;
   let answer = enforceMarkdownPresentation(
-    validateAndRepairAnswer(baseAnswer, stateForTurn, route, message),
+    validateAndRepairAnswer(baseAnswer, stateForTurn, route, message, answerDiagnostics),
     message,
   );
   if (isOutOfScopeGeneral && !/nemám dostatočne jasný podklad|nemam dostatocne jasny podklad/i.test(answer)) {
     answer = `Nemám dostatočne jasný podklad na túto tému.\n\n${answer}`.trim();
   }
-  answer = validateAndRepairAnswer(answer, stateForTurn, route, message);
+  answer = validateAndRepairAnswer(answer, stateForTurn, route, message, answerDiagnostics);
   const normalizedFinalAnswer = normalizePolicyText(answer);
   const responseConfidence: "high" | "medium" | "low" = route.needsRetrieval
     ? sources.length === 0 || topScore < 25
@@ -3762,15 +4080,26 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
       llmRouterError: routerLlm.error || null,
       retrievalQuery: retrievalQuery || message,
       enrichedRetrievalQuery: contextualRetrieval.query || retrievalQuery || message,
-      storedSlots: debugStoredSlots(stateForTurn),
+      storedSlots: debugStoredSlots(nextState),
+      rawUserMessage: message,
+      normalizedUserMessage: normalizePolicyText(message),
+      newlyExtractedSlots: debugQualificationUpdate(qualificationUpdate),
+      inferredFromLastQuestion,
       serviceType: route.serviceType,
       serviceIntent: route.serviceIntent,
+      legacyIntent: responseIntent,
       diagnosticFlowVersion,
       serverCommit: serverCommit(),
+      retrievalSourcesCount: sources.length,
       contextTopic: route.serviceType !== "unknown" ? serviceLabel(route.serviceType) : null,
       contextCarried: contextualRetrieval.contextCarried,
+      fallbackUsed: Boolean(answerDiagnostics.fallbackType),
+      fallbackType: answerDiagnostics.fallbackType,
+      validatorsTriggered: answerDiagnostics.validatorsTriggered,
+      bannedClaimsRemoved: answerDiagnostics.bannedClaimsRemoved,
     },
     action: null,
+    fallbackUsed: Boolean(answerDiagnostics.fallbackType),
     responseTimeMs: Date.now() - responseStartedAt,
   };
 }
