@@ -31,7 +31,13 @@ export type AnswerMode =
   | "contact_intent"
   | "low_confidence"
   | "general_chat"
-  | "short_followup";
+  | "short_followup"
+  | "qualification_question"
+  | "diagnostic_verdict"
+  | "recommendation_closure"
+  | "handoff_cta"
+  | "service_fault_triage"
+  | "ai_fallback";
 
 export type StructuredAnswer = {
   shortAnswer: string;
@@ -116,6 +122,12 @@ const answerModes: AnswerMode[] = [
   "low_confidence",
   "general_chat",
   "short_followup",
+  "qualification_question",
+  "diagnostic_verdict",
+  "recommendation_closure",
+  "handoff_cta",
+  "service_fault_triage",
+  "ai_fallback",
 ];
 const confidenceValues = ["high", "medium", "low"] as const;
 

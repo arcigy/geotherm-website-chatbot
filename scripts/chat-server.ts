@@ -100,6 +100,11 @@ export type ChatResponse = {
     fallbackType?: string | null;
     validatorsTriggered?: string[];
     bannedClaimsRemoved?: string[];
+    questionRoundsCount?: number;
+    closureGateTriggered?: boolean;
+    closureReason?: string | null;
+    recommendationOptions?: string[];
+    remainingCriticalUnknowns?: string[];
   };
   fallbackUsed?: boolean;
   action: null;
@@ -121,7 +126,7 @@ type AnswerPolicy = {
 const defaultKnowledgePath = path.join(process.cwd(), "knowledge", "chatbot-knowledge.json");
 const localOriginPattern = /^https?:\/\/(?:localhost|127\.0\.0\.1|\[::1\])(?::\d+)?$/i;
 const safetyFollowUp = "Ide o poruchu existujúceho zariadenia alebo plánujete novú montáž?";
-const diagnosticFlowVersion = "diagnostic-v4-ai-first-rag-context";
+const diagnosticFlowVersion = "diagnostic-v5-recommendation-closure";
 
 let knowledgeCache: KnowledgeChunk[] | null = null;
 let serverCommitCache: string | null = null;
@@ -2093,6 +2098,7 @@ function buildStateSignals(state: QualificationState): string[] {
     state.current_heating ? `aktuálne kúrenie ${state.current_heating}` : null,
     state.annual_consumption ? `spotreba ${state.annual_consumption}` : null,
     state.annual_consumption_unknown ? "ročná spotreba nie je známa" : null,
+    state.own_wood ? "zákazník má vlastné drevo" : null,
     state.insulation ? `zateplenie ${state.insulation}` : null,
     state.heat_loss_known === false ? "tepelná strata alebo odhad nie je k dispozícii" : null,
     state.heat_loss_known === true ? "má tepelnú stratu alebo energetický odhad" : null,
@@ -2600,6 +2606,9 @@ type QualificationUpdate = Partial<
     | "insulation"
     | "annual_consumption"
     | "annual_consumption_unknown"
+    | "own_wood"
+    | "qualification_question_rounds"
+    | "recommendation_closure_offered"
     | "project_available"
     | "heat_loss_known"
   >
@@ -2626,6 +2635,7 @@ function deterministicQualificationUpdate(message: string, route?: Pick<ServiceR
   if (/(neviem|netusim|netuším|nemam|nemám).*(spotreb|odhad|drevo|plyn|m3|kwh)|(?:spotreb|odhad).*(neviem|netusim|netuším|nemam|nemám)/.test(normalized)) {
     update.annual_consumption_unknown = true;
   }
+  if (/vlastn[ée] drevo|svoje drevo|mam drevo|mám drevo/.test(normalized)) update.own_wood = true;
   if (/zateplen/.test(normalized)) update.insulation = /nezateplen|nie je zateplen/.test(normalized) ? "nezateplený" : "zateplený alebo čiastočne zateplený";
   const occupantsMatch = normalized.match(/(\d{1,2})\s*(?:osob|ludi|clen)/);
   if (occupantsMatch) update.occupants = Number.parseInt(occupantsMatch[1], 10);
@@ -2689,6 +2699,11 @@ function deterministicTurnQualificationUpdate(
   }
 
   if (/nemam odhad|nemám odhad|neviem odhad/.test(normalized)) update.heat_loss_known = false;
+  const previousHeating = normalizePolicyText(previousState.current_heating || "");
+  const woodConsumptionMatch = normalized.match(/\b(\d+(?:[,.]\d+)?)\s*(?:m3|m 3|m\b|metrov|metre|kubik|kubiky|kubikov|priestorove metre)\b/);
+  if (woodConsumptionMatch && previousHeating.includes("tuhe palivo")) {
+    update.annual_consumption = `${woodConsumptionMatch[1].replace(",", ".")} m dreva za sezónu`;
+  }
   return update;
 }
 
@@ -2708,6 +2723,9 @@ const qualificationUpdateFields: Array<keyof QualificationUpdate> = [
   "insulation",
   "annual_consumption",
   "annual_consumption_unknown",
+  "own_wood",
+  "qualification_question_rounds",
+  "recommendation_closure_offered",
   "project_available",
   "heat_loss_known",
 ];
@@ -2889,6 +2907,177 @@ function expectedServiceFaultAnswer(): string {
   ].join("\n");
 }
 
+type RecommendationClosureDecision = {
+  triggered: boolean;
+  reason: string | null;
+  options: string[];
+  remainingCriticalUnknowns: string[];
+};
+
+function countQualificationQuestionRounds(previousMessages: Array<{ role: string; content: string }>): number {
+  return previousMessages.filter((message) => {
+    if (message.role !== "assistant" || !message.content.includes("?")) return false;
+    const text = normalizePolicyText(message.content);
+    return /(novostav|starsi|starší|m2|plocha|radiator|podlah|zdroj|kuris|kúriš|spotreb|zateplen|osob|chladen|tepla voda|tuv|projekt|tepelna strata|energeticky certifikat|fotky|kotoln|akumulac)/.test(text);
+  }).length;
+}
+
+function countRecommendationExtraSlots(state: QualificationState): number {
+  return [
+    state.current_heating,
+    state.insulation,
+    state.occupants,
+    state.hot_water,
+    state.wants_cooling,
+    state.annual_consumption || state.annual_consumption_unknown,
+    state.location,
+    state.own_wood,
+  ].filter((value) => value !== undefined && value !== null && value !== "").length;
+}
+
+function recommendationOptionsForState(state: QualificationState): string[] {
+  if (isExistingRadiatorSolidFuel(state)) {
+    return [
+      "Tepelné čerpadlo vzduch-voda ako hlavný zdroj kúrenia",
+      "Hybridné zapojenie: tepelné čerpadlo + ponechaný kotol na drevo ako záloha alebo doplnkový zdroj",
+    ];
+  }
+  if (isExistingRadiatorHeatPump(state)) {
+    return [
+      "Tepelné čerpadlo vzduch-voda vhodné pre radiátorový systém",
+      "Úprava alebo posilnenie časti radiátorov, ak dom potrebuje vyššiu teplotu vody",
+    ];
+  }
+  if (isNewBuildFloorHeating(state)) {
+    return [
+      "Tepelné čerpadlo vzduch-voda pre nízkoteplotné podlahové kúrenie",
+      "Tepelné čerpadlo so zásobníkom TÚV podľa počtu osôb",
+      "Samostatne navrhnuté chladenie cez stropné chladenie, fancoily alebo klimatizáciu podľa projektu",
+    ];
+  }
+  return [
+    "Predbežný typ riešenia podľa domu a vykurovacej sústavy",
+    "Technické doplnenie podľa teplej vody, regulácie a priestoru v technickej miestnosti",
+  ];
+}
+
+function remainingCriticalUnknownsForState(state: QualificationState): string[] {
+  const unknowns: string[] = [];
+  if (isExistingRadiatorHeatPump(state)) {
+    unknowns.push("potrebná teplota vody pre radiátory");
+    if (!state.insulation) unknowns.push("zateplenie domu");
+    unknowns.push("akumulačná nádrž alebo existujúce zapojenie kotolne");
+  }
+  if (isNewBuildFloorHeating(state) && !state.project_available && state.heat_loss_known !== true) {
+    unknowns.push("projekt, energetický certifikát alebo tepelná strata");
+  }
+  if (!state.hot_water && !state.occupants) unknowns.push("či má systém riešiť teplú vodu");
+  return [...new Set(unknowns)].slice(0, 5);
+}
+
+function recommendationClosureDecision(
+  state: QualificationState,
+  route: Pick<ServiceRoute, "serviceType" | "serviceIntent">,
+  questionRoundsCount: number,
+): RecommendationClosureDecision {
+  const service = normalizeServiceType(state.service_type || route.serviceType, "unknown");
+  const intent = normalizeServiceIntent(state.service_intent || route.serviceIntent, "general");
+  const hasMinimumHeatPumpSlots = Boolean(state.project_type && state.area_m2 && state.heating_distribution);
+  const extraSlots = countRecommendationExtraSlots(state);
+  const hasClosureQualitySlot = Boolean(state.insulation || state.annual_consumption || state.occupants || state.hot_water !== undefined || state.wants_cooling !== undefined || state.location);
+  const heatPumpRecommendation = service === "heat_pump" && ["recommendation", "brand_model", "comparison", "general"].includes(intent);
+  const triggered =
+    heatPumpRecommendation &&
+    hasMinimumHeatPumpSlots &&
+    ((extraSlots >= 3 && hasClosureQualitySlot) || (questionRoundsCount >= 2 && extraSlots >= 2 && hasClosureQualitySlot) || questionRoundsCount >= 3);
+  const reason = !triggered
+    ? null
+    : extraSlots >= 3
+      ? "minimum_slots_plus_enough_context"
+      : "question_budget_exhausted";
+  return {
+    triggered,
+    reason,
+    options: triggered ? recommendationOptionsForState(state) : [],
+    remainingCriticalUnknowns: triggered ? remainingCriticalUnknownsForState(state) : [],
+  };
+}
+
+function expectedRecommendationClosureAnswer(state: QualificationState, closure: RecommendationClosureDecision): string {
+  if (isExistingRadiatorSolidFuel(state)) {
+    const area = state.area_m2 ? `${state.area_m2} m²` : "danú plochu";
+    const houseState = state.insulation ? "v zateplenom staršom dome" : "v staršom dome";
+    const insulationReason = state.insulation
+      ? "máš radiátory a dom je zateplený, takže šanca na funkčné riešenie je výrazne lepšia než pri nezateplenom dome"
+      : "máš radiátory, takže treba preveriť hlavne teplotu vody, ktorú dom potrebuje v zime";
+    const consumption = state.annual_consumption
+      ? `Beriem údaj **${state.annual_consumption}** ako orientačnú spotrebu dreva za sezónu. Ak je jednotka iná, pri návrhu sa to jednoducho spresní.`
+      : "Presná spotreba dreva nemusí byť pre prvý verdikt blokér; pri návrhu sa dá dopresniť.";
+    const woodEconomics = state.own_wood
+      ? "Keďže máš vlastné drevo, nehodnotil by som to iba cez úsporu. Ekonomiku treba overiť, ale hlavný prínos môže byť komfort: automatické kúrenie bez prikladania, menej práce s drevom a možnosť nechať drevo ako zálohu."
+      : "Pri dreve treba ekonomiku porovnať podľa reálnej ceny paliva, práce okolo kúrenia a spotreby elektriny; bez výpočtu by som negarantoval úsporu.";
+    return [
+      "### Predbežné uzavretie odporúčania",
+      "",
+      `Podľa toho, čo píšeš, by som to už predbežne uzavrel: **najlepší smer je tepelné čerpadlo vzduch-voda vhodné pre radiátorový systém** ${houseState} s plochou približne ${area}.`,
+      "",
+      `**Prečo:** ${insulationReason}. ${woodEconomics} ${consumption}`,
+      "",
+      "**Reálne by som pozeral na dve možnosti:**",
+      `1. **${closure.options[0] || "Tepelné čerpadlo vzduch-voda ako hlavný zdroj kúrenia"}.** Vhodné, ak chceš čo najviac obmedziť prikladanie a mať automatickú prevádzku.`,
+      `2. **${closure.options[1] || "Hybridné zapojenie: tepelné čerpadlo + ponechaný kotol na drevo"}.** Vhodné, ak máš vlastné drevo a chceš ho občas využívať ako zálohu alebo doplnok.`,
+      "",
+      "Z portfólia firmy by dávalo zmysel pozrieť sa na vhodné riešenie od **NIBE alebo Vaillant** pre radiátorový systém, ale konkrétny model by sa vybral až podľa výkonu, radiátorov, kotolne a prípravy teplej vody.",
+      "",
+      "Typicky by sa riešila vonkajšia jednotka, vnútorné hydraulické zapojenie, regulácia, prípadne zásobník TÚV, akumulačná nádrž alebo využitie existujúcej nádrže a napojenie na radiátorový systém.",
+      "",
+      "Finálne treba preveriť hlavne teplotu vody pre radiátory, existujúcu akumulačnú nádrž, priestor v kotolni a či má čerpadlo riešiť aj teplú vodu.",
+      "",
+      "Ďalší krok: pošli fotky kotolne, radiátorov a prípadnej akumulačnej nádrže. Potom sa dá pripraviť konkrétnejší návrh alebo dohodnúť obhliadka.",
+    ].join("\n");
+  }
+
+  if (isNewBuildFloorHeating(state)) {
+    return [
+      "### Predbežné uzavretie odporúčania",
+      "",
+      "Podľa toho, čo píšeš, najlepší predbežný smer je **tepelné čerpadlo vzduch-voda pre nízkoteplotné podlahové kúrenie**.",
+      "",
+      "Dáva to zmysel preto, že podlahovka pracuje s nízkou teplotou vody a tepelnému čerpadlu to vyhovuje. Ak riešiš aj chladenie, netreba automaticky rátať s tým, že podlahové chladenie všetko nahradí; treba navrhnúť samostatné chladenie podľa projektu.",
+      "",
+      "**Možnosti:**",
+      "1. Tepelné čerpadlo vzduch-voda pre kúrenie a TÚV.",
+      "2. Tepelné čerpadlo + zásobník TÚV podľa počtu osôb.",
+      "3. Doplnkové chladenie cez stropné chladenie, fancoily alebo klimatizáciu podľa projektu.",
+      "",
+      "Ďalší krok: pošli projekt, energetický certifikát alebo tepelnú stratu. Potom sa dá pripraviť konkrétnejší návrh.",
+    ].join("\n");
+  }
+
+  return [
+    "### Predbežné uzavretie odporúčania",
+    "",
+    "Podľa doterajších údajov už dáva zmysel uzavrieť základný smer a nepokračovať iba ďalšími otázkami. Najprv by som vybral vhodný typ riešenia podľa domu a vykurovacej sústavy, až potom konkrétnu značku alebo model.",
+    "",
+    "**Možnosti:**",
+    ...closure.options.map((option, index) => `${index + 1}. ${option}.`),
+    "",
+    "Ďalší krok: pošli fotky technickej miestnosti, aktuálneho zdroja a základné podklady k domu, aby sa dal pripraviť konkrétnejší návrh.",
+  ].join("\n");
+}
+
+function countQuestionMarks(value: string): number {
+  return (value.match(/\?/g) || []).length;
+}
+
+function answerHasRecommendationClosure(answer: string): boolean {
+  const normalized = normalizePolicyText(answer);
+  const hasClosureLanguage = /(najlepsi smer|uzavrel|uzavriet|predbezne uzavrel)/.test(normalized);
+  const hasOptions = /(1\s|1\.|jedna moznost|prva moznost)/.test(normalized) && /(2\s|2\.|druha moznost|hybrid)/.test(normalized);
+  const hasCta = /(dalsi krok|ďalší krok|posli fotky|pošli fotky|fotky kotolne|dohodnut obhliadku|pripravit navrh|pripraviť návrh)/.test(normalized);
+  return hasClosureLanguage && hasOptions && hasCta && countQuestionMarks(answer) <= 2;
+}
+
 function answerHasRequiredVerdict(answer: string, state: QualificationState): boolean {
   const normalized = normalizePolicyText(answer);
   if (!/(predbez|verdikt|isiel|odporucal|dava zmysel|vhodn)/.test(normalized)) return false;
@@ -3034,6 +3223,19 @@ function sanitizeAnswerForDiagnosticRules(
       "",
     );
   }
+  if (state.own_wood) {
+    next = applySanitizerRule(
+      next,
+      diagnostics,
+      "own_wood_savings_claim_sanitized",
+      "garantovaná ekonomická výhodnosť pri vlastnom dreve",
+      (sentence) =>
+        /(tepelne cerpadlo|cerpadlo)/.test(sentence) &&
+        /(bude|je|urcite|garantovane)/.test(sentence) &&
+        /(ekonomicky vyhodnejs|lacnejs|usetri|usporn)/.test(sentence),
+      "Pri vlastnom dreve treba ekonomiku overiť podľa reálnej ceny dreva, práce okolo kúrenia, spotreby domu a ceny elektriny; hlavný prínos môže byť komfort a automatická prevádzka.",
+    );
+  }
   return next.replace(/\n{3,}/g, "\n\n").trim();
 }
 
@@ -3126,7 +3328,7 @@ async function extractQualificationUpdate(input: {
 }): Promise<QualificationUpdate> {
   const deterministic = deterministicQualificationUpdate(input.userMessage, input.route);
   const systemPrompt =
-    "Extract structured data from this conversation exchange. Return JSON only with ONLY the fields you are confident about based on what the user just said. Use null for unknown fields. Fields: service_type (heat_pump|air_conditioning|heat_recovery|floor_heating|ceiling_cooling|service|subsidy|complex_solution), service_intent (recommendation|price|service_fault|brand_model|location|subsidy|comparison|process|general), project_type (novostavba|rekonštrukcia), property_type (rodinný dom|bungalov|byt|iné), area_m2 (number), location (string), timeline (string), current_heating (string), heating_distribution (radiátory|podlahové kúrenie), wants_cooling (boolean), hot_water (boolean), occupants (number), insulation (string), annual_consumption (string), annual_consumption_unknown (boolean), project_available (boolean), heat_loss_known (boolean). Only extract what the user explicitly stated in their message.";
+    "Extract structured data from this conversation exchange. Return JSON only with ONLY the fields you are confident about based on what the user just said. Use null for unknown fields. Fields: service_type (heat_pump|air_conditioning|heat_recovery|floor_heating|ceiling_cooling|service|subsidy|complex_solution), service_intent (recommendation|price|service_fault|brand_model|location|subsidy|comparison|process|general), project_type (novostavba|rekonštrukcia), property_type (rodinný dom|bungalov|byt|iné), area_m2 (number), location (string), timeline (string), current_heating (string), heating_distribution (radiátory|podlahové kúrenie), wants_cooling (boolean), hot_water (boolean), occupants (number), insulation (string), annual_consumption (string), annual_consumption_unknown (boolean), own_wood (boolean), project_available (boolean), heat_loss_known (boolean). Only extract what the user explicitly stated in their message.";
 
   try {
     const result = await callLlmText({
@@ -3174,7 +3376,7 @@ async function extractQualificationUpdate(input: {
     if (annualConsumption) update.annual_consumption = annualConsumption;
     const occupants = parsed.occupants;
     if (typeof occupants === "number" && Number.isFinite(occupants)) update.occupants = occupants;
-    for (const field of ["wants_cooling", "hot_water", "annual_consumption_unknown", "project_available", "heat_loss_known"] as const) {
+    for (const field of ["wants_cooling", "hot_water", "annual_consumption_unknown", "own_wood", "project_available", "heat_loss_known"] as const) {
       if (typeof parsed[field] === "boolean") update[field] = parsed[field];
     }
     return update;
@@ -3659,6 +3861,11 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
         fallbackType: safetyLlmUsed ? null : "safety_hardcoded",
         validatorsTriggered: safetyLlmUsed ? [] : ["safety_fallback"],
         bannedClaimsRemoved: [],
+        questionRoundsCount: countQualificationQuestionRounds(previousMessages),
+        closureGateTriggered: false,
+        closureReason: null,
+        recommendationOptions: [],
+        remainingCriticalUnknowns: [],
       },
       action: null,
       fallbackUsed: !safetyLlmUsed,
@@ -3802,6 +4009,12 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     route.retrievalQuery = message;
     route.directAnswer = null;
   }
+  const questionRoundsCount = countQualificationQuestionRounds(previousMessages);
+  stateForTurn = {
+    ...stateForTurn,
+    qualification_question_rounds: questionRoundsCount,
+  };
+  const closureDecision = recommendationClosureDecision(stateForTurn, route, questionRoundsCount);
   const serviceAreaQuestion = isServiceAreaQuestion(message);
   const contextualRetrieval = route.needsRetrieval
     ? buildContextualRetrievalQuery({ message, route, state: stateForTurn, previousMessages })
@@ -3871,6 +4084,10 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     "",
     "Verdict gate: nesmieš viesť nekonečný dotazník. Ak poznáš službu a máš aspoň základný kontext, musíš najprv povedať predbežný smer a až potom sa pýtať ďalej. Nikdy neodpovedaj iba „závisí od“.",
     "",
+    closureDecision.triggered
+      ? "Recommendation closure gate je spustený. Teraz nesmieš pokračovať ďalším dotazníkom. Musíš dať uzatvorené predbežné odporúčanie: najlepší smer, dôvod, 2-3 možnosti, typický rozsah riešenia, čo ešte finálne overiť a CTA na fotky/projekt/obhliadku/ponuku. Môžeš položiť najviac jednu finálnu otázku."
+      : "Ak ešte closure gate nie je spustený, môžeš sa pýtať na chýbajúce údaje, ale aj tak najprv daj predbežný smer.",
+    "",
     "Pri novostavbe sa nepýtaj na ročnú spotrebu ako hlavný údaj; pýtaj sa na projekt, energetický certifikát alebo tepelnú stratu. Pri recommendation intent sa nepýtaj na rozpočet.",
     "",
     "Zakázané: pýtať sa na údaje, ktoré už zákazník povedal; pýtať sa na rozpočet, keď zákazník chce technické odporúčanie; sľubovať bezplatnú alebo nezáväznú obhliadku; sľubovať servis cudzej montáže; tvrdiť kompletné vybavenie dotácie alebo odpočítanie dotácie z ceny; garantovať cenu, dotáciu, úsporu, model, termín alebo pôsobnosť bez firemného RAG dôkazu.",
@@ -3892,6 +4109,19 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     "",
     "Čo vieš o tomto používateľovi:",
     JSON.stringify(stateForTurn, null, 2),
+    "",
+    "Recommendation closure gate:",
+    JSON.stringify(
+      {
+        triggered: closureDecision.triggered,
+        reason: closureDecision.reason,
+        questionRoundsCount,
+        recommendationOptions: closureDecision.options,
+        remainingCriticalUnknowns: closureDecision.remainingCriticalUnknowns,
+      },
+      null,
+      2,
+    ),
     "",
     "Konverzácia do tej chvíle ti dáva kontext čo sa už povedalo. Nepýtaj sa na niečo čo už vieš alebo čo si sa už pýtal. Pri rozpracovanom rozhovore polož jednu ďalšiu relevantnú otázku; pri úplne všeobecnej prvej otázke môžeš položiť 2 až 3 krátke otázky.",
     "",
@@ -3974,6 +4204,10 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     answer = `Nemám dostatočne jasný podklad na túto tému.\n\n${answer}`.trim();
   }
   answer = validateAndRepairAnswer(answer, stateForTurn, route, message, answerDiagnostics);
+  if (closureDecision.triggered && !answerHasRecommendationClosure(answer)) {
+    recordDiagnostic(answerDiagnostics.validatorsTriggered, "recommendation_closure_repaired");
+    answer = validateAndRepairAnswer(expectedRecommendationClosureAnswer(stateForTurn, closureDecision), stateForTurn, route, message, answerDiagnostics);
+  }
   const normalizedFinalAnswer = normalizePolicyText(answer);
   const responseConfidence: "high" | "medium" | "low" = route.needsRetrieval
     ? sources.length === 0 || topScore < 25
@@ -3998,6 +4232,8 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     ...mergeQualificationState(stateForTurn, qualificationUpdate),
     service_type: route.serviceType !== "unknown" ? route.serviceType : previousState.service_type,
     service_intent: route.serviceIntent !== "general" ? route.serviceIntent : previousState.service_intent,
+    qualification_question_rounds: questionRoundsCount,
+    recommendation_closure_offered: previousState.recommendation_closure_offered || closureDecision.triggered || undefined,
     relevant_turns: (previousState.relevant_turns || 0) + 1,
   };
 
@@ -4047,6 +4283,19 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
       retrievalUsed: route.needsRetrieval,
     },
   });
+  const finalAnswerMode: AnswerMode = closureDecision.triggered
+    ? "recommendation_closure"
+    : route.serviceType === "service" || route.serviceIntent === "service_fault"
+      ? "service_fault_triage"
+      : answerDiagnostics.fallbackType
+        ? "ai_fallback"
+        : requiresHardVerdict(stateForTurn, route, message)
+          ? "diagnostic_verdict"
+          : route.serviceIntent === "recommendation" && countQuestionMarks(answer) > 0
+            ? "qualification_question"
+            : route.needsRetrieval
+              ? "rag_answer"
+              : "general_chat";
   updateConversation(conversation.id, {
     intent: responseIntent,
     qualificationStateJson: JSON.stringify(nextState),
@@ -4057,7 +4306,16 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     sessionId: session.id,
     conversationId: conversation.id,
     eventType: "answer_returned",
-    payload: { confidence: responseConfidence, intent: responseIntent, retrievalUsed: route.needsRetrieval, serviceType: route.serviceType, serviceIntent: route.serviceIntent },
+    payload: {
+      confidence: responseConfidence,
+      intent: responseIntent,
+      retrievalUsed: route.needsRetrieval,
+      serviceType: route.serviceType,
+      serviceIntent: route.serviceIntent,
+      answerMode: finalAnswerMode,
+      closureGateTriggered: closureDecision.triggered,
+      closureReason: closureDecision.reason,
+    },
   });
 
   return {
@@ -4070,7 +4328,7 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     leadCapture: { shouldAsk: false, nextQuestion: null },
     lead: { captured: false, score: 0 },
     debug: {
-      answerMode: route.needsRetrieval ? "rag_answer" : "general_chat",
+      answerMode: finalAnswerMode,
       llmAttempted: true,
       llmUsed: Boolean(composerLlm.content && !composerLlm.error),
       llmProvider: composerLlm.provider,
@@ -4097,6 +4355,11 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
       fallbackType: answerDiagnostics.fallbackType,
       validatorsTriggered: answerDiagnostics.validatorsTriggered,
       bannedClaimsRemoved: answerDiagnostics.bannedClaimsRemoved,
+      questionRoundsCount,
+      closureGateTriggered: closureDecision.triggered,
+      closureReason: closureDecision.reason,
+      recommendationOptions: closureDecision.options,
+      remainingCriticalUnknowns: closureDecision.remainingCriticalUnknowns,
     },
     action: null,
     fallbackUsed: Boolean(answerDiagnostics.fallbackType),

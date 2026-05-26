@@ -32,6 +32,9 @@ export type QualificationState = {
   insulation?: string;
   annual_consumption?: string;
   annual_consumption_unknown?: boolean;
+  own_wood?: boolean;
+  qualification_question_rounds?: number;
+  recommendation_closure_offered?: boolean;
   project_available?: boolean;
   heat_loss_known?: boolean;
   contact_name?: string;

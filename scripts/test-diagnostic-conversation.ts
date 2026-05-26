@@ -28,6 +28,11 @@ type ChatBody = {
     fallbackType?: string | null;
     validatorsTriggered?: string[];
     bannedClaimsRemoved?: string[];
+    questionRoundsCount?: number;
+    closureGateTriggered?: boolean;
+    closureReason?: string | null;
+    recommendationOptions?: string[];
+    remainingCriticalUnknowns?: string[];
     llmError?: string | null;
     llmRouterError?: string | null;
   };
@@ -90,7 +95,7 @@ function questionCount(value: string): number {
 function commonChecks(body: ChatBody): string[] {
   const failures: string[] = [];
   if (wordCount(body.answer || "") > 280) failures.push(`answer too long: ${wordCount(body.answer || "")} words`);
-  for (const field of ["serverCommit", "diagnosticFlowVersion", "rawUserMessage", "normalizedUserMessage", "storedSlots", "serviceType", "serviceIntent", "enrichedRetrievalQuery", "retrievalSourcesCount", "fallbackType"] as const) {
+  for (const field of ["serverCommit", "diagnosticFlowVersion", "rawUserMessage", "normalizedUserMessage", "storedSlots", "serviceType", "serviceIntent", "enrichedRetrievalQuery", "retrievalSourcesCount", "fallbackType", "questionRoundsCount", "closureGateTriggered", "recommendationOptions", "remainingCriticalUnknowns"] as const) {
     if (body.debug?.[field] === undefined) failures.push(`debug.${field} missing`);
   }
   if (hasAny(body.answer, ["odpoveď sa teraz nedokončila", "odpoved sa teraz nedokoncila", "mám podklady, ale", "mam podklady ale", "nemám dosť informácií"])) {
@@ -141,7 +146,7 @@ const scenarios: Scenario[] = [
   {
     id: "old_house_radiators_wood",
     title: "Starší dom + radiátory + drevo",
-    messages: ["ahoj, ake cerpadlo je najlepsie?", "starsi dom, 150m, mame radiatory", "kotol mame drevom a netusim, mam vlastne drevo"],
+    messages: ["ahoj, ake cerpadlo je najlepsie?", "starsi dom, 150m, mame radiatory", "kotol mame drevom a netusim, mam vlastne drevo", "4m, zateplene vsetko"],
     check(turnIndex, body) {
       const failures = commonChecks(body);
       const answer = body.answer || "";
@@ -157,6 +162,18 @@ const scenarios: Scenario[] = [
         if (!hasAll(query, ["radi", "drevo"]) && !hasAll(query, ["radi", "tuhe palivo"])) failures.push(`retrieval query lost radiator/wood context: ${query}`);
         if (!hasAll(answer, ["vzduch-voda", "radi"]) || !hasAny(answer, ["drevo", "tuhé palivo", "tuhe palivo"])) failures.push("wood replacement verdict missing");
         if (!hasAny(answer, ["zateplen", "akumula", "teplá voda", "tepla voda", "koľko dreva", "kolko dreva"])) failures.push("answer lacks useful replacement follow-up");
+      }
+      if (turnIndex === 3) {
+        if (body.debug?.answerMode !== "recommendation_closure") failures.push(`expected recommendation_closure, got ${body.debug?.answerMode || "missing"}`);
+        if (body.debug?.closureGateTriggered !== true) failures.push("closureGateTriggered should be true");
+        if (!body.debug?.closureReason) failures.push("closureReason missing");
+        if ((body.debug?.recommendationOptions || []).length < 2) failures.push("recommendationOptions should contain at least 2 options");
+        if (!hasAny(answer, ["najlepší smer", "najlepsi smer", "uzavrel"])) failures.push("closure answer lacks best-direction wording");
+        if (!hasAll(answer, ["vzduch-voda", "radi"])) failures.push("closure answer lacks heat pump/radiator direction");
+        if (!hasAny(answer, ["hlavný zdroj", "hlavny zdroj"]) || !hasAny(answer, ["hybrid", "ponechaný kotol", "ponechany kotol"])) failures.push("closure answer lacks two expected options");
+        if (hasAny(answer, ["bude ekonomicky výhodnejšie", "bude ekonomicky vyhodnejsie", "garantovanú úsporu", "garantovanu usporu"])) failures.push("closure answer guarantees savings");
+        if (!hasAny(answer, ["fotky kotolne", "fotky", "radiátorov", "radiatorov", "dohodnúť obhliadku", "dohodnut obhliadku", "pripraviť návrh", "pripravit navrh"])) failures.push("closure answer lacks CTA");
+        if (questionCount(answer) > 2) failures.push(`closure asks too many questions: ${questionCount(answer)}`);
       }
       return failures;
     },
@@ -278,6 +295,11 @@ async function main(): Promise<void> {
       lines.push(`serviceIntent: ${turn.response.debug?.serviceIntent || "n/a"}`);
       lines.push(`sourcesCount: ${turn.response.debug?.retrievalSourcesCount ?? turn.response.sources?.length ?? 0}`);
       lines.push(`fallbackType: ${turn.response.debug?.fallbackType ?? "n/a"}`);
+      lines.push(`questionRoundsCount: ${turn.response.debug?.questionRoundsCount ?? "n/a"}`);
+      lines.push(`closureGateTriggered: ${turn.response.debug?.closureGateTriggered ?? "n/a"}`);
+      lines.push(`closureReason: ${turn.response.debug?.closureReason ?? "n/a"}`);
+      lines.push(`recommendationOptions: ${JSON.stringify(turn.response.debug?.recommendationOptions || [])}`);
+      lines.push(`remainingCriticalUnknowns: ${JSON.stringify(turn.response.debug?.remainingCriticalUnknowns || [])}`);
       lines.push(`validatorsTriggered: ${(turn.response.debug?.validatorsTriggered || []).join(", ") || "none"}`);
       lines.push(`retrievalQuery: ${turn.response.debug?.retrievalQuery || "n/a"}`);
       lines.push(`enrichedRetrievalQuery: ${turn.response.debug?.enrichedRetrievalQuery || "n/a"}`);
