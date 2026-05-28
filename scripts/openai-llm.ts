@@ -35,6 +35,10 @@ export type AnswerMode =
   | "qualification_question"
   | "diagnostic_verdict"
   | "recommendation_closure"
+  | "direct_answer"
+  | "brand_model_answer"
+  | "price_answer"
+  | "correction_answer"
   | "handoff_cta"
   | "service_fault_triage"
   | "ai_fallback";
@@ -125,6 +129,10 @@ const answerModes: AnswerMode[] = [
   "qualification_question",
   "diagnostic_verdict",
   "recommendation_closure",
+  "direct_answer",
+  "brand_model_answer",
+  "price_answer",
+  "correction_answer",
   "handoff_cta",
   "service_fault_triage",
   "ai_fallback",

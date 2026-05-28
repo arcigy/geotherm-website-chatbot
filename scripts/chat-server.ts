@@ -125,6 +125,8 @@ export type ChatResponse = {
     questionRoundsCount?: number;
     closureGateTriggered?: boolean;
     closureReason?: string | null;
+    directAnswerGateTriggered?: boolean;
+    directAnswerReason?: string | null;
     recommendationOptions?: string[];
     remainingCriticalUnknowns?: string[];
     leadCapture?: {
@@ -180,6 +182,74 @@ const diagnosticFlowVersion = "diagnostic-v5-recommendation-closure";
 let knowledgeCache: KnowledgeChunk[] | null = null;
 let serverCommitCache: string | null = null;
 
+const supplementalCompanyTruthTexts = [
+  {
+    id: "geotherm-company-truth-heat-pump-brands",
+    heading: "Company truth: znacky tepelných cerpadiel",
+    text: [
+      "Pri tepelných cerpadlach komunikuj ako potvrdene a bezpecne portfoliove znacky najma NIBE a Vaillant.",
+      "IVT komunikuj iba opatrne, ak je potvrdene v aktualnej ponuke alebo ako starsi/nejisty podklad.",
+      "Daikin a Mitsubishi nekomunikuj ako aktivne portfoliove znacky tepelných cerpadiel Geotherm, pokial to nie je explicitne potvrdene aktualnym firemnym podkladom.",
+      "Mitsubishi moze byt relevantne pri klimatizaciach iba vtedy, ak to potvrdzuje firemny podklad.",
+      "Ak sa pouzivatel pyta, ci Geotherm robi Daikin alebo Mitsubishi pri tepelnom cerpadle, odpovedz, ze pri tepelných cerpadlach je bezpecne drzat sa potvrdenych znaciek NIBE a Vaillant a ostatne znacky treba overit podla aktualnej ponuky.",
+    ].join(" "),
+  },
+  {
+    id: "geotherm-company-truth-model-status",
+    heading: "Company truth: aktualnost modelov tepelných cerpadiel",
+    text: [
+      "Konkretny model tepelneho cerpadla nesmie byt prezentovany ako finalne najlepsi bez technickeho navrhu.",
+      "NIBE F2040 neponukaj ako aktualny odporucany model pre novu realizaciu; ak sa objavi v starsich podkladoch, ber ho ako archivny alebo historicky podklad.",
+      "NIBE F2050 nepopisuj parametrami ani dostupnostou, ak nie je potvrdeny v aktualnej firemnej knowledge; povedz, ze aktualnu dostupnost a vhodnost treba overit.",
+      "Pri NIBE a Vaillant mozes odporucat vyber z portfolia podla radiátorov, vykonu, teplej vody, technickej miestnosti a aktualnej ponuky.",
+    ].join(" "),
+  },
+  {
+    id: "geotherm-company-truth-price-scope",
+    heading: "Company truth: ceny a rozsah dodavky",
+    text: [
+      "Pri cenach tepelných cerpadiel nepouzivaj presnu cenu ako garantovanu cenu bez potvrdeneho cennika alebo konkretnej ponuky.",
+      "Vzdy rozlisuj cenu samotnej zostavy a kompletnu realizaciu vratane montaze, hydrauliky, regulacie, uvedenia do prevadzky, elektroprac, demontaze stareho kotla, TUV zasobnika a pripadnej akumulacnej nadrze.",
+      "Ak sa pouzivatel pyta, ci je akumulacna nadrz v cene, odpovedz priamo: nie je bezpecne tvrdit, ze je zahrnuta automaticky; musi to byt uvedene v konkretnej ponuke.",
+      "Pri staršom dome s radiatormi je 7000 eur skor podozrivo nizka hranica pre kompletnu realizaciu; treba overit, co presne cena obsahuje.",
+    ].join(" "),
+  },
+  {
+    id: "geotherm-company-truth-policies",
+    heading: "Company truth: obchodne tvrdenia a obhliadka",
+    text: [
+      "Bez potvrdeneho firemneho podkladu netvrd, ze obhliadka je bezplatna alebo nezavazna.",
+      "Pouzivaj neutralne formulacie: dohodnut obhliadku, preverit podklady, pripravit navrh, pripravit ponuku.",
+      "Bez potvrdenia netvrd, ze firma servisuje cudzie montaze, vybavuje dotacie kompletne alebo odpocitava dotaciu z ceny.",
+      "Ak firemny fakt chyba, povedz, ze ho treba potvrdit podla aktualnych podmienok firmy, ale nezablokuj vseobecnu technicku odpoved.",
+    ].join(" "),
+  },
+  {
+    id: "geotherm-company-truth-contact",
+    heading: "Company truth: kontakt a dalsi krok",
+    text: [
+      "Pouzi pri otazkach ako vas kontaktovat, kde vas najdem, kontakt, telefon, e-mail alebo kontaktny formular.",
+      "Firemne podklady uvadzaju kontakt cez telefon +421 905 665 755 a e-mail sturdik@geotherm.sk a odporucaju osobne stretnutie dohodnut vopred.",
+      "Pri technickom dopyte moze chatbot najprv ujasnit, ci ide o ponuku, servis, dotaciu alebo navrh riesenia; pri zbere kontaktu musi povedat, ze kontakt sa pouzije na spatne ozvanie k dopytu.",
+    ].join(" "),
+  },
+];
+
+function supplementalCompanyTruthChunks(): KnowledgeChunk[] {
+  return supplementalCompanyTruthTexts.map((item, index) => ({
+    sourceType: "manual",
+    sourceId: 900000 + index,
+    pageTitle: "Geotherm company truth",
+    url: `manual://geotherm/${item.id}`,
+    slug: item.id,
+    modified: "2026-05-28",
+    sectionHeading: item.heading,
+    chunkIndex: 0,
+    text: item.text,
+    textLength: item.text.length,
+  }));
+}
+
 function serverCommit(): string {
   if (serverCommitCache) return serverCommitCache;
   serverCommitCache =
@@ -198,7 +268,10 @@ function serverCommit(): string {
 
 async function loadKnowledge(knowledgePath = defaultKnowledgePath): Promise<KnowledgeChunk[]> {
   if (!knowledgeCache) {
-    knowledgeCache = JSON.parse(await readFile(knowledgePath, "utf8")) as KnowledgeChunk[];
+    knowledgeCache = [
+      ...(JSON.parse(await readFile(knowledgePath, "utf8")) as KnowledgeChunk[]),
+      ...supplementalCompanyTruthChunks(),
+    ];
   }
   return knowledgeCache;
 }
@@ -2023,6 +2096,10 @@ type ServiceIntent =
   | "subsidy"
   | "comparison"
   | "process"
+  | "quote"
+  | "inspection"
+  | "contact"
+  | "complaint_or_correction"
   | "general";
 
 type ServiceRoute = {
@@ -2054,6 +2131,10 @@ const serviceIntents: ServiceIntent[] = [
   "subsidy",
   "comparison",
   "process",
+  "quote",
+  "inspection",
+  "contact",
+  "complaint_or_correction",
   "general",
 ];
 
@@ -2158,6 +2239,8 @@ function inferServiceRoute(message: string, state: QualificationState, history: 
       ? previousIntent
       : isServiceAreaQuestion(message) || /(pridete|chodite|dojdete|vyjazd|lokalit|mesto|okres|som z|sme z|v bratislave|v kosiciach)/.test(text)
       ? "location"
+      : /(kontakt|kontaktovat|telefon|email|e-mail|ako vas|kde vas|najdem)/.test(text)
+        ? "contact"
       : /(cena|cenu|cennik|kolko|koľko|stoji|stojí|rozpocet|rozpočet|ponuk)/.test(text)
         ? "price"
         : /(porucha|chyba|nekuri|nefunguje|hlasi|hlási|diagnostik|servis)/.test(text)
@@ -2180,7 +2263,8 @@ function inferServiceRoute(message: string, state: QualificationState, history: 
 }
 
 function mapServiceIntentToSalesIntent(serviceType: ServiceType, serviceIntent: ServiceIntent): SalesIntent {
-  if (serviceIntent === "price") return "quote";
+  if (serviceIntent === "price" || serviceIntent === "quote") return "quote";
+  if (serviceIntent === "contact" || serviceIntent === "inspection") return "contact";
   if (serviceIntent === "service_fault" || serviceType === "service") return "service";
   if (serviceIntent === "subsidy" || serviceType === "subsidy") return "subsidy";
   if (serviceIntent === "location" || serviceIntent === "process") return "installation";
@@ -2753,6 +2837,9 @@ type QualificationUpdate = Partial<
     | "own_wood"
     | "qualification_question_rounds"
     | "recommendation_closure_offered"
+    | "last_direct_topic"
+    | "last_price_topic"
+    | "last_brand_model_topic"
     | "project_available"
     | "heat_loss_known"
   >
@@ -2795,7 +2882,7 @@ function deterministicQualificationUpdate(message: string, route?: Pick<ServiceR
   if (/\bplyn\b|plynov/.test(normalized)) update.current_heating = "plyn";
   else if (/drevo|uhlie|pelety|tuhe palivo|tuhym palivom/.test(normalized)) update.current_heating = "tuhé palivo";
   else if (/elektrin|elektrokotol|elektricky kotol/.test(normalized)) update.current_heating = "elektrina";
-  else if (/tepelne cerpadlo|cerpadlom/.test(normalized)) update.current_heating = "tepelné čerpadlo";
+  else if (/(?:mam|mame|kurim|kurime|vykurujem|aktualne|teraz).*(?:tepelne cerpadlo|cerpadlom)|cerpadlom/.test(normalized)) update.current_heating = "tepelné čerpadlo";
 
   const locationMatch = normalized.match(/\b(?:som z|sme z|dom je v|dom mam v|byvam v|lokalita)\s+([a-z]+(?:\s+[a-z]+){0,2})/);
   if (locationMatch) update.location = locationMatch[1].trim();
@@ -2872,6 +2959,9 @@ const qualificationUpdateFields: Array<keyof QualificationUpdate> = [
   "own_wood",
   "qualification_question_rounds",
   "recommendation_closure_offered",
+  "last_direct_topic",
+  "last_price_topic",
+  "last_brand_model_topic",
   "project_available",
   "heat_loss_known",
 ];
@@ -2928,7 +3018,7 @@ function requiresHardVerdict(state: QualificationState, route: Pick<ServiceRoute
   return (
     (service === "heat_pump" || service === "complex_solution") &&
     Boolean(state.project_type && state.area_m2 && state.heating_distribution) &&
-    (["recommendation", "brand_model", "comparison", "general"].includes(intent) || complaint)
+    (["recommendation", "comparison", "general"].includes(intent) || complaint)
   );
 }
 
@@ -3147,14 +3237,16 @@ function detectCrmLeadIntent(message: string, route: Pick<ServiceRoute, "service
 }
 
 function inferCrmLeadIntentFromHistory(messages: Array<{ role: string; content: string }>): CrmLeadIntent {
-  const text = messages
+  const userMessages = messages
+    .filter((message) => message.role === "user")
     .slice(-8)
-    .map((message) => normalizePolicyText(message.content))
-    .join(" ");
-  if (/(obhliad|prehliad|dohodnut termin|technik alebo obchodnik|technik obchodnik)/.test(text)) return "inspection";
-  if (/(cenova ponuka|cenovu ponuku|ponuku|nacenit|nacenenie)/.test(text)) return "quote";
-  if (/(porucha|chyba|servis|diagnostik)/.test(text)) return "service_fault";
-  if (/(zavolajte|ozvite|kontaktujte|spatny kontakt|spatne ozvanie)/.test(text)) return "callback";
+    .map((message) => normalizePolicyText(message.content));
+  for (const text of [...userMessages].reverse()) {
+    if (/(cenova ponuka|cenovu ponuku|ponuku|nacenit|nacenenie)/.test(text)) return "quote";
+    if (/(obhliad|prehliad|dohodnut termin|technik alebo obchodnik|technik obchodnik)/.test(text)) return "inspection";
+    if (/(porucha|chyba|servis|diagnostik)/.test(text)) return "service_fault";
+    if (/(zavolajte|ozvite|kontaktujte|spatny kontakt|spatne ozvanie)/.test(text)) return "callback";
+  }
   return "general";
 }
 
@@ -3435,6 +3527,254 @@ type RecommendationClosureDecision = {
   remainingCriticalUnknowns: string[];
 };
 
+type DirectAnswerDecision = {
+  triggered: boolean;
+  answerMode: AnswerMode;
+  reason: string | null;
+  answer: string | null;
+  serviceIntent: ServiceIntent | null;
+  retrievalQuery: string | null;
+  topic: string | null;
+};
+
+function projectContextLine(state: QualificationState): string {
+  const parts = [
+    state.project_type,
+    state.area_m2 ? `${state.area_m2} m²` : null,
+    state.heating_distribution,
+    state.current_heating ? `aktuálne ${state.current_heating}` : null,
+  ].filter(Boolean);
+  return parts.length ? `Pre tvoj prípad (${parts.join(", ")}) by som to bral ako orientačný výber, nie finálny model.` : "Konkrétny model by som vybral až podľa domu, výkonu a technickej miestnosti.";
+}
+
+function brandModelDirectAnswer(message: string, state: QualificationState): DirectAnswerDecision {
+  const text = normalizePolicyText(message);
+  const asksDaikin = text.includes("daikin");
+  const asksMitsubishi = text.includes("mitsubishi");
+  const asksVaillant = text.includes("vaillant");
+  const asksNibe = text.includes("nibe");
+  const asksSplit = /\bsplit\b/.test(text);
+  const asksF2050 = text.includes("f2050");
+
+  if (asksF2050) {
+    return {
+      triggered: true,
+      answerMode: "brand_model_answer",
+      reason: "direct_nibe_f2050_question",
+      serviceIntent: "brand_model",
+      topic: "F2050",
+      retrievalQuery: "company-truth product-facts NIBE F2050 aktuálne modely tepelné čerpadlá portfólio Geotherm",
+      answer: [
+        "### NIBE F2050",
+        "",
+        "Model **F2050** nemám potvrdený ako aktuálne komunikovaný model v firemnej pravde Geotherm, takže mu nebudem vymýšľať parametre ani ho odporúčať ako istú ponuku.",
+        "",
+        "Bezpečný postup je držať sa typového riešenia: pre tvoj starší dom s radiátormi predbežne **vzduch-voda systém vhodný pre radiátory** a konkrétny aktuálny model vybrať až po návrhu. Z portfólia firmy viem pri tepelných čerpadlách bezpečne komunikovať najmä **NIBE a Vaillant**, ale aktuálnu dostupnosť konkrétneho modelu treba potvrdiť.",
+      ].join("\n"),
+    };
+  }
+
+  if (asksDaikin || asksMitsubishi) {
+    const brand = asksDaikin ? "Daikin" : "Mitsubishi";
+    return {
+      triggered: true,
+      answerMode: "brand_model_answer",
+      reason: `direct_${brand.toLowerCase()}_portfolio_question`,
+      serviceIntent: "brand_model",
+      topic: brand,
+      retrievalQuery: `company-truth brands ${brand} tepelné čerpadlá klimatizácie Geotherm portfólio`,
+      answer: [
+        `### ${brand} a tepelné čerpadlá`,
+        "",
+        `Pri **tepelných čerpadlách** by som ${brand} bezpečne netvrdil ako bežné portfólio Geotherm, pokiaľ to nie je priamo potvrdené aktuálnymi firemnými pravidlami.`,
+        "",
+        "Bezpečne komunikovaný smer pre tepelné čerpadlá je **NIBE a Vaillant**. Mitsubishi sa môže objaviť skôr pri klimatizáciách alebo vzduch-vzduch riešeniach, nie ako hlavné portfólio TČ voda/voda alebo vzduch/voda.",
+      ].join("\n"),
+    };
+  }
+
+  if (asksVaillant || asksSplit) {
+    const splitLine = asksSplit
+      ? "Ak myslíš **Vaillant aroTHERM Split**, je to splitové riešenie vzduch-voda; pri radiátoroch treba overiť hlavne potrebnú teplotu vody a výkon radiátorov."
+      : "Pri Vaillant riešeniach sa v knowledge spomínajú hlavne vzduch-voda riešenia ako aroTHERM plus a aroTHERM Split; vhodnosť závisí od domu.";
+    return {
+      triggered: true,
+      answerMode: "brand_model_answer",
+      reason: asksSplit ? "direct_vaillant_split_question" : "direct_vaillant_question",
+      serviceIntent: "brand_model",
+      topic: asksSplit ? "Vaillant Split" : "Vaillant",
+      retrievalQuery: "company-truth product-facts Vaillant aroTHERM plus aroTHERM Split tepelné čerpadlá radiátory Geotherm",
+      answer: [
+        asksSplit ? "### Vaillant Split" : "### Vaillant",
+        "",
+        splitLine,
+        "",
+        `${projectContextLine(state)} Pri tepelných čerpadlách je Vaillant spolu s NIBE bezpečná značka na komunikáciu, ale konkrétny model by som neoznačil za finálny bez návrhu výkonu, TÚV, hydrauliky a priestoru v kotolni.`,
+      ].join("\n"),
+    };
+  }
+
+  const generalBrandAnswer = [
+    "### Značky tepelných čerpadiel",
+    "",
+    "Pri **tepelných čerpadlách** viem bezpečne komunikovať hlavne **NIBE a Vaillant**. IVT by som bez aktuálneho potvrdenia bral ako neisté alebo na overenie.",
+    "",
+    "Daikin a Mitsubishi by som pri TČ voda/voda alebo vzduch/voda nespomínal ako bežné portfólio, kým to firma nepotvrdí. Konkrétny model sa má vybrať až po návrhu podľa výkonu, radiátorov/podlahovky, teplej vody a kotolne.",
+  ].join("\n");
+  return {
+    triggered: true,
+    answerMode: "brand_model_answer",
+    reason: asksNibe ? "direct_nibe_question" : "direct_brand_question",
+    serviceIntent: "brand_model",
+    topic: asksNibe ? "NIBE" : "heat_pump_brands",
+    retrievalQuery: "company-truth brands NIBE Vaillant IVT Daikin Mitsubishi tepelné čerpadlá portfólio Geotherm",
+    answer: generalBrandAnswer,
+  };
+}
+
+function priceDirectAnswer(message: string, state: QualificationState): DirectAnswerDecision {
+  const text = normalizePolicyText(message);
+  const hasKnownProject = Boolean(state.area_m2 || state.heating_distribution || state.current_heating || state.project_type);
+  const context = hasKnownProject ? `Pri tvojom kontexte (${projectContextLine(state).replace(/\.$/, "")})` : "Pri tepelnom čerpadle";
+  let answer: string;
+  let reason = "direct_price_question";
+  let topic = "price";
+
+  if (/(akumulac|akumula|v cene)/.test(text)) {
+    reason = "direct_buffer_tank_price_scope_question";
+    topic = "buffer_tank_price_scope";
+    answer = [
+      "### Akumulačná nádrž a cena",
+      "",
+      "**Neviem potvrdiť, že akumulačná nádrž je v cene**, pokiaľ to nie je priamo uvedené v konkrétnej ponuke. Pri radiátoroch alebo komplikovanejšej kotolni môže byť akumulačná nádrž potrebná, ale jej zahrnutie treba overiť v konkrétnom rozsahu ponuky.",
+      "",
+      "Pri cene 7 tisíc by som obzvlášť overil, či ide iba o zariadenie/zostavu, alebo o kompletnú realizáciu vrátane montáže, regulácie, TÚV, akumulačnej nádrže, elektroprác a uvedenia do prevádzky.",
+    ].join("\n");
+  } else if (/(7\s*tis|7000|7\s*000|malo|málo)/.test(text)) {
+    reason = "direct_low_price_sanity_check";
+    topic = "low_price_scope";
+    answer = [
+      "### K cene 7 tisíc",
+      "",
+      `Áno, **7 tisíc môže byť pri kompletnom tepelnom čerpadle podozrivo nízka suma**, najmä ak sa bavíme o staršom dome s radiátormi a výmenou kotla. ${context} by som to nebral ako potvrdenú kompletnú cenu.`,
+      "",
+      "Treba presne overiť, čo je v tej sume: samotná zostava, montážny materiál, práca, regulácia, TÚV zásobník, akumulačná nádrž, elektropríprava, uvedenie do prevádzky a prípadné úpravy kotolne.",
+    ].join("\n");
+  } else if (/^(z coho|z čoho)\??$/.test(text) || text.includes("z coho") || text.includes("z čoho")) {
+    reason = "direct_price_basis_question";
+    topic = "price_basis";
+    answer = [
+      "### Z čoho sa skladá cena",
+      "",
+      "Myslím tým rozdiel medzi **cenou zariadenia** a **cenou kompletnej realizácie**. Kompletná cena môže zahŕňať tepelné čerpadlo, vnútorný modul alebo hydrauliku, reguláciu, montážny materiál, prácu, uvedenie do prevádzky, prípravu TÚV a podľa návrhu aj akumulačnú nádrž.",
+      "",
+      "Preto sa nedá bezpečne povedať, že konkrétna suma platí pre celý systém, kým nie je jasné, čo presne ponuka obsahuje.",
+    ].join("\n");
+  } else {
+    answer = [
+      "### Cena vrátane inštalácie",
+      "",
+      "Presnú cenu bez konkrétnej ponuky nepotvrdím. Pri tepelnom čerpadle treba rozlíšiť cenu samotnej zostavy a cenu kompletnej realizácie.",
+      "",
+      `${context} cenu ovplyvňuje výkon, radiátory alebo podlahovka, TÚV zásobník, regulácia, montážny materiál, úpravy kotolne, elektropráce, uvedenie do prevádzky a prípadná akumulačná nádrž.`,
+      "",
+      "Ak máš v ruke cenu, najdôležitejšie je porovnať rozsah: čo je zahrnuté, čo je príplatok a čo sa bude riešiť až po obhliadke alebo návrhu.",
+    ].join("\n");
+  }
+
+  return {
+    triggered: true,
+    answerMode: "price_answer",
+    reason,
+    answer,
+    serviceIntent: "price",
+    retrievalQuery: "company-truth pricing-rules cena tepelné čerpadlo montáž inštalácia akumulačná nádrž čo je v cene rozsah ponuky",
+    topic,
+  };
+}
+
+function correctionDirectAnswer(message: string, state: QualificationState): DirectAnswerDecision {
+  const text = normalizePolicyText(message);
+  let answer: string;
+  let topic = "correction";
+  if (text.includes("f2040") || text.includes("nevyraba")) {
+    topic = "F2040_obsolete";
+    answer = [
+      "### Oprava k F2040",
+      "",
+      "Máš pravdu, **F2040 by som nemal ponúkať ako aktuálny model pre novú realizáciu**. Ak sa nachádza v starších podkladoch alebo na webe, treba ho brať ako archívny/historický podklad, nie ako automatické odporúčanie.",
+      "",
+      "Pre tvoj prípad by som riešil typovo **vzduch-voda riešenie pre radiátorový systém** a konkrétny aktuálny model vybral až podľa návrhu. Bezpečne sa držím značiek **NIBE alebo Vaillant**, ale aktuálnu dostupnosť konkrétneho modelu treba potvrdiť.",
+    ].join("\n");
+  } else if (text.includes("iba nibe") || text.includes("nibe a vaillant") || text.includes("daikin") || text.includes("mitsubishi")) {
+    topic = "brand_correction";
+    answer = [
+      "### Oprava k značkám",
+      "",
+      "Áno, správne: pri **tepelných čerpadlách** mám bezpečne komunikovať hlavne **NIBE a Vaillant**. Ak som predtým naznačil Daikin alebo Mitsubishi ako portfólio tepelných čerpadiel, ber to ako chybu.",
+      "",
+      "Daikin/Mitsubishi by som bez potvrdenia nespomínal pri TČ voda/voda alebo vzduch/voda; Mitsubishi môže patriť skôr ku klimatizáciám alebo vzduch-vzduch riešeniam.",
+    ].join("\n");
+  } else {
+    answer = [
+      "### Máš pravdu",
+      "",
+      "Neodpovedal som priamo na poslednú otázku. Pri takýchto follow-up otázkach nemám znova opakovať celé odporúčanie, ale najprv odpovedať na konkrétnu vec: značku, model, cenu alebo čo je zahrnuté v ponuke.",
+      "",
+      "Napíš mi tú konkrétnu položku ešte raz a odpoviem priamo bez ďalšieho dotazníka.",
+    ].join("\n");
+  }
+  return {
+    triggered: true,
+    answerMode: "correction_answer",
+    reason: "direct_correction_or_complaint",
+    answer,
+    serviceIntent: "complaint_or_correction",
+    retrievalQuery: "company-truth correction rules brands models obsolete F2040 NIBE Vaillant Daikin Mitsubishi direct answer",
+    topic,
+  };
+}
+
+function directAnswerDecision(message: string, state: QualificationState, route: Pick<ServiceRoute, "serviceType" | "serviceIntent">): DirectAnswerDecision {
+  const text = normalizePolicyText(message);
+  const activeService = normalizeServiceType(state.service_type || route.serviceType, "unknown");
+  const hasActiveHeatPump = activeService === "heat_pump" || activeService === "complex_solution";
+  if (route.serviceType === "service" || route.serviceIntent === "service_fault") {
+    return {
+      triggered: false,
+      answerMode: "direct_answer",
+      reason: null,
+      answer: null,
+      serviceIntent: null,
+      retrievalQuery: null,
+      topic: null,
+    };
+  }
+  const correction =
+    /(neodpovedal|otazka som dal inu|otazka bola ina|pisla si|napisala si|povedali.*iba|preco mi ho ponukas|uz sa .*nevyraba|nevyraba|nevyrába)/.test(text);
+  if (correction) return correctionDirectAnswer(message, state);
+
+  const price =
+    /(cena|ceny|cennik|koľko|kolko|stoji|stojí|vratane instalacie|vrátane inštalácie|7\s*tis|7000|7\s*000|akumulac|akumula|v cene|z coho|z čoho)/.test(text) ||
+    (route.serviceIntent === "price" && hasActiveHeatPump);
+  if (price) return priceDirectAnswer(message, state);
+
+  const brandModel =
+    /(znack|značka|ake mate|aké máte|ake znacky|aké značky|nibe|vaillant|daikin|mitsubishi|f2040|f2050|\bmodel\b|\bsplit\b)/.test(text) ||
+    (hasActiveHeatPump && route.serviceIntent === "brand_model");
+  if (brandModel) return brandModelDirectAnswer(message, state);
+
+  return {
+    triggered: false,
+    answerMode: "direct_answer",
+    reason: null,
+    answer: null,
+    serviceIntent: null,
+    retrievalQuery: null,
+    topic: null,
+  };
+}
+
 function countQualificationQuestionRounds(previousMessages: Array<{ role: string; content: string }>): number {
   return previousMessages.filter((message) => {
     if (message.role !== "assistant" || !message.content.includes("?")) return false;
@@ -3506,7 +3846,7 @@ function recommendationClosureDecision(
   const hasMinimumHeatPumpSlots = Boolean(state.project_type && state.area_m2 && state.heating_distribution);
   const extraSlots = countRecommendationExtraSlots(state);
   const hasClosureQualitySlot = Boolean(state.insulation || state.annual_consumption || state.occupants || state.hot_water !== undefined || state.wants_cooling !== undefined || state.location);
-  const heatPumpRecommendation = service === "heat_pump" && ["recommendation", "brand_model", "comparison", "general"].includes(intent);
+  const heatPumpRecommendation = service === "heat_pump" && ["recommendation", "comparison", "general"].includes(intent);
   const triggered =
     heatPumpRecommendation &&
     hasMinimumHeatPumpSlots &&
@@ -3744,6 +4084,52 @@ function sanitizeAnswerForDiagnosticRules(
       "",
     );
   }
+  if (route.serviceType === "heat_pump" || state.service_type === "heat_pump") {
+    next = applySanitizerRule(
+      next,
+      diagnostics,
+      "unsupported_heat_pump_brand_sanitized",
+      "Daikin/Mitsubishi pri tepelných čerpadlách",
+      (sentence) =>
+        /(daikin|mitsubishi)/.test(sentence) &&
+        /(ponuk|robime|montujeme|predavame|spolupracuje|portfol)/.test(sentence) &&
+        !/(netvrd|bez potvrden|nie je|nespomin|skor pri klimatiz)/.test(sentence),
+      "Pri tepelných čerpadlách viem bezpečne komunikovať NIBE a Vaillant; Daikin alebo Mitsubishi treba pri TČ potvrdiť podľa aktuálnej ponuky.",
+    );
+  }
+  next = applySanitizerRule(
+    next,
+    diagnostics,
+    "obsolete_f2040_claim_sanitized",
+    "F2040 ako aktuálne odporúčaný model",
+    (sentence) =>
+      sentence.includes("f2040") &&
+      /(odporuc|vhodn|ponuk|aktualn|najleps)/.test(sentence) &&
+      !/(archiv|histor|nevyrab|neponuk|nemal|neodporuc|nahrad|treba potvrdit)/.test(sentence),
+    "NIBE F2040 treba pri nových realizáciách brať ako neaktuálny alebo archívny podklad; aktuálny model treba potvrdiť podľa ponuky.",
+  );
+  next = applySanitizerRule(
+    next,
+    diagnostics,
+    "unconfirmed_f2050_claim_sanitized",
+    "F2050 bez potvrdeného firemného faktu",
+    (sentence) =>
+      sentence.includes("f2050") &&
+      /(je|ponuk|odporuc|vhodn|parametr|vykon|ucinnost)/.test(sentence) &&
+      !/(nemam potvrden|nie je potvrden|treba overit|nebudem|bez potvrden)/.test(sentence),
+    "NIBE F2050 nemám potvrdený ako aktuálny model v firemnej pravde; dostupnosť a parametre treba overiť podľa aktuálnej ponuky.",
+  );
+  next = applySanitizerRule(
+    next,
+    diagnostics,
+    "buffer_tank_included_claim_sanitized",
+    "akumulačná nádrž zahrnutá v cene",
+    (sentence) =>
+      sentence.includes("akumulac") &&
+      /(je v cene|v tej cene|zahrnuta|zahrnute|sucastou ceny|zapocitava)/.test(sentence) &&
+      !/(neviem potvrdit|nie je bezpecne|ak je uveden|treba overit|nemusi byt)/.test(sentence),
+    "Akumulačná nádrž je v cene iba vtedy, keď je výslovne uvedená v konkrétnej ponuke; bez toho to treba overiť.",
+  );
   if (state.own_wood) {
     next = applySanitizerRule(
       next,
@@ -3820,6 +4206,17 @@ function validateAndRepairAnswer(
     if (diagnostics) recordDiagnostic(diagnostics.validatorsTriggered, "complaint_context_repaired");
     next = `${expectedVerdictAnswer(state)}\n\n${next}`.trim();
   }
+  if (isExistingRadiatorSolidFuel(state) && state.annual_consumption_unknown) {
+    const normalized = normalizePolicyText(next);
+    if (!/(zateplen|akumulac|tepl[aej]* vod|tuv|kolko dreva|dreva za sezon)/.test(normalized)) {
+      if (diagnostics) recordDiagnostic(diagnostics.validatorsTriggered, "wood_replacement_followup_repaired");
+      next = [
+        next,
+        "",
+        "Pred finálnym návrhom by som ešte overil hlavne zateplenie domu, orientačné množstvo dreva za sezónu, akumulačnú nádrž a to, či má tepelné čerpadlo riešiť aj teplú vodu.",
+      ].join("\n");
+    }
+  }
   return sanitizeAnswerForDiagnosticRules(next, state, route, diagnostics);
 }
 
@@ -3849,7 +4246,7 @@ async function extractQualificationUpdate(input: {
 }): Promise<QualificationUpdate> {
   const deterministic = deterministicQualificationUpdate(input.userMessage, input.route);
   const systemPrompt =
-    "Extract structured data from this conversation exchange. Return JSON only with ONLY the fields you are confident about based on what the user just said. Use null for unknown fields. Fields: service_type (heat_pump|air_conditioning|heat_recovery|floor_heating|ceiling_cooling|service|subsidy|complex_solution), service_intent (recommendation|price|service_fault|brand_model|location|subsidy|comparison|process|general), project_type (novostavba|rekonštrukcia), property_type (rodinný dom|bungalov|byt|iné), area_m2 (number), location (string), timeline (string), current_heating (string), heating_distribution (radiátory|podlahové kúrenie), wants_cooling (boolean), hot_water (boolean), occupants (number), insulation (string), annual_consumption (string), annual_consumption_unknown (boolean), own_wood (boolean), project_available (boolean), heat_loss_known (boolean). Only extract what the user explicitly stated in their message.";
+    "Extract structured data from this conversation exchange. Return JSON only with ONLY the fields you are confident about based on what the user just said. Use null for unknown fields. Fields: service_type (heat_pump|air_conditioning|heat_recovery|floor_heating|ceiling_cooling|service|subsidy|complex_solution), service_intent (recommendation|price|quote|inspection|contact|service_fault|brand_model|location|subsidy|comparison|process|complaint_or_correction|general), project_type (novostavba|rekonštrukcia), property_type (rodinný dom|bungalov|byt|iné), area_m2 (number), location (string), timeline (string), current_heating (string), heating_distribution (radiátory|podlahové kúrenie), wants_cooling (boolean), hot_water (boolean), occupants (number), insulation (string), annual_consumption (string), annual_consumption_unknown (boolean), own_wood (boolean), project_available (boolean), heat_loss_known (boolean). Only extract what the user explicitly stated in their message.";
 
   try {
     const result = await callLlmText({
@@ -4087,6 +4484,17 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
         "Pri dotáciách treba rozlišovať všeobecné pravidlá programu a konkrétne firemné podmienky. Bez aktuálneho potvrdenia by som nesľuboval kompletné vybavenie ani odpočítanie dotácie z ceny, ale s dotáciou sa dá zvyčajne pomôcť alebo zákazníka nasmerovať.",
         "",
         "Riešiš rodinný dom a nové zariadenie, alebo výmenu existujúceho zdroja?",
+      ].join("\n");
+    }
+    if (serviceType === "heat_pump" && isExistingRadiatorHeatPump(state)) {
+      return [
+        "### Predbežný smer pre starší dom s radiátormi",
+        "",
+        "Pri staršom dome s radiátormi dáva predbežne zmysel tepelné čerpadlo **vzduch-voda vhodné pre radiátorový systém**. Dôvod je, že vzduch-voda je pri rekonštrukciách najčastejší smer, ale pri radiátoroch treba overiť potrebnú teplotu vody a výkon radiátorov.",
+        "",
+        "Typicky by sa riešil výkon tepelného čerpadla, hydraulické zapojenie, regulácia, príprava teplej vody a podľa kotolne aj akumulačná nádrž.",
+        "",
+        "Doplň mi ešte aktuálny zdroj tepla a približnú plochu domu, ak ju vieš.",
       ].join("\n");
     }
     if (/(cena|stoji|stojí|kolko|koľko|rozpocet|rozpočet)/.test(normalized)) {
@@ -4418,6 +4826,10 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     "- subsidy",
     "- comparison",
     "- process",
+    "- quote",
+    "- inspection",
+    "- contact",
+    "- complaint_or_correction",
     "- general",
     "",
     "First decide what service the customer is really discussing. Do not assume every vague message is only heat pumps.",
@@ -4530,12 +4942,28 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     route.retrievalQuery = message;
     route.directAnswer = null;
   }
+  const directDecision = directAnswerDecision(message, stateForTurn, route);
+  if (directDecision.triggered) {
+    route.needsRetrieval = true;
+    route.retrievalQuery = directDecision.retrievalQuery || route.retrievalQuery || message;
+    route.directAnswer = directDecision.answer;
+    if (directDecision.serviceIntent) route.serviceIntent = directDecision.serviceIntent;
+    stateForTurn = {
+      ...stateForTurn,
+      ...(directDecision.serviceIntent ? { service_intent: directDecision.serviceIntent } : {}),
+      ...(directDecision.topic ? { last_direct_topic: directDecision.topic } : {}),
+      ...(directDecision.answerMode === "price_answer" && directDecision.topic ? { last_price_topic: directDecision.topic } : {}),
+      ...(directDecision.answerMode === "brand_model_answer" && directDecision.topic ? { last_brand_model_topic: directDecision.topic } : {}),
+    };
+  }
   const questionRoundsCount = countQualificationQuestionRounds(previousMessages);
   stateForTurn = {
     ...stateForTurn,
     qualification_question_rounds: questionRoundsCount,
   };
-  const closureDecision = recommendationClosureDecision(stateForTurn, route, questionRoundsCount);
+  const closureDecision = directDecision.triggered
+    ? { triggered: false, reason: null, options: [], remainingCriticalUnknowns: [] }
+    : recommendationClosureDecision(stateForTurn, route, questionRoundsCount);
   const serviceAreaQuestion = isServiceAreaQuestion(message);
   const contextualRetrieval = route.needsRetrieval
     ? buildContextualRetrievalQuery({ message, route, state: stateForTurn, previousMessages })
@@ -4547,6 +4975,10 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     bannedClaimsRemoved: [],
     fallbackType: null,
   };
+  if (directDecision.triggered) {
+    recordDiagnostic(answerDiagnostics.validatorsTriggered, "direct_answer_gate_used");
+    recordDiagnostic(answerDiagnostics.validatorsTriggered, "latest_direct_question_answered");
+  }
 
   let sources: ChatSource[] = [];
   let topScore = 0;
@@ -4662,7 +5094,7 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     2,
   );
   const routerDirectAnswer = route.directAnswer ? cleanAnswerText(route.directAnswer) : "";
-  const useRouterDirectAnswer = false;
+  const useRouterDirectAnswer = Boolean(directDecision.triggered && routerDirectAnswer);
   let composerLlm = useRouterDirectAnswer
     ? routerLlm
     : await callLlmText({
@@ -4725,7 +5157,7 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     answer = `Nemám dostatočne jasný podklad na túto tému.\n\n${answer}`.trim();
   }
   answer = validateAndRepairAnswer(answer, stateForTurn, route, message, answerDiagnostics);
-  if (closureDecision.triggered && !answerHasRecommendationClosure(answer)) {
+  if (!directDecision.triggered && closureDecision.triggered && !answerHasRecommendationClosure(answer)) {
     recordDiagnostic(answerDiagnostics.validatorsTriggered, "recommendation_closure_repaired");
     answer = validateAndRepairAnswer(expectedRecommendationClosureAnswer(stateForTurn, closureDecision), stateForTurn, route, message, answerDiagnostics);
   }
@@ -4743,6 +5175,8 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
   const qualificationUpdate =
     isGreetingOnlyMessage(message) && !route.needsRetrieval
       ? {}
+      : directDecision.triggered
+        ? deterministicQualificationUpdate(message, route)
       : await extractQualificationUpdate({
           userMessage: message,
           assistantAnswer: answer,
@@ -4820,7 +5254,9 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
       retrievalUsed: route.needsRetrieval,
     },
   });
-  const finalAnswerMode: AnswerMode = closureDecision.triggered
+  const finalAnswerMode: AnswerMode = directDecision.triggered
+    ? directDecision.answerMode
+    : closureDecision.triggered
     ? "recommendation_closure"
     : route.serviceType === "service" || route.serviceIntent === "service_fault"
       ? "service_fault_triage"
@@ -4854,6 +5290,8 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
       answerMode: finalAnswerMode,
       closureGateTriggered: closureDecision.triggered,
       closureReason: closureDecision.reason,
+      directAnswerGateTriggered: directDecision.triggered,
+      directAnswerReason: directDecision.reason,
       lead: crmOutcome.lead,
       outreach: crmOutcome.outreach,
     },
@@ -4927,6 +5365,8 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
       questionRoundsCount,
       closureGateTriggered: closureDecision.triggered,
       closureReason: closureDecision.reason,
+      directAnswerGateTriggered: directDecision.triggered,
+      directAnswerReason: directDecision.reason,
       recommendationOptions: closureDecision.options,
       remainingCriticalUnknowns: closureDecision.remainingCriticalUnknowns,
       leadCapture: crmOutcome.leadCapture,

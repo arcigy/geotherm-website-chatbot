@@ -31,6 +31,8 @@ type ChatBody = {
     questionRoundsCount?: number;
     closureGateTriggered?: boolean;
     closureReason?: string | null;
+    directAnswerGateTriggered?: boolean;
+    directAnswerReason?: string | null;
     recommendationOptions?: string[];
     remainingCriticalUnknowns?: string[];
     llmError?: string | null;
@@ -224,6 +226,75 @@ const scenarios: Scenario[] = [
       if (body.debug?.serviceType !== "subsidy") failures.push(`expected subsidy, got ${body.debug?.serviceType || "missing"}`);
       if (!hasAny(body.answer, ["pomôcť", "pomoct", "asist", "nasmer"])) failures.push("subsidy assistance wording missing");
       if (hasAny(body.answer, ["kompletne vybavíme", "kompletne vybavime", "odpočítame", "odpocitame"])) failures.push("unconfirmed subsidy claim");
+      return failures;
+    },
+  },
+  {
+    id: "direct_brand_price_regression",
+    title: "Priame otazky na znacky, modely a ceny",
+    messages: [
+      "potreboval by som vybrat tepelne cerpadlo",
+      "mam starsi dom, radiatory a chcem usetrit",
+      "dom ma asi 120m",
+      "a znacka?",
+      "cize geotherm robi aj Daikin?",
+      "mne povedali ze robia iba NIBE a vaillant",
+      "ake mate Vaillant?",
+      "a split?",
+      "F2040 uz sa nevyraba",
+      "A F2050?",
+      "ake su ceny vratane instalacie",
+      "7tis je asi malo nie?",
+      "potrebujem akumulacku, ci aj ta je v cene?",
+      "z coho?",
+    ],
+    check(turnIndex, body) {
+      const failures = commonChecks(body);
+      const answer = body.answer || "";
+      if (turnIndex <= 2) {
+        if (body.debug?.serviceType !== "heat_pump") failures.push(`expected heat_pump, got ${body.debug?.serviceType || "missing"}`);
+        if (hasAny(answer, ["Strucne k otazke", "Co z toho chces upresnit ako prve"])) failures.push("old weak fallback leaked into qualification");
+      }
+      if (turnIndex === 3) {
+        if (body.debug?.answerMode !== "brand_model_answer") failures.push(`expected brand_model_answer, got ${body.debug?.answerMode || "missing"}`);
+        if (body.debug?.directAnswerGateTriggered !== true) failures.push("directAnswerGateTriggered should be true for brand question");
+        if (!hasAll(answer, ["NIBE", "Vaillant"])) failures.push("brand answer should safely mention NIBE and Vaillant");
+        if (body.debug?.closureGateTriggered === true) failures.push("closure gate should not override brand question");
+      }
+      if (turnIndex === 4) {
+        if (body.debug?.answerMode !== "brand_model_answer") failures.push(`expected brand_model_answer for Daikin, got ${body.debug?.answerMode || "missing"}`);
+        if (!hasAny(answer, ["bezpecne netvrdil", "netvrdil", "overit", "nekomunikoval"])) failures.push("Daikin answer should be cautious");
+        if (hasAny(answer, ["spolupracuje aj so znackou Daikin", "ponukame aj Daikin"])) failures.push("Daikin falsely confirmed as heat-pump portfolio");
+      }
+      if (turnIndex === 5) {
+        if (body.debug?.answerMode !== "correction_answer") failures.push(`expected correction_answer for portfolio correction, got ${body.debug?.answerMode || "missing"}`);
+        if (!hasAll(answer, ["NIBE", "Vaillant"])) failures.push("correction should restate safe portfolio");
+      }
+      if (turnIndex === 6 || turnIndex === 7) {
+        if (body.debug?.answerMode !== "brand_model_answer") failures.push(`expected brand_model_answer, got ${body.debug?.answerMode || "missing"}`);
+        if (!hasAny(answer, ["Vaillant", "aroTHERM", "Split"])) failures.push("Vaillant/split direct answer missing");
+        if (hasAny(answer, ["najlepsi model je", "najlepsi je"])) failures.push("model presented as final best choice");
+      }
+      if (turnIndex === 8) {
+        if (body.debug?.answerMode !== "correction_answer") failures.push(`expected correction_answer for F2040, got ${body.debug?.answerMode || "missing"}`);
+        if (!hasAny(answer, ["nemal ponukat", "archiv", "historick"])) failures.push("F2040 correction missing obsolete/archive wording");
+      }
+      if (turnIndex === 9) {
+        if (body.debug?.answerMode !== "brand_model_answer") failures.push(`expected brand_model_answer for F2050, got ${body.debug?.answerMode || "missing"}`);
+        if (!hasAny(answer, ["nemam potvrdeny", "overit", "nebudem vymyslat"])) failures.push("F2050 answer should avoid unconfirmed facts");
+        if (hasAny(answer, ["vysokovykonne", "vysoko vykonne", "vybornu ucinnost", "pokrocila regulacia"])) failures.push("F2050 unconfirmed parameters leaked");
+      }
+      if (turnIndex === 10 || turnIndex === 11 || turnIndex === 12 || turnIndex === 13) {
+        if (body.debug?.answerMode !== "price_answer") failures.push(`expected price_answer, got ${body.debug?.answerMode || "missing"}`);
+        if (body.debug?.directAnswerGateTriggered !== true) failures.push("directAnswerGateTriggered should be true for price question");
+        if (hasAny(answer, ["7 000 eur do 12 000 eur", "7000 eur do 12000 eur", "ano akumulacna nadrz je v cene", "je automaticky zahrnuta"])) failures.push("unconfirmed price/scope claim leaked");
+      }
+      if (turnIndex === 12) {
+        if (!hasAny(answer, ["neviem potvrdit", "nie je bezpecne tvrdit", "konkretnej ponuke"])) failures.push("buffer tank price scope should be cautious");
+      }
+      if (turnIndex === 13) {
+        if (!hasAny(answer, ["cena zariadenia", "kompletnej realizacie", "co presne ponuka obsahuje"])) failures.push("price basis answer missing scope explanation");
+      }
       return failures;
     },
   },

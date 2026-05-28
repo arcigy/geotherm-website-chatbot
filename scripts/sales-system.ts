@@ -37,6 +37,9 @@ export type QualificationState = {
   recommendation_closure_offered?: boolean;
   project_available?: boolean;
   heat_loss_known?: boolean;
+  last_direct_topic?: string;
+  last_price_topic?: string;
+  last_brand_model_topic?: string;
   contact_name?: string;
   contact_email?: string;
   contact_phone?: string;
