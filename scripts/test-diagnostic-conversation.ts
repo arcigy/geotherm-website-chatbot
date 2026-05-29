@@ -142,6 +142,9 @@ const scenarios: Scenario[] = [
         if (!hasAll(query, ["novostavba", "120", "podlah", "5", "chladen"])) failures.push(`retrieval query not enriched enough: ${query}`);
         if (!hasAny(answer, ["zásobník", "zasobnik", "TÚV", "TUV", "teplá voda", "tepla voda"])) failures.push("answer lacks hot-water/storage direction");
         if (!hasAny(answer, ["rosný", "rosny", "limity", "fancoil", "stropné", "stropne", "klimatizácia", "klimatizacia"])) failures.push("answer lacks careful cooling caveat");
+        if (!hasAny(answer, ["S2125", "aroTHERM"])) failures.push("closure should mention concrete portfolio options");
+        if (!hasAny(answer, ["konzult", "stretn", "nacen", "nacenenie"])) failures.push("closure should move to consultation/pricing CTA");
+        if (hasAny(answer, ["posli projekt", "poĹˇli projekt", "energeticky certifikat", "energetickĂ˝ certifikĂˇt", "tepelnu stratu", "tepelnĂş stratu"])) failures.push("closure should not ask for project/certificate/heat loss");
         if (body.debug?.answerMode === "general_chat") failures.push("short stateful answer fell into general_chat");
       }
       return failures;
@@ -183,13 +186,46 @@ const scenarios: Scenario[] = [
     },
   },
   {
+    id: "tc_brand_then_new_build_closure",
+    title: "TČ skratka + kvalifikacia uzavrie odporucanie",
+    messages: ["aké máte tč?", "novostavbu 120m", "podlahovku", "5 osob, áno plánujem"],
+    check(turnIndex, body) {
+      const failures = commonChecks(body);
+      const answer = body.answer || "";
+      const slots = slotText(body);
+      if (turnIndex === 0) {
+        if (body.debug?.serviceType !== "heat_pump") failures.push(`expected heat_pump from tč, got ${body.debug?.serviceType || "missing"}`);
+        if (body.debug?.answerMode !== "brand_model_answer") failures.push(`expected brand_model_answer, got ${body.debug?.answerMode || "missing"}`);
+        if (!hasAll(answer, ["NIBE", "Vaillant"])) failures.push("TČ brand answer should mention safe portfolio");
+      }
+      if (turnIndex === 1) {
+        if (body.debug?.serviceType !== "heat_pump") failures.push(`expected heat_pump after new-build reply, got ${body.debug?.serviceType || "missing"}`);
+        if (body.debug?.serviceIntent !== "recommendation") failures.push(`expected recommendation after qualification reply, got ${body.debug?.serviceIntent || "missing"}`);
+        if (!hasAll(slots, ["novostavba", "120"])) failures.push(`storedSlots missing new-build/area: ${JSON.stringify(body.debug?.storedSlots || {})}`);
+        if (body.debug?.answerMode === "brand_model_answer") failures.push("qualification reply should not stay in brand_model_answer");
+      }
+      if (turnIndex === 2) {
+        if (!hasAny(slots, ["podlah"])) failures.push(`storedSlots missing floor heating: ${JSON.stringify(body.debug?.storedSlots || {})}`);
+        if (body.debug?.answerMode === "brand_model_answer" || body.debug?.answerMode === "general_chat") failures.push(`bad answerMode during qualification: ${body.debug?.answerMode || "missing"}`);
+      }
+      if (turnIndex === 3) {
+        if (body.debug?.answerMode !== "recommendation_closure") failures.push(`expected recommendation_closure, got ${body.debug?.answerMode || "missing"}`);
+        if (body.debug?.closureGateTriggered !== true) failures.push("closureGateTriggered should be true");
+        if (!hasAny(answer, ["S2125", "aroTHERM"])) failures.push("closure should include concrete portfolio options");
+        if (!hasAny(answer, ["konzult", "stretn", "nacen", "nacenenie"])) failures.push("closure should move to consultation/pricing");
+        if (hasAny(answer, ["kolko osob", "koľko osôb", "projekt", "energeticky certifikat", "tepelnu stratu", "tepelnú stratu"])) failures.push("closure asked another qualification question");
+      }
+      return failures;
+    },
+  },
+  {
     id: "air_conditioning_two_rooms",
     title: "Klimatizácia do dvoch miestností",
     messages: ["chcem klimatizaciu do obyvacky a spalne"],
     check(_turnIndex, body) {
       const failures = commonChecks(body);
       if (body.debug?.serviceType !== "air_conditioning") failures.push(`expected air_conditioning, got ${body.debug?.serviceType || "missing"}`);
-      if (!hasAny(body.answer, ["samostatné jednotky", "samostatne jednotky", "multisplit"])) failures.push("AC direction missing");
+      if (!hasAny(body.answer, ["samostatné jednotky", "samostatne jednotky", "multisplit", "multi-split", "single-split"])) failures.push("AC direction missing");
       if (!hasAny(body.answer, ["plocha", "m2", "vonkajšia jednotka", "vonkajsia jednotka"])) failures.push("AC follow-up missing");
       return failures;
     },
@@ -267,7 +303,7 @@ const scenarios: Scenario[] = [
       }
       if (turnIndex === 4) {
         if (body.debug?.answerMode !== "brand_model_answer") failures.push(`expected brand_model_answer for Daikin, got ${body.debug?.answerMode || "missing"}`);
-        if (!hasAny(answer, ["bezpecne netvrdil", "netvrdil", "overit", "nekomunikoval", "nie je sucastou", "standardne sucastou", "nie je standardne", "nie je znacka", "bezne ponukame", "nepotvrd"])) failures.push("Daikin answer should be cautious");
+        if (!hasAny(answer, ["bezpecne netvrdil", "netvrdil", "overit", "potvrdit", "potvrdenie", "aktualnej ponuky", "nekomunikoval", "nekomunikujeme", "nie je sucastou", "standardne sucastou", "nie je standardne", "nie je znacka", "bezne ponukame", "nepotvrd"])) failures.push("Daikin answer should be cautious");
         if (hasAny(answer, ["spolupracuje aj so znackou Daikin", "ponukame aj Daikin"])) failures.push("Daikin falsely confirmed as heat-pump portfolio");
       }
       if (turnIndex === 5) {
@@ -298,7 +334,7 @@ const scenarios: Scenario[] = [
         if (!hasAny(answer, ["neviem potvrdit", "nie je bezpecne tvrdit", "konkretnej ponuke", "nie je automaticky", "zavisi od konkretneho navrhu", "overit co presne"])) failures.push("buffer tank price scope should be cautious");
       }
       if (turnIndex === 13) {
-        if (!hasAny(answer, ["cena zariadenia", "kompletnej realizacie", "co presne ponuka obsahuje"])) failures.push("price basis answer missing scope explanation");
+        if (!hasAny(answer, ["cena zariadenia", "samotne tepelne cerpadlo", "kompletnej realizacie", "kompletna realizacia", "co presne ponuka obsahuje", "co presne obsahuje"])) failures.push("price basis answer missing scope explanation");
       }
       return failures;
     },

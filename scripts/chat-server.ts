@@ -2005,6 +2005,7 @@ function isGeneralChatWithoutRetrieval(message: string): boolean {
     "kontakt",
     "strop",
     "chladen",
+    "tc",
     "tepelne",
     "cerpad",
     "nibe",
@@ -2223,14 +2224,14 @@ function inferServiceRoute(message: string, state: QualificationState, history: 
             ? "ceiling_cooling"
             : /(rekuper|vetran|vydychany|vzduch)/.test(text)
               ? "heat_recovery"
-              : /(podlahov|podlahu|podlahove kurenie)/.test(text) && !/(cerpadl|tepel)/.test(combined)
+              : /(podlahov|podlahu|podlahove kurenie)/.test(text) && !/(cerpadl|tepel|\btc\b)/.test(combined)
                 ? "floor_heating"
-                : /(tepelne cerpad|cerpadl|vzduch voda|zem voda|voda voda|nibe|vaillant|plyn|plynov|radiator|vykurov|kurenie|kotol)/.test(text)
+                : /(\btc\b|tepelne cerpad|cerpadl|vzduch voda|zem voda|voda voda|nibe|vaillant|plyn|plynov|radiator|vykurov|kurenie|kotol)/.test(text)
                   ? "heat_pump"
                   : /(novostav|cely system|cel[ey] dom|usporn[ey] riesenie|kurenie a chladenie|vykurovanie a chladenie|technicke riesenie)/.test(combined) &&
                     /(chladen|vetran|tepla voda|rekuper|podlahov|kuren)/.test(combined)
                   ? "complex_solution"
-                  : /(tepelne cerpad|cerpadl|vzduch voda|zem voda|voda voda|nibe|vaillant|plyn|plynov|radiator|vykurov|kurenie|kotol)/.test(combined)
+                  : /(\btc\b|tepelne cerpad|cerpadl|vzduch voda|zem voda|voda voda|nibe|vaillant|plyn|plynov|radiator|vykurov|kurenie|kotol)/.test(combined)
                     ? "heat_pump"
                     : previousService !== "unknown" && text.split(/\s+/).filter(Boolean).length <= 4
                       ? previousService
@@ -2251,7 +2252,7 @@ function inferServiceRoute(message: string, state: QualificationState, history: 
             ? "subsidy"
             : /(najleps|najlepší|odporuc|odporúč|ake potrebujem|aky potrebujem|vybrat|výber|chcem|riesim|riešim)/.test(text)
               ? "recommendation"
-            : /(znack|model|nibe|vaillant|mitsubishi|daikin|ktore|ak[eé] mate|predavate|montujete)/.test(text)
+            : /(znack|model|nibe|vaillant|mitsubishi|daikin|ktore|ake.*\btc\b|ak[eé] mate|predavate|montujete)/.test(text)
               ? "brand_model"
               : /(rozdiel|porovn|lepsie|lepšie|vs|verzus)/.test(text)
                 ? "comparison"
@@ -2295,6 +2296,11 @@ function isClarificationOnlyMessage(message: string): boolean {
   return /^[?!.\s]{1,4}$/.test(trimmed) || /^(co|čo|ako|nerozumiem|nechapem|nechápem)\??$/.test(text);
 }
 
+function isQualificationDataReply(message: string): boolean {
+  const text = normalizePolicyText(message);
+  return /(novostav|starsi|starší|\b\d+\s*(?:m2|m|osob)|podlah|radiator|radiátor|chladen|tuv|tepla voda|teplá voda|zateplen|drevo|plyn|kotol|ano planujem|áno plánujem)/.test(text);
+}
+
 function serviceCardSummary(serviceType: ServiceType): string {
   const common = [
     "Globálne pravidlo: najprv rozpoznaj službu a zámer, potom daj predbežný verdikt, dôvod, typický rozsah, čo treba overiť a najviac 1-2 ďalšie otázky.",
@@ -2302,7 +2308,7 @@ function serviceCardSummary(serviceType: ServiceType): string {
   ];
   const cards: Record<ServiceType, string> = {
     heat_pump:
-      "Service card tepelné čerpadlá: minimálne údaje pre verdikt sú novostavba/existujúci dom, plocha a radiátory/podlahovka. Novostavba + podlahovka = predbežne vzduch-voda pre nízkoteplotné kúrenie; ďalej sa pýtaj na projekt, energetický certifikát alebo tepelnú stratu, počet osôb, teplú vodu a chladenie. Pri novostavbe sa nepýtaj na ročnú spotrebu ako hlavný údaj. Starší dom + radiátory = riešenie vhodné pre radiátory, overiť teplotu vody, veľkosť radiátorov, aktuálne kúrenie a spotrebu.",
+      "Service card tepelné čerpadlá: minimálne údaje pre verdikt sú novostavba/existujúci dom, plocha a radiátory/podlahovka. Novostavba + podlahovka = predbežne vzduch-voda pre nízkoteplotné kúrenie; ďalej sa pýtaj najmä na počet osôb, teplú vodu a chladenie. Pri novostavbe sa nepýtaj na ročnú spotrebu ako hlavný údaj. Po closure už nepýtaj projekt, energetický certifikát ani tepelnú stratu ako ďalší krok; uzavri odporúčanie a posuň zákazníka na konzultáciu/nacenenie. Starší dom + radiátory = riešenie vhodné pre radiátory, overiť teplotu vody, veľkosť radiátorov, aktuálne kúrenie a spotrebu.",
     air_conditioning:
       "Service card klimatizácie: minimálne údaje sú počet miestností, približná plocha a byt/dom. Pri viacerých miestnostiach predbežne samostatné jednotky alebo multisplit podľa dispozície a vonkajšej jednotky. Nemiešaj to s tepelnými čerpadlami vzduch-voda.",
     heat_recovery:
@@ -2520,7 +2526,7 @@ function inferTopicFromHistory(messages: Array<{ role: string; content: string }
     }
     if (text.includes("servis") || text.includes("udrzb")) return { topic: "servis tepelného čerpadla", query: "servis tepelného čerpadla", intent: "service" };
     if (text.includes("dotac") || text.includes("prispev")) return { topic: "dotácie", query: "dotácie tepelné čerpadlo", intent: "subsidy" };
-    if (text.includes("tepelne cerpadlo") || text.includes("cerpadl")) {
+    if (text.includes("tepelne cerpadlo") || text.includes("cerpadl") || /\btc\b/.test(text)) {
       return { topic: "tepelné čerpadlo", query: "tepelné čerpadlo", intent: "product" };
     }
   }
@@ -2867,6 +2873,7 @@ function deterministicQualificationUpdate(message: string, route?: Pick<ServiceR
   if (/radiator|radiatory/.test(normalized)) update.heating_distribution = "radiátory";
   else if (/podlahov|podlahu|podlahove/.test(normalized)) update.heating_distribution = "podlahové kúrenie";
   if (/chladen|chladit|klimatiz|klima/.test(normalized)) update.wants_cooling = true;
+  if (/\bano planujem\b/.test(normalized)) update.wants_cooling = true;
   if (/tepla voda|teplu vodu|tuv|bojler|zasobnik/.test(normalized)) update.hot_water = true;
   if (/projekt|podorys|pôdorys/.test(normalized)) update.project_available = true;
   if (/tepelna strata|tepelnú stratu|energeticky certifikat|energetický certifikát|odhad vykonu|odhad výkonu/.test(normalized)) update.heat_loss_known = true;
@@ -2930,12 +2937,26 @@ function deterministicTurnQualificationUpdate(
 
   const yesNoValues = numberedValues.filter((value) => /^(ano|áno|nie|ne)$/.test(value));
   const secondAnswer = numberedValues[1] || "";
-  const saysYes = /^(ano|áno)$/.test(secondAnswer) || (!secondAnswer && /^(ano|áno)$/.test(normalized));
-  const saysNo = /^(nie|ne)$/.test(secondAnswer) || (!secondAnswer && /^(nie|ne)$/.test(normalized));
+  const affirmativeReply = /\b(ano|áno|jasne|planujem|plánujem|chcem|urcite|určite)\b/.test(normalized) && !/\b(nie|nechcem|neplanujem|neplánujem)\b/.test(normalized);
+  const negativeReply = /\b(nie|ne|nechcem|neplanujem|neplánujem)\b/.test(normalized);
+  const saysYes = /^(ano|áno)$/.test(secondAnswer) || (!secondAnswer && (/^(ano|áno)$/.test(normalized) || affirmativeReply));
+  const saysNo = /^(nie|ne)$/.test(secondAnswer) || (!secondAnswer && (/^(nie|ne)$/.test(normalized) || negativeReply));
   if ((yesNoValues.length || saysYes || saysNo) && (lastAssistant.includes("chladen") || previousState.wants_cooling !== undefined)) {
     update.wants_cooling = saysYes ? true : saysNo ? false : update.wants_cooling;
   }
-  if ((yesNoValues.length || saysYes || saysNo) && (lastAssistant.includes("teplu vod") || lastAssistant.includes("tuv") || previousState.hot_water !== undefined)) {
+  if (
+    update.wants_cooling === undefined &&
+    hasDiagnosticHouseContext &&
+    normalizePolicyText(previousState.heating_distribution || "").includes("podlah") &&
+    /\b(ano planujem|planujem|chcem)\b/.test(normalized)
+  ) {
+    update.wants_cooling = true;
+  }
+  if (
+    (yesNoValues.length || saysYes || saysNo) &&
+    (lastAssistant.includes("teplu vod") || lastAssistant.includes("tuv") || previousState.hot_water !== undefined) &&
+    (/\b(teplu vodu|tepla voda|tuv|bojler|zasobnik)\b/.test(normalized) || !lastAssistant.includes("chladen"))
+  ) {
     update.hot_water = saysYes ? true : saysNo ? false : update.hot_water;
   }
 
@@ -2979,6 +3000,10 @@ function mergeQualificationState(base: QualificationState, update: Qualification
   for (const field of qualificationUpdateFields) {
     const currentValue = next[field];
     const nextValue = update[field];
+    if (currentValue === false && nextValue === true) {
+      next[field] = nextValue as never;
+      continue;
+    }
     if ((currentValue === undefined || currentValue === null) && nextValue !== undefined && nextValue !== null) {
       next[field] = nextValue as never;
     }
@@ -3070,12 +3095,12 @@ function expectedVerdictAnswer(state: QualificationState): string {
         "Chladenie treba navrhnúť cielene: podlahové chladenie vie dom jemne ochladiť, ale má limity a treba riešiť rosný bod; komfortnejšie býva stropné chladenie, fancoily alebo klimatizácia podľa projektu.",
       );
     }
-    parts.push("Konkrétny výkon a model by som vybral až podľa projektu, energetického certifikátu alebo tepelnej straty.");
+    parts.push("Konkrétny výkon a model by som už riešil v nacenení, nie ďalším dotazníkom.");
     parts.push("");
     if (!state.occupants || state.wants_cooling === undefined) {
       parts.push("Koľko osôb bude v dome a chceš riešiť aj chladenie v lete?");
     } else {
-      parts.push("Máš projekt, tepelnú stratu alebo energetický certifikát?");
+      parts.push("Ďalší krok je krátka konzultácia alebo stretnutie, kde sa porovnajú 2-3 vhodné zostavy a pripraví sa nacenenie.");
     }
     return parts.join("\n");
   }
@@ -3786,9 +3811,10 @@ function directAnswerDecision(message: string, state: QualificationState, route:
     (route.serviceIntent === "price" && hasActiveHeatPump);
   if (price) return priceDirectAnswer(message, state);
 
+  const explicitBrandModelQuestion = /(znack|značka|ake.*\btc\b|ake mate|aké máte|ake znacky|aké značky|nibe|vaillant|daikin|mitsubishi|f2040|f2050|\bmodel\b|\bsplit\b)/.test(text);
   const brandModel =
-    /(znack|značka|ake mate|aké máte|ake znacky|aké značky|nibe|vaillant|daikin|mitsubishi|f2040|f2050|\bmodel\b|\bsplit\b)/.test(text) ||
-    (hasActiveHeatPump && route.serviceIntent === "brand_model");
+    explicitBrandModelQuestion ||
+    (hasActiveHeatPump && route.serviceIntent === "brand_model" && !isQualificationDataReply(message));
   if (brandModel) return brandModelDirectAnswer(message, state);
 
   return {
@@ -3857,7 +3883,7 @@ function remainingCriticalUnknownsForState(state: QualificationState): string[] 
     unknowns.push("akumulačná nádrž alebo existujúce zapojenie kotolne");
   }
   if (isNewBuildFloorHeating(state) && !state.project_available && state.heat_loss_known !== true) {
-    unknowns.push("projekt, energetický certifikát alebo tepelná strata");
+    unknowns.push("výkon a konkrétna zostava sa doriešia pri nacenení");
   }
   if (!state.hot_water && !state.occupants) unknowns.push("či má systém riešiť teplú vodu");
   return [...new Set(unknowns)].slice(0, 5);
@@ -3926,19 +3952,24 @@ function expectedRecommendationClosureAnswer(state: QualificationState, closure:
   }
 
   if (isNewBuildFloorHeating(state)) {
+    const area = state.area_m2 ? ` pri dome približne ${state.area_m2} m²` : "";
+    const occupants = state.occupants ? `, so zásobníkom TÚV dimenzovaným pre ${state.occupants} osôb` : "";
+    const cooling = state.wants_cooling
+      ? "Keďže chceš aj chladenie, nerátal by som automaticky s tým, že samotná podlahovka bude stačiť. Chladenie by som nacenil ako samostatný variant: stropné chladenie, fancoily alebo klimatizácia podľa toho, aký komfort v lete chceš."
+      : "Ak by si chcel aj chladenie, nacenil by som ho samostatne, nie ako automatický vedľajší efekt podlahovky.";
     return [
       "### Predbežné uzavretie odporúčania",
       "",
-      "Podľa toho, čo píšeš, najlepší predbežný smer je **tepelné čerpadlo vzduch-voda pre nízkoteplotné podlahové kúrenie**.",
+      `Podľa toho, čo píšeš, by som to už uzavrel: **najlepší smer je tepelné čerpadlo vzduch-voda pre novostavbu s nízkoteplotným podlahovým kúrením**${area}${occupants}.`,
       "",
-      "Dáva to zmysel preto, že podlahovka pracuje s nízkou teplotou vody a tepelnému čerpadlu to vyhovuje. Ak riešiš aj chladenie, netreba automaticky rátať s tým, že podlahové chladenie všetko nahradí; treba navrhnúť samostatné chladenie podľa projektu.",
+      `Dáva to zmysel preto, že podlahovka pracuje s nízkou teplotou vody a tepelnému čerpadlu to vyhovuje. ${cooling}`,
       "",
-      "**Možnosti:**",
-      "1. Tepelné čerpadlo vzduch-voda pre kúrenie a TÚV.",
-      "2. Tepelné čerpadlo + zásobník TÚV podľa počtu osôb.",
-      "3. Doplnkové chladenie cez stropné chladenie, fancoily alebo klimatizáciu podľa projektu.",
+      "**Pozrel by som sa na tieto možnosti:**",
+      "1. **Vaillant aroTHERM plus** ako moderné vzduch-voda riešenie pre podlahové kúrenie a TÚV.",
+      "2. **Vaillant aroTHERM Split** ako splitové riešenie, ak bude lepšie sedieť technickému umiestneniu.",
+      "3. **NIBE vzduch-voda riešenie, napríklad S2125**, ak bude podľa aktuálnej ponuky a konfigurácie vhodné pre dom.",
       "",
-      "Ďalší krok: pošli projekt, energetický certifikát alebo tepelnú stratu. Potom sa dá pripraviť konkrétnejší návrh.",
+      "Ďalší krok by som už nerobil ďalším dotazníkom. Dajme si krátku konzultáciu alebo stretnutie, kde sa vyberú 2-3 konkrétne zostavy, preverí sa TÚV a chladenie a pripraví sa nacenenie.",
     ].join("\n");
   }
 
@@ -3966,11 +3997,19 @@ function answerHasRecommendationClosure(answer: string): boolean {
   return hasClosureLanguage && hasOptions && hasCta && countQuestionMarks(answer) <= 2;
 }
 
+function answerHasNewBuildPortfolioClosure(answer: string): boolean {
+  const normalized = normalizePolicyText(answer);
+  const hasPortfolioOption = /(s2125|arotherm|aro therm|arotherm plus|arotherm split)/.test(normalized);
+  const hasHandoff = /(konzult|stretn|nacen|nacenenie|cenova ponuka|cenovu ponuku)/.test(normalized);
+  const asksForDocs = /(posli|dopl[nn]|potrebujem|potrebujeme|mas|máš).*(projekt|energeticky certifikat|tepelna strata|tepelnu stratu)/.test(normalized);
+  return answerHasRecommendationClosure(answer) && hasPortfolioOption && hasHandoff && !asksForDocs;
+}
+
 function answerHasRequiredVerdict(answer: string, state: QualificationState): boolean {
   const normalized = normalizePolicyText(answer);
   if (!/(predbez|verdikt|isiel|odporucal|dava zmysel|vhodn)/.test(normalized)) return false;
   if (isNewBuildFloorHeating(state)) {
-    return normalized.includes("vzduch voda") && normalized.includes("podlah") && /(nizkoteplot|nizkou teplotou)/.test(normalized);
+    return normalized.includes("vzduch voda") && normalized.includes("podlah") && /(nizkoteplot|nizko teplot|nizkou teplotou)/.test(normalized);
   }
   if (isExistingRadiatorSolidFuel(state)) {
     return normalized.includes("vzduch voda") && normalized.includes("radiator") && /(drevo|tuhe palivo|tuhym palivom)/.test(normalized);
@@ -4088,7 +4127,17 @@ function sanitizeAnswerForDiagnosticRules(
       "new_build_annual_consumption_question_replaced",
       null,
       (sentence) => sentence.includes("rocna spotreba") || sentence.includes("rocnu spotrebu") || sentence.includes("spotrebu za rok"),
-      "Pri novostavbe je dôležitejší projekt, energetický certifikát alebo tepelná strata.",
+      "Pri novostavbe po základnej kvalifikácii prejdeme radšej na konzultáciu a nacenenie konkrétnych zostáv.",
+    );
+    next = applySanitizerRule(
+      next,
+      diagnostics,
+      "new_build_closure_docs_question_replaced",
+      null,
+      (sentence) =>
+        /(mas|máš|posli|pošli|dopl[nň]|treba|potrebujem|potrebujeme|overit|overiť|podla|podľa)/.test(sentence) &&
+        /(projekt|energeticky certifikat|energetický certifikát|tepelna strata|tepelná strata|tepelnu stratu|tepelnú stratu)/.test(sentence),
+      "Ďalší krok je krátka konzultácia alebo stretnutie, kde sa vyberú vhodné zostavy a pripraví sa nacenenie.",
     );
   }
   if (route.serviceIntent === "recommendation") {
@@ -4226,7 +4275,7 @@ function validateAndRepairAnswer(
   }
   if (requiresHardVerdict(state, route, message) && !answerHasRequiredVerdict(next, state)) {
     if (diagnostics) recordDiagnostic(diagnostics.validatorsTriggered, "hard_verdict_inserted");
-    next = `${expectedVerdictAnswer(state)}\n\n${next}`.trim();
+    next = isNewBuildFloorHeating(state) ? expectedVerdictAnswer(state) : `${expectedVerdictAnswer(state)}\n\n${next}`.trim();
   }
   const complaint = /nepovedal|neodpovedal|najleps|konkretne/.test(normalizePolicyText(message));
   if (complaint && requiresHardVerdict(state, route, message) && state.occupants && !/(TÚV|TUV|tepl[áa] voda|zásobník|zasobnik)/i.test(next)) {
@@ -4513,6 +4562,20 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
         "Riešiš rodinný dom a nové zariadenie, alebo výmenu existujúceho zdroja?",
       ].join("\n");
     }
+    if (
+      serviceType === "heat_pump" &&
+      normalizePolicyText(state.project_type || "").includes("novostav") &&
+      state.area_m2 &&
+      !state.heating_distribution
+    ) {
+      return [
+        "### Tepelné čerpadlo pre novostavbu",
+        "",
+        `Pri novostavbe s plochou cca ${state.area_m2} m² by som predbežne smeroval k tepelnému čerpadlu **vzduch-voda**, najmä ak pôjde o nízkoteplotné vykurovanie.`,
+        "",
+        "Aby som to uzavrel správne, stačí doplniť: bude tam podlahové kúrenie alebo radiátory? A chceš riešiť aj chladenie alebo len kúrenie a TÚV?",
+      ].join("\n");
+    }
     if (serviceType === "heat_pump" && isExistingRadiatorHeatPump(state)) {
       return [
         "### Predbežný smer pre starší dom s radiátormi",
@@ -4565,6 +4628,7 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
       "ake predavate",
       "ake mate",
       "ake typy",
+      "ake tc",
       "ake cerpadla",
       "rozdiel",
       "porovnaj",
@@ -4912,7 +4976,7 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
   if (
     deterministicRoute.serviceType === "heat_pump" &&
     normalizeServiceType(previousState.service_type, "unknown") === "heat_pump" &&
-    /(cerpadl|tepel)/.test(routerFallbackText)
+    /(cerpadl|tepel|\btc\b)/.test(routerFallbackText)
   ) {
     route.serviceType = "heat_pump";
   }
@@ -4936,8 +5000,21 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     route.serviceIntent = "recommendation";
   }
   if (
+    isQualificationDataReply(message) &&
+    (previousServiceType === "heat_pump" || route.serviceType === "heat_pump") &&
+    (previousServiceIntent === "brand_model" || route.serviceIntent === "brand_model")
+  ) {
+    route.serviceType = "heat_pump";
+    route.serviceIntent = "recommendation";
+    stateForTurn = {
+      ...stateForTurn,
+      service_type: "heat_pump",
+      service_intent: "recommendation",
+    };
+  }
+  if (
     routerLlm.error &&
-    /(nibe|vaillant|viessmann|ariston|daikin|tepelne|cerpadlo|cerpadla|servis|dotacie|dotacia|cena|cennik|hluk|hlucnost|montaz|instalacia|kontakt|klimatizacia|rekuperacia|podlahov|stropne|chladenie|kurenie|vykurovanie)/.test(routerFallbackText)
+    /(nibe|vaillant|viessmann|ariston|daikin|\btc\b|tepelne|cerpadlo|cerpadla|servis|dotacie|dotacia|cena|cennik|hluk|hlucnost|montaz|instalacia|kontakt|klimatizacia|rekuperacia|podlahov|stropne|chladenie|kurenie|vykurovanie)/.test(routerFallbackText)
   ) {
     route.needsRetrieval = true;
     route.retrievalQuery = message;
@@ -4946,7 +5023,7 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
   const isObviousGreeting = /^(ahoj|čau|cau|hello|hi|hey|dobrý deň|dobry den|zdravím|zdravim)$/i.test(message.trim());
   const activeDiagnosticState = hasActiveDiagnosticState(stateForTurn);
   const obviousHvacContext =
-    /(dom|m2|radiator|radiatory|podlahov|plyn|plynov|kotol|kuren|kurit|vykurov|cerpadl|tepelne|novostav|rekonstruk|starsi|spotreb|zateplen|cena|ponuka|montaz|servis|dotac|chladen|klimatiz|rekuper|vetran|strop|znack|model)/.test(
+    /(dom|m2|radiator|radiatory|podlahov|plyn|plynov|kotol|kuren|kurit|vykurov|\btc\b|cerpadl|tepelne|novostav|rekonstruk|starsi|spotreb|zateplen|cena|ponuka|montaz|servis|dotac|chladen|klimatiz|rekuper|vetran|strop|znack|model)/.test(
       routerFallbackText,
     );
   if (
@@ -5084,12 +5161,12 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     "Verdict gate: nesmieš viesť nekonečný dotazník. Ak poznáš službu a máš aspoň základný kontext, musíš najprv povedať predbežný smer a až potom sa pýtať ďalej. Nikdy neodpovedaj iba „závisí od“.",
     "",
     closureDecision.triggered
-      ? "Recommendation closure gate je spustený. Teraz nesmieš pokračovať ďalším dotazníkom. Musíš dať uzatvorené predbežné odporúčanie: najlepší smer, dôvod, 2-3 možnosti, typický rozsah riešenia, čo ešte finálne overiť a CTA na fotky/projekt/obhliadku/ponuku. Môžeš položiť najviac jednu finálnu otázku."
+      ? "Recommendation closure gate je spustený. Teraz nesmieš pokračovať ďalším dotazníkom. Musíš dať uzatvorené predbežné odporúčanie: najlepší smer, dôvod, 2-3 konkrétne možnosti, typický rozsah riešenia a CTA na konzultáciu, stretnutie alebo nacenenie. Pri novostavbe s podlahovkou po nazbieraní údajov nepýtaj projekt, energetický certifikát ani tepelnú stratu ako ďalší krok."
       : "Ak ešte closure gate nie je spustený, môžeš sa pýtať na chýbajúce údaje, ale aj tak najprv daj predbežný smer.",
     "",
     directAnswerComposerInstruction,
     "",
-    "Pri novostavbe sa nepýtaj na ročnú spotrebu ako hlavný údaj; pýtaj sa na projekt, energetický certifikát alebo tepelnú stratu. Pri recommendation intent sa nepýtaj na rozpočet.",
+    "Pri novostavbe sa nepýtaj na ročnú spotrebu ako hlavný údaj. Pred closure môžeš pýtať počet osôb, teplú vodu a chladenie; po closure už smeruj na konzultáciu alebo nacenenie konkrétnych zostáv. Pri recommendation intent sa nepýtaj na rozpočet.",
     "",
     "Zakázané: pýtať sa na údaje, ktoré už zákazník povedal; pýtať sa na rozpočet, keď zákazník chce technické odporúčanie; sľubovať bezplatnú alebo nezáväznú obhliadku; sľubovať servis cudzej montáže; tvrdiť kompletné vybavenie dotácie alebo odpočítanie dotácie z ceny; garantovať cenu, dotáciu, úsporu, model, termín alebo pôsobnosť bez firemného RAG dôkazu.",
     "Ak otázka nesúvisí so službami Geotherm, povedz presne, že nemáš dostatočne jasný podklad na túto tému, a krátko presmeruj na kúrenie, chladenie, rekuperáciu, servis alebo dotácie.",
@@ -5295,6 +5372,11 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     recordDiagnostic(answerDiagnostics.validatorsTriggered, "direct_brand_correction_repaired");
     answer = validateAndRepairAnswer(directDecision.answer, stateForTurn, route, message, answerDiagnostics);
   }
+  if (directDecision.triggered && directDecision.reason === "direct_clarification_request" && directDecision.answer) {
+    recordDiagnostic(answerDiagnostics.validatorsTriggered, "direct_clarification_repaired");
+    answer = validateAndRepairAnswer(directDecision.answer, stateForTurn, route, message, answerDiagnostics);
+    directAnswerComposedByLlm = false;
+  }
   if (
     !directDecision.triggered &&
     route.serviceType === "heat_pump" &&
@@ -5305,7 +5387,11 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     recordDiagnostic(answerDiagnostics.validatorsTriggered, "wood_radiator_followup_repaired");
     answer = `${answer}\n\nPri dreve stačí orientačný údaj. Doplň mi ešte, či je dom zateplený, koľko dreva spáliš približne za sezónu a či máš akumulačnú nádrž.`.trim();
   }
-  if (!directDecision.triggered && closureDecision.triggered && !answerHasRecommendationClosure(answer)) {
+  if (
+    !directDecision.triggered &&
+    closureDecision.triggered &&
+    ((isNewBuildFloorHeating(stateForTurn) && !answerHasNewBuildPortfolioClosure(answer)) || !answerHasRecommendationClosure(answer))
+  ) {
     recordDiagnostic(answerDiagnostics.validatorsTriggered, "recommendation_closure_repaired");
     answer = validateAndRepairAnswer(expectedRecommendationClosureAnswer(stateForTurn, closureDecision), stateForTurn, route, message, answerDiagnostics);
   }
