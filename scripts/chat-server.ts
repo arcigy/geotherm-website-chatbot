@@ -127,6 +127,8 @@ export type ChatResponse = {
     closureReason?: string | null;
     directAnswerGateTriggered?: boolean;
     directAnswerReason?: string | null;
+    directAnswerComposedByLlm?: boolean;
+    directAnswerFallbackUsed?: boolean;
     recommendationOptions?: string[];
     remainingCriticalUnknowns?: string[];
     leadCapture?: {
@@ -2287,6 +2289,12 @@ function isShortContextReply(message: string): boolean {
   return wordCount <= 4 && !isGreetingOnlyMessage(message) && !isPersonalDataOnly(message);
 }
 
+function isClarificationOnlyMessage(message: string): boolean {
+  const trimmed = message.trim();
+  const text = normalizePolicyText(message);
+  return /^[?!.\s]{1,4}$/.test(trimmed) || /^(co|čo|ako|nerozumiem|nechapem|nechápem)\??$/.test(text);
+}
+
 function serviceCardSummary(serviceType: ServiceType): string {
   const common = [
     "Globálne pravidlo: najprv rozpoznaj službu a zámer, potom daj predbežný verdikt, dôvod, typický rozsah, čo treba overiť a najviac 1-2 ďalšie otázky.",
@@ -3754,6 +3762,25 @@ function directAnswerDecision(message: string, state: QualificationState, route:
     /(neodpovedal|otazka som dal inu|otazka bola ina|pisla si|napisala si|povedali.*iba|preco mi ho ponukas|uz sa .*nevyraba|nevyraba|nevyrába)/.test(text);
   if (correction) return correctionDirectAnswer(message, state);
 
+  if (isClarificationOnlyMessage(message) && (state.last_direct_topic || state.last_brand_model_topic || state.last_price_topic)) {
+    const topic = state.last_direct_topic || state.last_brand_model_topic || state.last_price_topic || "clarification";
+    return {
+      triggered: true,
+      answerMode: "direct_answer",
+      reason: "direct_clarification_request",
+      serviceIntent: null,
+      topic: "clarification",
+      retrievalQuery: `company-truth direct answer clarification ${topic} tepelné čerpadlá Geotherm`,
+      answer: [
+        "### Upresnenie",
+        "",
+        "Myslel som tým: pri tepelných čerpadlách viem ako bezpečné firemné portfólio komunikovať hlavne NIBE a Vaillant. To ešte nie je výber vhodného čerpadla pre tvoj dom.",
+        "",
+        "Ak chceš, aby som odporučil smer pre teba, napíš mi, či ide o novostavbu alebo starší dom a či máš radiátory alebo podlahovku.",
+      ].join("\n"),
+    };
+  }
+
   const price =
     /(cena|ceny|cennik|koľko|kolko|stoji|stojí|vratane instalacie|vrátane inštalácie|7\s*tis|7000|7\s*000|akumulac|akumula|v cene|z coho|z čoho)/.test(text) ||
     (route.serviceIntent === "price" && hasActiveHeatPump);
@@ -5024,6 +5051,25 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
       ? "RAG_FOUND"
       : "RAG_WEAK_OR_EMPTY"
     : "NO_RAG_REQUESTED";
+  const directAnswerComposerInstruction = directDecision.triggered
+    ? [
+        "Direct answer gate je aktívny. Toto je len plán a bezpečnostné obmedzenie, nie hotová odpoveď. Finálnu odpoveď musíš napísať vlastnými slovami ako AI poradca.",
+        "Najprv odpovedz priamo na poslednú otázku používateľa. Ak otázka nestačí na výber konkrétneho riešenia, po priamej odpovedi polož najviac 1-2 follow-up otázky.",
+        "V direct odpovedi nikdy nepolož viac ako 2 otázniky. Pri otázke typu „aké TČ máte?“ odpovedz na portfólio a potom polož jednu kombinovanú follow-up otázku, či chce používateľ vybrať riešenie pre konkrétny dom a či ide o novostavbu/starší dom s radiátormi/podlahovkou.",
+        "Neopakuj mechanicky rovnaký text ako v predchádzajúcej odpovedi. Ak používateľ poslal iba otáznik alebo nerozumie, stručne vysvetli predchádzajúcu odpoveď a ponúkni ďalší krok.",
+        "Dodrž firemné fakty z RAGu: značky, modely, ceny a rozsah ponuky netvrď bez potvrdenia.",
+        JSON.stringify(
+          {
+            answerMode: directDecision.answerMode,
+            reason: directDecision.reason,
+            topic: directDecision.topic,
+            safeAnswerDraft: directDecision.answer,
+          },
+          null,
+          2,
+        ),
+      ].join("\n")
+    : "Direct answer gate: inactive.";
   const composerSystemPrompt = [
     "Si diagnostický technicko-obchodný poradca Geotherm. Firma rieši viac služieb: tepelné čerpadlá, klimatizácie, rekuperáciu, podlahové kúrenie, stropné chladenie, servis, dotácie a komplexné technické riešenia domu. Píšeš po slovensky, prirodzene, s tykaním.",
     "",
@@ -5040,6 +5086,8 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     closureDecision.triggered
       ? "Recommendation closure gate je spustený. Teraz nesmieš pokračovať ďalším dotazníkom. Musíš dať uzatvorené predbežné odporúčanie: najlepší smer, dôvod, 2-3 možnosti, typický rozsah riešenia, čo ešte finálne overiť a CTA na fotky/projekt/obhliadku/ponuku. Môžeš položiť najviac jednu finálnu otázku."
       : "Ak ešte closure gate nie je spustený, môžeš sa pýtať na chýbajúce údaje, ale aj tak najprv daj predbežný smer.",
+    "",
+    directAnswerComposerInstruction,
     "",
     "Pri novostavbe sa nepýtaj na ročnú spotrebu ako hlavný údaj; pýtaj sa na projekt, energetický certifikát alebo tepelnú stratu. Pri recommendation intent sa nepýtaj na rozpočet.",
     "",
@@ -5093,32 +5141,59 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     null,
     2,
   );
+  const directComposerSystemPrompt = [
+    "Si AI technicko-obchodný poradca Geotherm. Píšeš po slovensky, prirodzene a stručne.",
+    "Toto je direct-answer režim: posledná správa je priama otázka, oprava alebo žiadosť o vysvetlenie. Neodpovedaj dotazníkom bez priamej odpovede.",
+    "Použi safeAnswerDraft iba ako vecný podklad a pravidlá. Neprepisuj ho mechanicky, ale zachovaj jeho firemné obmedzenia.",
+    "Ak používateľ nemá dosť údajov na výber riešenia, po priamej odpovedi polož najviac 1-2 follow-up otázky. Nikdy viac ako 2 otázniky.",
+    "Pri otázke na značky TČ bezpečne komunikuj NIBE a Vaillant; IVT len opatrne; Daikin/Mitsubishi pri TČ nepotvrdzuj bez firemného dôkazu.",
+    "Pri cenách rozlišuj cenu zariadenia a kompletnej realizácie. Netvrď presnú cenu ani že akumulačná nádrž je v cene, kým to nie je potvrdené v konkrétnej ponuke.",
+    "Pri oprave uznaj chybu alebo upresnenie a potom povedz správnu vec. Neodpovedaj iba poďakovaním.",
+    "Odpoveď drž do 80-160 slov.",
+  ].join("\n");
+  const directComposerInput = JSON.stringify(
+    {
+      latestUserMessage: message,
+      previousMessages: previousMessages.slice(-6).map((item) => ({ role: item.role, content: item.content })),
+      route: { service_type: route.serviceType, intent: route.serviceIntent },
+      state: stateForTurn,
+      directAnswer: {
+        answerMode: directDecision.answerMode,
+        reason: directDecision.reason,
+        topic: directDecision.topic,
+        safeAnswerDraft: directDecision.answer,
+      },
+      ragStatus: ragEvidenceStatus,
+      ragContext: ragContext.slice(0, 1800),
+    },
+    null,
+    2,
+  );
+  const activeComposerSystemPrompt = directDecision.triggered ? directComposerSystemPrompt : composerSystemPrompt;
+  const activeComposerInput = directDecision.triggered ? directComposerInput : composerInput;
   const routerDirectAnswer = route.directAnswer ? cleanAnswerText(route.directAnswer) : "";
-  const useRouterDirectAnswer = Boolean(directDecision.triggered && routerDirectAnswer);
-  let composerLlm = useRouterDirectAnswer
-    ? routerLlm
-    : await callLlmText({
-        systemPrompt: composerSystemPrompt,
-        prompt: composerInput,
-        maxOutputTokens: 1200,
-        timeoutMs: route.needsRetrieval
-          ? Number.parseInt(process.env.LLM_ANSWER_TIMEOUT_MS || "10000", 10)
-          : Math.min(Number.parseInt(process.env.LLM_FAST_REQUEST_TIMEOUT_MS || "3500", 10), 3500),
-        responseMimeType: "text/plain",
-      });
-  let cleanedAnswer = !useRouterDirectAnswer && (composerLlm.error || !composerLlm.content)
-    ? ""
-    : useRouterDirectAnswer
-      ? routerDirectAnswer
-      : cleanAnswerText(composerLlm.content);
-  if (!useRouterDirectAnswer && isIncompleteAnswer(cleanedAnswer)) {
+  let directAnswerComposedByLlm = false;
+  let directAnswerFallbackUsed = false;
+  let composerLlm = await callLlmText({
+    systemPrompt: activeComposerSystemPrompt,
+    prompt: activeComposerInput,
+    maxOutputTokens: directDecision.triggered ? 900 : 1200,
+    timeoutMs: directDecision.triggered
+      ? Math.max(Number.parseInt(process.env.LLM_FAST_REQUEST_TIMEOUT_MS || "3500", 10), 12000)
+      : route.needsRetrieval
+      ? Number.parseInt(process.env.LLM_ANSWER_TIMEOUT_MS || "10000", 10)
+      : Math.min(Number.parseInt(process.env.LLM_FAST_REQUEST_TIMEOUT_MS || "3500", 10), 3500),
+    responseMimeType: "text/plain",
+  });
+  let cleanedAnswer = composerLlm.error || !composerLlm.content ? "" : cleanAnswerText(composerLlm.content);
+  if (isIncompleteAnswer(cleanedAnswer)) {
     const repairLlm = await callLlmText({
       systemPrompt: [
-        composerSystemPrompt,
+        activeComposerSystemPrompt,
         "",
         "Predchádzajúca odpoveď sa nedokončila správne. Napíš finálnu odpoveď znova, kratšie, maximálne 140 slov. Musí mať jasný záver a skončiť otázkou alebo bodkou.",
       ].join("\n"),
-      prompt: composerInput,
+      prompt: activeComposerInput,
       maxOutputTokens: 900,
       timeoutMs: route.needsRetrieval
         ? Number.parseInt(process.env.LLM_ANSWER_TIMEOUT_MS || "10000", 10)
@@ -5130,6 +5205,60 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
       composerLlm = repairLlm;
       cleanedAnswer = repairedAnswer;
     }
+  }
+  if (directDecision.triggered && isIncompleteAnswer(cleanedAnswer)) {
+    const directRepairLlm = await callLlmText({
+      systemPrompt: [
+        "Si AI poradca Geotherm. Napíš finálnu odpoveď po slovensky, prirodzene a vlastnými slovami.",
+        "Toto je direct-answer situácia: najprv odpovedz na poslednú otázku používateľa, potom polož najviac 1-2 follow-up otázky, iba ak treba.",
+        "Nepíš interné vysvetlenia, nekopíruj plán doslova a nepoužívaj nepodložené firemné tvrdenia.",
+        "Pri značkách TČ bezpečne komunikuj NIBE a Vaillant; IVT len opatrne; Daikin/Mitsubishi pri TČ nepotvrdzuj bez firemného dôkazu.",
+      ].join("\n"),
+      prompt: JSON.stringify(
+        {
+          latestUserMessage: message,
+          answerMode: directDecision.answerMode,
+          directReason: directDecision.reason,
+          state: stateForTurn,
+          safeAnswerDraft: directDecision.answer,
+          relevantRagContext: ragContext.slice(0, 1600),
+        },
+        null,
+        2,
+      ),
+      maxOutputTokens: 700,
+      timeoutMs: Math.max(Number.parseInt(process.env.LLM_FAST_REQUEST_TIMEOUT_MS || "3500", 10), 12000),
+      responseMimeType: "text/plain",
+    });
+    const directRepairedAnswer = directRepairLlm.error || !directRepairLlm.content ? "" : cleanAnswerText(directRepairLlm.content);
+    if (!isIncompleteAnswer(directRepairedAnswer)) {
+      composerLlm = directRepairLlm;
+      cleanedAnswer = directRepairedAnswer;
+      recordDiagnostic(answerDiagnostics.validatorsTriggered, "direct_answer_llm_repair_used");
+    }
+  }
+  const normalizedDirectDraft = normalizePolicyText(cleanedAnswer);
+  const usableDirectDraft =
+    directDecision.triggered &&
+    cleanedAnswer.trim().length > 80 &&
+    ((directDecision.answerMode === "price_answer" && /(cena|ponuk|realizac|montaz|instalac|zostav|rozsah)/.test(normalizedDirectDraft)) ||
+      (directDecision.answerMode === "brand_model_answer" && /(nibe|vaillant|daikin|mitsubishi|f2040|f2050)/.test(normalizedDirectDraft)) ||
+      (directDecision.answerMode === "correction_answer" && /(pravdu|oprava|nibe|vaillant|f2040|daikin|mitsubishi)/.test(normalizedDirectDraft)) ||
+      directDecision.answerMode === "direct_answer");
+  if (directDecision.triggered && isIncompleteAnswer(cleanedAnswer) && usableDirectDraft) {
+    cleanedAnswer = cleanedAnswer.replace(/[,\s;:]+$/g, "").trim();
+    if (!/[.!?…]$/.test(cleanedAnswer)) cleanedAnswer += ".";
+    recordDiagnostic(answerDiagnostics.validatorsTriggered, "direct_answer_incomplete_llm_draft_closed");
+  }
+  if (directDecision.triggered && !isIncompleteAnswer(cleanedAnswer) && composerLlm.content && !composerLlm.error) {
+    directAnswerComposedByLlm = true;
+    recordDiagnostic(answerDiagnostics.validatorsTriggered, "direct_answer_composed_by_llm");
+  }
+  if (directDecision.triggered && isIncompleteAnswer(cleanedAnswer) && routerDirectAnswer) {
+    cleanedAnswer = routerDirectAnswer;
+    directAnswerFallbackUsed = true;
+    answerDiagnostics.fallbackType = "direct_answer_deterministic_fallback";
+    recordDiagnostic(answerDiagnostics.validatorsTriggered, "direct_answer_deterministic_fallback");
   }
   const isOutOfScopeGeneral =
     route.serviceType === "unknown" &&
@@ -5157,6 +5286,25 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     answer = `Nemám dostatočne jasný podklad na túto tému.\n\n${answer}`.trim();
   }
   answer = validateAndRepairAnswer(answer, stateForTurn, route, message, answerDiagnostics);
+  if (
+    directDecision.triggered &&
+    directDecision.topic === "brand_correction" &&
+    directDecision.answer &&
+    !(normalizePolicyText(answer).includes("nibe") && normalizePolicyText(answer).includes("vaillant"))
+  ) {
+    recordDiagnostic(answerDiagnostics.validatorsTriggered, "direct_brand_correction_repaired");
+    answer = validateAndRepairAnswer(directDecision.answer, stateForTurn, route, message, answerDiagnostics);
+  }
+  if (
+    !directDecision.triggered &&
+    route.serviceType === "heat_pump" &&
+    normalizePolicyText(stateForTurn.heating_distribution || "").includes("radiator") &&
+    (stateForTurn.own_wood || normalizePolicyText(stateForTurn.current_heating || "").includes("drevo") || normalizePolicyText(stateForTurn.current_heating || "").includes("tuhe palivo")) &&
+    !/(zateplen|akumulac|akumula|koľko dreva|kolko dreva|dreva za sezonu|dreva za sezónu|teplu vodu|teplú vodu)/i.test(normalizePolicyText(answer))
+  ) {
+    recordDiagnostic(answerDiagnostics.validatorsTriggered, "wood_radiator_followup_repaired");
+    answer = `${answer}\n\nPri dreve stačí orientačný údaj. Doplň mi ešte, či je dom zateplený, koľko dreva spáliš približne za sezónu a či máš akumulačnú nádrž.`.trim();
+  }
   if (!directDecision.triggered && closureDecision.triggered && !answerHasRecommendationClosure(answer)) {
     recordDiagnostic(answerDiagnostics.validatorsTriggered, "recommendation_closure_repaired");
     answer = validateAndRepairAnswer(expectedRecommendationClosureAnswer(stateForTurn, closureDecision), stateForTurn, route, message, answerDiagnostics);
@@ -5241,17 +5389,21 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
       serviceIntent: route.serviceIntent,
     },
   });
+  const llmAnswerUsed = Boolean(composerLlm.content && !composerLlm.error && !answerDiagnostics.fallbackType);
   insertEvent({
     siteId: site.id,
     sessionId: session.id,
     conversationId: conversation.id,
     eventType: "llm_answer_composed",
     payload: {
-      used: Boolean(composerLlm.content && !composerLlm.error),
+      used: llmAnswerUsed,
       provider: composerLlm.provider,
       model: composerLlm.model,
       error: composerLlm.error || null,
       retrievalUsed: route.needsRetrieval,
+      directAnswerGateTriggered: directDecision.triggered,
+      directAnswerComposedByLlm,
+      directAnswerFallbackUsed,
     },
   });
   const finalAnswerMode: AnswerMode = directDecision.triggered
@@ -5292,6 +5444,8 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
       closureReason: closureDecision.reason,
       directAnswerGateTriggered: directDecision.triggered,
       directAnswerReason: directDecision.reason,
+      directAnswerComposedByLlm,
+      directAnswerFallbackUsed,
       lead: crmOutcome.lead,
       outreach: crmOutcome.outreach,
     },
@@ -5337,7 +5491,7 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     debug: {
       answerMode: finalAnswerMode,
       llmAttempted: true,
-      llmUsed: Boolean(composerLlm.content && !composerLlm.error),
+      llmUsed: llmAnswerUsed,
       llmProvider: composerLlm.provider,
       llmModel: composerLlm.model,
       llmError: composerLlm.error || null,
@@ -5367,6 +5521,8 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
       closureReason: closureDecision.reason,
       directAnswerGateTriggered: directDecision.triggered,
       directAnswerReason: directDecision.reason,
+      directAnswerComposedByLlm,
+      directAnswerFallbackUsed,
       recommendationOptions: closureDecision.options,
       remainingCriticalUnknowns: closureDecision.remainingCriticalUnknowns,
       leadCapture: crmOutcome.leadCapture,

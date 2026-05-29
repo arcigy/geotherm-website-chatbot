@@ -1,7 +1,7 @@
 # Chat API Test Report
 
 Endpoint: `POST /chat`
-Generated: 2026-05-28T22:01:55.967Z
+Generated: 2026-05-29T12:08:41.232Z
 
 ## Summary
 
@@ -28,6 +28,6 @@ Nemám dostatočne jasný podklad na túto tému.
 
 ### Počasie
 
-Ahoj, som diagnostický technicko-obchodný poradca Geotherm a špecializujem sa na technické riešenia pre domy. Nemám informácie o počasí, ale rád ti pomôžem s otázkami týkajúcimi sa kúrenia, chladenia, vetrania, rekuperácie, servisu alebo dotácií.
+Ahoj, som tu ako technicko-obchodný poradca pre Geotherm a špecializujem sa na riešenia pre domy, ako sú tepelné čerpadlá, klimatizácie, rekuperácia, kúrenie a chladenie. Bohužiaľ, informácie o počasí nemám k dispozícii.
 
-Ak by si potreboval poradiť s niečím z týchto oblastí, pokojne sa ma opýtaj.
+Ak by si ale potreboval poradiť s kúrením, chladením, vetraním, servisom alebo dotáciami pre tvoj dom, rád ti pomôžem.

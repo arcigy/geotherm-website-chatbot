@@ -33,6 +33,8 @@ type ChatBody = {
     closureReason?: string | null;
     directAnswerGateTriggered?: boolean;
     directAnswerReason?: string | null;
+    directAnswerComposedByLlm?: boolean;
+    directAnswerFallbackUsed?: boolean;
     recommendationOptions?: string[];
     remainingCriticalUnknowns?: string[];
     llmError?: string | null;
@@ -258,12 +260,14 @@ const scenarios: Scenario[] = [
       if (turnIndex === 3) {
         if (body.debug?.answerMode !== "brand_model_answer") failures.push(`expected brand_model_answer, got ${body.debug?.answerMode || "missing"}`);
         if (body.debug?.directAnswerGateTriggered !== true) failures.push("directAnswerGateTriggered should be true for brand question");
+        if (body.debug?.directAnswerComposedByLlm !== true) failures.push("brand answer should be composed by LLM, not router direct text");
+        if (body.debug?.directAnswerFallbackUsed === true) failures.push("brand answer used deterministic direct fallback");
         if (!hasAll(answer, ["NIBE", "Vaillant"])) failures.push("brand answer should safely mention NIBE and Vaillant");
         if (body.debug?.closureGateTriggered === true) failures.push("closure gate should not override brand question");
       }
       if (turnIndex === 4) {
         if (body.debug?.answerMode !== "brand_model_answer") failures.push(`expected brand_model_answer for Daikin, got ${body.debug?.answerMode || "missing"}`);
-        if (!hasAny(answer, ["bezpecne netvrdil", "netvrdil", "overit", "nekomunikoval"])) failures.push("Daikin answer should be cautious");
+        if (!hasAny(answer, ["bezpecne netvrdil", "netvrdil", "overit", "nekomunikoval", "nie je sucastou", "standardne sucastou", "nie je standardne", "nie je znacka", "bezne ponukame", "nepotvrd"])) failures.push("Daikin answer should be cautious");
         if (hasAny(answer, ["spolupracuje aj so znackou Daikin", "ponukame aj Daikin"])) failures.push("Daikin falsely confirmed as heat-pump portfolio");
       }
       if (turnIndex === 5) {
@@ -277,23 +281,47 @@ const scenarios: Scenario[] = [
       }
       if (turnIndex === 8) {
         if (body.debug?.answerMode !== "correction_answer") failures.push(`expected correction_answer for F2040, got ${body.debug?.answerMode || "missing"}`);
-        if (!hasAny(answer, ["nemal ponukat", "archiv", "historick"])) failures.push("F2040 correction missing obsolete/archive wording");
+        if (!hasAny(answer, ["nemal ponukat", "nemal by som", "archiv", "historick", "uz pre nove instalacie nevyraba", "nevyraba"])) failures.push("F2040 correction missing obsolete/archive wording");
       }
       if (turnIndex === 9) {
         if (body.debug?.answerMode !== "brand_model_answer") failures.push(`expected brand_model_answer for F2050, got ${body.debug?.answerMode || "missing"}`);
-        if (!hasAny(answer, ["nemam potvrdeny", "overit", "nebudem vymyslat"])) failures.push("F2050 answer should avoid unconfirmed facts");
+        if (!hasAny(answer, ["nemam potvrdeny", "nemame", "nie je potvrden", "overit", "nebudem vymyslat"])) failures.push("F2050 answer should avoid unconfirmed facts");
         if (hasAny(answer, ["vysokovykonne", "vysoko vykonne", "vybornu ucinnost", "pokrocila regulacia"])) failures.push("F2050 unconfirmed parameters leaked");
       }
       if (turnIndex === 10 || turnIndex === 11 || turnIndex === 12 || turnIndex === 13) {
         if (body.debug?.answerMode !== "price_answer") failures.push(`expected price_answer, got ${body.debug?.answerMode || "missing"}`);
         if (body.debug?.directAnswerGateTriggered !== true) failures.push("directAnswerGateTriggered should be true for price question");
+        if (body.debug?.directAnswerComposedByLlm !== true) failures.push("price answer should be composed by LLM, not router direct text");
         if (hasAny(answer, ["7 000 eur do 12 000 eur", "7000 eur do 12000 eur", "ano akumulacna nadrz je v cene", "je automaticky zahrnuta"])) failures.push("unconfirmed price/scope claim leaked");
       }
       if (turnIndex === 12) {
-        if (!hasAny(answer, ["neviem potvrdit", "nie je bezpecne tvrdit", "konkretnej ponuke"])) failures.push("buffer tank price scope should be cautious");
+        if (!hasAny(answer, ["neviem potvrdit", "nie je bezpecne tvrdit", "konkretnej ponuke", "nie je automaticky", "zavisi od konkretneho navrhu", "overit co presne"])) failures.push("buffer tank price scope should be cautious");
       }
       if (turnIndex === 13) {
         if (!hasAny(answer, ["cena zariadenia", "kompletnej realizacie", "co presne ponuka obsahuje"])) failures.push("price basis answer missing scope explanation");
+      }
+      return failures;
+    },
+  },
+  {
+    id: "direct_answer_clarification",
+    title: "Priama odpoved ostava AI a otaznik sa nerecykluje",
+    messages: ["ahoj, ake TC mate?", "?"],
+    check(turnIndex, body, turns) {
+      const failures = commonChecks(body);
+      const answer = body.answer || "";
+      if (body.debug?.directAnswerGateTriggered !== true) failures.push("direct answer gate should trigger");
+      if (turnIndex === 0) {
+        if (body.debug?.directAnswerComposedByLlm !== true) failures.push("direct answer should be composed by LLM");
+        if (body.debug?.directAnswerFallbackUsed === true) failures.push("direct answer used deterministic fallback");
+        if (body.debug?.answerMode !== "brand_model_answer") failures.push(`expected brand_model_answer, got ${body.debug?.answerMode || "missing"}`);
+        if (!hasAll(answer, ["NIBE", "Vaillant"])) failures.push("brand answer should mention NIBE and Vaillant");
+        if (!hasAny(answer, ["novostav", "starsi dom", "starší dom", "radiator", "radiátor", "podlahov", "vybrat", "výber"])) failures.push("brand answer should offer follow-up for selecting a suitable heat pump");
+      }
+      if (turnIndex === 1) {
+        if (body.debug?.answerMode !== "direct_answer") failures.push(`expected direct_answer for clarification, got ${body.debug?.answerMode || "missing"}`);
+        if (!hasAny(answer, ["myslel", "upresn", "NIBE", "Vaillant"])) failures.push("clarification should explain previous answer");
+        if (turns[0]?.response.answer && normalize(turns[0].response.answer) === normalize(answer)) failures.push("clarification repeated the same answer verbatim");
       }
       return failures;
     },
