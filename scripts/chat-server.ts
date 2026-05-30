@@ -2865,7 +2865,7 @@ function deterministicQualificationUpdate(message: string, route?: Pick<ServiceR
   if (route?.serviceType && route.serviceType !== "unknown") update.service_type = route.serviceType;
   if (route?.serviceIntent && route.serviceIntent !== "general") update.service_intent = route.serviceIntent;
   if (/(novostav|novy projekt|novy dom|bungalov)/.test(normalized)) update.project_type = "novostavba";
-  if (/(starsi dom|stary dom|rekonstruk|existujuci dom|modernizac)/.test(normalized)) update.project_type = "rekonštrukcia";
+  if (/(star(?:si|y|e)?(?: dom)?|rekonstruk|existujuci dom|modernizac)/.test(normalized)) update.project_type = "rekonštrukcia";
   if (/bungalov/.test(normalized)) update.property_type = "bungalov";
   else if (/\bbyt\b|byte|bytu/.test(normalized)) update.property_type = "byt";
   else if (/\bdom\b|rodinny dom|rd\b|barak/.test(normalized)) update.property_type = "rodinný dom";
@@ -2924,7 +2924,8 @@ function deterministicTurnQualificationUpdate(
     const rawLocation = message.match(/^\s*([A-ZÁÄČĎÉÍĽĹŇÓÔŔŠŤÚÝŽ][\p{L} -]{2,})(?:,|$)/u)?.[1]?.trim();
     const hasContact = Boolean(extractCrmContact(message).phone || extractCrmContact(message).email);
     const looksLikePersonName = rawLocation ? /^[\p{Lu}][\p{L}'-]+(?:\s+[\p{Lu}][\p{L}'-]+){1,3}$/u.test(rawLocation) : false;
-    if (rawLocation && !hasContact && !looksLikePersonName && !/^(ano|nie|nemam|neviem)$/i.test(rawLocation)) update.location = rawLocation;
+    const looksLikeGreeting = rawLocation ? isGreetingLocationValue(rawLocation) : false;
+    if (rawLocation && !looksLikeGreeting && !hasContact && !looksLikePersonName && !/^(ano|nie|nemam|neviem)$/i.test(rawLocation)) update.location = rawLocation;
   }
 
   const numericValues = numberedValues
@@ -3008,6 +3009,7 @@ function mergeQualificationState(base: QualificationState, update: Qualification
       next[field] = nextValue as never;
     }
   }
+  if (next.location && isGreetingLocationValue(next.location)) delete next.location;
   return next;
 }
 
@@ -3044,10 +3046,41 @@ function isExistingRadiatorHeatPump(state: QualificationState): boolean {
   return (project.includes("rekon") || project.includes("starsi") || project.includes("existuj")) && distribution.includes("radiator");
 }
 
+function isGreetingLocationValue(value: string): boolean {
+  return /^(ahoj|cau|caute|dobry den|zdravim|hello|hi|hey)$/.test(normalizePolicyText(value));
+}
+
+function inferExistingRadiatorState(state: QualificationState, message: string, serviceHint?: string): QualificationState | null {
+  const normalized = normalizePolicyText(message);
+  const project = normalizePolicyText(state.project_type || "");
+  const distribution = normalizePolicyText(state.heating_distribution || "");
+  const hasExistingProject =
+    project.includes("rekon") ||
+    project.includes("starsi") ||
+    project.includes("existuj") ||
+    /\b(star|starsi|stary|rekonstrukcia|existujuci)\b/.test(normalized);
+  const hasRadiators = distribution.includes("radiator") || /\bradiator/.test(normalized);
+  const areaMatch = normalized.match(/(\d{2,4})\s*(?:m2|m 2|m\b|metrov|metre)/) || normalized.match(/\b(\d{2,4})\b/);
+  const inferredArea = areaMatch ? Number.parseInt(areaMatch[1], 10) : undefined;
+  const hasArea = Boolean(state.area_m2 || (inferredArea && inferredArea >= 20 && inferredArea <= 2000));
+  const service = normalizeServiceType(state.service_type || serviceHint, "unknown");
+  if (!hasExistingProject || !hasRadiators || !hasArea || (service !== "heat_pump" && service !== "complex_solution")) return null;
+  return {
+    ...state,
+    service_type: state.service_type || "heat_pump",
+    service_intent: state.service_intent || "recommendation",
+    project_type: state.project_type || "rekonštrukcia",
+    heating_distribution: state.heating_distribution || "radiátory",
+    area_m2: state.area_m2 || inferredArea,
+  };
+}
+
 function requiresHardVerdict(state: QualificationState, route: Pick<ServiceRoute, "serviceType" | "serviceIntent">, message: string): boolean {
+  const inferredState = inferExistingRadiatorState(state, message, route.serviceType);
   const service = normalizeServiceType(state.service_type || route.serviceType, "unknown");
   const intent = normalizeServiceIntent(state.service_intent || route.serviceIntent, "general");
   const complaint = /nepovedal|neodpovedal|povedz mi|konkretne|najleps/.test(normalizePolicyText(message));
+  if (inferredState && ["recommendation", "comparison", "general"].includes(intent)) return true;
   return (
     (service === "heat_pump" || service === "complex_solution") &&
     Boolean(state.project_type && state.area_m2 && state.heating_distribution) &&
@@ -4020,6 +4053,11 @@ function answerHasRequiredVerdict(answer: string, state: QualificationState): bo
   return true;
 }
 
+function answerIsGenericServiceFallback(answer: string): boolean {
+  const normalized = normalizePolicyText(answer);
+  return normalized.includes("urcil vhodnu sluzbu") || normalized.includes("riesis kurenie chladenie vetranie servis alebo dotaciu");
+}
+
 function replaceMatchingSentences(answer: string, matcher: (normalizedSentence: string) => boolean, replacement: string): string {
   return answer
     .split(/\n/)
@@ -4273,9 +4311,17 @@ function validateAndRepairAnswer(
       next = expectedServiceFaultAnswer();
     }
   }
+  const existingRadiatorState = inferExistingRadiatorState(state, message, route.serviceType);
   if (requiresHardVerdict(state, route, message) && !answerHasRequiredVerdict(next, state)) {
     if (diagnostics) recordDiagnostic(diagnostics.validatorsTriggered, "hard_verdict_inserted");
-    next = isNewBuildFloorHeating(state) ? expectedVerdictAnswer(state) : `${expectedVerdictAnswer(state)}\n\n${next}`.trim();
+    next =
+      isNewBuildFloorHeating(state) || existingRadiatorState || answerIsGenericServiceFallback(next)
+        ? expectedVerdictAnswer(existingRadiatorState || state)
+        : `${expectedVerdictAnswer(state)}\n\n${next}`.trim();
+  }
+  if (existingRadiatorState && answerIsGenericServiceFallback(next)) {
+    if (diagnostics) recordDiagnostic(diagnostics.validatorsTriggered, "existing_radiator_verdict_repaired");
+    next = expectedVerdictAnswer(existingRadiatorState);
   }
   const complaint = /nepovedal|neodpovedal|najleps|konkretne/.test(normalizePolicyText(message));
   if (complaint && requiresHardVerdict(state, route, message) && state.occupants && !/(TÚV|TUV|tepl[áa] voda|zásobník|zasobnik)/i.test(next)) {
@@ -4517,7 +4563,7 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
       return "### Ahoj\n\nSom tu pre teba, keď chceš poradiť s tepelným čerpadlom, klimatizáciou, rekuperáciou, servisom alebo dotáciami.\n\nČo chceš riešiť ako prvé?";
     }
     if (requiresHardVerdict(state, currentRoute, userMessage)) {
-      return expectedVerdictAnswer(state);
+      return expectedVerdictAnswer(inferExistingRadiatorState(state, userMessage, currentRoute.serviceType) || state);
     }
     const normalized = normalizePolicyText(userMessage);
     const serviceType = normalizeServiceType(state.service_type || currentRoute.serviceType, "unknown");
@@ -4575,6 +4621,10 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
         "",
         "Aby som to uzavrel správne, stačí doplniť: bude tam podlahové kúrenie alebo radiátory? A chceš riešiť aj chladenie alebo len kúrenie a TÚV?",
       ].join("\n");
+    }
+    const existingRadiatorState = inferExistingRadiatorState(state, userMessage, currentRoute.serviceType);
+    if (serviceType === "heat_pump" && existingRadiatorState) {
+      return expectedVerdictAnswer(existingRadiatorState);
     }
     if (serviceType === "heat_pump" && isExistingRadiatorHeatPump(state)) {
       return [

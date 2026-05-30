@@ -151,6 +151,30 @@ const scenarios: Scenario[] = [
     },
   },
   {
+    id: "greeting_tc_then_old_radiators",
+    title: "Pozdrav + TČ + starší dom radiátory",
+    messages: ["Ahoj, chcem tč", "Starší 140m radiatory"],
+    check(turnIndex, body) {
+      const failures = commonChecks(body);
+      const answer = body.answer || "";
+      const slots = slotText(body);
+      if (turnIndex === 0) {
+        if (body.debug?.serviceType !== "heat_pump") failures.push(`expected heat_pump from TČ, got ${body.debug?.serviceType || "missing"}`);
+        if (hasAny(slots, ["location ahoj"])) failures.push(`greeting stored as location: ${JSON.stringify(body.debug?.storedSlots || {})}`);
+        if (!hasAny(answer, ["vzduch-voda", "radiatory", "podlahove kurenie"])) failures.push("initial TČ answer lacks useful qualification direction");
+      }
+      if (turnIndex === 1) {
+        if (body.debug?.serviceType !== "heat_pump") failures.push(`expected heat_pump, got ${body.debug?.serviceType || "missing"}`);
+        if (body.debug?.serviceIntent !== "recommendation") failures.push(`expected recommendation, got ${body.debug?.serviceIntent || "missing"}`);
+        if (!hasAll(slots, ["rekon", "140", "radi"])) failures.push(`storedSlots missing older house/radiators: ${JSON.stringify(body.debug?.storedSlots || {})}`);
+        if (hasAny(slots, ["location ahoj"])) failures.push(`greeting leaked into slots: ${JSON.stringify(body.debug?.storedSlots || {})}`);
+        if (!hasAll(answer, ["vzduch-voda", "radiator"])) failures.push("older radiator verdict missing");
+        if (hasAny(answer, ["urcil vhodnu sluzbu", "riesis kurenie chladenie vetranie servis alebo dotaciu"])) failures.push("generic service fallback leaked");
+      }
+      return failures;
+    },
+  },
+  {
     id: "old_house_radiators_wood",
     title: "Starší dom + radiátory + drevo",
     messages: ["ahoj, ake cerpadlo je najlepsie?", "starsi dom, 150m, mame radiatory", "kotol mame drevom a netusim, mam vlastne drevo", "4m, zateplene vsetko"],
