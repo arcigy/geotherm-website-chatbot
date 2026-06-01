@@ -224,6 +224,8 @@ const supplementalCompanyTruthTexts = [
       "Pouzivaj neutralne formulacie: dohodnut obhliadku, preverit podklady, pripravit navrh, pripravit ponuku.",
       "Bez potvrdenia netvrd, ze firma servisuje cudzie montaze, vybavuje dotacie kompletne alebo odpocitava dotaciu z ceny.",
       "Ak firemny fakt chyba, povedz, ze ho treba potvrdit podla aktualnych podmienok firmy, ale nezablokuj vseobecnu technicku odpoved.",
+      "Po dlhsej kvalifikacii alebo pri poziadavke na zhrnutie uz nepokracuj dalsim dotaznikom; zhrn bezpecny zaver a posun pouzivatela na konzultaciu, stretnutie alebo nacenenie.",
+      "Pri kombinacii dotacia a servis povedz, ze dotacie sa bez konkretneho pravidla nespajaju so servisom existujuceho zariadenia; typicky sa riesia pri novej instalacii alebo vymene technologie.",
     ].join(" "),
   },
   {
@@ -248,6 +250,8 @@ const supplementalCompanyTruthTexts = [
       "Orientacna ponuka sa da pripravit aj podla dobrych a kvalitnych fotografii.",
       "Cez WhatsApp komunikovat vedia, ale preferuju email alebo telefon. Emailom komunikovat vedia.",
       "Beru zalohy a platba na fakturu je mozna.",
+      "Rozdiel servis a montaz: montaz je navrh a instalacia noveho alebo meneneho riesenia; servis je diagnostika, oprava, nastavenie alebo udrzba existujuceho zariadenia.",
+      "Cakacia doba na servis a termin technika sa musia potvrdit podla aktualnej kapacity, lokality a typu problemu.",
     ].join(" "),
   },
 ];
@@ -2553,12 +2557,34 @@ function isPracticalCompanyQuestionThatSkipsServiceFaultTemplate(message: string
     isContactQuestion(message) ||
     /(nechcem|nedam|nedám).*(email|mail)/.test(text) ||
     /(cakacia|čakacia|cakat|čakať|ako dlho).*(servis|technik|vyjazd|výjazd)|(?:servis|technik|vyjazd|výjazd).*(cakacia|čakacia|cakat|čakať|ako dlho)/.test(text) ||
-    /(preco|prečo).*(stale|stále).*(pytate|pýtate)|zhrn|zhrň|to je cele|to je celé/.test(text) ||
-    /(dotac|dotáci).*(servis)|(?:servis).*(dotac|dotáci)/.test(text) ||
+    /servis.*mont|mont.*servis/.test(text) ||
+    /(preco|prečo).*(stale|stále).*(pytate|pýtate)|\bzhr|to je cele|to je celé/.test(text) ||
+    /\bdot.*servis|(?:servis).*\bdot/.test(text) ||
     (!/(oplat|ma zmysel|cena|servis|dotac|montaz|porucha|problem|huci|hluci)/.test(text) &&
       (/^(som|sme)\s+v\s+[a-z-]{3,}(?:\s+[a-z-]{3,})?$/.test(text) || /^(som|sme)\s+(pri|z|zo)\s+[a-z-]{3,}(?:\s+[a-z-]{3,})?$/.test(text))) ||
     (!/(kotol|kotla|kotlov|kotly)/.test(text) && /(robite|robíte).*(servis|montaz|montáž)|(?:servis|montaz|montáž).*(robite|robíte)/.test(text))
   );
+}
+
+function limitFinalQuestionMarks(answer: string): { answer: string; changed: boolean } {
+  const matches = answer.match(/\?/g) || [];
+  if (matches.length <= 1) return { answer, changed: false };
+  let keptLastQuestion = false;
+  let next = "";
+  for (let index = answer.length - 1; index >= 0; index -= 1) {
+    const char = answer[index];
+    if (char === "?") {
+      if (!keptLastQuestion) {
+        keptLastQuestion = true;
+        next = `${char}${next}`;
+      } else {
+        next = `.${next}`;
+      }
+      continue;
+    }
+    next = `${char}${next}`;
+  }
+  return { answer: next.replace(/\s+\./g, ".").replace(/\.{2,}/g, ".").trim(), changed: true };
 }
 
 const serviceAreaRetrievalQuery =
@@ -3822,6 +3848,16 @@ function companyPracticalDirectAnswer(message: string): DirectAnswerDecision | n
     );
   }
 
+  if (/servis.*mont|mont.*servis/.test(text)) {
+    return answerBase(
+      "Rozdiel medzi servisom a montážou",
+      "Montáž je návrh a inštalácia nového alebo meneného riešenia, napríklad tepelného čerpadla, kotla, podlahovky alebo rekuperácie. Servis je diagnostika, oprava, nastavenie alebo údržba existujúceho zariadenia. Ak ide o nové riešenie, ďalší krok je konzultácia a nacenenie; ak ide o poruchu, pomôže značka, model alebo fotka štítku, problém a lokalita.",
+      "service_installation_difference",
+      "process",
+      "company-truth service montaz rozdiel diagnostika oprava instalacia Geotherm",
+    );
+  }
+
   if (!/(kotol|kotla|kotlov|kotly)/.test(text) && /(robite|robíte).*(servis|montaz|montáž)|(?:servis|montaz|montáž).*(robite|robíte)/.test(text)) {
     return answerBase(
       "Servis aj montáž",
@@ -3925,7 +3961,7 @@ function companyPracticalDirectAnswer(message: string): DirectAnswerDecision | n
     );
   }
 
-  if (/(preco|prečo).*(stale|stále).*(pytate|pýtate)|zhrn|zhrň|to je cele|to je celé/.test(text)) {
+  if (/(preco|prečo).*(stale|stále).*(pytate|pýtate)|\bzhr|to je cele|to je celé/.test(text)) {
     return answerBase(
       "Zhrnutie bez ďalšieho dotazníka",
       "Máte pravdu, v tejto fáze už nemá zmysel pridávať ďalší dotazník. Bezpečný záver je: ak ide o servis, treba potvrdiť zariadenie, problém a lokalitu; ak ide o nové riešenie, treba krátka konzultácia a nacenenie. Ďalší krok má byť stretnutie alebo telefonát s Geotherm, nie ďalšie otázky v chate.",
@@ -3935,7 +3971,7 @@ function companyPracticalDirectAnswer(message: string): DirectAnswerDecision | n
     );
   }
 
-  if (/(dotac|dotáci).*(servis)|(?:servis).*(dotac|dotáci)/.test(text)) {
+  if (/\bdot.*servis|(?:servis).*\bdot/.test(text)) {
     return answerBase(
       "Dotácia a servis",
       "Dotácie by som nespájal so servisom existujúceho zariadenia, pokiaľ nie je potvrdené konkrétne pravidlo programu. Bežne sa dotácie riešia skôr pri novej inštalácii alebo výmene technológie, nie pri servisnom zásahu. Pri konkrétnom prípade treba overiť aktuálne podmienky.",
@@ -5890,7 +5926,9 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     ? { triggered: false, reason: null, options: [], remainingCriticalUnknowns: [] }
     : recommendationClosureDecision(stateForTurn, route, questionRoundsCount);
   const serviceAreaQuestion = isServiceAreaQuestion(message);
-  const contextualRetrieval = route.needsRetrieval
+  const contextualRetrieval = directDecision.triggered
+    ? { query: route.retrievalQuery || message, contextCarried: false }
+    : route.needsRetrieval
     ? buildContextualRetrievalQuery({ message, route, state: stateForTurn, previousMessages })
     : { query: "", contextCarried: false };
   const retrievalQuery = route.needsRetrieval ? contextualRetrieval.query || route.retrievalQuery || message : null;
@@ -6047,7 +6085,7 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     "Pri otázke na značky TČ bezpečne komunikuj NIBE a Vaillant; IVT len opatrne; Daikin/Mitsubishi pri TČ nepotvrdzuj bez firemného dôkazu.",
     "Pri cenách rozlišuj cenu zariadenia a kompletnej realizácie. Netvrď presnú cenu ani že akumulačná nádrž je v cene, kým to nie je potvrdené v konkrétnej ponuke.",
     "Pri oprave uznaj chybu alebo upresnenie a potom povedz správnu vec. Neodpovedaj iba poďakovaním.",
-    "Odpoveď drž do 80-160 slov.",
+    "Odpoveď drž do 80-160 slov a použi najviac jeden otáznik.",
   ].join("\n");
   const directComposerInput = JSON.stringify(
     {
@@ -6247,6 +6285,8 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     ]);
     const forceDraftTopics = new Set([
       "vaillant_boilers",
+      "Daikin",
+      "Mitsubishi",
       "contact_details",
       "gas_revision",
       "boiler_revision",
@@ -6261,6 +6301,7 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
       "screeds",
       "references",
       "third_party_service",
+      "service_installation_difference",
       "service_and_installation",
       "location_followup",
       "missing_model",
@@ -6338,6 +6379,11 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
   ) {
     recordDiagnostic(answerDiagnostics.validatorsTriggered, "recommendation_closure_repaired");
     answer = validateAndRepairAnswer(expectedRecommendationClosureAnswer(stateForTurn, closureDecision), stateForTurn, route, message, answerDiagnostics);
+  }
+  const limitedQuestionAnswer = limitFinalQuestionMarks(answer);
+  if (limitedQuestionAnswer.changed) {
+    answer = limitedQuestionAnswer.answer;
+    recordDiagnostic(answerDiagnostics.validatorsTriggered, "followup_questions_limited");
   }
   const normalizedFinalAnswer = normalizePolicyText(answer);
   const responseConfidenceBase: "high" | "medium" | "low" = /nemam dostatocne jasny podklad|neviem ti povedat|neviem odpovedat/.test(normalizedFinalAnswer)
