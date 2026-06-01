@@ -630,7 +630,7 @@ function detectSafetyRoute(message: string): SafetyRoute {
     !(text.includes("stropne chladenie") && (text.includes("kondenz") || text.includes("kvapka")))
   ) {
     reason = "fault_or_leak";
-  } else if (hasAny(["servisny zasah", "servisny ukon", "technicke nastavenie", "ako nastavit", "ako nastavim", "obist povinnu kontrolu", "ignorovat servis"])) {
+  } else if (hasAny(["technicke nastavenie", "ako nastavit", "ako nastavim", "obist povinnu kontrolu", "ignorovat servis"])) {
     reason = "service_intervention";
   }
 
@@ -2304,8 +2304,10 @@ function inferServiceRoute(message: string, state: QualificationState, history: 
                   ? "complex_solution"
                 : heatPumpAbbreviation || /(tepelne cerpad|cerpad|vzduch voda|zem voda|voda voda|nibe|vaillant|plyn|plynov|radiator|vykurov|kurenie|kotol)/.test(text)
                   ? "heat_pump"
-                  : /(novostav|cely system|cel[ey] dom|usporn[ey] riesenie|kurenie a chladenie|vykurovanie a chladenie|technicke riesenie)/.test(combined) &&
+                  : (/(vyber.*riesen|poradit.*riesen|vhodn.*riesen)/.test(text) ||
+                    (/(novostav|cely system|cel[ey] dom|usporn[ey] riesenie|kurenie a chladenie|vykurovanie a chladenie|technicke riesenie)/.test(combined) &&
                     /(chladen|vetran|tepla voda|rekuper|podlahov|kuren)/.test(combined)
+                    ))
                   ? "complex_solution"
                   : /\btc\b/.test(combined) || /(tepelne cerpad|cerpad|vzduch voda|zem voda|voda voda|nibe|vaillant|plyn|plynov|radiator|vykurov|kurenie|kotol)/.test(combined)
                     ? "heat_pump"
