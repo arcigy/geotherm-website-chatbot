@@ -2057,13 +2057,13 @@ function isGeneralChatWithoutRetrieval(message: string): boolean {
 function isPureSmallTalkMessage(message: string): boolean {
   const text = normalizePolicyText(message);
   if (/(tc|tepel|cerpad|klimatiz|rekuper|servis|dotac|cena|kontakt|montaz|kuren|chladen|vykurov|kotol|radiator|podlah|nibe|vaillant)/.test(text)) return false;
-  return /^(ahoj|cau|hello|hi|hey|dobry den|dobry vecer|zdravim|ako sa mas|ako sa mate|dakujem|vdaka|super|ok|kto si|co si zac)$/.test(text);
+  return /^(ahoj|cau|hello|hi|hey|dobry den|dobry vecer|zdravim|ako sa mas|ako sa mate|ako sa ma|ako sa m|dakujem|vdaka|super|ok|kto si|co si zac)$/.test(text);
 }
 
 function pureSmallTalkFallback(message: string): StructuredAnswer {
   const text = normalizePolicyText(message);
   const shortAnswer =
-    text.includes("ako sa mas") || text.includes("ako sa mate")
+    text.includes("ako sa mas") || text.includes("ako sa mate") || text === "ako sa ma" || text === "ako sa m"
       ? "Mám sa dobre, vďaka. Som tu, keď budeš chcieť s niečím pomôcť."
       : text.includes("dakujem") || text.includes("vdaka")
         ? "Rado sa stalo."
