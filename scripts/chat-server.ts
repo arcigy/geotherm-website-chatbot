@@ -2547,6 +2547,20 @@ function isContactQuestion(message: string): boolean {
   );
 }
 
+function isPracticalCompanyQuestionThatSkipsServiceFaultTemplate(message: string): boolean {
+  const text = normalizePolicyText(message);
+  return (
+    isContactQuestion(message) ||
+    /(nechcem|nedam|nedám).*(email|mail)/.test(text) ||
+    /(cakacia|čakacia|cakat|čakať|ako dlho).*(servis|technik|vyjazd|výjazd)|(?:servis|technik|vyjazd|výjazd).*(cakacia|čakacia|cakat|čakať|ako dlho)/.test(text) ||
+    /(preco|prečo).*(stale|stále).*(pytate|pýtate)|zhrn|zhrň|to je cele|to je celé/.test(text) ||
+    /(dotac|dotáci).*(servis)|(?:servis).*(dotac|dotáci)/.test(text) ||
+    (!/(oplat|ma zmysel|cena|servis|dotac|montaz|porucha|problem|huci|hluci)/.test(text) &&
+      (/^(som|sme)\s+v\s+[a-z-]{3,}(?:\s+[a-z-]{3,})?$/.test(text) || /^(som|sme)\s+(pri|z|zo)\s+[a-z-]{3,}(?:\s+[a-z-]{3,})?$/.test(text))) ||
+    (!/(kotol|kotla|kotlov|kotly)/.test(text) && /(robite|robíte).*(servis|montaz|montáž)|(?:servis|montaz|montáž).*(robite|robíte)/.test(text))
+  );
+}
+
 const serviceAreaRetrievalQuery =
   "Kvalitné vykurovanie tepelné čerpadlo prídeme nainštalovať do týchto okresov Geotherm pôsobnosť mestá okresy";
 
@@ -3768,6 +3782,16 @@ function companyPracticalDirectAnswer(message: string): DirectAnswerDecision | n
     return null;
   }
 
+  if (isContactQuestion(message)) {
+    return answerBase(
+      "Kontakt na Geotherm",
+      "Geotherm vieš kontaktovať telefonicky alebo e-mailom. Najistejšie je poslať stručne, čo riešiš, lokalitu a pri technike aj fotky alebo základné údaje; podľa toho sa dá dohodnúť konzultácia, servis alebo nacenenie.",
+      "contact_details",
+      "contact",
+      "company-truth kontakt Geotherm telefon email adresa",
+    );
+  }
+
   if (/(zakupen|zakúpen|vlastny|vlastný).*(kotol|kotla|kotlov|kotly)|(?:kotol|kotla|kotlov|kotly).*(zakupen|zakúpen|vlastny|vlastný)/.test(text)) {
     return answerBase(
       "Kotol kúpený zákazníkom",
@@ -3828,13 +3852,26 @@ function companyPracticalDirectAnswer(message: string): DirectAnswerDecision | n
     );
   }
 
-  if (/(iba|len).*(nastavenie)|nastavenie/.test(text) && /(servis|porucha|huci|hučí|chyba|zariadenie|cerpadlo)/.test(text)) {
+  if (/(iba|len).*(nastavenie)|nastavenie/.test(text)) {
     return answerBase(
       "Možné nastavenie",
       "Áno, môže ísť aj o nastavenie regulácie, režimu, krivky alebo hydrauliky. Nedá sa to však potvrdiť bez kontroly zariadenia a prejavu problému. Pri staršom alebo hlučnom zariadení je bezpečnejšie najprv diagnostikovať, nie meniť parametre naslepo.",
       "possible_settings_issue",
       "service_fault",
       "company-truth service nastavenie regulacia diagnostika tepelne cerpadlo Geotherm",
+    );
+  }
+
+  if (
+    !/(oplat|ma zmysel|cena|servis|dotac|montaz|porucha|problem|huci|hluci)/.test(text) &&
+    (/^(som|sme)\s+v\s+[a-z-]{3,}(?:\s+[a-z-]{3,})?$/.test(text) || /^(som|sme)\s+(pri|z|zo)\s+[a-z-]{3,}(?:\s+[a-z-]{3,})?$/.test(text))
+  ) {
+    return answerBase(
+      "Lokalita",
+      "Lokalitu treba pri servise alebo montáži potvrdiť podľa konkrétnej služby a kapacity technika. Ak ide o servis, k mestu pridaj značku/model alebo fotku štítku a problém; ak ide o ponuku, stačí lokalita, typ domu a čo chceš riešiť.",
+      "location_followup",
+      "location",
+      "company-truth posobnost lokalita servis montaz Geotherm",
     );
   }
 
@@ -3865,6 +3902,16 @@ function companyPracticalDirectAnswer(message: string): DirectAnswerDecision | n
       "needed_inputs",
       "process",
       "company-truth service quote potrebne udaje znacka model lokalita plocha Geotherm",
+    );
+  }
+
+  if (/(cakacia|čakacia|cakat|čakať|ako dlho).*(servis|technik|vyjazd|výjazd)|(?:servis|technik|vyjazd|výjazd).*(cakacia|čakacia|cakat|čakať|ako dlho)/.test(text)) {
+    return answerBase(
+      "Čakacia doba na servis",
+      "Presnú čakaciu dobu na servis treba vždy potvrdiť podľa aktuálnej kapacity technikov, lokality a typu problému. Na preverenie termínu stačí značka/model alebo fotka štítku, krátky popis poruchy, lokalita a kontakt; podľa toho sa dá dohodnúť servisný postup.",
+      "service_wait_time",
+      "service_fault",
+      "company-truth service cakacia doba termin servis kapacita technika potvrdit Geotherm",
     );
   }
 
@@ -4955,7 +5002,7 @@ function validateAndRepairAnswer(
       next = expectedHeatRecoveryAnswer();
     }
   }
-  if (route.serviceType === "service" || route.serviceIntent === "service_fault") {
+  if ((route.serviceType === "service" || route.serviceIntent === "service_fault") && !isPracticalCompanyQuestionThatSkipsServiceFaultTemplate(message)) {
     const normalized = normalizePolicyText(next);
     if (!normalized.includes("model") || !/(chybovy kod|chybový kód|chybu|chyba)/.test(normalized) || !/(lokalit|mesto|kde je)/.test(normalized)) {
       if (diagnostics) recordDiagnostic(diagnostics.validatorsTriggered, "service_fault_data_request_repaired");
@@ -6200,6 +6247,7 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     ]);
     const forceDraftTopics = new Set([
       "vaillant_boilers",
+      "contact_details",
       "gas_revision",
       "boiler_revision",
       "business_customers",
@@ -6214,9 +6262,11 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
       "references",
       "third_party_service",
       "service_and_installation",
+      "location_followup",
       "missing_model",
       "device_label_photo",
       "possible_settings_issue",
+      "service_wait_time",
       "diy_repair",
       "no_email",
       "needed_inputs",
@@ -6281,19 +6331,22 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
   if (
     !directDecision.triggered &&
     closureDecision.triggered &&
+    !/(vonkajs|vonkajsi|vonkajsej|pod oknom|kontakt|ako vas|kde vas|servis.*montaz|montaz.*servis|dotac.*servis|servis.*dotac|zhrn|zhrň|to je cele|to je celé)/.test(
+      normalizePolicyText(message),
+    ) &&
     ((isNewBuildFloorHeating(stateForTurn) && !answerHasNewBuildPortfolioClosure(answer)) || !answerHasRecommendationClosure(answer))
   ) {
     recordDiagnostic(answerDiagnostics.validatorsTriggered, "recommendation_closure_repaired");
     answer = validateAndRepairAnswer(expectedRecommendationClosureAnswer(stateForTurn, closureDecision), stateForTurn, route, message, answerDiagnostics);
   }
   const normalizedFinalAnswer = normalizePolicyText(answer);
-  const responseConfidenceBase: "high" | "medium" | "low" = route.needsRetrieval
+  const responseConfidenceBase: "high" | "medium" | "low" = /nemam dostatocne jasny podklad|neviem ti povedat|neviem odpovedat/.test(normalizedFinalAnswer)
+    ? "low"
+    : route.needsRetrieval
     ? sources.length === 0 || topScore < 25
       ? "medium"
       : "high"
     : isOutOfScopeGeneral
-      ? "low"
-    : /nemam dostatocne jasny podklad|neviem ti povedat|neviem odpovedat/.test(normalizedFinalAnswer)
       ? "low"
       : "high";
   const latestNormalizedForConfidence = normalizePolicyText(message);
