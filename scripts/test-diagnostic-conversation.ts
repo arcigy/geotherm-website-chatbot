@@ -39,6 +39,7 @@ type ChatBody = {
     remainingCriticalUnknowns?: string[];
     llmError?: string | null;
     llmRouterError?: string | null;
+    llmUsed?: boolean;
   };
   fallbackUsed?: boolean;
 };
@@ -408,6 +409,46 @@ const scenarios: Scenario[] = [
         if (body.debug?.answerMode !== "direct_answer") failures.push(`expected direct_answer for clarification, got ${body.debug?.answerMode || "missing"}`);
         if (!hasAny(answer, ["myslel", "upresn", "NIBE", "Vaillant"])) failures.push("clarification should explain previous answer");
         if (turns[0]?.response.answer && normalize(turns[0].response.answer) === normalize(answer)) failures.push("clarification repeated the same answer verbatim");
+      }
+      return failures;
+    },
+  },
+  {
+    id: "live_carryover_regression",
+    title: "Cena a znacky sa neprenasaju do dalsich otazok",
+    messages: ["Ahoj, chcem tc", "Starsi 140m radiatory", "chcem Vaillant ale mam NIBE", "daj mi presnu cenu", "opravite to alebo treba montaz?", "ahoj"],
+    check(turnIndex, body) {
+      const failures = commonChecks(body);
+      const answer = body.answer || "";
+      if (body.debug?.llmUsed !== true) failures.push("turn should use LLM");
+      if (turnIndex === 0) {
+        if (body.debug?.serviceType !== "heat_pump") failures.push(`expected heat_pump, got ${body.debug?.serviceType || "missing"}`);
+        if (body.debug?.fallbackUsed === true) failures.push("initial TC turn should not use fallback");
+      }
+      if (turnIndex === 1) {
+        if (body.debug?.serviceIntent !== "recommendation") failures.push(`expected recommendation, got ${body.debug?.serviceIntent || "missing"}`);
+        if (!hasAll(slotText(body), ["140", "radi"])) failures.push(`radiator slots missing: ${JSON.stringify(body.debug?.storedSlots || {})}`);
+        if (!hasAll(answer, ["vzduch-voda", "radiator"])) failures.push("older radiator verdict missing");
+      }
+      if (turnIndex === 2) {
+        if (body.debug?.answerMode !== "brand_model_answer") failures.push(`expected brand_model_answer, got ${body.debug?.answerMode || "missing"}`);
+        if (!hasAll(answer, ["NIBE", "Vaillant"])) failures.push("NIBE/Vaillant answer missing");
+      }
+      if (turnIndex === 3) {
+        if (body.debug?.answerMode !== "price_answer") failures.push(`expected price_answer, got ${body.debug?.answerMode || "missing"}`);
+        if (body.debug?.serviceIntent !== "price") failures.push(`expected price intent, got ${body.debug?.serviceIntent || "missing"}`);
+        if (!hasAny(answer, ["ponuk", "realizac", "montaz", "instalac"])) failures.push("price scope answer missing");
+      }
+      if (turnIndex === 4) {
+        if (body.debug?.answerMode === "price_answer") failures.push("repair/install question stayed in price_answer");
+        if (body.debug?.serviceIntent === "price") failures.push("repair/install question stayed in price intent");
+        if (!hasAny(answer, ["oprava", "servis", "montaz", "existujuce", "nove riesenie"])) failures.push("repair/install distinction missing");
+        if (hasAny(answer, ["predchadzajucej odpovedi", "cenu zariadenia", "kompletnej realizacie"])) failures.push("old price answer leaked into repair/install turn");
+      }
+      if (turnIndex === 5) {
+        if (body.debug?.answerMode !== "general_chat") failures.push(`expected general_chat for greeting, got ${body.debug?.answerMode || "missing"}`);
+        if ((body.sources || []).length !== 0 || (body.debug?.retrievalSourcesCount || 0) !== 0) failures.push("greeting should not use RAG sources");
+        if (body.debug?.serviceIntent === "price" || body.debug?.answerMode === "price_answer") failures.push("greeting inherited price context");
       }
       return failures;
     },

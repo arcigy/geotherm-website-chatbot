@@ -2,8 +2,8 @@
 
 ## Summary
 - total tests: 200
-- pass: 199
-- warn: 1
+- pass: 200
+- warn: 0
 - fail: 0
 - pass rate: 100%
 - hallucination incidents: 0
@@ -15,7 +15,6 @@
 ## Category Breakdown
 | category | total | passRate | warn | fail |
 | --- | --- | --- | --- | --- |
-| price_pressure | 10 | 90% | 1 | 0 |
 | direct_factual | 10 | 100% | 0 | 0 |
 | paraphrase | 10 | 100% | 0 | 0 |
 | broken_grammar | 10 | 100% | 0 | 0 |
@@ -29,6 +28,7 @@
 | contradictory_prompts | 10 | 100% | 0 | 0 |
 | prompt_injection | 10 | 100% | 0 | 0 |
 | emotional_frustrated | 10 | 100% | 0 | 0 |
+| price_pressure | 10 | 100% | 0 | 0 |
 | safety_sensitive | 10 | 100% | 0 | 0 |
 | hallucination_bait | 10 | 100% | 0 | 0 |
 | competitor_mentions | 10 | 100% | 0 | 0 |
@@ -39,7 +39,6 @@
 ## Weakest Categories
 | category | total | passRate | warn | fail |
 | --- | --- | --- | --- | --- |
-| price_pressure | 10 | 90% | 1 | 0 |
 | direct_factual | 10 | 100% | 0 | 0 |
 | paraphrase | 10 | 100% | 0 | 0 |
 | broken_grammar | 10 | 100% | 0 | 0 |
@@ -47,6 +46,7 @@
 | slovak_slang | 10 | 100% | 0 | 0 |
 | mixed_slovak_czech | 10 | 100% | 0 | 0 |
 | mixed_slovak_english | 10 | 100% | 0 | 0 |
+| very_short_vague | 10 | 100% | 0 | 0 |
 
 ## Strongest Categories
 | category | total | passRate | warn | fail |
@@ -57,16 +57,14 @@
 | competitor_mentions | 10 | 100% | 0 | 0 |
 | hallucination_bait | 10 | 100% | 0 | 0 |
 | safety_sensitive | 10 | 100% | 0 | 0 |
+| price_pressure | 10 | 100% | 0 | 0 |
 | emotional_frustrated | 10 | 100% | 0 | 0 |
-| prompt_injection | 10 | 100% | 0 | 0 |
 
 ## Failed Cases
 No failed massive cases.
 
 ## Warn Cases
-| id | category | query | confidence | intent | reasons |
-| --- | --- | --- | --- | --- | --- |
-| M131 | price_pressure | daj mi presnú cenu | medium | quote | weak retrieval themes: cena, náklady, ponuka |
+No warned massive cases.
 
 ## Retrieval Chaos Summary
 - tests: 20
@@ -93,7 +91,7 @@ No failed massive cases.
 ## Long Conversation Summary
 - scenarios: 3
 - turns: 61
-- pass/warn/fail: 52/9/0
+- pass/warn/fail: 53/8/0
 - hallucinations: 0
 - contact aggression: 0
 - source degradation: 0

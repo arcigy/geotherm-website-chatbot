@@ -2161,6 +2161,18 @@ function isSmallTalkMessage(message: string): boolean {
   );
 }
 
+function isContextualPriceFollowup(message: string): boolean {
+  const text = normalizePolicyText(message);
+  if (!text) return false;
+  return /^(?:\?|a co|a čo|z coho|z čoho|co je v cene|čo je v cene|je to v cene|a akumulac|akumulac|vratane coho|vrátane čoho|bez montaze|bez montáže|s montazou|s montážou)\??$/.test(text);
+}
+
+function isContextualBrandModelFollowup(message: string): boolean {
+  const text = normalizePolicyText(message);
+  if (!text) return false;
+  return /^(?:\?|a znacka|a značka|a model|aky model|aký model|a vaillant|a nibe|a split|split|a f2040|a f2050|co vaillant|čo vaillant|co nibe|čo nibe)\??$/.test(text);
+}
+
 type RoutingPlan = {
   needsRetrieval: boolean;
   retrievalQuery: string;
@@ -3487,7 +3499,7 @@ function extractCrmLocation(message: string, contact: CrmContact): string | unde
 function detectCrmLeadIntent(message: string, route: Pick<ServiceRoute, "serviceType" | "serviceIntent">): CrmLeadIntent {
   const text = normalizePolicyText(message);
   if (/(obhliad|prehliad|prist pozriet|prist sa pozriet|dohodnut termin|dohodnut obhliad|chcem aby ste prisli)/.test(text)) return "inspection";
-  if (/(cenova ponuka|cenovu ponuku|ponuku|nacenit|nacenenie|poslite cenu|chcem cenu)/.test(text) || route.serviceIntent === "price") return "quote";
+  if (/(cenova ponuka|cenovu ponuku|ponuku|nacenit|nacenenie|poslite cenu|chcem cenu)/.test(text)) return "quote";
   if (/(zavolajte|ozvite|kontaktujte|nech mi zavola|telefonicky)/.test(text)) return "callback";
   if (route.serviceType === "service" || route.serviceIntent === "service_fault" || /(porucha|chyba|hlasi chybu|servis|diagnostik)/.test(text)) return "service_fault";
   if (route.serviceType !== "unknown" || route.serviceIntent !== "general") return "project";
@@ -3864,6 +3876,16 @@ function companyPracticalDirectAnswer(message: string): DirectAnswerDecision | n
     );
   }
 
+  if (/(montaz|montáž).*(existujuc|existujú|stare|star[eé]ho|namontovan|pouzite|použité).*(cerpadl|\btc\b)|(?:existujuc|existujú|stare|star[eé]ho|namontovan|pouzite|použité).*(cerpadl|\btc\b).*(montaz|montáž)/.test(text)) {
+    return answerBase(
+      "Existujúce čerpadlo",
+      "Pri existujúcom čerpadle by som to nenazval rovno novou montážou, kým nie je jasný rozsah. Môže ísť o servis existujúceho zariadenia, výmenu za nové riešenie, demontáž a opätovné zapojenie, alebo zapojenie zariadenia kúpeného inde. Každý z týchto prípadov má iný postup, zodpovednosť aj nacenenie. Máš na mysli poruchu/servis, výmenu za nové tepelné čerpadlo, alebo zapojenie už existujúceho zariadenia?",
+      "existing_heat_pump_mounting_ambiguity",
+      "process",
+      "company-truth servis montaz produkt existujuce tepelne cerpadlo zapojenie vymena Geotherm",
+    );
+  }
+
   if (/(ignorovat|ignorovať|vynechat|vynechať).*(servis|kontrol).*(zaruk|záruk)|(?:zaruk|záruk).*(ignorovat|ignorovať|vynechat|vynechať).*(servis|kontrol)/.test(text)) {
     return answerBase(
       "Servis a záruka",
@@ -3871,6 +3893,16 @@ function companyPracticalDirectAnswer(message: string): DirectAnswerDecision | n
       "warranty_service_check",
       "service_fault",
       "company-truth servis zaruka pravidelna udrzba podmienky zaruky Geotherm",
+    );
+  }
+
+  if (/(maintenance|udrzb|údržb|servis|prehliad|kontrol).*(raz za rok|rocne|ročne|kazdy rok|každý rok)|(?:raz za rok|rocne|ročne|kazdy rok|každý rok).*(maintenance|udrzb|údržb|servis|prehliad|kontrol)/.test(text)) {
+    return answerBase(
+      "Pravidelná údržba",
+      "Pri tepelnom čerpadle pravidelný servis dáva zmysel, ale interval **raz za rok** by som netvrdil univerzálne pre každé zariadenie bez kontroly podmienok konkrétnej značky, záruky a ponuky. Pri NIBE alebo Vaillant treba overiť servisné podmienky, stav zariadenia a rozsah prehliadky; aj cena servisu závisí od typu zariadenia, lokality a toho, či ide iba o preventívnu kontrolu alebo už problém. Máš NIBE/Vaillant a ide o pravidelnú prehliadku, alebo už riešiš poruchu?",
+      "annual_maintenance_scope",
+      "process",
+      "company-truth heat pump tepelne cerpadlo NIBE servis udrzba cena pravidelna prehliadka zaruka Geotherm",
     );
   }
 
@@ -4592,6 +4624,16 @@ function priceDirectAnswer(message: string, state: QualificationState): DirectAn
       "",
       "Treba presne overiť, čo je v tej sume: samotná zostava, montážny materiál, práca, regulácia, TÚV zásobník, akumulačná nádrž, elektropríprava, uvedenie do prevádzky a prípadné úpravy kotolne.",
     ].join("\n");
+  } else if (/(najlacn|najlacnej|lacne riesenie|lacné riešenie|cheapest)/.test(text)) {
+    reason = "direct_lowest_price_pressure";
+    topic = "lowest_price_scope";
+    answer = [
+      "### Cenovo najdostupnejšie riešenie",
+      "",
+      "Orientačne: pri najnižšej cene by som bol opatrný. Lacnejšia ponuka nemusí znamenať nižšie celkové náklady. Treba overiť, čo je v cene, čo je mimo ceny a či riešenie nebude neskôr drahšie na prevádzke, servise alebo úpravách.",
+      "",
+      "Rozumný ďalší krok je pripraviť ponuku s jasným rozsahom: zariadenie, montáž, regulácia, uvedenie do prevádzky, prípadná TÚV alebo akumulačná nádrž. Riešiš nové tepelné čerpadlo pre dom, výmenu starého zdroja alebo servis existujúceho zariadenia?",
+    ].join("\n");
   } else if (/^(z coho|z čoho)\??$/.test(text) || text.includes("z coho") || text.includes("z čoho")) {
     reason = "direct_price_basis_question";
     topic = "price_basis";
@@ -4611,6 +4653,8 @@ function priceDirectAnswer(message: string, state: QualificationState): DirectAn
       `${context} cenu ovplyvňuje výkon, radiátory alebo podlahovka, TÚV zásobník, regulácia, montážny materiál, úpravy kotolne, elektropráce, uvedenie do prevádzky a prípadná akumulačná nádrž.`,
       "",
       "Ak máš v ruke cenu, najdôležitejšie je porovnať rozsah: čo je zahrnuté, čo je príplatok a čo sa bude riešiť až po obhliadke alebo návrhu.",
+      "",
+      "Ide o nové tepelné čerpadlo pre dom, výmenu starého zdroja alebo servis existujúceho zariadenia?",
     ].join("\n");
   }
 
@@ -4688,6 +4732,17 @@ function directAnswerDecision(message: string, state: QualificationState, route:
       topic: "gas_certification",
     };
   }
+  if (isPureSmallTalkMessage(message)) {
+    return {
+      triggered: false,
+      answerMode: "direct_answer",
+      reason: null,
+      answer: null,
+      serviceIntent: null,
+      retrievalQuery: null,
+      topic: null,
+    };
+  }
   const genericRecommendationFollowup = /^(co|čo)\s+odpor(u|ú)[cč]ate\??$/.test(text) || /^(ake|aké)\s+riesenie\??$/.test(text);
   const practical =
     hasExistingDiagnosticContext &&
@@ -4731,15 +4786,15 @@ function directAnswerDecision(message: string, state: QualificationState, route:
   }
 
   const price =
-    /(cena|ceny|cennik|koľko|kolko|stoji|stojí|navratnost|návratnosť|usetr|úspor|uspora|vratane instalacie|vrátane inštalácie|7\s*tis|7000|7\s*000|akumulac|akumula|v cene|z coho|z čoho)/.test(text) ||
-    (route.serviceIntent === "price" && hasActiveHeatPump);
+    /(cena|cenu|ceny|cenov|cennik|ponuk|nacen|najlacn|najlacnej|lacne riesenie|lacné riešenie|cheapest|koľko|kolko|stoji|stojí|navratnost|návratnosť|usetr|úspor|uspora|vratane instalacie|vrátane inštalácie|7\s*tis|7000|7\s*000|akumulac|akumula|v cene|z coho|z čoho)/.test(text) ||
+    (route.serviceIntent === "price" && hasActiveHeatPump && isContextualPriceFollowup(message));
   if (price) return priceDirectAnswer(message, state);
 
   const explicitBrandModelQuestion =
     !isBoilerOnlyQuestion(text) && /(znack|značka|ake.*\btc\b|ake mate|aké máte|ake znacky|aké značky|nibe|vaillant|daikin|mitsubishi|f2040|f2050|\bmodel\b|\bsplit\b)/.test(text);
   const brandModel =
     explicitBrandModelQuestion ||
-    (hasActiveHeatPump && route.serviceIntent === "brand_model" && !isQualificationDataReply(message));
+    (hasActiveHeatPump && route.serviceIntent === "brand_model" && !isQualificationDataReply(message) && isContextualBrandModelFollowup(message));
   if (brandModel) return brandModelDirectAnswer(message, state);
 
   return {
@@ -5815,6 +5870,7 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
       "Používateľ sa pýta na technicky alebo bezpečnostne rizikovú vec. Musíš odpovedať cez AI, ale nesmieš dávať návod na opravu, zapojenie, rozoberanie, tlak, chladivo ani servisný postup.",
       "",
       `Cieľ odpovede: pokojne vysvetliť, že toto treba riešiť telefonicky s technikom, a jasne priložiť číslo ${urgentServicePhone}.`,
+      "Pri elektrike, zápachu, skratu alebo kábloch použi jasne slová: bezpečnosť, odborný servis, odborná montáž. Nepíš „určite“, „garantujem“ ani technický návod.",
       "",
       "Formát: pekný Markdown, jeden krátky nadpis `### ...`, maximálne 80 slov, žiadna tabuľka, žiadny technický postup.",
     ].join("\n");
@@ -5854,9 +5910,13 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
       });
       safetyCandidate = cleanAnswerText(safetyLlm.content);
     }
-    const safetyWithPhone = safetyCandidate.includes(urgentServicePhone)
+    let safetyWithPhone = safetyCandidate.includes(urgentServicePhone)
       ? safetyCandidate
       : `${safetyCandidate}\n\n**Urgentný kontakt:** ${urgentServicePhone}`;
+    safetyWithPhone = safetyWithPhone.replace(/\burčite\b/gi, "vážny").replace(/\burcite\b/gi, "vážny");
+    if (!/(bezpečnosť|bezpecnost|odborný servis|odborny servis|odborná montáž|odborna montaz|servis)/i.test(safetyWithPhone)) {
+      safetyWithPhone = `${safetyWithPhone}\n\nKvôli bezpečnosti to ber ako vec pre odborný servis alebo odbornú montáž, nie svojpomocný zásah.`;
+    }
     const safetyLlmUsed = Boolean(safetyLlm.content && !safetyLlm.error && !isIncompleteAnswer(safetyCandidate));
     const answer = enforceMarkdownPresentation(
       isIncompleteAnswer(safetyWithPhone) ? safetyRoute.answer : safetyWithPhone,
@@ -6054,8 +6114,15 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     isContactQuestion(message) ||
     explicitOutdoorUnitQuestion ||
     /(dotac|poukazk|prispevok|cena|cenu|kolko|koľko|stoji|stojí|montaz|montáž|realizacia|realizácia|podorys|pôdorys|spustenie|dokumentac|zaruk|záruk|rozdiel|porovn)/.test(routerFallbackText);
+  const pureSmallTalkTurn = isPureSmallTalkMessage(message);
 
-  if (explicitOutOfScopeTopicSwitch && !isContactQuestion(message)) {
+  if (pureSmallTalkTurn) {
+    route.serviceType = "unknown";
+    route.serviceIntent = "general";
+    route.needsRetrieval = false;
+    route.retrievalQuery = null;
+    route.directAnswer = null;
+  } else if (explicitOutOfScopeTopicSwitch && !isContactQuestion(message)) {
     route.serviceType = "unknown";
     route.serviceIntent = "general";
     route.needsRetrieval = false;
@@ -6140,6 +6207,7 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
   }
   if (
     !isObviousGreeting &&
+    !pureSmallTalkTurn &&
     !isPersonalDataOnly(message) &&
     activeDiagnosticState &&
     currentMessagePolicy.kind !== "out_of_scope" &&
@@ -6150,7 +6218,7 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     route.retrievalQuery = message;
     route.directAnswer = null;
   }
-  if (isShortContextReply(message) && route.serviceType !== "unknown" && !route.needsRetrieval) {
+  if (!pureSmallTalkTurn && isShortContextReply(message) && route.serviceType !== "unknown" && !route.needsRetrieval) {
     route.needsRetrieval = true;
     route.retrievalQuery = message;
     route.directAnswer = null;
@@ -6546,6 +6614,17 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
       directAnswerFallbackUsed = true;
     }
   }
+  if (
+    directDecision.triggered &&
+    directDecision.answerMode === "price_answer" &&
+    ["price", "lowest_price_scope", "low_price_scope"].includes(directDecision.topic || "") &&
+    directDecision.answer &&
+    countQuestionMarks(answer) === 0
+  ) {
+    recordDiagnostic(answerDiagnostics.validatorsTriggered, "vague_price_followup_repaired");
+    answer = validateAndRepairAnswer(directDecision.answer, stateForTurn, route, message, answerDiagnostics);
+    directAnswerFallbackUsed = true;
+  }
   if (directDecision.triggered && directDecision.reason?.startsWith("company_practical_") && directDecision.answer) {
     const normalized = normalizePolicyText(answer);
     const topic = directDecision.topic || "";
@@ -6614,6 +6693,8 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
       "installation_duration",
       "floorplan_project",
       "air_to_water_direction",
+      "existing_heat_pump_mounting_ambiguity",
+      "annual_maintenance_scope",
     ]);
     const needsDraft =
       forceDraftTopics.has(topic) ||
