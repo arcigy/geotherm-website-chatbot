@@ -36,7 +36,8 @@ function passFor(query: string, response: ApiResponse): boolean {
       response.confidence === "low" &&
       (normalizedAnswer.includes("nenasiel dostatocne jasnu odpoved") ||
         normalizedAnswer.includes("nemam dostatocne jasny podklad") ||
-        normalizedAnswer.includes("nemam dost jasny podklad"))
+        normalizedAnswer.includes("nemam dost jasny podklad") ||
+        normalizedAnswer.includes("nemam potvrdeny firemny podklad"))
     );
   }
   if (query.includes("presny model")) {

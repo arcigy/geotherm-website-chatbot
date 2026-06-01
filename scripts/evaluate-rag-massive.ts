@@ -54,18 +54,26 @@ function estimateReliability(summary: MassiveSummary): string {
 }
 
 async function evaluateCases(cases: MassiveTestCase[]): Promise<EvaluatedCase[]> {
-  const results: EvaluatedCase[] = [];
-  for (const test of cases) {
-    const response = await createChatResponse({
-      message: test.query,
-      siteId: "geotherm",
-      anonymousId: `massive_${test.id}_${Date.now()}_${Math.random().toString(36).slice(2)}`,
-      currentUrl: "http://localhost/rag-massive",
-      metadata: { userAgent: "rag-massive-evaluator" },
-    });
-    results.push(evaluateMassiveCase(test, response));
+  const concurrency = Math.max(1, Math.min(8, Number.parseInt(process.env.RAG_MASSIVE_CONCURRENCY || "5", 10) || 5));
+  const results: EvaluatedCase[] = new Array(cases.length);
+  let cursor = 0;
+  async function worker(): Promise<void> {
+    while (cursor < cases.length) {
+      const index = cursor++;
+      const test = cases[index];
+      if (!test) continue;
+      const response = await createChatResponse({
+        message: test.query,
+        siteId: "geotherm",
+        anonymousId: `massive_${test.id}_${Date.now()}_${Math.random().toString(36).slice(2)}`,
+        currentUrl: "http://localhost/rag-massive",
+        metadata: { userAgent: "rag-massive-evaluator" },
+      });
+      results[index] = evaluateMassiveCase(test, response);
+    }
   }
-  return results;
+  await Promise.all(Array.from({ length: Math.min(concurrency, cases.length) }, () => worker()));
+  return results.filter(Boolean);
 }
 
 export async function runMassiveEvaluation(): Promise<MassiveSummary> {
