@@ -82,7 +82,8 @@ const cases: Case[] = [
   { id: "docs_after_install", message: "Dostanem po realizácii dokumentáciu?", mustContain: ["potvr"], mustNotContain: ["áno"] },
   { id: "subsidy_help", message: "Viete zabezpečiť aj dotácie?", mustContain: ["dot"], mustNotContain: ["garantujeme", "kompletne vybavíme"] },
   { id: "company_age", message: "Koľko rokov ste na trhu?", mustContain: ["Geotherm"], minSources: 1 },
-  { id: "small_talk", message: "ahoj", mustContain: ["pom"], maxSources: 0 },
+  { id: "small_talk", message: "ahoj", mustContain: ["som tu"], mustNotContain: ["?", "novostav", "tepelné čerpadlá", "služby"], maxSources: 0 },
+  { id: "small_talk_how_are_you", message: "ako sa máš?", mustContain: ["dobre"], mustNotContain: ["?", "novostav", "tepelné čerpadlá", "služby"], maxSources: 0 },
   { id: "weather_out_of_scope", message: "aké je dnes počasie?", mustContain: ["podklad"], maxSources: 0, maxMs: 8000 },
 ];
 
@@ -105,7 +106,11 @@ function hasAll(answer: string, terms: string[] | undefined): boolean {
 function forbiddenTerms(answer: string, terms: string[] | undefined): string[] {
   if (!terms?.length) return [];
   const text = normalize(answer);
-  return terms.filter((term) => text.includes(normalize(term)));
+  return terms.filter((term) => {
+    const normalizedTerm = normalize(term);
+    if (!normalizedTerm) return answer.includes(term);
+    return text.includes(normalizedTerm);
+  });
 }
 
 function genericFailures(body: ChatBody, testCase: Case): string[] {

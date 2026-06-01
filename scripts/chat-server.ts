@@ -1282,7 +1282,12 @@ function augmentStructuredAnswer(answer: StructuredAnswer, context?: { message: 
 
 function renderStructuredAnswer(answer: StructuredAnswer, sources: ChatSource[], mode: AnswerMode, context?: { message: string; intent: SalesIntent }): string {
   const enforcedAnswer = enforceStructuredAnswer(answer, sources, mode);
-  const safeAnswer = mode === "out_of_scope" ? enforcedAnswer : augmentStructuredAnswer(enforcedAnswer, context);
+  const safeAnswer =
+    mode === "general_chat" && context?.message && isPureSmallTalkMessage(context.message)
+      ? pureSmallTalkFallback(context.message)
+      : mode === "out_of_scope"
+        ? enforcedAnswer
+        : augmentStructuredAnswer(enforcedAnswer, context);
   const lines = [safeAnswer.shortAnswer || "Na toto potrebujem trochu viac kontextu."];
   if (safeAnswer.details.length) {
     lines.push("", ...safeAnswer.details.map((detail) => `- ${detail}`));
@@ -2049,6 +2054,27 @@ function isGeneralChatWithoutRetrieval(message: string): boolean {
   ].some((term) => text === term || text.startsWith(`${term} `));
 }
 
+function isPureSmallTalkMessage(message: string): boolean {
+  const text = normalizePolicyText(message);
+  if (/(tc|tepel|cerpad|klimatiz|rekuper|servis|dotac|cena|kontakt|montaz|kuren|chladen|vykurov|kotol|radiator|podlah|nibe|vaillant)/.test(text)) return false;
+  return /^(ahoj|cau|hello|hi|hey|dobry den|dobry vecer|zdravim|ako sa mas|ako sa mate|dakujem|vdaka|super|ok|kto si|co si zac)$/.test(text);
+}
+
+function pureSmallTalkFallback(message: string): StructuredAnswer {
+  const text = normalizePolicyText(message);
+  const shortAnswer =
+    text.includes("ako sa mas") || text.includes("ako sa mate")
+      ? "Mám sa dobre, vďaka. Som tu, keď budeš chcieť s niečím pomôcť."
+      : text.includes("dakujem") || text.includes("vdaka")
+        ? "Rado sa stalo."
+        : text === "ok" || text === "super"
+          ? "Jasné."
+          : text.includes("kto si") || text.includes("co si zac")
+            ? "Som Geotherm chatbot a pomáham s orientáciou v technických riešeniach domu."
+            : "Ahoj, som tu.";
+  return { shortAnswer, details: [], followUpQuestion: null, shouldAskFollowUp: false, safetyNote: null, confidence: "high" };
+}
+
 function isGreetingMessage(message: string): boolean {
   const text = message.trim().toLowerCase();
   return [
@@ -2471,6 +2497,11 @@ function isPageOverviewQuestion(message: string): boolean {
   ].some((term) => text.includes(term));
 }
 
+function isServicesOverviewQuestion(message: string): boolean {
+  const text = normalizePolicyText(message);
+  return /(ake sluzby|ake služby|sluzby poskytujete|služby poskytujete|co robite|čo robíte|comu sa venujete|čomu sa venujete)/.test(text);
+}
+
 function isContactQuestion(message: string): boolean {
   const text = normalizePolicyText(message);
   return (
@@ -2678,6 +2709,19 @@ function deterministicRoutingPlan(message: string, previousMessages: Array<{ rol
       contextCarried: false,
     };
   }
+  if (isServicesOverviewQuestion(message)) {
+    return {
+      needsRetrieval: true,
+      retrievalQuery: "Geotherm služby tepelné čerpadlá klimatizácie rekuperácia podlahové kúrenie stropné chladenie servis dotácie rozvody voda",
+      answerMessage: message,
+      contextTopic: "prehľad služieb Geotherm",
+      intentHint: "product",
+      answerMode: "rag_answer",
+      confidence: "high",
+      reason: "services_overview_question",
+      contextCarried: false,
+    };
+  }
   if (isGeneralChatWithoutRetrieval(message)) {
     return {
       needsRetrieval: false,
@@ -2767,6 +2811,7 @@ function routingPlanFromLlm(decision: RetrievalRouteDecision | undefined, fallba
 function mergeRoutingPlans(message: string, fallback: RoutingPlan, llmDecision: RetrievalRouteDecision | undefined): RoutingPlan {
   const llmPlan = routingPlanFromLlm(llmDecision, fallback, message);
   if (fallback.reason === "page_overview_without_retrieval") return fallback;
+  if (fallback.reason === "services_overview_question") return fallback;
   if (fallback.reason === "service_area_question") return fallback;
   if (!fallback.contextCarried) return llmPlan;
 
@@ -3715,6 +3760,16 @@ function companyPracticalDirectAnswer(message: string): DirectAnswerDecision | n
     );
   }
 
+  if (/(rozvod|rozvody).*(vody|voda)|vodoin/.test(text)) {
+    return answerBase(
+      "Rozvody vody",
+      "Áno, v knowledge Geotherm sa spomínajú aj **rozvody vody a kanalizácie** a referencie zdravotechniky v rodinných domoch. Pri konkrétnom dopyte treba potvrdiť rozsah: či ide o nový dom, rekonštrukciu, napojenie technológie, kúpeľne alebo technickú miestnosť. Najpraktickejší ďalší krok je poslať pôdorys alebo fotky a dohodnúť krátku konzultáciu/nacenenie.",
+      "water_distribution",
+      "process",
+      "rozvody vody kanalizacie zdravotechnika Geotherm referencie rodinny dom",
+    );
+  }
+
   if (/(whatsapp|whats app)/.test(text)) {
     return answerBase(
       "WhatsApp",
@@ -3732,6 +3787,26 @@ function companyPracticalDirectAnswer(message: string): DirectAnswerDecision | n
       "payment",
       "price",
       "company-truth prakticke FAQ platba zaloha faktura Geotherm",
+    );
+  }
+
+  if (/(obhliad|prehliad).*(platen|platena|platna|bezplat|zadarmo|zdarma)|(?:platen|platena|platna|bezplat|zadarmo|zdarma).*(obhliad|prehliad)/.test(text)) {
+    return answerBase(
+      "Obhliadka",
+      "Bez aktuálneho potvrdenia by som netvrdil, že obhliadka je bezplatná alebo platená. Pri konkrétnom dopyte treba potvrdiť podmienky podľa lokality, služby a rozsahu; ak pošleš fotky alebo základné údaje, dá sa najprv pripraviť orientačné nacenenie a potom dohodnúť ďalší krok.",
+      "inspection_paid",
+      "inspection",
+      "company-truth policies obhliadka platena bezplatna potvrdit podmienky Geotherm",
+    );
+  }
+
+  if (/(zaruk|záruk).*(prac|prác|montaz|montáž)|(?:prac|prác|montaz|montáž).*(zaruk|záruk)/.test(text)) {
+    return answerBase(
+      "Záruka na prácu",
+      "Pri záruke na prácu treba potvrdiť konkrétne podmienky podľa typu realizácie, zariadenia a rozsahu montáže. Bez konkrétnej ponuky by som negarantoval presný rozsah; pri nacenení je vhodné potvrdiť záruku na zariadenie, montáž, servis a odovzdávacie podklady.",
+      "warranty_work",
+      "process",
+      "company-truth policies zaruka na pracu montaz podmienky potvrdit Geotherm",
     );
   }
 
@@ -5578,7 +5653,7 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     prompt: activeComposerInput,
     maxOutputTokens: directDecision.triggered ? 900 : 1200,
     timeoutMs: directDecision.triggered
-      ? Math.max(Number.parseInt(process.env.LLM_FAST_REQUEST_TIMEOUT_MS || "3500", 10), 12000)
+      ? Math.min(Math.max(Number.parseInt(process.env.LLM_FAST_REQUEST_TIMEOUT_MS || "6000", 10), 5500), 6500)
       : route.needsRetrieval
       ? Number.parseInt(process.env.LLM_ANSWER_TIMEOUT_MS || "10000", 10)
       : Math.min(Number.parseInt(process.env.LLM_FAST_REQUEST_TIMEOUT_MS || "3500", 10), 3500),
@@ -5626,7 +5701,7 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
         2,
       ),
       maxOutputTokens: 700,
-      timeoutMs: Math.max(Number.parseInt(process.env.LLM_FAST_REQUEST_TIMEOUT_MS || "3500", 10), 12000),
+      timeoutMs: Math.min(Math.max(Number.parseInt(process.env.LLM_FAST_REQUEST_TIMEOUT_MS || "5000", 10), 4500), 5500),
       responseMimeType: "text/plain",
     });
     const directRepairedAnswer = directRepairLlm.error || !directRepairLlm.content ? "" : cleanAnswerText(directRepairLlm.content);
@@ -5687,6 +5762,10 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
   if (isSmallTalkMessage(message)) {
     answer = answer.replace(/^Nemám dostatočne jasný podklad na túto tému\.\s*/i, "").trim();
   }
+  if (!route.needsRetrieval && isPureSmallTalkMessage(message)) {
+    answer = renderStructuredAnswer(pureSmallTalkFallback(message), [], "general_chat", { message, intent: "unknown" });
+    recordDiagnostic(answerDiagnostics.validatorsTriggered, "pure_small_talk_sanitized");
+  }
   answer = validateAndRepairAnswer(answer, stateForTurn, route, message, answerDiagnostics);
   if (
     directDecision.triggered &&
@@ -5710,6 +5789,14 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
       directAnswerFallbackUsed = true;
     }
   }
+  if (directDecision.triggered && directDecision.topic === "buffer_tank_price_scope" && directDecision.answer) {
+    const normalized = normalizePolicyText(answer);
+    if (!normalized.includes("ponuk")) {
+      recordDiagnostic(answerDiagnostics.validatorsTriggered, "buffer_tank_scope_repaired");
+      answer = validateAndRepairAnswer(directDecision.answer, stateForTurn, route, message, answerDiagnostics);
+      directAnswerFallbackUsed = true;
+    }
+  }
   if (directDecision.triggered && directDecision.reason?.startsWith("company_practical_") && directDecision.answer) {
     const normalized = normalizePolicyText(answer);
     const topic = directDecision.topic || "";
@@ -5723,10 +5810,15 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
       "gas_certification",
       "docs_after_install",
       "emergency_callout",
+      "inspection_paid",
+      "warranty_work",
     ]);
     const needsDraft =
       (confirmTopics.has(topic) && !normalized.includes("potvr")) ||
       (topic === "quote_inputs" && !normalized.includes("plocha")) ||
+      (topic === "vaillant_boilers" && !(normalized.includes("vaillant") && normalized.includes("kot"))) ||
+      (topic === "boilers" && !normalized.includes("kot")) ||
+      (topic === "water_distribution" && !(normalized.includes("vod") && normalized.includes("rozvod"))) ||
       (["whatsapp", "insurance", "gas_certification", "docs_after_install"].includes(topic) && /^ano\b/.test(normalized));
     if (needsDraft) {
       recordDiagnostic(answerDiagnostics.validatorsTriggered, "company_practical_guardrail_repaired");
@@ -6228,7 +6320,7 @@ async function legacyCreateChatResponse(requestBody: ChatRequest, knowledgePath?
 
   const fallbackRoute = deterministicRoutingPlan(message, previousMessages);
   const isShortReply = message.trim().length <= 20 && Boolean(previousState.last_asked_question);
-  const isGreeting = !isShortReply && isGreetingMessage(message);
+  const isGreeting = false && !isShortReply && isGreetingMessage(message);
   if (isGreeting) {
     const intent: SalesIntent = "greeting";
     const confidence: "high" = "high";
@@ -6367,7 +6459,9 @@ async function legacyCreateChatResponse(requestBody: ChatRequest, knowledgePath?
 
     const answerMode = routePlan.answerMode === "rag_answer" ? "general_chat" : routePlan.answerMode;
     const fallbackStructured =
-      answerMode === "general_chat"
+      answerMode === "general_chat" && isPureSmallTalkMessage(answerMessage)
+        ? pureSmallTalkFallback(answerMessage)
+        : answerMode === "general_chat"
           ? {
               shortAnswer: "Toto je chat k webu Geotherm a témam okolo vykurovania, chladenia a tepelných čerpadiel.",
               details: ["Vie ti pomôcť zorientovať sa v riešeniach pre dom, servise, dotáciách alebo cenovej orientácii."],
@@ -6392,7 +6486,10 @@ async function legacyCreateChatResponse(requestBody: ChatRequest, knowledgePath?
       fallbackAnswer,
       lastAskedQuestion: previousState.last_asked_question,
     });
-    const structuredAnswer = structuredAnswerForLeadCapture(llm.structuredAnswer || fallbackStructured, leadCapture);
+    const structuredAnswer =
+      answerMode === "general_chat" && isPureSmallTalkMessage(answerMessage)
+        ? pureSmallTalkFallback(answerMessage)
+        : structuredAnswerForLeadCapture(llm.structuredAnswer || fallbackStructured, leadCapture);
     const answer = renderStructuredAnswer(structuredAnswer, sources, llm.structuredAnswer ? llm.answerMode : answerMode, { message: answerMessage, intent });
     const persistedState = stateWithLastAskedQuestion(finalState, structuredAnswer);
 

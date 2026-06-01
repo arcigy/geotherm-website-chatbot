@@ -46,13 +46,13 @@ const scenarios: Scenario[] = [
     id: "small_talk_greeting",
     title: "Small talk pozdrav bez RAG",
     messages: ["ahoj"],
-    expectLast: { maxSources: 0, mustContain: ["pom"] },
+    expectLast: { maxSources: 0, mustContain: ["som tu"], mustNotContain: ["?"] },
   },
   {
     id: "small_talk_how_are_you",
     title: "Small talk ako sa mas bez zbytocneho RAG",
     messages: ["ako sa máš?"],
-    expectLast: { maxSources: 0, mustContain: ["pom"] },
+    expectLast: { maxSources: 0, mustContain: ["dobre"], mustNotContain: ["?"] },
   },
   {
     id: "vague_heat_pump_followup",
@@ -165,7 +165,11 @@ function includesAll(answer: string, terms: string[] | undefined): boolean {
 function includesAnyForbidden(answer: string, terms: string[] | undefined): string[] {
   if (!terms?.length) return [];
   const normalized = normalize(answer);
-  return terms.filter((term) => normalized.includes(normalize(term)));
+  return terms.filter((term) => {
+    const normalizedTerm = normalize(term);
+    if (!normalizedTerm) return answer.includes(term);
+    return normalized.includes(normalizedTerm);
+  });
 }
 
 function evaluate(body: ChatBody, expectation: Expectation): string[] {

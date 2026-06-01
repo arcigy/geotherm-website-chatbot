@@ -193,6 +193,32 @@ function defaultAnswerMode(input: LlmComposeInput): AnswerMode {
   return "rag_answer";
 }
 
+function normalizeUserText(value: string): string {
+  return value
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9\s]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function isPureGeneralChatMessage(message: string): boolean {
+  const text = normalizeUserText(message);
+  const serviceTerms = /(tc|tepel|cerpad|klimatiz|rekuper|servis|dotac|cena|kontakt|montaz|kuren|chladen|vykurov|kotol|radiator|podlah|nibe|vaillant)/;
+  if (serviceTerms.test(text)) return false;
+  return /^(ahoj|cau|hello|hi|hey|dobry den|dobry vecer|zdravim|ako sa mas|ako sa mate|dakujem|vdaka|super|ok|kto si|co si zac)$/.test(text);
+}
+
+function pureGeneralChatShortAnswer(message: string): string {
+  const text = normalizeUserText(message);
+  if (text.includes("ako sa mas") || text.includes("ako sa mate")) return "Mám sa dobre, vďaka. Som tu, keď budeš chcieť s niečím pomôcť.";
+  if (text.includes("dakujem") || text.includes("vdaka")) return "Rado sa stalo.";
+  if (text === "ok" || text === "super") return "Jasné.";
+  if (text.includes("kto si") || text.includes("co si zac")) return "Som Geotherm chatbot a pomáham s orientáciou v technických riešeniach domu.";
+  return "Ahoj, som tu.";
+}
+
 function schemaContract(): object {
   return {
     answerMode: "rag_answer | safety_fallback | out_of_scope | lead_capture | contact_intent | low_confidence | general_chat | short_followup",
@@ -319,8 +345,11 @@ function userPayload(input: LlmComposeInput): string {
           noSourcesNeeded: true,
           useTykanie: true,
           noHVACAbbreviation: true,
+          pureSocialMessage: isPureGeneralChatMessage(input.message),
+          noFollowUpQuestionForPureSocialMessage: isPureGeneralChatMessage(input.message),
+          noServiceListForPureSocialMessage: isPureGeneralChatMessage(input.message),
           maxDetails: 2,
-          maxQuestions: 1,
+          maxQuestions: isPureGeneralChatMessage(input.message) ? 0 : 1,
           fallbackIfUnsure: input.fallbackAnswer,
         },
         ...(dialogContext ? { dialogContext } : {}),
@@ -531,13 +560,21 @@ function validateStructuredResponse(raw: string, input: LlmComposeInput): { ok: 
       : root;
   const errors: string[] = [];
   const warnings: string[] = [];
-  const mode = normalizeMode(root.answerMode, defaultAnswerMode(input));
-  const shortAnswer = normalizeText(candidate.shortAnswer ?? root.shortAnswer ?? root.answer, 340);
+  const requestedMode = defaultAnswerMode(input);
+  const mode = requestedMode === "general_chat" ? "general_chat" : normalizeMode(root.answerMode, requestedMode);
+  let shortAnswer = normalizeText(candidate.shortAnswer ?? root.shortAnswer ?? root.answer, 340);
   if (!shortAnswer) errors.push("structuredAnswer.shortAnswer is required.");
 
-  const details = normalizeDetails(candidate.details);
-  const shouldAskFollowUp = Boolean(candidate.shouldAskFollowUp ?? input.leadCapture.shouldAsk);
+  let details = normalizeDetails(candidate.details);
+  let shouldAskFollowUp = Boolean(candidate.shouldAskFollowUp ?? input.leadCapture.shouldAsk);
   let followUpQuestion = firstQuestion(candidate.followUpQuestion);
+  if (mode === "general_chat" && isPureGeneralChatMessage(input.message)) {
+    const safeShortAnswer = normalizeText(shortAnswer.replace(/[^.!?]+[?]/g, ""), 180);
+    shortAnswer = safeShortAnswer && !/[?]/.test(safeShortAnswer) ? safeShortAnswer : pureGeneralChatShortAnswer(input.message);
+    details = [];
+    shouldAskFollowUp = false;
+    followUpQuestion = null;
+  }
   if (shouldAskFollowUp && !followUpQuestion && input.leadCapture.nextQuestion) {
     followUpQuestion = firstQuestion(input.leadCapture.nextQuestion);
     warnings.push("followUpQuestion repaired from server hint.");
@@ -735,7 +772,7 @@ export async function composeWithLlm(input: LlmComposeInput): Promise<LlmCompose
           maxOutputTokens: 900,
           timeoutMs: Number.parseInt(process.env.LLM_FAST_REQUEST_TIMEOUT_MS || "12000", 10),
           singleCandidate: false,
-          systemPrompt: "Return valid JSON only. Slovak friendly advisor. No Markdown. Always use informal Slovak tykanie: ty, tebe, ti, tvoj. Never use formal vykanie. This message does not need retrieval. Answer the actual user message naturally, briefly, and with at most one follow-up question.",
+          systemPrompt: "Return valid JSON only. Slovak friendly advisor. No Markdown. Always use informal Slovak tykanie: ty, tebe, ti, tvoj. Never use formal vykanie. This message does not need retrieval. For pure greetings, thanks, ok, or small talk, answer in 1 short sentence, no service list, no sales pitch, and no follow-up question. If the user mentions a real problem or service, you may ask at most one follow-up question.",
           responseSchema: structuredResponseSchema(),
         }
       : {
