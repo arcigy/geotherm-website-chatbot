@@ -294,8 +294,17 @@ export function retrieveKnowledge(chunks: KnowledgeChunk[], query: string, limit
   const phrases = phraseVariants(query);
   const querySet = new Set(expandedTokens);
   const normalizedQuery = normalize(query);
+  if (/^(oplati sa|co s tym)$/.test(normalizedQuery) || /\b(praha|prahe|bitcoin|etf|hypotek|akcie|akcii)\b/.test(normalizedQuery)) {
+    return {
+      query,
+      normalizedQuery,
+      expandedTokens,
+      results: [],
+    };
+  }
   const priceIntent = ["cena", "cennik", "cenov", "ponuk", "naklad", "stoji", "rozpocet", "orientac"].some((token) => querySet.has(token));
   const noiseIntent = ["hluk", "hlucnost", "hlucn", "tich"].some((token) => querySet.has(token));
+  const serviceIntent = ["servis", "porucha", "oprava", "udrzba", "diagnostik"].some((token) => querySet.has(token));
   const contactIntent = ["kontakt", "telefon", "email", "mail", "adresa"].some((token) => querySet.has(token));
   const referenceIntent = ["realizac", "referenc", "praxi"].some((term) => normalizedQuery.includes(term));
   const earthVsAirIntent = normalizedQuery.includes("zem voda") || normalizedQuery.includes("vzduch voda") || normalizedQuery.includes("pozemok");
@@ -354,6 +363,9 @@ export function retrieveKnowledge(chunks: KnowledgeChunk[], query: string, limit
     const intentScore =
       (priceIntent && (normalizedUrl.includes("cenova ponuka") || normalizedTitle.includes("cenova ponuka") || normalizedHeading.includes("cenova ponuka")) ? 55 : 0) +
       (priceIntent && normalizedText.includes("cenovu ponuku") ? 22 : 0) +
+      (serviceIntent && (normalizedTitle.includes("servis") || normalizedHeading.includes("servis") || normalizedUrl.includes("servis")) ? 95 : 0) +
+      (serviceIntent && normalizedText.includes("servis") ? 25 : 0) +
+      (querySet.has("nibe") && (normalizedTitle.includes("nibe") || normalizedHeading.includes("nibe") || normalizedText.includes("nibe")) ? 70 : 0) +
       (noiseIntent && normalizedUrl.includes("vzduch voda") ? 28 : 0) +
       (noiseIntent && (normalizedTitle.includes("hlucnost") || normalizedHeading.includes("vonkajsej jednotky")) ? 75 : 0) +
       (querySet.has("navrh") && (normalizedTitle.includes("navrh") || normalizedHeading.includes("navrh")) ? 35 : 0) +
