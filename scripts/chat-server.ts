@@ -4706,7 +4706,28 @@ function expectedRecommendationClosureAnswer(state: QualificationState, closure:
       "",
       "Finálne treba preveriť hlavne teplotu vody pre radiátory, existujúcu akumulačnú nádrž, priestor v kotolni a či má čerpadlo riešiť aj teplú vodu.",
       "",
-      "Ďalší krok: pošli fotky kotolne, radiátorov a prípadnej akumulačnej nádrže. Potom sa dá pripraviť konkrétnejší návrh alebo dohodnúť obhliadka.",
+      "Ďalší krok by som už nerobil ďalším dotazníkom. Dajme si krátku konzultáciu alebo stretnutie, kde sa preverí radiátorový systém, kotolňa a prípadná akumulačná nádrž a pripraví sa konkrétne nacenenie.",
+    ].join("\n");
+  }
+
+  if (isExistingRadiatorHeatPump(state)) {
+    const area = state.area_m2 ? ` pri dome približne ${state.area_m2} m²` : "";
+    const source = state.current_heating ? ` a náhrade zdroja typu ${state.current_heating}` : "";
+    return [
+      "### Predbežné uzavretie odporúčania",
+      "",
+      `Podľa toho, čo píšeš, by som to už predbežne uzavrel: **najlepší smer je tepelné čerpadlo vzduch-voda vhodné pre radiátorový systém**${area}${source}.`,
+      "",
+      "Dáva to zmysel, ale pri radiátoroch treba vyberať riešenie podľa požadovanej teploty vody. Ak sú radiátory dostatočne veľké, môže systém fungovať úsporne; ak sú poddimenzované, rieši sa ich posilnenie alebo vhodnejšia vysokoteplotná konfigurácia.",
+      "",
+      "**Pozrel by som sa na tieto možnosti:**",
+      "1. **Vaillant aroTHERM plus** ako vzduch-voda riešenie vhodné aj pre radiátorové systémy, ak sadne výkon a zapojenie.",
+      "2. **NIBE S2125 alebo aktuálne NIBE vzduch-voda riešenie** podľa aktuálnej ponuky a požadovaného výkonu.",
+      "3. **Úprava hydrauliky alebo časti radiátorov**, ak dom potrebuje vyššiu teplotu vody alebo stabilnejší objem systému.",
+      "",
+      "Typicky by sa riešila vonkajšia jednotka, vnútorné hydraulické zapojenie, regulácia, prípadne zásobník TÚV a akumulačná nádrž podľa kotolne.",
+      "",
+      "Ďalší krok by už mala byť krátka konzultácia alebo stretnutie. Tam sa vyberú 2-3 konkrétne zostavy a pripraví sa nacenenie podľa radiátorov, kotolne a teplej vody.",
     ].join("\n");
   }
 
@@ -4740,7 +4761,7 @@ function expectedRecommendationClosureAnswer(state: QualificationState, closure:
     "**Možnosti:**",
     ...closure.options.map((option, index) => `${index + 1}. ${option}.`),
     "",
-    "Ďalší krok: pošli fotky technickej miestnosti, aktuálneho zdroja a základné podklady k domu, aby sa dal pripraviť konkrétnejší návrh.",
+    "Ďalší krok by už mala byť krátka konzultácia alebo stretnutie, kde sa vyberie konkrétny rozsah riešenia a pripraví sa nacenenie.",
   ].join("\n");
 }
 
@@ -4752,7 +4773,7 @@ function answerHasRecommendationClosure(answer: string): boolean {
   const normalized = normalizePolicyText(answer);
   const hasClosureLanguage = /(najlepsi smer|uzavrel|uzavriet|predbezne uzavrel)/.test(normalized);
   const hasOptions = /(1\s|1\.|jedna moznost|prva moznost)/.test(normalized) && /(2\s|2\.|druha moznost|hybrid)/.test(normalized);
-  const hasCta = /(dalsi krok|ďalší krok|posli fotky|pošli fotky|fotky kotolne|dohodnut obhliadku|pripravit navrh|pripraviť návrh)/.test(normalized);
+  const hasCta = /(dalsi krok|ďalší krok|konzult|stretn|nacen|nacenenie|cenova ponuka|cenovu ponuku|dohodnut obhliadku|pripravit navrh|pripraviť návrh)/.test(normalized);
   return hasClosureLanguage && hasOptions && hasCta && countQuestionMarks(answer) <= 2;
 }
 
@@ -4846,7 +4867,10 @@ function sanitizeAnswerForDiagnosticRules(
     recordDiagnostic(diagnostics.bannedClaimsRemoved, "podlahové chladenie lepšie ako klimatizácia");
   }
   next = coolingSanitized;
-  const serviceQuestionSanitized = next.replace(/máš záujem o montáž a servis od nás\??/gi, "máš projekt, tepelnú stratu alebo energetický certifikát?");
+  const serviceQuestionSanitized = next.replace(
+    /máš záujem o montáž a servis od nás\??/gi,
+    "ďalší krok je krátka konzultácia alebo nacenenie podľa konkrétneho rozsahu.",
+  );
   if (serviceQuestionSanitized !== next && diagnostics) {
     recordDiagnostic(diagnostics.validatorsTriggered, "weak_sales_question_replaced");
   }

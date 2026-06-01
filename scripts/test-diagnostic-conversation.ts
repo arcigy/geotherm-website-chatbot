@@ -175,6 +175,32 @@ const scenarios: Scenario[] = [
     },
   },
   {
+    id: "old_house_radiators_gas_closure",
+    title: "Starsi dom + radiatory + plyn + closure",
+    messages: ["Ahoj, chcem tc", "Starsi 140m radiatory", "plynovy kotol", "co odporucate?"],
+    check(turnIndex, body) {
+      const failures = commonChecks(body);
+      const answer = body.answer || "";
+      const slots = slotText(body);
+      if (turnIndex === 1) {
+        if (!hasAll(slots, ["rekon", "140", "radi"])) failures.push(`storedSlots missing older house/radiators: ${JSON.stringify(body.debug?.storedSlots || {})}`);
+        if (!hasAll(answer, ["vzduch-voda", "radiator"])) failures.push("older radiator verdict missing");
+        if (hasAny(answer, ["urcil vhodnu sluzbu", "riesis kurenie chladenie vetranie servis alebo dotaciu"])) failures.push("generic service fallback leaked");
+      }
+      if (turnIndex === 2) {
+        if (!hasAny(slots, ["plyn"])) failures.push(`storedSlots missing gas boiler: ${JSON.stringify(body.debug?.storedSlots || {})}`);
+        if (!hasAll(answer, ["vzduch-voda", "radiator"])) failures.push("gas boiler replacement verdict missing");
+      }
+      if (turnIndex === 3) {
+        if (body.debug?.answerMode !== "recommendation_closure") failures.push(`expected recommendation_closure, got ${body.debug?.answerMode || "missing"}`);
+        if (!hasAny(answer, ["aroTHERM", "S2125", "NIBE", "Vaillant"])) failures.push("radiator closure should mention concrete portfolio options");
+        if (!hasAny(answer, ["konzult", "stretn", "nacen", "nacenenie"])) failures.push("radiator closure should move to consultation/pricing");
+        if (hasAny(answer, ["riesis kurenie chladenie vetranie servis alebo dotaciu", "posli projekt", "tepelnu stratu", "energeticky certifikat"])) failures.push("radiator closure leaked generic fallback or extra document request");
+      }
+      return failures;
+    },
+  },
+  {
     id: "old_house_radiators_wood",
     title: "Starší dom + radiátory + drevo",
     messages: ["ahoj, ake cerpadlo je najlepsie?", "starsi dom, 150m, mame radiatory", "kotol mame drevom a netusim, mam vlastne drevo", "4m, zateplene vsetko"],
@@ -203,7 +229,7 @@ const scenarios: Scenario[] = [
         if (!hasAll(answer, ["vzduch-voda", "radi"])) failures.push("closure answer lacks heat pump/radiator direction");
         if (!hasAny(answer, ["hlavný zdroj", "hlavny zdroj"]) || !hasAny(answer, ["hybrid", "ponechaný kotol", "ponechany kotol"])) failures.push("closure answer lacks two expected options");
         if (hasAny(answer, ["bude ekonomicky výhodnejšie", "bude ekonomicky vyhodnejsie", "garantovanú úsporu", "garantovanu usporu"])) failures.push("closure answer guarantees savings");
-        if (!hasAny(answer, ["fotky kotolne", "fotky", "radiátorov", "radiatorov", "dohodnúť obhliadku", "dohodnut obhliadku", "pripraviť návrh", "pripravit navrh"])) failures.push("closure answer lacks CTA");
+        if (!hasAny(answer, ["konzult", "stretn", "nacen", "nacenenie", "cenovú ponuku", "cenovu ponuku", "dohodnúť obhliadku", "dohodnut obhliadku"])) failures.push("closure answer lacks consultation/pricing CTA");
         if (questionCount(answer) > 2) failures.push(`closure asks too many questions: ${questionCount(answer)}`);
       }
       return failures;
