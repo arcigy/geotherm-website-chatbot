@@ -3826,6 +3826,16 @@ function companyPracticalDirectAnswer(message: string): DirectAnswerDecision | n
     );
   }
 
+  if (/(ignorovat|ignorovať|vynechat|vynechať).*(servis|kontrol).*(zaruk|záruk)|(?:zaruk|záruk).*(ignorovat|ignorovať|vynechat|vynechať).*(servis|kontrol)/.test(text)) {
+    return answerBase(
+      "Servis a záruka",
+      "Servis alebo povinnú kontrolu by som kvôli záruke neignoroval. Podmienky záruky treba overiť pri konkrétnom zariadení a ponuke; pri technológiách býva pravidelná údržba dôležitá pre bezpečnosť, spoľahlivosť aj prípadné uplatnenie záruky. Aké zariadenie riešiš?",
+      "warranty_service_check",
+      "service_fault",
+      "company-truth servis zaruka pravidelna udrzba podmienky zaruky Geotherm",
+    );
+  }
+
   if (/^mont[aá][zž]\??$/.test(text)) {
     return answerBase(
       "Montáž",
@@ -5121,6 +5131,10 @@ function softenOverconfidentWording(answer: string, diagnostics?: AnswerDiagnost
     .replace(/\bpresn[aá]\s+cena\b/gi, "konkrétna cena")
     .replace(/\bpresn[uú]\s+cenu\b/gi, "konkrétnu cenu")
     .replace(/\bpresnej[šs]iu\s+cenov[uú]\b/gi, "konkrétnejšiu cenovú")
+    .replace(/\bpresn[aá]\s+v[yý][šs]ka\b/gi, "konkrétna výška")
+    .replace(/\bpresn[eé]\s+vy[čc][ií]slenie\b/gi, "konkrétne vyčíslenie")
+    .replace(/\bpresn[eé]\s+odpor[uú][čc]anie\b/gi, "konkrétne odporúčanie")
+    .replace(/\bpresn[yý]\s+n[aá]vrh\b/gi, "konkrétny návrh")
     .replace(/\bpresn[yý]\s+term[ií]n\b/gi, "konkrétny termín")
     .replace(/\bpresn[yý]\s+odhad\b/gi, "konkrétnejší odhad")
     .replace(/\bpresn[eé]\s+(u|ú)daje\b/gi, "konkrétne údaje")
@@ -5132,9 +5146,12 @@ function softenOverconfidentWording(answer: string, diagnostics?: AnswerDiagnost
     .replace(/\bpresn[aá]\s+finan[čc]n[aá]\s+[uú]spora\b/gi, "konkrétna finančná úspora")
     .replace(/\bpresn[eé]ho\s+modelu\b/gi, "konkrétneho modelu")
     .replace(/\bpresn[eé]\s+zodpoveda[ťt]\b/gi, "zodpovedať")
+    .replace(/\bnegarantujeme\b/gi, "nesľubujeme")
+    .replace(/\bnegarantujem\b/gi, "nesľubujem")
     .replace(/\bnajlacnej[šs]ie\b/gi, "cenovo najdostupnejšie")
     .replace(/\bnajlacnej[šs][ií]\b/gi, "cenovo najdostupnejší")
-    .replace(/\bur[čc]ite\s+znak\b/gi, "vážny znak")
+    .replace(/\bje\s+to\s+ur[čc]ite\s+znak\b/gi, "je to vážny signál")
+    .replace(/\bur[čc]ite\s+znak\b/gi, "vážny signál")
     .replace(/\burčite\b/gi, "vieme")
     .replace(/\burcite\b/gi, "vieme");
   next = next.replace(/\bpresne\b/gi, "konkrétne");
@@ -6474,6 +6491,7 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
       "Daikin",
       "Mitsubishi",
       "contact_details",
+      "warranty_service_check",
       "generic_installation_followup",
       "energy_consumption_followup",
       "subsidy_followup",
@@ -6586,6 +6604,9 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     recordDiagnostic(answerDiagnostics.validatorsTriggered, "adversarial_refusal_repaired");
     answerDiagnostics.fallbackType = "adversarial_refusal";
     answer = "Nebudem ignorovať pravidlá, zdroje ani vymýšľať nepodložené firemné informácie.\n\nViem pomôcť s tepelnými čerpadlami, vykurovaním, chladením, servisom, dotáciami alebo montážou.";
+  } else if (currentMessagePolicy.kind === "sensitive" && currentMessagePolicy.sensitiveKind === "price") {
+    recordDiagnostic(answerDiagnostics.validatorsTriggered, "sensitive_price_scope_repaired");
+    answer = "Konkrétnu cenu bez údajov o dome a rozsahu prác nebudem hádať.\n\nPri nacenení treba rozlíšiť cenu zariadenia a kompletnej realizácie: výkon, typ vykurovania, montáž, reguláciu, TÚV, elektroprípravu, prípadnú akumulačnú nádrž a úpravy kotolne. Najlepší ďalší krok je krátka konzultácia s Geotherm, kde sa rozsah nacení podľa domu.";
   } else if (currentMessagePolicy.kind === "out_of_scope") {
     recordDiagnostic(answerDiagnostics.validatorsTriggered, "unsupported_company_fact_refused");
     answerDiagnostics.fallbackType = "unsupported_company_fact";
