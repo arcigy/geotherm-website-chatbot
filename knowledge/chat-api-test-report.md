@@ -1,7 +1,7 @@
 # Chat API Test Report
 
 Endpoint: `POST /chat`
-Generated: 2026-06-01T20:59:22.330Z
+Generated: 2026-06-01T22:30:33.220Z
 
 ## Summary
 
@@ -14,7 +14,7 @@ Generated: 2026-06-01T20:59:22.330Z
 
 | Query | Pass | Confidence | Top score | Sources | Top source |
 | --- | --- | --- | --- | --- | --- |
-| kolko stoji tepelne cerpadlo | yes | high | 326.5 | 3 | Cena tepelneho cerpadla a kompletnej realizacie - Cena zariadenia verzus realizacia na kluc |
+| kolko stoji tepelne cerpadlo | yes | high | 338.39 | 3 | Spotreba elektriny a uspora - Ucty, navratnost a prevadzkove naklady |
 | ake mate tepelne cerpadla chcem si vybrat presny model | yes | high | 412.17 | 3 | Aké značky a modely tepelných čerpadiel máte - NIBE, Vaillant, IVT a modely v knowledge |
 | ake hlucne je NIBE | yes | high | 412.17 | 3 | Aké značky a modely tepelných čerpadiel máte - NIBE, Vaillant, IVT a modely v knowledge |
 | dotacie na tepelne cerpadla | yes | medium | 260.09 | 3 | Service card - dotacie - Pomoc s dotaciami bez garancii |

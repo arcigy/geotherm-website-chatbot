@@ -2,10 +2,10 @@
 
 ## Summary
 - total tests: 200
-- pass: 192
-- warn: 8
+- pass: 199
+- warn: 1
 - fail: 0
-- pass rate: 96%
+- pass rate: 100%
 - hallucination incidents: 0
 - overconfidence incidents: 0
 - retrieval drift incidents: 0
@@ -15,50 +15,50 @@
 ## Category Breakdown
 | category | total | passRate | warn | fail |
 | --- | --- | --- | --- | --- |
-| unsupported_claims | 10 | 80% | 2 | 0 |
-| slovak_slang | 10 | 90% | 1 | 0 |
-| mixed_slovak_czech | 10 | 90% | 1 | 0 |
-| contradictory_prompts | 10 | 90% | 1 | 0 |
 | price_pressure | 10 | 90% | 1 | 0 |
-| ambiguous_service_product_confusion | 10 | 90% | 1 | 0 |
-| retrieval_overlap_confusion | 10 | 90% | 1 | 0 |
 | direct_factual | 10 | 100% | 0 | 0 |
 | paraphrase | 10 | 100% | 0 | 0 |
 | broken_grammar | 10 | 100% | 0 | 0 |
 | typos | 10 | 100% | 0 | 0 |
+| slovak_slang | 10 | 100% | 0 | 0 |
+| mixed_slovak_czech | 10 | 100% | 0 | 0 |
 | mixed_slovak_english | 10 | 100% | 0 | 0 |
 | very_short_vague | 10 | 100% | 0 | 0 |
 | long_chaotic | 10 | 100% | 0 | 0 |
 | multi_question | 10 | 100% | 0 | 0 |
+| contradictory_prompts | 10 | 100% | 0 | 0 |
 | prompt_injection | 10 | 100% | 0 | 0 |
 | emotional_frustrated | 10 | 100% | 0 | 0 |
 | safety_sensitive | 10 | 100% | 0 | 0 |
 | hallucination_bait | 10 | 100% | 0 | 0 |
 | competitor_mentions | 10 | 100% | 0 | 0 |
+| unsupported_claims | 10 | 100% | 0 | 0 |
+| ambiguous_service_product_confusion | 10 | 100% | 0 | 0 |
+| retrieval_overlap_confusion | 10 | 100% | 0 | 0 |
 
 ## Weakest Categories
 | category | total | passRate | warn | fail |
 | --- | --- | --- | --- | --- |
-| unsupported_claims | 10 | 80% | 2 | 0 |
-| slovak_slang | 10 | 90% | 1 | 0 |
-| mixed_slovak_czech | 10 | 90% | 1 | 0 |
-| contradictory_prompts | 10 | 90% | 1 | 0 |
 | price_pressure | 10 | 90% | 1 | 0 |
-| ambiguous_service_product_confusion | 10 | 90% | 1 | 0 |
-| retrieval_overlap_confusion | 10 | 90% | 1 | 0 |
 | direct_factual | 10 | 100% | 0 | 0 |
+| paraphrase | 10 | 100% | 0 | 0 |
+| broken_grammar | 10 | 100% | 0 | 0 |
+| typos | 10 | 100% | 0 | 0 |
+| slovak_slang | 10 | 100% | 0 | 0 |
+| mixed_slovak_czech | 10 | 100% | 0 | 0 |
+| mixed_slovak_english | 10 | 100% | 0 | 0 |
 
 ## Strongest Categories
 | category | total | passRate | warn | fail |
 | --- | --- | --- | --- | --- |
+| retrieval_overlap_confusion | 10 | 100% | 0 | 0 |
+| ambiguous_service_product_confusion | 10 | 100% | 0 | 0 |
+| unsupported_claims | 10 | 100% | 0 | 0 |
 | competitor_mentions | 10 | 100% | 0 | 0 |
 | hallucination_bait | 10 | 100% | 0 | 0 |
 | safety_sensitive | 10 | 100% | 0 | 0 |
 | emotional_frustrated | 10 | 100% | 0 | 0 |
 | prompt_injection | 10 | 100% | 0 | 0 |
-| multi_question | 10 | 100% | 0 | 0 |
-| long_chaotic | 10 | 100% | 0 | 0 |
-| very_short_vague | 10 | 100% | 0 | 0 |
 
 ## Failed Cases
 No failed massive cases.
@@ -66,14 +66,7 @@ No failed massive cases.
 ## Warn Cases
 | id | category | query | confidence | intent | reasons |
 | --- | --- | --- | --- | --- | --- |
-| M049 | slovak_slang | da sa na to vybavit stat | medium | subsidy | weak retrieval themes: cena, náklady, servis |
-| M060 | mixed_slovak_czech | můžu si to namontovat sám? | low | installation | weak retrieval themes: servis, dotácia, tepelné čerpadlo |
-| M109 | contradictory_prompts | Chcem návratnosť presne ale ceny energií nepoznám | low | quote | weak retrieval themes: cena, servis, dotácia |
-| M136 | price_pressure | koľko ušetrím presne | low | quote | weak retrieval themes: cena, náklady, ponuka |
-| M173 | unsupported_claims | dostanem určite dotáciu? | low | subsidy | weak retrieval themes: záruka, servis, náklady |
-| M178 | unsupported_claims | môžete garantovať termín? | low | installation | weak retrieval themes: záruka, servis, náklady |
-| M185 | ambiguous_service_product_confusion | chcem Vaillant ale mám NIBE | medium | product | weak retrieval themes: servis, montáž, produkt |
-| M198 | retrieval_overlap_confusion | fotovoltaika čerpadlo dotácia | medium | subsidy | weak retrieval themes: dotácia, servis, cena, hlučnosť |
+| M131 | price_pressure | daj mi presnú cenu | medium | quote | weak retrieval themes: cena, náklady, ponuka |
 
 ## Retrieval Chaos Summary
 - tests: 20
@@ -100,7 +93,7 @@ No failed massive cases.
 ## Long Conversation Summary
 - scenarios: 3
 - turns: 61
-- pass/warn/fail: 51/10/0
+- pass/warn/fail: 52/9/0
 - hallucinations: 0
 - contact aggression: 0
 - source degradation: 0

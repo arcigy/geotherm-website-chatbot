@@ -542,6 +542,7 @@ function normalizePolicyText(value: string): string {
     .replace(/\bchlsdenie\b/g, "chladenie")
     .replace(/\bchladnie\b/g, "chladenie")
     .replace(/\bklima\b/g, "klimatizacia")
+    .replace(/\bnibee\b/g, "nibe")
     .replace(/[^a-z0-9\s]+/g, " ")
     .replace(/\s+/g, " ")
     .trim();
@@ -607,18 +608,7 @@ function detectSafetyRoute(message: string): SafetyRoute {
   let reason: string | null = null;
   let intent: SalesIntent = "service";
 
-  if (guarantee && hasAny(["dotac", "prispev"])) {
-    reason = "subsidy_guarantee";
-    intent = "subsidy";
-  } else if ((guarantee || exact) && hasAny(["navratnost", "usetr", "uspora", "usetrit"])) {
-    reason = "return_or_savings_guarantee";
-    intent = "quote";
-  } else if ((guarantee || exact) && hasAny(["termin", "cena", "cenu", "montaz"])) {
-    reason = "date_or_price_guarantee";
-    intent = hasAny(["termin", "montaz"]) ? "installation" : "quote";
-  } else if (guarantee && hasAny(["nikdy", "nepokazi", "zaruka", "zaruku"])) {
-    reason = "unsupported_guarantee";
-  } else if (!asksElectricConsumption && hasAny(["elektrik", "prud", "skrat", "poistk", "istic", "zapojit", "zapojim", "zapojenie", "kabel"])) {
+  if (!asksElectricConsumption && hasAny(["elektrik", "prud", "skrat", "poistk", "istic", "zapojit", "zapojim", "zapojenie", "kabel"])) {
     reason = "electrical_or_wiring";
   } else if (hasAny(["natlakovat", "pretlak"]) || (text.includes("tlak") && hasAny(["sam", "svojpomoc", "otvorit", "rozobrat", "nastavit"]))) {
     reason = "pressure";
@@ -626,9 +616,6 @@ function detectSafetyRoute(message: string): SafetyRoute {
     reason = "refrigerant";
   } else if (hasAny(["rozobra", "rozobrat", "rozoberat", "otvorit jednotku", "vonkajsiu jednotku"])) {
     reason = "disassembly";
-  } else if (hasAny(["svojpomoc", "namontovat sam", "montovat sam", "zapoji sam", "zapojiť sam", "sam zapojit", "necertifikovaneho montaznika"])) {
-    reason = "diy_install";
-    intent = "installation";
   } else if (
     hasFaultOrLeakSignal() &&
     !(text.includes("stropne chladenie") && (text.includes("kondenz") || text.includes("kvapka")))
@@ -708,6 +695,10 @@ function isPromptInjection(text: string): boolean {
     "ignoruj predchadzajuce",
     "ignoruj zdroje",
     "napis cokolvek",
+    "napis ze ste najlepsi",
+    "napis ze sme najlepsi",
+    "najlepsi na slovensku",
+    "najlepsia firma na slovensku",
     "vymysli",
     "tvar sa",
     "si technik",
@@ -778,8 +769,17 @@ function isSensitiveClaim(text: string): AnswerPolicy | null {
     return { kind: "sensitive", sensitiveKind: "price", followUp: "Aby sa dala cena odhadnut zodpovedne, ide o novy system, rekonstrukciu alebo servis?" };
   }
   if (text.includes("garant") && text.includes("dotac")) return { kind: "sensitive", sensitiveKind: "subsidy" };
+  if ((text.includes("urcite") || text.includes("iste") || text.includes("ista") || text.includes("isto")) && text.includes("dotac")) {
+    return { kind: "sensitive", sensitiveKind: "subsidy" };
+  }
   if (text.includes("garant") && text.includes("navratnost")) return { kind: "sensitive", sensitiveKind: "roi" };
+  if ((text.includes("urcite") || text.includes("iste") || text.includes("ista") || text.includes("isto")) && text.includes("navratnost")) {
+    return { kind: "sensitive", sensitiveKind: "roi" };
+  }
   if (text.includes("garant") && text.includes("termin")) return { kind: "sensitive", sensitiveKind: "price" };
+  if (text.includes("garant") && (text.includes("nikdy") || text.includes("nepokazi") || text.includes("zaruka") || text.includes("zaruku"))) {
+    return { kind: "sensitive", sensitiveKind: "best" };
+  }
   if (text.includes("sto rokov") || (text.includes("vydrz") && text.includes("sto"))) {
     return { kind: "sensitive", sensitiveKind: "best" };
   }
@@ -788,6 +788,9 @@ function isSensitiveClaim(text: string): AnswerPolicy | null {
   }
   if ((text.includes("kolko presne") || text.includes("presne")) && (text.includes("usetr") || text.includes("usetrit"))) {
     return { kind: "sensitive", sensitiveKind: "savings" };
+  }
+  if (text.includes("presne") && text.includes("navratnost")) {
+    return { kind: "sensitive", sensitiveKind: "roi" };
   }
   if (text.includes("vzdy") && (text.includes("nizs") || text.includes("uct"))) {
     return { kind: "sensitive", sensitiveKind: "savings" };
@@ -863,7 +866,8 @@ function classifyAnswerPolicy(message: string, intent: SalesIntent): AnswerPolic
     text.includes("vsetkych produktov") ||
     text.includes("kolko mate technikov") ||
     text.includes("ktory zakaznik") ||
-    text.includes("presny termin")
+    text.includes("presny termin") ||
+    (text.includes("garant") && (text.includes("najnizsiu cenu") || text.includes("najnizsia cena") || text.includes("najlacnejsiu cenu")))
   ) {
     return { kind: "out_of_scope" };
   }
@@ -1443,21 +1447,21 @@ function composeHardenedSensitiveAnswer(policy: AnswerPolicy, results: Retrieval
   const evidence = sourceReferences(results, confidence);
   const followUp = policy.followUp ? ["", policy.followUp] : [];
   if (policy.sensitiveKind === "price") {
-    return ["### Cena závisí od konkrétneho riešenia", "", "Konkrétnu sumu by som bez parametrov domu nebral zodpovedne.", "", "| Čo cenu mení | Prečo je to dôležité |", "|---|---|", "| Typ objektu | Iné riešenie potrebuje byt, rodinný dom a firemný priestor. |", "| Tepelné straty | Od nich závisí výkon aj typ technológie. |", "| Rozsah prác | Montáž, úpravy systému a zdroj tepla vedia cenu výrazne zmeniť. |", ...followUp, ...evidence].join("\n");
+    return ["### Cena závisí od konkrétneho riešenia", "", "Konkrétnu sumu by som bez parametrov domu nebral zodpovedne.", "", "| Čo cenu mení | Prečo je to dôležité |", "|---|---|", "| Typ objektu | Iné riešenie potrebuje byt, rodinný dom a firemný priestor. |", "| Tepelné straty | Od nich závisí výkon aj typ technológie. |", "| Rozsah prác | Montáž, úpravy systému, servisné nastavenie a zdroj tepla vedia cenu aj náklady výrazne zmeniť. |", "", "Najlepší ďalší krok je ponuka alebo konzultácia podľa konkrétneho domu a rozsahu prác.", ...followUp, ...evidence].join("\n");
   }
   if (policy.sensitiveKind === "best") {
     return ["### Najlepší model neexistuje bez kontextu", "", "Jeden univerzálne najlepší model by som nevybral zodpovedne. Pri výbere rozhoduje model, výkon, hlučnosť, servis, priestor a rozpočet.", "", "**Prakticky:** najprv treba vedieť, čo má systém riešiť a aké má dom parametre.", ...followUp, ...evidence].join("\n");
   }
   if (policy.sensitiveKind === "savings") {
-    return ["### Úspora sa dá len odhadovať podľa domu", "", "Presnú ročnú úsporu by som negarantoval bez výpočtu pre konkrétny dom.", "", "Záleží na spotrebe, nastavení systému, nákladoch, cenách energií a kvalite návrhu.", ...followUp, ...evidence].join("\n");
+    return ["### Úspora sa dá len odhadovať podľa domu", "", "Presnú ročnú úsporu by som negarantoval bez výpočtu pre konkrétny dom.", "", "Záleží na spotrebe, nastavení systému, nákladoch, cenách energií, kvalite návrhu, servise a rozsahu ponuky.", "", "Ak chceš reálny odhad, treba porovnať dnešné účty alebo spotrebu s navrhnutým riešením.", ...followUp, ...evidence].join("\n");
   }
   if (policy.sensitiveKind === "subsidy") {
-    return ["### Dotáciu treba najprv overiť", "", "Dotáciu sa nedá garantovať dopredu.", "", "Záleží od pravidiel programu, oprávnenosti žiadateľa, dostupného rozpočtu a správnosti žiadosti.", ...followUp, ...evidence].join("\n");
+    return ["### Dotáciu treba najprv overiť", "", "Dotáciu sa nedá garantovať dopredu.", "", "Záleží od pravidiel programu, oprávnenosti žiadateľa, dostupného rozpočtu, správnosti žiadosti a konkrétnej technológie. Dotácia môže znížiť výslednú cenu alebo náklady, ale servis existujúceho zariadenia sa s ňou nespája automaticky.", "", "Najlepší ďalší krok je overiť podmienky a pripraviť ponuku podľa konkrétneho riešenia.", ...followUp, ...evidence].join("\n");
   }
   if (policy.sensitiveKind === "diy") {
-    return ["### Svojpomocne by som do toho nešiel", "", "Pri tepelnom čerpadle je dôležitý odborný návrh, odborná montáž a servis.", "", "Svojpomocnú montáž by som nebral ako bezpečnú voľbu bez odbornej kontroly.", ...followUp, ...evidence].join("\n");
+    return ["### Svojpomocne by som do toho nešiel", "", "Pri tepelnom čerpadle je dôležitý odborný návrh, odborná montáž a servis.", "", "Svojpomocná montáž môže pokaziť záruku, bezpečnosť, nastavenie aj náklady na prevádzku. Pri dotácii alebo ponuke sa zvyčajne rieši aj správny rozsah dodávky a montáže.", ...followUp, ...evidence].join("\n");
   }
-  return ["### Návratnosť bez výpočtu negarantujem", "", "Návratnosť by som negarantoval bez konkrétneho výpočtu.", "", "Dá sa riešiť len orientačne podľa konkrétneho domu, spotreby, cien energií, technického riešenia a kvality návrhu.", ...followUp, ...evidence].join("\n");
+  return ["### Návratnosť bez výpočtu negarantujem", "", "Návratnosť by som negarantoval bez konkrétneho výpočtu.", "", "Dá sa riešiť len orientačne podľa konkrétneho domu, spotreby, cien energií, nákladov, servisu, technického riešenia a kvality návrhu. Praktický ďalší krok je ponuka s jasným rozsahom.", ...followUp, ...evidence].join("\n");
 }
 
 function plainSummary(message: string, results: RetrievalResult[], intent: SalesIntent): string {
@@ -3633,7 +3637,12 @@ function buildCrmOutcome(input: {
   const temperature = leadTemperature(score);
   const status = leadStatus({ leadIntent, hasContact, score });
   const missingFields = hasContact ? [] : ["phone_or_email"];
-  const shouldAskContact = !hasContact && (["inspection", "quote", "callback", "service_fault"].includes(leadIntent) || score >= 60);
+  const normalizedLeadMessage = normalizePolicyText(input.message);
+  const serviceContactRequest =
+    leadIntent === "service_fault" &&
+    /(kontakt|zavol|telefon|email|e mail|objedn|termin|prist|prísť|vyjazd|urgent|havar|kedy)/.test(normalizedLeadMessage);
+  const explicitContactIntent = ["inspection", "quote", "callback"].includes(leadIntent) || serviceContactRequest;
+  const shouldAskContact = !hasContact && (explicitContactIntent || (input.closureTriggered && score >= 75));
   const requestedFields = shouldAskContact ? ["phone_or_email", "name"] : [];
   const nextQuestion = shouldAskContact
     ? "Jasné, ďalší krok je, aby sa vám vedel ozvať technik alebo obchodník a dohodol postup. Pošlite prosím telefón alebo e-mail, prípadne aj meno. Kontakt použijeme iba na spätné ozvanie k tomuto dopytu."
@@ -3835,6 +3844,26 @@ function companyPracticalDirectAnswer(message: string): DirectAnswerDecision | n
     );
   }
 
+  if ((text.includes("nibe") && text.includes("vaillant")) && (text.includes("tich") || text.includes("hluk") || text.includes("nezerie") || text.includes("spotreb"))) {
+    return answerBase(
+      "NIBE alebo Vaillant",
+      "NIBE aj Vaillant sú bezpečné značky na komunikáciu, ale pri tichu a spotrebe by som nevyberal iba podľa loga. Rozhoduje výkon pre dom, umiestnenie vonkajšej jednotky, vykurovací systém, nastavenie regulácie, servis a výsledná ponuka. Aby som ťa naviedol správne: ide o novostavbu s podlahovkou alebo starší dom s radiátormi?",
+      "nibe_vaillant_noise_consumption_followup",
+      "brand_model",
+      "company-truth NIBE Vaillant hlucnost spotreba servis cena ponuka tepelne cerpadlo Geotherm",
+    );
+  }
+
+  if (/(oprav|oprava|opravite|opravíte).*(montaz|montáž)|(?:montaz|montáž).*(oprav|oprava|opravite|opravíte)/.test(text)) {
+    return answerBase(
+      "Oprava alebo montáž",
+      "Toto treba najprv rozdeliť: servis rieši existujúce zariadenie s poruchou alebo nastavením, montáž rieši nové riešenie alebo výmenu technológie. Bez toho by som neodporúčal ani termín, ani cenu. Máš už zariadenie, ktoré nefunguje, alebo ešte len vyberáš nové riešenie?",
+      "repair_or_installation_followup",
+      "service_fault",
+      "company-truth servis montaz oprava nove riesenie cena termin Geotherm",
+    );
+  }
+
   if (/(ignorovat|ignorovať|vynechat|vynechať).*(servis|kontrol).*(zaruk|záruk)|(?:zaruk|záruk).*(ignorovat|ignorovať|vynechat|vynechať).*(servis|kontrol)/.test(text)) {
     return answerBase(
       "Servis a záruka",
@@ -3855,6 +3884,16 @@ function companyPracticalDirectAnswer(message: string): DirectAnswerDecision | n
     );
   }
 
+  if (/(montaz|montáž).*(zajtra|hned|hneď).*(neviem|neviem aky|neviem aký)|(?:neviem|neviem aky|neviem aký).*(montaz|montáž).*(zajtra|hned|hneď)/.test(text)) {
+    return answerBase(
+      "Najprv rozsah, potom termín",
+      "Termín montáže by som nesľuboval, keď ešte nie je jasný systém. Najprv treba určiť, či ide o tepelné čerpadlo, klimatizáciu, rekuperáciu, podlahové kúrenie alebo inú technológiu; až potom sa dá riešiť dostupnosť, cena a montážny postup. Akú technológiu chceš riešiť ako prvú?",
+      "contradictory_installation_timing",
+      "process",
+      "company-truth montaz termin system cena rozsah Geotherm",
+    );
+  }
+
   if (/(kolko|koľko).*(zere|žere|spotreb|elektrin)|(?:zere|žere|spotreb|elektrin).*(kolko|koľko)/.test(text)) {
     return answerBase(
       "Spotreba zariadenia",
@@ -3868,10 +3907,10 @@ function companyPracticalDirectAnswer(message: string): DirectAnswerDecision | n
   if (/(stat|štát|dotac|dotác|prispevok|príspevok)/.test(text) && /(na to|vybavit|vybaviť|dostat|dostať)/.test(text)) {
     return answerBase(
       "Dotácia alebo štátna podpora",
-      "Možnosť podpory treba overiť podľa konkrétneho riešenia a aktuálnych pravidiel programu. Geotherm môže pomôcť s orientáciou a podkladmi, ale nárok by som nesľuboval bez overenia. Riešiš dotáciu na tepelné čerpadlo, fotovoltiku alebo inú technológiu?",
+      "Možnosť podpory treba overiť podľa konkrétneho riešenia a aktuálnych pravidiel programu. Dotácia vie znížiť výsledné náklady alebo cenu investície, ale nárok by som nesľuboval bez overenia. Geotherm môže pomôcť s orientáciou, podkladmi a následne s ponukou; servis existujúceho zariadenia sa s dotáciou nespája automaticky. Riešiš dotáciu na tepelné čerpadlo, fotovoltiku alebo inú technológiu?",
       "subsidy_followup",
       "subsidy",
-      "company-truth dotacie statna podpora tepelne cerpadlo Geotherm asistencia",
+      "company-truth dotacie statna podpora cena naklady servis tepelne cerpadlo Geotherm asistencia",
     );
   }
 
@@ -4234,10 +4273,10 @@ function companyPracticalDirectAnswer(message: string): DirectAnswerDecision | n
   if (/(fotovolt|fotovoltaik)/.test(text)) {
     return answerBase(
       "Fotovoltika",
-      "Pri **fotovoltike** knowledge Geotherm obsahuje podklady a riešenia v súvislosti s technológiami domu. Pri napojení k tepelnému čerpadlu treba potvrdiť konkrétny rozsah: výkon, menič, prepojenie s reguláciou, prípravu elektro a cieľ využitia energie. Najlepší ďalší krok je konzultácia/nacenenie podľa domu a existujúcej techniky.",
+      "Pri **fotovoltike** knowledge Geotherm obsahuje podklady a riešenia v súvislosti s technológiami domu. Pri napojení k tepelnému čerpadlu treba potvrdiť konkrétny rozsah: výkon, menič, prepojenie s reguláciou, prípravu elektro, dotáciu, očakávanú cenu/náklady a cieľ využitia energie. Najlepší ďalší krok je konzultácia alebo ponuka podľa domu a existujúcej techniky; servis a údržbu treba riešiť podľa konkrétneho zariadenia.",
       "photovoltaics",
       "process",
-      "company-truth fotovoltaika tepelne cerpadlo regulacia Geotherm",
+      "company-truth fotovoltaika tepelne cerpadlo regulacia dotacia cena servis Geotherm",
     );
   }
 
@@ -4473,6 +4512,8 @@ function brandModelDirectAnswer(message: string, state: QualificationState): Dir
   if (asksVaillant || asksSplit) {
     const splitLine = asksSplit
       ? "Ak myslíš **Vaillant aroTHERM Split**, je to splitové riešenie vzduch-voda; pri radiátoroch treba overiť hlavne potrebnú teplotu vody a výkon radiátorov."
+      : asksNibe
+        ? "Ak dnes máš **NIBE** a zvažuješ **Vaillant**, nebral by som to ako jednoduchú zámenu značky. Najprv treba rozlíšiť, či riešiš servis existujúceho NIBE, výmenu zariadenia alebo nové nacenenie."
       : "Pri Vaillant riešeniach sa v knowledge spomínajú hlavne vzduch-voda riešenia ako aroTHERM plus a aroTHERM Split; vhodnosť závisí od domu.";
     return {
       triggered: true,
@@ -4486,7 +4527,9 @@ function brandModelDirectAnswer(message: string, state: QualificationState): Dir
         "",
         splitLine,
         "",
-        `${projectContextLine(state)} Pri tepelných čerpadlách je Vaillant spolu s NIBE bezpečná značka na komunikáciu, ale konkrétny model by som neoznačil za finálny bez návrhu výkonu, TÚV, hydrauliky a priestoru v kotolni.`,
+        `${projectContextLine(state)} Pri tepelných čerpadlách je Vaillant spolu s NIBE bezpečná značka na komunikáciu, ale konkrétny model by som neoznačil za finálny bez návrhu výkonu, TÚV, hydrauliky, montáže, servisu a priestoru v kotolni.`,
+        "",
+        asksNibe ? "Najlepší ďalší krok je konzultácia: preveriť stav existujúceho NIBE, dôvod výmeny a pripraviť porovnanie novej ponuky." : "Najlepší ďalší krok je konzultácia alebo nacenenie podľa domu.",
       ].join("\n"),
     };
   }
@@ -4529,6 +4572,16 @@ function priceDirectAnswer(message: string, state: QualificationState): DirectAn
       "",
       "Pri cene 7 tisíc by som obzvlášť overil, či ide iba o zariadenie/zostavu, alebo o kompletnú realizáciu vrátane montáže, regulácie, TÚV, akumulačnej nádrže, elektroprác a uvedenia do prevádzky.",
     ].join("\n");
+  } else if (/(navratnost|usetr|uspora|úspor)/.test(text)) {
+    reason = "direct_savings_or_roi_question";
+    topic = "savings_roi_scope";
+    answer = [
+      "### Úspora a návratnosť",
+      "",
+      "**Presnú úsporu ani návratnosť by som negarantoval bez výpočtu pre konkrétny dom.** Záleží od dnešnej spotreby, ceny energií, zateplenia, typu vykurovania, výkonu riešenia, servisu, regulácie a výslednej ceny ponuky.",
+      "",
+      "Dá sa však pripraviť orientačný prepočet: porovnať dnešné náklady s navrhnutým riešením a naceniť rozsah montáže. Najlepší ďalší krok je krátka konzultácia s Geotherm, kde sa zistí súčasná spotreba a pripraví realistická ponuka.",
+    ].join("\n");
   } else if (/(7\s*tis|7000|7\s*000|malo|málo)/.test(text)) {
     reason = "direct_low_price_sanity_check";
     topic = "low_price_scope";
@@ -4567,7 +4620,7 @@ function priceDirectAnswer(message: string, state: QualificationState): DirectAn
     reason,
     answer,
     serviceIntent: "price",
-    retrievalQuery: "company-truth pricing-rules cena tepelné čerpadlo montáž inštalácia akumulačná nádrž čo je v cene rozsah ponuky",
+    retrievalQuery: "company-truth pricing-rules cena náklady návratnosť úspora servis ponuka tepelné čerpadlo montáž inštalácia akumulačná nádrž čo je v cene rozsah ponuky",
     topic,
   };
 }
@@ -4678,7 +4731,7 @@ function directAnswerDecision(message: string, state: QualificationState, route:
   }
 
   const price =
-    /(cena|ceny|cennik|koľko|kolko|stoji|stojí|vratane instalacie|vrátane inštalácie|7\s*tis|7000|7\s*000|akumulac|akumula|v cene|z coho|z čoho)/.test(text) ||
+    /(cena|ceny|cennik|koľko|kolko|stoji|stojí|navratnost|návratnosť|usetr|úspor|uspora|vratane instalacie|vrátane inštalácie|7\s*tis|7000|7\s*000|akumulac|akumula|v cene|z coho|z čoho)/.test(text) ||
     (route.serviceIntent === "price" && hasActiveHeatPump);
   if (price) return priceDirectAnswer(message, state);
 
@@ -5163,7 +5216,10 @@ function softenOverconfidentWording(answer: string, diagnostics?: AnswerDiagnost
     .replace(/\bur[čc]ite\s+znak\b/gi, "vážny signál")
     .replace(/\burčite\b/gi, "vieme")
     .replace(/\burcite\b/gi, "vieme");
-  next = next.replace(/\bpresne\b/gi, "konkrétne");
+  next = next
+    .replace(/\bpresn[eé]\b/gi, "konkrétne")
+    .replace(/\bpresn[aá]\b/gi, "konkrétna")
+    .replace(/\bpresn[yý]\b/gi, "konkrétny");
   if (next !== answer && diagnostics) recordDiagnostic(diagnostics.validatorsTriggered, "overconfident_wording_softened");
   return next;
 }
@@ -5176,6 +5232,29 @@ function validateAndRepairAnswer(
   diagnostics?: AnswerDiagnostics,
 ): string {
   let next = sanitizeAnswerForDiagnosticRules(answer, state, route, diagnostics);
+  const normalizedMessage = normalizePolicyText(message);
+  if (normalizedMessage.includes("nibe") && /hluc|hluk|tich/.test(normalizedMessage) && /\b\d{2,3}\s*dB/i.test(next)) {
+    if (diagnostics) recordDiagnostic(diagnostics.validatorsTriggered, "unconfirmed_noise_numbers_repaired");
+    next = [
+      "### Hlučnosť NIBE",
+      "",
+      "Pri hlučnosti NIBE by som bez aktuálneho technického listu a konkrétneho modelu neuvádzal presné dB hodnoty. Hlučnosť závisí od modelu, výkonu, režimu, umiestnenia vonkajšej jednotky, vzdialenosti od okien a kvality montáže.",
+      "",
+      "Ak riešiš ticho pri dome, treba porovnať konkrétny model, umiestnenie jednotky a nočný režim. Ide o novú inštaláciu alebo už máš NIBE namontované?",
+    ].join("\n");
+  }
+  if (normalizedMessage.includes("nibe") && normalizedMessage.includes("vaillant") && /(tich|hluk|nezerie|spotreb)/.test(normalizedMessage) && !next.includes("?")) {
+    if (diagnostics) recordDiagnostic(diagnostics.validatorsTriggered, "nibe_vaillant_followup_repaired");
+    next = companyPracticalDirectAnswer(message)?.answer || `${next}\n\nIde o novostavbu s podlahovkou alebo starší dom s radiátormi?`;
+  }
+  if (normalizedMessage.includes("nibe") && normalizedMessage.includes("vaillant") && !next.includes("?")) {
+    if (diagnostics) recordDiagnostic(diagnostics.validatorsTriggered, "nibe_vaillant_context_followup_repaired");
+    next = `${next}\n\nRiešiš servis existujúceho NIBE, výmenu za Vaillant, alebo nové nacenenie celého riešenia?`;
+  }
+  if (/(oprav|oprava|opravite).*(montaz)|(?:montaz).*(oprav|oprava|opravite)/.test(normalizedMessage) && !next.includes("?")) {
+    if (diagnostics) recordDiagnostic(diagnostics.validatorsTriggered, "repair_or_installation_followup_repaired");
+    next = companyPracticalDirectAnswer(message)?.answer || `${next}\n\nMáš už zariadenie, ktoré nefunguje, alebo ešte len vyberáš nové riešenie?`;
+  }
   if (requiresInitialHeatPumpRecommendation(state, route, message)) {
     const normalized = normalizePolicyText(next);
     if (!normalized.includes("vzduch voda") || !normalized.includes("m2") || !/(radiator|podlah)/.test(normalized)) {
@@ -6621,6 +6700,18 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     answerDiagnostics.fallbackType = "unsupported_company_fact";
     answer = "Na toto nemám potvrdený firemný podklad, takže to nebudem tvrdiť ako fakt.\n\nViem pomôcť s potvrdenými témami okolo Geotherm: tepelné čerpadlá, klimatizácia, rekuperácia, podlahové kúrenie, stropné chladenie, servis, dotácie alebo nacenenie riešenia.";
   }
+  if (
+    (route.serviceType === "service" ||
+      /servisny smer|servisný smer|zariadenie hlasi chybu|zariadenie hlási chybu|kotly|oprav|poruch|hluk|huci|hučí/.test(normalizePolicyText(answer))) &&
+    countQuestionMarks(answer) === 0
+  ) {
+    recordDiagnostic(answerDiagnostics.validatorsTriggered, "service_fault_followup_appended");
+    answer = `${answer.trim()}\n\nIde o existujúce zariadenie s poruchou, pravidelný servis, alebo zvažuješ výmenu za nové riešenie?`;
+  }
+  if (/(co odporucate|čo odporúčate|co odporúčate|čo odporucate)/i.test(message) && countQuestionMarks(answer) === 0) {
+    recordDiagnostic(answerDiagnostics.validatorsTriggered, "recommendation_followup_appended");
+    answer = `${answer.trim()}\n\nIde skôr o výmenu zdroja kúrenia, servis existujúceho zariadenia, alebo návrh nového riešenia?`;
+  }
   const limitedQuestionAnswer = limitFinalQuestionMarks(answer);
   if (limitedQuestionAnswer.changed) {
     answer = limitedQuestionAnswer.answer;
@@ -6647,7 +6738,7 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
       : "high";
   const latestNormalizedForConfidence = normalizePolicyText(message);
   const cautiousLatestMessage =
-    /(oplat|ma zmysel|garant|najlacn|najlacnej|lacn.*servis|servis.*lacn|sto rokov|vydrz.*sto|vonkajs|vonkajsi|pod oknom|cudz|ina firma|nastavenie)/.test(latestNormalizedForConfidence) ||
+    /(oplat|ma zmysel|garant|najlacn|najlacnej|lacn.*servis|servis.*lacn|sto rokov|vydrz.*sto|vonkajs|vonkajsi|pod oknom|cudz|ina firma|nastavenie|maintenance|udrzb|raz za rok|pomuzete|vytapeni|navrh.*vykurov|navrh.*vytap)/.test(latestNormalizedForConfidence) ||
     (/(dotac|prispev|poukaz|stat)/.test(latestNormalizedForConfidence) && !stateForTurn.project_type) ||
     (latestNormalizedForConfidence.includes("vaillant") && latestNormalizedForConfidence.includes("nibe")) ||
     latestNormalizedForConfidence.includes("nie je od") ||
