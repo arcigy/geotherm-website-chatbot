@@ -235,6 +235,21 @@ const supplementalCompanyTruthTexts = [
       "Pri technickom dopyte moze chatbot najprv ujasnit, ci ide o ponuku, servis, dotaciu alebo navrh riesenia; pri zbere kontaktu musi povedat, ze kontakt sa pouzije na spatne ozvanie k dopytu.",
     ].join(" "),
   },
+  {
+    id: "geotherm-company-truth-practical-faq",
+    heading: "Company truth: prakticke FAQ potvrdene klientom",
+    text: [
+      "Klientom potvrdene prakticke odpovede: GEOTHERM robi havarijne vyjazdy u svojich zakaznikov.",
+      "Prace je idealne planovat aspon 24 hodin vopred; v ojedinelych pripadoch vedia prist aj dnes, ale dostupnost terminu treba potvrdit.",
+      "Cez vikendy zvacsa nerobia.",
+      "Pracuju v mestach na zapadnom a strednom Slovensku a v pohranici Rakuska; konkretnu lokalitu treba potvrdit podla sluzby a terminu.",
+      "Vedia vymenit aj plynovy kotol. Elektroinstalaciu ku kotlom robia obcas, no zakaznici si ju zvacsa zabezpecuju vlastnym elektrikarom.",
+      "Maju certifikaciu na plynove zariadenia a maju poistenie zodpovednosti.",
+      "Orientacna ponuka sa da pripravit aj podla dobrych a kvalitnych fotografii.",
+      "Cez WhatsApp komunikovat vedia, ale preferuju email alebo telefon. Emailom komunikovat vedia.",
+      "Beru zalohy a platba na fakturu je mozna.",
+    ].join(" "),
+  },
 ];
 
 function supplementalCompanyTruthChunks(): KnowledgeChunk[] {
@@ -536,7 +551,7 @@ type SafetyRoute = {
   followUp: string | null;
 };
 
-const urgentServicePhone = "+421 987 654 321";
+const urgentServicePhone = "+421 905 665 755";
 
 function safetyAnswer(reason: string): string {
   const base = [
@@ -601,7 +616,7 @@ function detectSafetyRoute(message: string): SafetyRoute {
     reason = "unsupported_guarantee";
   } else if (!asksElectricConsumption && hasAny(["elektrik", "prud", "skrat", "poistk", "istic", "zapojit", "zapojim", "zapojenie", "kabel"])) {
     reason = "electrical_or_wiring";
-  } else if (hasAny(["tlak", "natlakovat", "pretlak"])) {
+  } else if (hasAny(["natlakovat", "pretlak"]) || (text.includes("tlak") && hasAny(["sam", "svojpomoc", "otvorit", "rozobrat", "nastavit"]))) {
     reason = "pressure";
   } else if (hasAny(["chladivo", "freon", "unik chladiva", "unika chladivo"])) {
     reason = "refrigerant";
@@ -2220,10 +2235,11 @@ function inferServiceRoute(message: string, state: QualificationState, history: 
     .map((item) => normalizePolicyText(item.content))
     .join(" ");
   const combined = `${recentUserText} ${text}`.trim();
+  const boilerOnly = isBoilerOnlyQuestion(text);
   const serviceType: ServiceType =
     slotOnlyReply
       ? previousService
-      : /(servis|porucha|chyba|diagnostik|revizi|udrzb|údržb|nekuri|nefunguje|hlasi|hlási)/.test(text)
+      : /(servis|porucha|chyba|diagnostik|revizi|udrzb|údržb|nekuri|nefunguje|hlasi|hlási|tlak)/.test(text)
       ? "service"
       : /(dotac|poukazk|prispevok|zelen[ae] domacnost)/.test(text)
         ? "subsidy"
@@ -2235,6 +2251,8 @@ function inferServiceRoute(message: string, state: QualificationState, history: 
               ? "heat_recovery"
               : /(podlahov|podlahu|podlahove kurenie)/.test(text) && !/(cerpadl|tepel|\btc\b)/.test(combined)
                 ? "floor_heating"
+                : boilerOnly
+                  ? "complex_solution"
                 : /(\btc\b|tepelne cerpad|cerpad|vzduch voda|zem voda|voda voda|nibe|vaillant|plyn|plynov|radiator|vykurov|kurenie|kotol)/.test(text)
                   ? "heat_pump"
                   : /(novostav|cely system|cel[ey] dom|usporn[ey] riesenie|kurenie a chladenie|vykurovanie a chladenie|technicke riesenie)/.test(combined) &&
@@ -2255,7 +2273,7 @@ function inferServiceRoute(message: string, state: QualificationState, history: 
         ? "contact"
       : /(cena|cenu|cennik|kolko|koľko|stoji|stojí|rozpocet|rozpočet|ponuk)/.test(text)
         ? "price"
-        : /(porucha|chyba|nekuri|nefunguje|hlasi|hlási|diagnostik|servis)/.test(text)
+        : /(porucha|chyba|nekuri|nefunguje|hlasi|hlási|diagnostik|servis|tlak)/.test(text)
           ? "service_fault"
           : /(dotac|poukazk|prispevok)/.test(text)
             ? "subsidy"
@@ -3213,7 +3231,17 @@ function expectedHeatRecoveryAnswer(): string {
   ].join("\n");
 }
 
-function expectedServiceFaultAnswer(): string {
+function expectedServiceFaultAnswer(message?: string): string {
+  const normalizedMessage = normalizePolicyText(message || "");
+  if (normalizedMessage.includes("tlak")) {
+    return [
+      "### Pokles tlaku v kúrení",
+      "",
+      "Ak **padá tlak v kúrení**, beriem to ako servisný problém. Môže ísť o únik vody, expanznú nádobu, poistný ventil, dopúšťanie alebo problém v kotolni; bez obhliadky by som neradil svojpomocne rozoberať zariadenie.",
+      "",
+      "Najlepší ďalší krok je poslať značku a model zdroja tepla, aktuálny tlak za studena/tepla, či niekde vidno vodu, lokalitu a kontakt. Technik potom vie potvrdiť, či stačí diagnostika alebo treba výjazd.",
+    ].join("\n");
+  }
   return [
     "### Servisný smer",
     "",
@@ -3629,6 +3657,192 @@ function projectContextLine(state: QualificationState): string {
   return parts.length ? `Pre tvoj prípad (${parts.join(", ")}) by som to bral ako orientačný výber, nie finálny model.` : "Konkrétny model by som vybral až podľa domu, výkonu a technickej miestnosti.";
 }
 
+function isBoilerOnlyQuestion(text: string): boolean {
+  return (
+    /\b(kotol|kotla|kotle|kotlov|kotly|kondenza|plynovy|plynove|elektricky|elektricke)\b/.test(text) &&
+    !/(tepelne cerpad|cerpadl|\btc\b|nahrad|vymen|usporn|radiator|podlah|tepelneho cerpadla|certifik|opravnen)/.test(text)
+  );
+}
+
+function companyPracticalDirectAnswer(message: string): DirectAnswerDecision | null {
+  const text = normalizePolicyText(message);
+  const raw = message.toLowerCase();
+  const answerBase = (title: string, body: string, topic: string, serviceIntent: ServiceIntent, retrievalQuery: string): DirectAnswerDecision => ({
+    triggered: true,
+    answerMode: "direct_answer",
+    reason: `company_practical_${topic}`,
+    answer: [`### ${title}`, "", body].join("\n"),
+    serviceIntent,
+    retrievalQuery,
+    topic,
+  });
+
+  if (isBoilerOnlyQuestion(text)) {
+    const isVaillant = text.includes("vaillant");
+    return answerBase(
+      isVaillant ? "Vaillant kotly" : "Kotly",
+      isVaillant
+        ? "Pri otázke na **Vaillant kotly** by som odpovedal opatrne: Geotherm vie riešiť aj kotly a výmenu plynového kotla, ale aktuálne konkrétne Vaillant kotly treba potvrdiť podľa ponuky a stavu kotolne. Pri nacenení je dôležité vedieť typ kotla, napojenie, odvod spalín, elektroprípravu a či ide o jednoduchú výmenu alebo úpravu kotolne."
+        : "Áno, Geotherm vie riešiť aj **kotly**, vrátane výmeny plynového kotla. Rozsah závisí od kotolne, napojenia, odvodu spalín a elektroprípravy; pri jednoduchej výmene to môže byť kratšia realizácia, pri zložitejšej kotolni treba pripraviť individuálny plán. Najlepší ďalší krok je krátka konzultácia alebo nacenenie podľa fotiek kotolne.",
+      isVaillant ? "vaillant_boilers" : "boilers",
+      "process",
+      "company-truth prakticke FAQ Vaillant kotly plynovy kotol vymena kotla Geotherm",
+    );
+  }
+
+  if (/(vrt|vrty|hlbin)/.test(text)) {
+    return answerBase(
+      "Vrty pre tepelné čerpadlá",
+      "Áno, v potvrdenom praktickom FAQ sú medzi službami aj **vrty pre tepelné čerpadlá**. Pri zem-voda riešení sú dôležité podmienky pozemku, dostupnosť techniky, potrebný výkon a povolenia; preto by som to po základnom overení posunul na konzultáciu a nacenenie konkrétneho riešenia.",
+      "boreholes",
+      "process",
+      "company-truth prakticke FAQ vrty pre tepelne cerpadla zem voda Geotherm",
+    );
+  }
+
+  if (/(solar|solarn|solár|solárn)/.test(text)) {
+    return answerBase(
+      "Solárne panely",
+      "Áno, v knowledge Geotherm sa spomínajú aj **solárne panely/kolektory** ako súčasť technických riešení domu. Pri konkrétnom dopyte treba potvrdiť, či ide o solárny ohrev vody, podporu vykurovania alebo kombináciu s iným systémom, a potom pripraviť konzultáciu alebo nacenenie.",
+      "solar_panels",
+      "process",
+      "solarne panely kolektory Geotherm technicke riesenie domu",
+    );
+  }
+
+  if (/(whatsapp|whats app)/.test(text)) {
+    return answerBase(
+      "WhatsApp",
+      "V internom FAQ je potvrdené, že cez **WhatsApp** komunikovať vedia, ale pri technických veciach je lepší e-mail alebo telefón, lebo sa dajú poslať fotky, projekt alebo údaje ku kotolni. Ak chceš, pošli tu najprv, čo riešiš, a potom je najpraktickejšie dohodnúť konzultáciu alebo nacenenie.",
+      "whatsapp",
+      "contact",
+      "company-truth prakticke FAQ WhatsApp email telefon komunikacia Geotherm",
+    );
+  }
+
+  if (/(platb|faktur|zaloha|záloha|splátk|splatk)/.test(text)) {
+    return answerBase(
+      "Platba",
+      "Podľa interného FAQ je potvrdené, že Geotherm **berie zálohy** a **platba na faktúru je možná**. Presný režim platby, výška zálohy a splatnosť sa majú potvrdiť pri konkrétnej ponuke.",
+      "payment",
+      "price",
+      "company-truth prakticke FAQ platba zaloha faktura Geotherm",
+    );
+  }
+
+  if (/(poisten|zodpovednost)/.test(text)) {
+    return answerBase(
+      "Poistenie zodpovednosti",
+      "V internom FAQ je potvrdené, že Geotherm má **poistenie zodpovednosti**. Pri konkrétnej zákazke sa dá potvrdiť, aký doklad alebo rozsah potrebuješ.",
+      "insurance",
+      "process",
+      "company-truth prakticke FAQ poistenie zodpovednosti Geotherm",
+    );
+  }
+
+  if (/(certifik|opravnen).*(plyn|plynov)|plynove zariadenia/.test(text) || (raw.includes("certifik") && raw.includes("plyn"))) {
+    return answerBase(
+      "Plynové zariadenia",
+      "Interné FAQ potvrdzuje, že Geotherm má **certifikáciu na plynové zariadenia**. Pri konkrétnej práci je dobré potvrdiť rozsah zásahu a potrebné revízne alebo odovzdávacie podklady.",
+      "gas_certification",
+      "process",
+      "company-truth prakticke FAQ certifikacia plynove zariadenia Geotherm",
+    );
+  }
+
+  if ((/(fot|foto|fotiek|fotky)/.test(text) || raw.includes("fot")) && /(nacen|ponuk|cena|cenov)/.test(text)) {
+    return answerBase(
+      "Nacenenie podľa fotiek",
+      "Orientačná ponuka sa podľa interného FAQ dá pripraviť aj podľa **dobrých a kvalitných fotografií**. Fotky však musia ukázať technickú miestnosť alebo kotolňu, napojenia, rozvody a priestor na zariadenie; finálny rozsah treba potvrdiť pri konzultácii alebo obhliadke.",
+      "quote_from_photos",
+      "quote",
+      "company-truth prakticke FAQ nacenenie podla fotiek cenova ponuka Geotherm",
+    );
+  }
+
+  if (/(dokumentac|doklad|odovzdanie|po realizacii|po montazi)/.test(text)) {
+    return answerBase(
+      "Dokumentácia po realizácii",
+      "Pri realizácii treba v konkrétnej ponuke potvrdiť, aké **odovzdávacie podklady a dokumentácia** budú súčasťou. Štandardne má zmysel riešiť najmä odovzdanie systému, zaškolenie, záručné podklady a prípadné revízne dokumenty podľa typu technológie.",
+      "docs_after_install",
+      "process",
+      "company-truth prakticke FAQ dokumentacia odovzdanie realizacia Geotherm",
+    );
+  }
+
+  if (/(cenov.*ponuk.*zdarma|ponuk.*zdarma|ponuk.*zadarmo|bezplat.*ponuk)/.test(text)) {
+    return answerBase(
+      "Cenová ponuka",
+      "V starších podkladoch sa spomína návrh a cenová ponuka, ale pri konkrétnom dopyte by som **bezplatnosť vždy potvrdil podľa aktuálnych podmienok**. Na nacenenie pomôže služba, typ domu, približná plocha, aktuálne kúrenie, lokalita a fotky technickej miestnosti alebo projektu.",
+      "quote_free",
+      "quote",
+      "company-truth pricing-rules cenova ponuka zdarma podmienky nacenenie Geotherm",
+    );
+  }
+
+  if (/(ake informacie|ake udaje|co potrebujete).*(ponuk|nacenen)/.test(text)) {
+    return answerBase(
+      "Podklady na ponuku",
+      "Na rozumnú cenovú ponuku pošli hlavne: čo chceš riešiť, či ide o novostavbu alebo rekonštrukciu, **plocha v m²**, lokalitu, aktuálne kúrenie alebo plánované rozvody, požiadavku na teplú vodu/chladenie a ideálne fotky kotolne alebo projekt. Potom má zmysel dohodnúť konzultáciu, kde sa vyberie riešenie a nacení rozsah.",
+      "quote_inputs",
+      "quote",
+      "company-truth pricing-rules podklady na cenovu ponuku plocha fotky projekt Geotherm",
+    );
+  }
+
+  if (/(este dnes|dnes prist|prist dnes|prísť ešte dnes|prísť dnes)/.test(text)) {
+    return answerBase(
+      "Dnešný termín",
+      "Práce je ideálne plánovať aspoň 24 hodín vopred. V ojedinelých prípadoch vedia prísť aj dnes, ale **treba potvrdiť dostupnosť technika podľa lokality, služby a aktuálneho vyťaženia**. Ak je to porucha, pošli značku/model, problém alebo chybový kód, lokalitu a kontakt.",
+      "today_visit",
+      "contact",
+      "company-truth prakticke FAQ dnes vyjazd dostupnost technika Geotherm",
+    );
+  }
+
+  if (/(vikend|vikendy|sobot|nedel)/.test(text)) {
+    return answerBase(
+      "Víkendy",
+      "Cez víkendy Geotherm **zväčša nerobí**. Ak ide o urgentný servis u existujúceho zákazníka, dostupnosť treba potvrdiť podľa technika, lokality a typu problému.",
+      "weekends",
+      "contact",
+      "company-truth prakticke FAQ vikendy vyjazdy Geotherm",
+    );
+  }
+
+  if (/(havarijn|urgent|vyjazd)/.test(text)) {
+    return answerBase(
+      "Havarijný výjazd",
+      "Geotherm robí havarijné výjazdy **u svojich zákazníkov**. Pri cudzích montážach alebo neznámom zariadení treba dostupnosť najprv potvrdiť podľa značky, problému a lokality.",
+      "emergency_callout",
+      "service_fault",
+      "company-truth prakticke FAQ havarijny vyjazd servis vlastni zakaznici Geotherm",
+    );
+  }
+
+  if (isServiceAreaQuestion(message) || /(ake mesta|ake okresy|kam chodite|posobnost|lokalit)/.test(text)) {
+    return answerBase(
+      "Pôsobnosť",
+      "Geotherm pracuje hlavne v mestách na **západnom a strednom Slovensku** a v **pohraničí Rakúska**. Konkrétnu obec alebo okres treba potvrdiť podľa služby, termínu a kapacity tímu. Napíš lokalitu a čo chceš riešiť, aby sa dalo povedať, či to dáva zmysel.",
+      "service_area",
+      "location",
+      "company-truth prakticke FAQ posobnost zapadne stredne Slovensko pohranicie Rakuska Geotherm",
+    );
+  }
+
+  if (/(kolko rokov|ako dlho).*trhu|rokov ste na trhu|historia firmy/.test(text)) {
+    return answerBase(
+      "Skúsenosti Geotherm",
+      "Geotherm v podkladoch komunikuje **dlhoročné skúsenosti** s vykurovaním, chladením a vetraním; knowledge spomína viac ako 30 rokov praxe pri riešení systémov a najskúsenejších ľudí v odbore. Presný právny dátum vzniku firmy by som overil v oficiálnych firemných údajoch.",
+      "company_age",
+      "general",
+      "Geotherm historia firmy dlhoročné skúsenosti viac ako 30 rokov praxe",
+    );
+  }
+
+  return null;
+}
+
 function brandModelDirectAnswer(message: string, state: QualificationState): DirectAnswerDecision {
   const text = normalizePolicyText(message);
   const asksDaikin = text.includes("daikin");
@@ -3819,8 +4033,28 @@ function correctionDirectAnswer(message: string, state: QualificationState): Dir
 
 function directAnswerDecision(message: string, state: QualificationState, route: Pick<ServiceRoute, "serviceType" | "serviceIntent">): DirectAnswerDecision {
   const text = normalizePolicyText(message);
+  const raw = message.toLowerCase();
   const activeService = normalizeServiceType(state.service_type || route.serviceType, "unknown");
+  const previousActiveService = normalizeServiceType(state.service_type, "unknown");
   const hasActiveHeatPump = activeService === "heat_pump" || activeService === "complex_solution";
+  const hasExistingDiagnosticContext = Boolean(
+    state.project_type || state.area_m2 || state.heating_distribution || state.current_heating || state.qualification_question_rounds,
+  );
+  if (raw.includes("certifik") && raw.includes("plyn")) {
+    return {
+      triggered: true,
+      answerMode: "direct_answer",
+      reason: "company_practical_gas_certification",
+      answer:
+        "### Plynové zariadenia\n\nInterné FAQ potvrdzuje, že Geotherm má **certifikáciu na plynové zariadenia**. Pri konkrétnej práci je dobré potvrdiť rozsah zásahu a potrebné revízne alebo odovzdávacie podklady.",
+      serviceIntent: "process",
+      retrievalQuery: "company-truth prakticke FAQ certifikacia plynove zariadenia Geotherm",
+      topic: "gas_certification",
+    };
+  }
+  const practical =
+    hasExistingDiagnosticContext && previousActiveService === "heat_pump" && isQualificationDataReply(message) ? null : companyPracticalDirectAnswer(message);
+  if (practical) return practical;
   if (route.serviceType === "service" || route.serviceIntent === "service_fault") {
     return {
       triggered: false,
@@ -3860,7 +4094,8 @@ function directAnswerDecision(message: string, state: QualificationState, route:
     (route.serviceIntent === "price" && hasActiveHeatPump);
   if (price) return priceDirectAnswer(message, state);
 
-  const explicitBrandModelQuestion = /(znack|značka|ake.*\btc\b|ake mate|aké máte|ake znacky|aké značky|nibe|vaillant|daikin|mitsubishi|f2040|f2050|\bmodel\b|\bsplit\b)/.test(text);
+  const explicitBrandModelQuestion =
+    !isBoilerOnlyQuestion(text) && /(znack|značka|ake.*\btc\b|ake mate|aké máte|ake znacky|aké značky|nibe|vaillant|daikin|mitsubishi|f2040|f2050|\bmodel\b|\bsplit\b)/.test(text);
   const brandModel =
     explicitBrandModelQuestion ||
     (hasActiveHeatPump && route.serviceIntent === "brand_model" && !isQualificationDataReply(message));
@@ -4325,7 +4560,7 @@ function validateAndRepairAnswer(
     const normalized = normalizePolicyText(next);
     if (!normalized.includes("model") || !/(chybovy kod|chybový kód|chybu|chyba)/.test(normalized) || !/(lokalit|mesto|kde je)/.test(normalized)) {
       if (diagnostics) recordDiagnostic(diagnostics.validatorsTriggered, "service_fault_data_request_repaired");
-      next = expectedServiceFaultAnswer();
+      next = expectedServiceFaultAnswer(message);
     }
   }
   if (route.serviceIntent === "price") {
@@ -4506,6 +4741,7 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     const raw = (content || "").trim();
     const removeBannedPhrases = (value: string): string =>
       value
+        .replace(/\+421\s*987\s*654\s*321/g, urgentServicePhone)
         .replace(/^#{1,6}\s*Stručne k otázke\s*\n*/gim, "")
         .replace(/\*\*Stručne k otázke:?\*\*\s*/gim, "")
         .replace(/\bStručne k otázke:?\s*/gim, "")
@@ -5095,7 +5331,7 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
   }
   if (
     routerLlm.error &&
-    /(nibe|vaillant|viessmann|ariston|daikin|\btc\b|tepelne|cerpadlo|cerpadla|servis|dotacie|dotacia|cena|cennik|hluk|hlucnost|montaz|instalacia|kontakt|klimatizacia|rekuperacia|podlahov|stropne|chladenie|kurenie|vykurovanie)/.test(routerFallbackText)
+    /(nibe|vaillant|viessmann|ariston|daikin|\btc\b|tepelne|cerpadlo|cerpadla|servis|dotacie|dotacia|cena|cennik|hluk|hlucnost|montaz|instalacia|kontakt|klimatizacia|rekuperacia|podlahov|stropne|chladenie|kurenie|vykurovanie|geberit|\bwc\b|poter|katex|fotovolt|solarn|vysavac|vrt|kotol|platb|faktur|whatsapp|poisten|certifik|dokumentac|zaruk|referenc)/.test(routerFallbackText)
   ) {
     route.needsRetrieval = true;
     route.retrievalQuery = message;
@@ -5104,7 +5340,7 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
   const isObviousGreeting = /^(ahoj|čau|cau|hello|hi|hey|dobrý deň|dobry den|zdravím|zdravim)$/i.test(message.trim());
   const activeDiagnosticState = hasActiveDiagnosticState(stateForTurn);
   const obviousHvacContext =
-    /(dom|m2|radiator|radiatory|podlahov|plyn|plynov|kotol|kuren|kurit|vykurov|\btc\b|cerpadl|tepelne|novostav|rekonstruk|starsi|spotreb|zateplen|cena|ponuka|montaz|servis|dotac|chladen|klimatiz|rekuper|vetran|strop|znack|model)/.test(
+    /(dom|m2|radiator|radiatory|podlahov|plyn|plynov|kotol|kuren|kurit|vykurov|\btc\b|cerpadl|tepelne|novostav|rekonstruk|starsi|spotreb|zateplen|cena|ponuka|montaz|servis|dotac|chladen|klimatiz|rekuper|vetran|strop|znack|model|geberit|\bwc\b|poter|katex|fotovolt|solarn|vysavac|vrt|rozvod|voda|platb|faktur|whatsapp|poisten|certifik|dokumentac|zaruk|referenc|posobnost|okres)/.test(
       routerFallbackText,
     );
   if (
@@ -5460,6 +5696,42 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     recordDiagnostic(answerDiagnostics.validatorsTriggered, "direct_clarification_repaired");
     answer = validateAndRepairAnswer(directDecision.answer, stateForTurn, route, message, answerDiagnostics);
     directAnswerComposedByLlm = false;
+  }
+  if (directDecision.triggered && directDecision.topic === "F2050" && directDecision.answer) {
+    const normalized = normalizePolicyText(answer);
+    if (!/(nemam potvrdeny|nemame|nie je potvrden|overit|nebudem vymyslat)/.test(normalized)) {
+      recordDiagnostic(answerDiagnostics.validatorsTriggered, "direct_f2050_guardrail_repaired");
+      answer = validateAndRepairAnswer(directDecision.answer, stateForTurn, route, message, answerDiagnostics);
+      directAnswerFallbackUsed = true;
+    }
+  }
+  if (directDecision.triggered && directDecision.reason?.startsWith("company_practical_") && directDecision.answer) {
+    const normalized = normalizePolicyText(answer);
+    const topic = directDecision.topic || "";
+    const confirmTopics = new Set([
+      "today_visit",
+      "service_area",
+      "quote_free",
+      "whatsapp",
+      "payment",
+      "insurance",
+      "gas_certification",
+      "docs_after_install",
+      "emergency_callout",
+    ]);
+    const needsDraft =
+      (confirmTopics.has(topic) && !normalized.includes("potvr")) ||
+      (topic === "quote_inputs" && !normalized.includes("plocha")) ||
+      (["whatsapp", "insurance", "gas_certification", "docs_after_install"].includes(topic) && /^ano\b/.test(normalized));
+    if (needsDraft) {
+      recordDiagnostic(answerDiagnostics.validatorsTriggered, "company_practical_guardrail_repaired");
+      answer = validateAndRepairAnswer(directDecision.answer, stateForTurn, route, message, answerDiagnostics);
+      directAnswerFallbackUsed = true;
+    }
+  }
+  if (/(ako prebieha|postup|realizacia od zaciatku)/.test(normalizePolicyText(message)) && !normalizePolicyText(answer).includes("navrh")) {
+    recordDiagnostic(answerDiagnostics.validatorsTriggered, "process_answer_scope_repaired");
+    answer = `${answer}\n\nTypicky má postup obsahovať aj **návrh riešenia**: najprv sa ujasní služba a podklady, potom sa pripraví návrh a cenová ponuka, následne montáž, spustenie, zaškolenie a odovzdanie systému.`.trim();
   }
   if (
     !directDecision.triggered &&
