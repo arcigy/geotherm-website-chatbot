@@ -1283,11 +1283,9 @@ function augmentStructuredAnswer(answer: StructuredAnswer, context?: { message: 
 function renderStructuredAnswer(answer: StructuredAnswer, sources: ChatSource[], mode: AnswerMode, context?: { message: string; intent: SalesIntent }): string {
   const enforcedAnswer = enforceStructuredAnswer(answer, sources, mode);
   const safeAnswer =
-    mode === "general_chat" && context?.message && isPureSmallTalkMessage(context.message)
-      ? pureSmallTalkFallback(context.message)
-      : mode === "out_of_scope"
-        ? enforcedAnswer
-        : augmentStructuredAnswer(enforcedAnswer, context);
+    mode === "out_of_scope"
+      ? enforcedAnswer
+      : augmentStructuredAnswer(enforcedAnswer, context);
   const lines = [safeAnswer.shortAnswer || "Na toto potrebujem trochu viac kontextu."];
   if (safeAnswer.details.length) {
     lines.push("", ...safeAnswer.details.map((detail) => `- ${detail}`));
@@ -2073,6 +2071,26 @@ function pureSmallTalkFallback(message: string): StructuredAnswer {
             ? "Som Geotherm chatbot a pomáham s orientáciou v technických riešeniach domu."
             : "Ahoj, som tu.";
   return { shortAnswer, details: [], followUpQuestion: null, shouldAskFollowUp: false, safetyNote: null, confidence: "high" };
+}
+
+function compactPureSmallTalkAnswer(answer: string, message: string): string {
+  const fallback = pureSmallTalkFallback(message).shortAnswer;
+  const cleaned = answer
+    .replace(/^```(?:markdown|text)?\s*/i, "")
+    .replace(/```$/i, "")
+    .trim()
+    .split(/\n+/)
+    .map((line) => line.replace(/^[-*]\s*/, "").trim())
+    .filter(Boolean)
+    .find((line) => !line.includes("?"));
+  if (!cleaned) return fallback;
+  const firstSentence = cleaned.match(/^(.+?[.!…])(?:\s|$)/)?.[1] || cleaned;
+  const compact = firstSentence.replace(/\s+/g, " ").replace(/\?+$/g, ".").trim();
+  const normalizedMessage = normalizePolicyText(message);
+  const normalizedCompact = normalizePolicyText(compact);
+  if ((normalizedMessage.includes("ako sa mas") || normalizedMessage.includes("ako sa mate")) && !normalizedCompact.includes("dobre")) return fallback;
+  if (/^(ahoj|cau|hello|hi|hey|dobry den|dobry vecer|zdravim)$/.test(normalizedMessage) && !normalizedCompact.includes("som tu")) return fallback;
+  return compact.length > 120 ? `${compact.slice(0, 117).trim()}...` : compact || fallback;
 }
 
 function isGreetingMessage(message: string): boolean {
@@ -3292,10 +3310,18 @@ function expectedServiceFaultAnswer(message?: string): string {
       "Najlepší ďalší krok je poslať značku a model zdroja tepla, aktuálny tlak za studena/tepla, či niekde vidno vodu, lokalitu a kontakt. Technik potom vie potvrdiť, či stačí diagnostika alebo treba výjazd.",
     ].join("\n");
   }
+  const mentionedBrand = normalizedMessage.includes("nibe")
+    ? "NIBE"
+    : normalizedMessage.includes("vaillant")
+      ? "Vaillant"
+      : normalizedMessage.includes("ivt")
+        ? "IVT"
+        : null;
+  const deviceLabel = mentionedBrand ? `${mentionedBrand} hlási chybu` : normalizedMessage.includes("kotol") ? "kotol ukazuje chybu" : "zariadenie hlási chybu";
   return [
     "### Servisný smer",
     "",
-    "Rozumiem, NIBE hlási chybu. Pri poruche by som neradil žiadny svojpomocný zásah do zariadenia; najprv treba zistiť presný model, chybový kód a lokalitu, aby sa dalo posúdiť, či ide o servisný zásah a aký postup je bezpečný.",
+    `Rozumiem, ${deviceLabel}. Pri poruche by som neradil žiadny svojpomocný zásah do zariadenia; najprv treba zistiť presný model, chybový kód a lokalitu, aby sa dalo posúdiť, či ide o servisný zásah a aký postup je bezpečný.`,
     "",
     "Pri zariadeniach montovaných inou firmou treba dostupnosť servisu potvrdiť podľa značky a prípadu.",
     "",
@@ -5785,9 +5811,9 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
   let composerLlm = await callLlmText({
     systemPrompt: activeComposerSystemPrompt,
     prompt: activeComposerInput,
-    maxOutputTokens: directDecision.triggered ? 900 : 1200,
+    maxOutputTokens: directDecision.triggered ? 520 : 1200,
     timeoutMs: directDecision.triggered
-      ? Math.min(Math.max(Number.parseInt(process.env.LLM_FAST_REQUEST_TIMEOUT_MS || "6000", 10), 5500), 6500)
+      ? Math.min(Math.max(Number.parseInt(process.env.LLM_FAST_REQUEST_TIMEOUT_MS || "3500", 10), 3000), 3500)
       : route.needsRetrieval
       ? Number.parseInt(process.env.LLM_ANSWER_TIMEOUT_MS || "10000", 10)
       : Math.min(Number.parseInt(process.env.LLM_FAST_REQUEST_TIMEOUT_MS || "3500", 10), 3500),
@@ -5897,8 +5923,8 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     answer = answer.replace(/^Nemám dostatočne jasný podklad na túto tému\.\s*/i, "").trim();
   }
   if (!route.needsRetrieval && isPureSmallTalkMessage(message)) {
-    answer = renderStructuredAnswer(pureSmallTalkFallback(message), [], "general_chat", { message, intent: "unknown" });
-    recordDiagnostic(answerDiagnostics.validatorsTriggered, "pure_small_talk_sanitized");
+    answer = compactPureSmallTalkAnswer(answer, message);
+    recordDiagnostic(answerDiagnostics.validatorsTriggered, "pure_small_talk_compacted");
   }
   answer = validateAndRepairAnswer(answer, stateForTurn, route, message, answerDiagnostics);
   if (
@@ -6664,8 +6690,15 @@ async function legacyCreateChatResponse(requestBody: ChatRequest, knowledgePath?
       lastAskedQuestion: previousState.last_asked_question,
     });
     const structuredAnswer =
-      answerMode === "general_chat" && isPureSmallTalkMessage(answerMessage)
-        ? pureSmallTalkFallback(answerMessage)
+      answerMode === "general_chat" && isPureSmallTalkMessage(answerMessage) && llm.structuredAnswer
+        ? {
+            shortAnswer: compactPureSmallTalkAnswer(llm.structuredAnswer.shortAnswer, answerMessage),
+            details: [],
+            followUpQuestion: null,
+            shouldAskFollowUp: false,
+            safetyNote: null,
+            confidence,
+          }
         : structuredAnswerForLeadCapture(llm.structuredAnswer || fallbackStructured, leadCapture);
     const answer = renderStructuredAnswer(structuredAnswer, sources, llm.structuredAnswer ? llm.answerMode : answerMode, { message: answerMessage, intent });
     const persistedState = stateWithLastAskedQuestion(finalState, structuredAnswer);
