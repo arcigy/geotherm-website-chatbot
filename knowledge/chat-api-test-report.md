@@ -1,7 +1,7 @@
 # Chat API Test Report
 
 Endpoint: `POST /chat`
-Generated: 2026-06-01T13:35:49.957Z
+Generated: 2026-06-01T13:43:50.952Z
 
 ## Summary
 
@@ -26,6 +26,6 @@ Generated: 2026-06-01T13:35:49.957Z
 
 Nemám dostatočne jasný podklad na túto tému.
 
-Ahoj! Ja som diagnostický technicko-obchodný poradca firmy Geotherm. Zameriavame sa na komplexné technické riešenia pre domy, ako sú tepelné čerpadlá, klimatizácie, rekuperácia, podlahové kúrenie, stropné chladenie, servis a pomoc s dotáciami.
+Ahoj! Ja som tu, aby som ti pomohol s technickými riešeniami pre tvoj dom, ako sú tepelné čerpadlá, klimatizácie, rekuperácia či podlahové kúrenie. O počasí ti bohužiaľ nič nepoviem, na to budem potrebovať iného odborníka.
 
-Na počasie ti bohužiaľ neviem odpovedať, pretože to nesúvisí s našimi službami. Ak by si mal záujem o riešenie kúrenia, chladenia, vetrania, servisu alebo dotácií, rád ti s tým pomôžem.
+Ak by si mal záujem o niečo z našej ponuky, pokojne sa pýtaj!

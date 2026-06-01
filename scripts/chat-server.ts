@@ -2224,8 +2224,10 @@ function inferServiceRoute(message: string, state: QualificationState, history: 
   const tokenCount = text.split(/\s+/).filter(Boolean).length;
   const previousService = normalizeServiceType(state.service_type, "unknown");
   const previousIntent = normalizeServiceIntent(state.service_intent, "general");
+  const heatPumpAbbreviation = /\btc\b/.test(text) || /\b(?:chcem|riesim|potrebujem|mam|mame|ake|mate|robite|montujete|predavate)\s+t\b/.test(text);
   const hasExplicitServiceSignal =
-    /(\btc\b|tepelne cerpad|cerpadl|klimatiz|rekuper|vetran|podlahov|strop.*chladen|servis|porucha|dotac|plyn|plynov|kotol|radiator|vykurov|kurenie)/.test(text);
+    heatPumpAbbreviation ||
+    /(tepelne cerpad|cerpadl|klimatiz|rekuper|vetran|podlahov|strop.*chladen|servis|porucha|dotac|plyn|plynov|kotol|radiator|vykurov|kurenie)/.test(text);
   const slotOnlyReply =
     !hasExplicitServiceSignal &&
     previousService !== "unknown" &&
@@ -2256,12 +2258,12 @@ function inferServiceRoute(message: string, state: QualificationState, history: 
                 ? "floor_heating"
                 : boilerOnly
                   ? "complex_solution"
-                : /(\btc\b|tepelne cerpad|cerpad|vzduch voda|zem voda|voda voda|nibe|vaillant|plyn|plynov|radiator|vykurov|kurenie|kotol)/.test(text)
+                : heatPumpAbbreviation || /(tepelne cerpad|cerpad|vzduch voda|zem voda|voda voda|nibe|vaillant|plyn|plynov|radiator|vykurov|kurenie|kotol)/.test(text)
                   ? "heat_pump"
                   : /(novostav|cely system|cel[ey] dom|usporn[ey] riesenie|kurenie a chladenie|vykurovanie a chladenie|technicke riesenie)/.test(combined) &&
                     /(chladen|vetran|tepla voda|rekuper|podlahov|kuren)/.test(combined)
                   ? "complex_solution"
-                  : /(\btc\b|tepelne cerpad|cerpad|vzduch voda|zem voda|voda voda|nibe|vaillant|plyn|plynov|radiator|vykurov|kurenie|kotol)/.test(combined)
+                  : /\btc\b/.test(combined) || /(tepelne cerpad|cerpad|vzduch voda|zem voda|voda voda|nibe|vaillant|plyn|plynov|radiator|vykurov|kurenie|kotol)/.test(combined)
                     ? "heat_pump"
                     : previousService !== "unknown" && text.split(/\s+/).filter(Boolean).length <= 4
                       ? previousService
