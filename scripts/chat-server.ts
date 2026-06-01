@@ -2224,7 +2224,10 @@ function inferServiceRoute(message: string, state: QualificationState, history: 
   const tokenCount = text.split(/\s+/).filter(Boolean).length;
   const previousService = normalizeServiceType(state.service_type, "unknown");
   const previousIntent = normalizeServiceIntent(state.service_intent, "general");
+  const hasExplicitServiceSignal =
+    /(\btc\b|tepelne cerpad|cerpadl|klimatiz|rekuper|vetran|podlahov|strop.*chladen|servis|porucha|dotac|plyn|plynov|kotol|radiator|vykurov|kurenie)/.test(text);
   const slotOnlyReply =
+    !hasExplicitServiceSignal &&
     previousService !== "unknown" &&
     (tokenCount <= 5 ||
       /^\s*(?:\d+\.\s*[^,;\n]+[,;\n\s]*){1,4}$/i.test(message.trim()) ||

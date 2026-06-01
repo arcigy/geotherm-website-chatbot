@@ -27,6 +27,8 @@ type Case = {
   maxSources?: number;
   minSources?: number;
   maxMs?: number;
+  expectedServiceType?: string;
+  expectedServiceIntent?: string;
 };
 
 const reportPath = path.join(process.cwd(), "knowledge", "broad-surface-audit.md");
@@ -34,6 +36,14 @@ const defaultMaxMs = 8000;
 
 const cases: Case[] = [
   { id: "services_overview", message: "Aké služby poskytujete?", mustContain: ["tepel", "rekuper", "podlah"], minSources: 1 },
+  {
+    id: "initial_heat_pump_short",
+    message: "Ahoj, chcem tč",
+    mustContain: ["tepel", "čerpad", "novostav"],
+    minSources: 1,
+    expectedServiceType: "heat_pump",
+    expectedServiceIntent: "recommendation",
+  },
   { id: "heat_pumps", message: "Robíte aj tepelné čerpadlá?", mustContain: ["tepel", "čerpad"], minSources: 1 },
   { id: "air_conditioning", message: "Robíte aj klimatizácie?", mustContain: ["klimatiz"], minSources: 1 },
   { id: "heat_recovery", message: "Robíte rekuperáciu?", mustContain: ["rekuper"], minSources: 1 },
@@ -106,6 +116,8 @@ function genericFailures(body: ChatBody, testCase: Case): string[] {
   if ((body.responseTimeMs || 0) > maxMs) failures.push(`responseTimeMs>${maxMs}: ${body.responseTimeMs}`);
   if (!debug.llmAttempted) failures.push("llmAttempted is not true");
   if (!debug.llmUsed) failures.push(`llmUsed is not true (${debug.fallbackType || "no fallbackType"})`);
+  if (testCase.expectedServiceType && debug.serviceType !== testCase.expectedServiceType) failures.push(`serviceType expected ${testCase.expectedServiceType}, got ${debug.serviceType || "n/a"}`);
+  if (testCase.expectedServiceIntent && debug.serviceIntent !== testCase.expectedServiceIntent) failures.push(`serviceIntent expected ${testCase.expectedServiceIntent}, got ${debug.serviceIntent || "n/a"}`);
   if (!hasAll(body.answer || "", testCase.mustContain)) failures.push(`missing: ${(testCase.mustContain || []).join(", ")}`);
   const forbidden = forbiddenTerms(body.answer || "", testCase.mustNotContain);
   if (forbidden.length) failures.push(`forbidden: ${forbidden.join(", ")}`);
