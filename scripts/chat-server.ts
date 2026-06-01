@@ -5966,6 +5966,9 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
       "customer_bought_boiler",
       "bathroom_core",
       "chimney_work",
+      "photovoltaics",
+      "screeds",
+      "references",
     ]);
     const needsDraft =
       forceDraftTopics.has(topic) ||
@@ -5995,6 +5998,14 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
   if (/(ako prebieha|postup|realizacia od zaciatku)/.test(normalizePolicyText(message)) && !normalizePolicyText(answer).includes("navrh")) {
     recordDiagnostic(answerDiagnostics.validatorsTriggered, "process_answer_scope_repaired");
     answer = `${answer}\n\nTypicky má postup obsahovať aj **návrh riešenia**: najprv sa ujasní služba a podklady, potom sa pripraví návrh a cenová ponuka, následne montáž, spustenie, zaškolenie a odovzdanie systému.`.trim();
+  }
+  if (
+    (route.serviceType === "service" || route.serviceIntent === "service_fault") &&
+    normalizePolicyText(answer).includes("nibe") &&
+    !normalizePolicyText(message).includes("nibe")
+  ) {
+    recordDiagnostic(answerDiagnostics.validatorsTriggered, "service_fault_brand_hallucination_repaired");
+    answer = expectedServiceFaultAnswer(message);
   }
   if (
     !directDecision.triggered &&
