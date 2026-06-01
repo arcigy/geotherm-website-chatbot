@@ -2061,6 +2061,15 @@ function isGreetingOnlyMessage(message: string): boolean {
   return /^(a+h+o+j+|c+a+u+|c+a+w+)$/.test(text);
 }
 
+function isSmallTalkMessage(message: string): boolean {
+  const text = normalizePolicyText(message);
+  return (
+    isGreetingOnlyMessage(message) ||
+    text.startsWith("ako sa ") ||
+    /^(ako sa mas|ako sa mate|ako sa dari|co robis|co robite|si tu|fungujes|dakujem|vdaka|super|ok|okej)\??$/.test(text)
+  );
+}
+
 type RoutingPlan = {
   needsRetrieval: boolean;
   retrievalQuery: string;
@@ -2226,12 +2235,12 @@ function inferServiceRoute(message: string, state: QualificationState, history: 
               ? "heat_recovery"
               : /(podlahov|podlahu|podlahove kurenie)/.test(text) && !/(cerpadl|tepel|\btc\b)/.test(combined)
                 ? "floor_heating"
-                : /(\btc\b|tepelne cerpad|cerpadl|vzduch voda|zem voda|voda voda|nibe|vaillant|plyn|plynov|radiator|vykurov|kurenie|kotol)/.test(text)
+                : /(\btc\b|tepelne cerpad|cerpad|vzduch voda|zem voda|voda voda|nibe|vaillant|plyn|plynov|radiator|vykurov|kurenie|kotol)/.test(text)
                   ? "heat_pump"
                   : /(novostav|cely system|cel[ey] dom|usporn[ey] riesenie|kurenie a chladenie|vykurovanie a chladenie|technicke riesenie)/.test(combined) &&
                     /(chladen|vetran|tepla voda|rekuper|podlahov|kuren)/.test(combined)
                   ? "complex_solution"
-                  : /(\btc\b|tepelne cerpad|cerpadl|vzduch voda|zem voda|voda voda|nibe|vaillant|plyn|plynov|radiator|vykurov|kurenie|kotol)/.test(combined)
+                  : /(\btc\b|tepelne cerpad|cerpad|vzduch voda|zem voda|voda voda|nibe|vaillant|plyn|plynov|radiator|vykurov|kurenie|kotol)/.test(combined)
                     ? "heat_pump"
                     : previousService !== "unknown" && text.split(/\s+/).filter(Boolean).length <= 4
                       ? previousService
@@ -3011,6 +3020,13 @@ function mergeQualificationState(base: QualificationState, update: Qualification
   }
   if (next.location && isGreetingLocationValue(next.location)) delete next.location;
   return next;
+}
+
+function hasMeaningfulQualificationUpdate(update: QualificationUpdate): boolean {
+  return qualificationUpdateFields.some((field) => {
+    if (field === "service_type" || field === "service_intent" || field === "qualification_question_rounds") return false;
+    return update[field] !== undefined && update[field] !== null;
+  });
 }
 
 function hasActiveDiagnosticState(state: QualificationState): boolean {
@@ -3933,10 +3949,11 @@ function recommendationClosureDecision(
   const extraSlots = countRecommendationExtraSlots(state);
   const hasClosureQualitySlot = Boolean(state.insulation || state.annual_consumption || state.occupants || state.hot_water !== undefined || state.wants_cooling !== undefined || state.location);
   const heatPumpRecommendation = service === "heat_pump" && ["recommendation", "comparison", "general"].includes(intent);
+  const newBuildReadyForClosure = isNewBuildFloorHeating(state) && Boolean(state.occupants && state.wants_cooling !== undefined);
   const triggered =
     heatPumpRecommendation &&
     hasMinimumHeatPumpSlots &&
-    ((extraSlots >= 3 && hasClosureQualitySlot) || (questionRoundsCount >= 2 && extraSlots >= 2 && hasClosureQualitySlot) || questionRoundsCount >= 3);
+    (newBuildReadyForClosure || (extraSlots >= 3 && hasClosureQualitySlot) || (questionRoundsCount >= 2 && extraSlots >= 2 && hasClosureQualitySlot) || questionRoundsCount >= 3);
   const reason = !triggered
     ? null
     : extraSlots >= 3
@@ -4311,6 +4328,16 @@ function validateAndRepairAnswer(
       next = expectedServiceFaultAnswer();
     }
   }
+  if (route.serviceIntent === "price") {
+    const normalized = normalizePolicyText(next);
+    const normalizedMessage = normalizePolicyText(message);
+    const asksInstalledPrice = /(vratane instalacie|vratane montaze|s instalaciou|s montazou|cena|ceny|kolko|stoji)/.test(normalizedMessage);
+    const missesScope = asksInstalledPrice && (!normalized.includes("kompletn") || !(normalized.includes("montaz") || normalized.includes("instalac")));
+    if (missesScope || answerIsGenericServiceFallback(next)) {
+      if (diagnostics) recordDiagnostic(diagnostics.validatorsTriggered, "price_scope_repaired");
+      next = priceDirectAnswer(message, state).answer || next;
+    }
+  }
   const existingRadiatorState = inferExistingRadiatorState(state, message, route.serviceType);
   if (requiresHardVerdict(state, route, message) && !answerHasRequiredVerdict(next, state)) {
     if (diagnostics) recordDiagnostic(diagnostics.validatorsTriggered, "hard_verdict_inserted");
@@ -4330,7 +4357,7 @@ function validateAndRepairAnswer(
   }
   if (isExistingRadiatorSolidFuel(state) && state.annual_consumption_unknown) {
     const normalized = normalizePolicyText(next);
-    if (!/(zateplen|akumulac|tepl[aej]* vod|tuv|kolko dreva|dreva za sezon)/.test(normalized)) {
+    if (!/(zateplen|akumulac|kolko dreva|dreva za sezon)/.test(normalized)) {
       if (diagnostics) recordDiagnostic(diagnostics.validatorsTriggered, "wood_replacement_followup_repaired");
       next = [
         next,
@@ -5039,6 +5066,10 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
   const previousServiceType = normalizeServiceType(previousState.service_type, "unknown");
   const previousServiceIntent = normalizeServiceIntent(previousState.service_intent, "general");
   const complaintAboutRecommendation = /(nepovedal|neodpovedal|najleps|najlepší|konkretne|konkrétne)/.test(routerFallbackText);
+  if (previousServiceType === "heat_pump" && isQualificationDataReply(message)) {
+    route.serviceType = "heat_pump";
+    if (route.serviceIntent === "general" || route.serviceIntent === "brand_model") route.serviceIntent = "recommendation";
+  }
   if (contextualSlotReply && previousServiceType !== "unknown") {
     route.serviceType = previousServiceType;
   }
@@ -5390,7 +5421,7 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
   const isOutOfScopeGeneral =
     route.serviceType === "unknown" &&
     route.serviceIntent === "general" &&
-    !isGreetingOnlyMessage(message) &&
+    !isSmallTalkMessage(message) &&
     !isPageOverviewQuestion(message) &&
     !isContactQuestion(message);
   const cleanedAnswerIncomplete = isIncompleteAnswer(cleanedAnswer);
@@ -5411,6 +5442,9 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
   );
   if (isOutOfScopeGeneral && !/nemám dostatočne jasný podklad|nemam dostatocne jasny podklad/i.test(answer)) {
     answer = `Nemám dostatočne jasný podklad na túto tému.\n\n${answer}`.trim();
+  }
+  if (isSmallTalkMessage(message)) {
+    answer = answer.replace(/^Nemám dostatočne jasný podklad na túto tému\.\s*/i, "").trim();
   }
   answer = validateAndRepairAnswer(answer, stateForTurn, route, message, answerDiagnostics);
   if (
@@ -5456,8 +5490,13 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
       ? "low"
       : "high";
   const responseIntent = mapServiceIntentToSalesIntent(route.serviceType, route.serviceIntent);
+  const skipAsyncQualificationExtraction =
+    (isSmallTalkMessage(message) && !route.needsRetrieval) ||
+    directDecision.triggered ||
+    hasMeaningfulQualificationUpdate(immediateQualificationUpdate) ||
+    route.serviceType !== "unknown";
   const qualificationUpdate =
-    isGreetingOnlyMessage(message) && !route.needsRetrieval
+    skipAsyncQualificationExtraction && !directDecision.triggered
       ? {}
       : directDecision.triggered
         ? deterministicQualificationUpdate(message, route)

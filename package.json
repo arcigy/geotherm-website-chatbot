@@ -34,6 +34,7 @@
     "test:chat-api": "tsx scripts/test-chat-api.ts",
     "test:crm-leads": "tsx scripts/test-crm-leads.ts",
     "test:diagnostic-conversation": "tsx scripts/test-diagnostic-conversation.ts",
+    "audit:production-readiness": "tsx scripts/audit-production-readiness.ts",
     "preview:embed": "vite dist-embed --host 127.0.0.1 --port 4321",
     "test:embed-ui": "tsx scripts/test-embed-ui.ts",
     "analyze:manual-transcript": "tsx scripts/analyze-debug-transcript.ts",

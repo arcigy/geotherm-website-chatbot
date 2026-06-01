@@ -1,0 +1,265 @@
+import { mkdir, writeFile } from "node:fs/promises";
+import path from "node:path";
+import { startChatServer } from "./chat-server";
+
+type ChatDebug = {
+  answerMode?: string;
+  llmAttempted?: boolean;
+  llmUsed?: boolean;
+  serviceType?: string;
+  serviceIntent?: string;
+  retrievalSourcesCount?: number;
+  fallbackUsed?: boolean;
+  fallbackType?: string | null;
+};
+
+type ChatBody = {
+  answer: string;
+  responseTimeMs?: number;
+  sources?: unknown[];
+  debug?: ChatDebug;
+};
+
+type Expectation = {
+  serviceType?: string;
+  serviceIntent?: string;
+  answerMode?: string[];
+  mustContain?: string[];
+  mustNotContain?: string[];
+  maxSources?: number;
+  requireQuestion?: boolean;
+  requireMeetingCta?: boolean;
+};
+
+type Scenario = {
+  id: string;
+  title: string;
+  messages: string[];
+  expectLast: Expectation;
+};
+
+const reportPath = path.join(process.cwd(), "knowledge", "production-readiness-audit.md");
+const maxResponseTimeMs = 8000;
+
+const scenarios: Scenario[] = [
+  {
+    id: "small_talk_greeting",
+    title: "Small talk pozdrav bez RAG",
+    messages: ["ahoj"],
+    expectLast: { maxSources: 0, mustContain: ["pom"] },
+  },
+  {
+    id: "small_talk_how_are_you",
+    title: "Small talk ako sa mas bez zbytocneho RAG",
+    messages: ["ako sa máš?"],
+    expectLast: { maxSources: 0, mustContain: ["pom"] },
+  },
+  {
+    id: "vague_heat_pump_followup",
+    title: "Vágne TČ -> smer + follow-up",
+    messages: ["chcem tepelné čerpadlo"],
+    expectLast: { serviceType: "heat_pump", serviceIntent: "recommendation", mustContain: ["vzduch-voda"], requireQuestion: true },
+  },
+  {
+    id: "old_house_radiators_verdict",
+    title: "Starší dom radiátory -> verdikt",
+    messages: ["chcem tč", "starší dom 140m radiátory"],
+    expectLast: { serviceType: "heat_pump", serviceIntent: "recommendation", mustContain: ["vzduch-voda", "radiátor"] },
+  },
+  {
+    id: "new_build_closure_cta",
+    title: "Novostavba po kvalifikácii -> closure a meeting",
+    messages: ["aké tč máte?", "novostavba 120m", "podlahovka", "5 osôb a chcem chladenie"],
+    expectLast: { serviceType: "heat_pump", serviceIntent: "recommendation", mustContain: ["S2125", "aroTHERM"], requireMeetingCta: true, mustNotContain: ["tepelná strata", "energetický certifikát"] },
+  },
+  {
+    id: "brands_safe",
+    title: "Značky TČ bez Daikin/Mitsubishi halucinácie",
+    messages: ["aké značky tepelných čerpadiel robíte?"],
+    expectLast: { serviceType: "heat_pump", serviceIntent: "brand_model", mustContain: ["NIBE", "Vaillant"], mustNotContain: ["Daikin ponúkame", "Mitsubishi ponúkame"] },
+  },
+  {
+    id: "daikin_correction",
+    title: "Daikin pri TČ opatrne",
+    messages: ["robí Geotherm aj Daikin tepelné čerpadlá?"],
+    expectLast: { serviceType: "heat_pump", serviceIntent: "brand_model", mustContain: ["NIBE", "Vaillant"], mustNotContain: ["áno", "ponúkame Daikin"] },
+  },
+  {
+    id: "price_scope",
+    title: "Cena komplet realizácie",
+    messages: ["aké sú ceny tepelných čerpadiel vrátane inštalácie?"],
+    expectLast: { serviceType: "heat_pump", serviceIntent: "price", mustContain: ["kompletn", "montáž"], mustNotContain: ["garantovan"] },
+  },
+  {
+    id: "buffer_tank_scope",
+    title: "Akumulačka v cene",
+    messages: ["je akumulačná nádrž v tej cene?"],
+    expectLast: { serviceIntent: "price", mustContain: ["ponuk"], mustNotContain: ["automaticky zahrnut"] },
+  },
+  {
+    id: "obsolete_f2040",
+    title: "F2040 oprava",
+    messages: ["F2040 sa už nevyrába"],
+    expectLast: { serviceType: "heat_pump", serviceIntent: "complaint_or_correction", mustContain: ["F2040", "aktuáln"], mustNotContain: ["odporúčam F2040"] },
+  },
+  {
+    id: "unconfirmed_f2050",
+    title: "F2050 bez vymýšľania parametrov",
+    messages: ["A F2050?"],
+    expectLast: { serviceType: "heat_pump", mustContain: ["potvr"], mustNotContain: ["COP", "výkon 5", "výkon 7"] },
+  },
+  {
+    id: "air_conditioning",
+    title: "Klimatizácia",
+    messages: ["chcem klimatizáciu do obývačky a spálne"],
+    expectLast: { serviceType: "air_conditioning", mustContain: ["multisplit", "vonkajš"] },
+  },
+  {
+    id: "heat_recovery",
+    title: "Rekuperácia",
+    messages: ["staviam dom a chcem lepší vzduch bez otvárania okien"],
+    expectLast: { serviceType: "heat_recovery", mustContain: ["rekuper", "projekt"] },
+  },
+  {
+    id: "floor_heating",
+    title: "Podlahové kúrenie",
+    messages: ["robíte podlahové kúrenie do novostavby?"],
+    expectLast: { serviceType: "floor_heating", mustContain: ["podlah"] },
+  },
+  {
+    id: "ceiling_cooling",
+    title: "Stropné chladenie",
+    messages: ["chcem stropné chladenie v dome"],
+    expectLast: { serviceType: "ceiling_cooling", mustContain: ["stropné", "chladen"] },
+  },
+  {
+    id: "service_fault",
+    title: "Servis porucha",
+    messages: ["NIBE mi hlási chybu"],
+    expectLast: { serviceType: "service", serviceIntent: "service_fault", mustContain: ["model", "chybový kód"] },
+  },
+  {
+    id: "subsidy",
+    title: "Dotácie bez garancií",
+    messages: ["vybavíte mi dotáciu na tepelné čerpadlo?"],
+    expectLast: { serviceIntent: "subsidy", mustContain: ["pomôcť"], mustNotContain: ["garantujeme", "kompletne vybavíme"] },
+  },
+];
+
+function normalize(value: string | undefined | null): string {
+  return (value || "")
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9\s]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function includesAll(answer: string, terms: string[] | undefined): boolean {
+  if (!terms?.length) return true;
+  const normalized = normalize(answer);
+  return terms.every((term) => normalized.includes(normalize(term)));
+}
+
+function includesAnyForbidden(answer: string, terms: string[] | undefined): string[] {
+  if (!terms?.length) return [];
+  const normalized = normalize(answer);
+  return terms.filter((term) => normalized.includes(normalize(term)));
+}
+
+function evaluate(body: ChatBody, expectation: Expectation): string[] {
+  const failures: string[] = [];
+  const debug = body.debug || {};
+  const answer = body.answer || "";
+  if ((body.responseTimeMs || 0) > maxResponseTimeMs) failures.push(`responseTimeMs>${maxResponseTimeMs}: ${body.responseTimeMs}`);
+  if (!debug.llmAttempted) failures.push("llmAttempted is not true");
+  if (!debug.llmUsed) failures.push(`llmUsed is not true (${debug.fallbackType || "no fallbackType"})`);
+  if (expectation.serviceType && debug.serviceType !== expectation.serviceType) failures.push(`serviceType expected ${expectation.serviceType}, got ${debug.serviceType || "missing"}`);
+  if (expectation.serviceIntent && debug.serviceIntent !== expectation.serviceIntent) failures.push(`serviceIntent expected ${expectation.serviceIntent}, got ${debug.serviceIntent || "missing"}`);
+  if (expectation.answerMode?.length && !expectation.answerMode.includes(debug.answerMode || "")) failures.push(`answerMode ${debug.answerMode || "missing"} not in ${expectation.answerMode.join(",")}`);
+  if (!includesAll(answer, expectation.mustContain)) failures.push(`answer missing required terms: ${(expectation.mustContain || []).join(", ")}`);
+  const forbidden = includesAnyForbidden(answer, expectation.mustNotContain);
+  if (forbidden.length) failures.push(`answer contains forbidden terms: ${forbidden.join(", ")}`);
+  if (expectation.maxSources !== undefined && (debug.retrievalSourcesCount || 0) > expectation.maxSources) failures.push(`retrievalSourcesCount expected <=${expectation.maxSources}, got ${debug.retrievalSourcesCount}`);
+  if (expectation.requireQuestion && !answer.includes("?")) failures.push("answer should ask a follow-up question");
+  if (expectation.requireMeetingCta && !/(konzult|stretn|meeting|nacen|ponuk)/i.test(normalize(answer))) failures.push("answer lacks meeting/consultation/pricing CTA");
+  return failures;
+}
+
+async function main(): Promise<void> {
+  const server = await startChatServer({ port: 0 });
+  const address = server.address();
+  const port = typeof address === "object" && address ? address.port : 0;
+  const endpoint = `http://127.0.0.1:${port}/chat`;
+  const rows: Array<{ scenario: Scenario; last: ChatBody; failures: string[] }> = [];
+
+  try {
+    for (const scenario of scenarios) {
+      const anonymousId = `readiness_${scenario.id}_${Date.now()}`;
+      let last: ChatBody | null = null;
+      for (const message of scenario.messages) {
+        const response = await fetch(endpoint, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Origin: "http://localhost:4321" },
+          body: JSON.stringify({ siteId: "geotherm", anonymousId, currentUrl: "http://localhost/readiness", message, debug: true }),
+        });
+        if (!response.ok) throw new Error(`HTTP ${response.status} for ${scenario.id}: ${message}`);
+        last = (await response.json()) as ChatBody;
+      }
+      if (!last) throw new Error(`No response for ${scenario.id}`);
+      rows.push({ scenario, last, failures: evaluate(last, scenario.expectLast) });
+    }
+  } finally {
+    await new Promise<void>((resolve, reject) => server.close((error) => (error ? reject(error) : resolve())));
+  }
+
+  const passed = rows.filter((row) => row.failures.length === 0).length;
+  const report = [
+    "# Production Readiness Audit",
+    "",
+    `Generated: ${new Date().toISOString()}`,
+    `Max response time: ${maxResponseTimeMs} ms`,
+    "",
+    "## Summary",
+    "",
+    `- scenarios: ${rows.length}`,
+    `- passed: ${passed}`,
+    `- failed: ${rows.length - passed}`,
+    `- verdict: ${passed === rows.length ? "PASS" : "NEEDS WORK"}`,
+    "",
+    "## Cases",
+    "",
+    "| Scenario | Pass | ms | LLM used | Mode | Service | Intent | Sources | Failures |",
+    "| --- | --- | ---: | --- | --- | --- | --- | ---: | --- |",
+    ...rows.map((row) => {
+      const debug = row.last.debug || {};
+      return `| ${row.scenario.id} | ${row.failures.length ? "no" : "yes"} | ${row.last.responseTimeMs || 0} | ${debug.llmUsed ? "yes" : "no"} | ${debug.answerMode || "n/a"} | ${debug.serviceType || "n/a"} | ${debug.serviceIntent || "n/a"} | ${debug.retrievalSourcesCount ?? 0} | ${row.failures.join("; ").replace(/\|/g, "/") || ""} |`;
+    }),
+    "",
+    "## Sample Failed Answers",
+    "",
+    ...rows
+      .filter((row) => row.failures.length)
+      .slice(0, 8)
+      .flatMap((row) => [
+        `### ${row.scenario.id}`,
+        "",
+        `Failures: ${row.failures.join("; ")}`,
+        "",
+        row.last.answer,
+        "",
+      ]),
+  ].join("\n");
+
+  await mkdir(path.dirname(reportPath), { recursive: true });
+  await writeFile(reportPath, report, "utf8");
+  console.log(`Production readiness audit: ${passed}/${rows.length} passed`);
+  console.log(`Saved ${reportPath}`);
+  if (process.env.PRODUCTION_READINESS_STRICT === "1" && passed !== rows.length) process.exitCode = 1;
+}
+
+main().catch((error) => {
+  console.error(error instanceof Error ? error.message : String(error));
+  process.exitCode = 1;
+});

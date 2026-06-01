@@ -607,7 +607,7 @@ async function callGeminiRaw(prompt: string, options: RawCallOptions = {}): Prom
   }
 
   let lastError = "";
-  const retryAttempts = Math.max(1, Number.parseInt(process.env.GEMINI_RETRY_ATTEMPTS || "2", 10));
+  const retryAttempts = options.singleCandidate ? 1 : Math.max(1, Number.parseInt(process.env.GEMINI_RETRY_ATTEMPTS || "2", 10));
   const candidateModels = options.singleCandidate ? [model] : geminiCandidateModels();
   for (const candidateModel of candidateModels) {
     for (let attempt = 1; attempt <= retryAttempts; attempt += 1) {
@@ -718,7 +718,7 @@ export async function callLlmText(input: {
       systemPrompt: input.systemPrompt,
       maxOutputTokens: input.maxOutputTokens,
       timeoutMs: input.timeoutMs,
-      singleCandidate: input.singleCandidate ?? false,
+      singleCandidate: input.singleCandidate ?? true,
       responseMimeType: input.responseMimeType || "text/plain",
     },
     input.provider,
