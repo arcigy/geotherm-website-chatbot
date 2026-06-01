@@ -416,7 +416,7 @@ const scenarios: Scenario[] = [
   {
     id: "live_carryover_regression",
     title: "Cena a znacky sa neprenasaju do dalsich otazok",
-    messages: ["Ahoj, chcem tc", "Starsi 140m radiatory", "chcem Vaillant ale mam NIBE", "daj mi presnu cenu", "opravite to alebo treba montaz?", "ahoj"],
+    messages: ["Ahoj, chcem tc", "Starsi 140m radiatory", "chcem Vaillant ale mam NIBE", "daj mi presnu cenu", "opravite to alebo treba montaz?", "ahoj", "cena?"],
     check(turnIndex, body) {
       const failures = commonChecks(body);
       const answer = body.answer || "";
@@ -449,6 +449,11 @@ const scenarios: Scenario[] = [
         if (body.debug?.answerMode !== "general_chat") failures.push(`expected general_chat for greeting, got ${body.debug?.answerMode || "missing"}`);
         if ((body.sources || []).length !== 0 || (body.debug?.retrievalSourcesCount || 0) !== 0) failures.push("greeting should not use RAG sources");
         if (body.debug?.serviceIntent === "price" || body.debug?.answerMode === "price_answer") failures.push("greeting inherited price context");
+      }
+      if (turnIndex === 6) {
+        if (body.debug?.answerMode !== "price_answer") failures.push(`expected price_answer after service/small-talk context, got ${body.debug?.answerMode || "missing"}`);
+        if (body.debug?.serviceIntent !== "price") failures.push(`expected price intent after service/small-talk context, got ${body.debug?.serviceIntent || "missing"}`);
+        if (body.debug?.answerMode === "service_fault_triage") failures.push("price question inherited service_fault context");
       }
       return failures;
     },

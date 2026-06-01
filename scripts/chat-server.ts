@@ -4751,7 +4751,9 @@ function directAnswerDecision(message: string, state: QualificationState, route:
       ? null
       : companyPracticalDirectAnswer(message);
   if (practical) return practical;
-  if (route.serviceType === "service" || route.serviceIntent === "service_fault") {
+  const currentTurnAsksPrice =
+    /(cena|cenu|ceny|cenov|cennik|ponuk|nacen|najlacn|najlacnej|lacne riesenie|lacné riešenie|cheapest|koľko|kolko|stoji|stojí|navratnost|návratnosť|usetr|úspor|uspora|vratane instalacie|vrátane inštalácie|7\s*tis|7000|7\s*000|akumulac|akumula|v cene|z coho|z čoho)/.test(text);
+  if ((route.serviceType === "service" || route.serviceIntent === "service_fault") && !currentTurnAsksPrice) {
     return {
       triggered: false,
       answerMode: "direct_answer",
@@ -4786,7 +4788,7 @@ function directAnswerDecision(message: string, state: QualificationState, route:
   }
 
   const price =
-    /(cena|cenu|ceny|cenov|cennik|ponuk|nacen|najlacn|najlacnej|lacne riesenie|lacné riešenie|cheapest|koľko|kolko|stoji|stojí|navratnost|návratnosť|usetr|úspor|uspora|vratane instalacie|vrátane inštalácie|7\s*tis|7000|7\s*000|akumulac|akumula|v cene|z coho|z čoho)/.test(text) ||
+    currentTurnAsksPrice ||
     (route.serviceIntent === "price" && hasActiveHeatPump && isContextualPriceFollowup(message));
   if (price) return priceDirectAnswer(message, state);
 
@@ -4881,10 +4883,15 @@ function recommendationClosureDecision(
   const hasClosureQualitySlot = Boolean(state.insulation || state.annual_consumption || state.occupants || state.hot_water !== undefined || state.wants_cooling !== undefined || state.location);
   const heatPumpRecommendation = service === "heat_pump" && ["recommendation", "comparison", "general"].includes(intent);
   const newBuildReadyForClosure = isNewBuildFloorHeating(state) && Boolean(state.occupants && state.wants_cooling !== undefined);
+  const existingRadiatorReadyForClosure = isExistingRadiatorHeatPump(state) && Boolean(state.current_heating) && questionRoundsCount >= 2;
   const triggered =
     heatPumpRecommendation &&
     hasMinimumHeatPumpSlots &&
-    (newBuildReadyForClosure || (extraSlots >= 3 && hasClosureQualitySlot) || (questionRoundsCount >= 2 && extraSlots >= 2 && hasClosureQualitySlot) || questionRoundsCount >= 3);
+    (newBuildReadyForClosure ||
+      existingRadiatorReadyForClosure ||
+      (extraSlots >= 3 && hasClosureQualitySlot) ||
+      (questionRoundsCount >= 2 && extraSlots >= 2 && hasClosureQualitySlot) ||
+      questionRoundsCount >= 3);
   const reason = !triggered
     ? null
     : extraSlots >= 3
