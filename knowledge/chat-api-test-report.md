@@ -1,7 +1,7 @@
 # Chat API Test Report
 
 Endpoint: `POST /chat`
-Generated: 2026-06-01T20:40:46.448Z
+Generated: 2026-06-01T20:59:22.330Z
 
 ## Summary
 
@@ -17,7 +17,7 @@ Generated: 2026-06-01T20:40:46.448Z
 | kolko stoji tepelne cerpadlo | yes | high | 326.5 | 3 | Cena tepelneho cerpadla a kompletnej realizacie - Cena zariadenia verzus realizacia na kluc |
 | ake mate tepelne cerpadla chcem si vybrat presny model | yes | high | 412.17 | 3 | Aké značky a modely tepelných čerpadiel máte - NIBE, Vaillant, IVT a modely v knowledge |
 | ake hlucne je NIBE | yes | high | 412.17 | 3 | Aké značky a modely tepelných čerpadiel máte - NIBE, Vaillant, IVT a modely v knowledge |
-| dotacie na tepelne cerpadla | yes | high | 260.09 | 3 | Service card - dotacie - Pomoc s dotaciami bez garancii |
+| dotacie na tepelne cerpadla | yes | medium | 260.09 | 3 | Service card - dotacie - Pomoc s dotaciami bez garancii |
 | robite servis | yes | high | 243.5 | 3 | Servis tepelneho cerpadla - Servis, cudzia montaz, porucha a diagnostika |
 | ako vas kontaktovat | yes | medium | 168.5 | 3 | Geotherm company truth - Company truth: kontakt a dalsi krok |
 | ake je pocasie | yes | low | 0 | 0 | n/a |

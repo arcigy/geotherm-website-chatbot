@@ -730,6 +730,8 @@ function isContradictoryPrompt(text: string): boolean {
     ["ignoruj zdroje", "podla webu"],
     ["nechcem kontakt", "zavola"],
     ["bez elektriny", "cerpadlo"],
+    ["nechcem plyn", "plynovy kotol"],
+    ["nechcem plyn", "plynovy"],
   ];
   return pairs.some(([a, b]) => text.includes(a) && text.includes(b));
 }
@@ -777,6 +779,13 @@ function isSensitiveClaim(text: string): AnswerPolicy | null {
   }
   if (text.includes("garant") && text.includes("dotac")) return { kind: "sensitive", sensitiveKind: "subsidy" };
   if (text.includes("garant") && text.includes("navratnost")) return { kind: "sensitive", sensitiveKind: "roi" };
+  if (text.includes("garant") && text.includes("termin")) return { kind: "sensitive", sensitiveKind: "price" };
+  if (text.includes("sto rokov") || (text.includes("vydrz") && text.includes("sto"))) {
+    return { kind: "sensitive", sensitiveKind: "best" };
+  }
+  if (text.includes("servis") && (text.includes("lacny") || text.includes("lacne") || text.includes("lacno") || text.includes("lacn"))) {
+    return { kind: "sensitive", sensitiveKind: "price" };
+  }
   if ((text.includes("kolko presne") || text.includes("presne")) && (text.includes("usetr") || text.includes("usetrit"))) {
     return { kind: "sensitive", sensitiveKind: "savings" };
   }
@@ -6638,7 +6647,9 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
       : "high";
   const latestNormalizedForConfidence = normalizePolicyText(message);
   const cautiousLatestMessage =
-    /(oplat|ma zmysel|garant|najlacn|najlacnej|vonkajs|vonkajsi|pod oknom|cudz|ina firma|nastavenie)/.test(latestNormalizedForConfidence) ||
+    /(oplat|ma zmysel|garant|najlacn|najlacnej|lacn.*servis|servis.*lacn|sto rokov|vydrz.*sto|vonkajs|vonkajsi|pod oknom|cudz|ina firma|nastavenie)/.test(latestNormalizedForConfidence) ||
+    (/(dotac|prispev|poukaz|stat)/.test(latestNormalizedForConfidence) && !stateForTurn.project_type) ||
+    (latestNormalizedForConfidence.includes("vaillant") && latestNormalizedForConfidence.includes("nibe")) ||
     latestNormalizedForConfidence.includes("nie je od") ||
     latestNormalizedForConfidence.includes("nie od vas");
   const responseConfidence: "high" | "medium" | "low" =
