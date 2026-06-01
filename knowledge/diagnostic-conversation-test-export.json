@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-06-01T14:31:30.292Z",
-  "endpoint": "http://127.0.0.1:57094/chat",
+  "generatedAt": "2026-06-01T14:55:21.791Z",
+  "endpoint": "http://127.0.0.1:57331/chat",
   "verdict": "PASS",
   "failedTurns": 0,
   "totalTurns": 33,
@@ -9,7 +9,7 @@
       "scenario": "new_build_floor_cooling",
       "message": "ahoj, ake cerpadlo je najlepsie?",
       "response": {
-        "conversationId": "con_44daf17d-450c-492f-a874-1d9a9d4adff7",
+        "conversationId": "con_9668aa25-e687-4655-a3cb-d0241db34a25",
         "answer": "### Predbežný smer\n\nNajčastejšie sa pri rodinných domoch začína pri tepelnom čerpadle **vzduch-voda**. Ak ide o novostavbu s podlahovým kúrením, býva to veľmi vhodný smer; pri staršom dome s radiátormi treba najprv overiť potrebnú teplotu vody a výkon radiátorov.\n\nAby som ťa zaradil správne, napíš mi:\n1. je to novostavba alebo starší dom?\n2. koľko m2 chceš vykurovať?\n3. máš radiátory alebo podlahové kúrenie?",
         "intent": "product",
         "confidence": "high",
@@ -76,7 +76,7 @@
           "serviceIntent": "recommendation",
           "legacyIntent": "product",
           "diagnosticFlowVersion": "diagnostic-v5-recommendation-closure",
-          "serverCommit": "d5679fb",
+          "serverCommit": "d305812",
           "retrievalSourcesCount": 3,
           "contextTopic": "tepelné čerpadlá",
           "contextCarried": true,
@@ -130,7 +130,7 @@
         },
         "action": null,
         "fallbackUsed": false,
-        "responseTimeMs": 3042
+        "responseTimeMs": 3371
       },
       "failures": []
     },
@@ -138,8 +138,8 @@
       "scenario": "new_build_floor_cooling",
       "message": "1. novostavbu, 2. 120, 3. podlahovka",
       "response": {
-        "conversationId": "con_44daf17d-450c-492f-a874-1d9a9d4adff7",
-        "answer": "### Odporúčanie pre novostavbu s podlahovým kúrením\n\nKeďže ide o novostavbu s podlahovým kúrením a plochou 120 m², predbežne sa ako najvhodnejšie riešenie javí **tepelné čerpadlo vzduch-voda**. Tento typ je ideálny pre nízkoteplotné vykurovacie systémy, akým je podlahové kúrenie, a zvyčajne ponúka dobrý pomer cena/výkon.\n\nNaše služby zahŕňajú kompletnú realizáciu od návrhu až po montáž. Pre tento typ domu sa často používajú spoľahlivé značky ako NIBE alebo Vaillant.\n\nAby som ti mohol odporučiť konkrétnejší model a presnejšie riešenie, potreboval by som vedieť ešte pár detailov:\n\n* Koľko osôb bude v dome bývať a ako často budete využívať teplú vodu?\n* Plánuješ aj aktívne chladenie v lete pomocou tepelného čerpadla?",
+        "conversationId": "con_9668aa25-e687-4655-a3cb-d0241db34a25",
+        "answer": "### Odporúčanie pre novostavbu s podlahovým kúrením\n\nKeďže ide o novostavbu s podlahovým kúrením a plochou 120 m², predbežne sa ako najvhodnejšie riešenie javí tepelné čerpadlo **vzduch-voda**. Tento typ je ideálny pre nízkoteplotné vykurovacie systémy, akým je práve podlahové kúrenie, a je vhodný pre väčšinu moderných stavieb.\n\nNaše služby zahŕňajú kompletnú realizáciu od návrhu až po montáž. Pri výbere konkrétneho modelu sa zameriavame na overené značky ako NIBE a Vaillant.\n\nAby som ti mohol odporučiť konkrétnejší model a zistiť ďalšie detaily, potreboval by som vedieť:\n* Koľko osôb bude v domácnosti? (Dôležité pre potrebu teplej vody)\n* Plánuješ aj aktívne chladenie v lete pomocou tepelného čerpadla?",
         "intent": "product",
         "confidence": "high",
         "topScore": 445.2,
@@ -170,7 +170,7 @@
           "requestedFields": []
         },
         "lead": {
-          "id": "lead_5590f775-4513-4590-97fc-378047a14ac9",
+          "id": "lead_a61f52ae-ccad-4b1b-8756-744c4becd3a8",
           "captured": false,
           "score": 30,
           "temperature": "cold",
@@ -208,7 +208,7 @@
           "serviceIntent": "recommendation",
           "legacyIntent": "product",
           "diagnosticFlowVersion": "diagnostic-v5-recommendation-closure",
-          "serverCommit": "d5679fb",
+          "serverCommit": "d305812",
           "retrievalSourcesCount": 3,
           "contextTopic": "tepelné čerpadlá",
           "contextCarried": true,
@@ -236,7 +236,7 @@
             "requestedFields": []
           },
           "lead": {
-            "id": "lead_5590f775-4513-4590-97fc-378047a14ac9",
+            "id": "lead_a61f52ae-ccad-4b1b-8756-744c4becd3a8",
             "captured": false,
             "score": 30,
             "temperature": "cold",
@@ -261,7 +261,7 @@
         },
         "action": null,
         "fallbackUsed": false,
-        "responseTimeMs": 3092
+        "responseTimeMs": 2924
       },
       "failures": []
     },
@@ -269,7 +269,7 @@
       "scenario": "new_build_floor_cooling",
       "message": "1. 5, 2. ano",
       "response": {
-        "conversationId": "con_44daf17d-450c-492f-a874-1d9a9d4adff7",
+        "conversationId": "con_9668aa25-e687-4655-a3cb-d0241db34a25",
         "answer": "### Predbežné uzavretie odporúčania\n\nPodľa toho, čo píšeš, by som to už uzavrel: **najlepší smer je tepelné čerpadlo vzduch-voda pre novostavbu s nízkoteplotným podlahovým kúrením** pri dome približne 120 m², so zásobníkom TÚV dimenzovaným pre 5 osôb.\n\nDáva to zmysel preto, že podlahovka pracuje s nízkou teplotou vody a tepelnému čerpadlu to vyhovuje. Keďže chceš aj chladenie, nerátal by som automaticky s tým, že samotná podlahovka bude stačiť. Chladenie by som nacenil ako samostatný variant: stropné chladenie, fancoily alebo klimatizácia podľa toho, aký komfort v lete chceš.\n\n**Pozrel by som sa na tieto možnosti:**\n1. **Vaillant aroTHERM plus** ako moderné vzduch-voda riešenie pre podlahové kúrenie a TÚV.\n2. **Vaillant aroTHERM Split** ako splitové riešenie, ak bude lepšie sedieť technickému umiestneniu.\n3. **NIBE vzduch-voda riešenie, napríklad S2125**, ak bude podľa aktuálnej ponuky a konfigurácie vhodné pre dom.\n\nĎalší krok by som už nerobil ďalším dotazníkom. Dajme si krátku konzultáciu alebo stretnutie, kde sa vyberú 2-3 konkrétne zostavy, preverí sa TÚV a chladenie a pripraví sa nacenenie.",
         "intent": "product",
         "confidence": "high",
@@ -301,7 +301,7 @@
           "requestedFields": []
         },
         "lead": {
-          "id": "lead_5590f775-4513-4590-97fc-378047a14ac9",
+          "id": "lead_a61f52ae-ccad-4b1b-8756-744c4becd3a8",
           "captured": false,
           "score": 30,
           "temperature": "cold",
@@ -342,7 +342,7 @@
           "serviceIntent": "recommendation",
           "legacyIntent": "product",
           "diagnosticFlowVersion": "diagnostic-v5-recommendation-closure",
-          "serverCommit": "d5679fb",
+          "serverCommit": "d305812",
           "retrievalSourcesCount": 3,
           "contextTopic": "tepelné čerpadlá",
           "contextCarried": true,
@@ -377,7 +377,7 @@
             "requestedFields": []
           },
           "lead": {
-            "id": "lead_5590f775-4513-4590-97fc-378047a14ac9",
+            "id": "lead_a61f52ae-ccad-4b1b-8756-744c4becd3a8",
             "captured": false,
             "score": 30,
             "temperature": "cold",
@@ -402,7 +402,7 @@
         },
         "action": null,
         "fallbackUsed": false,
-        "responseTimeMs": 2974
+        "responseTimeMs": 4320
       },
       "failures": []
     },
@@ -410,7 +410,7 @@
       "scenario": "greeting_tc_then_old_radiators",
       "message": "Ahoj, chcem tč",
       "response": {
-        "conversationId": "con_d32f9969-9503-4c08-94d7-e1249b998843",
+        "conversationId": "con_72410e35-aa3e-4f09-9e7c-c3e949f16f92",
         "answer": "### Predbežný smer\n\nNajčastejšie sa pri rodinných domoch začína pri tepelnom čerpadle **vzduch-voda**. Ak ide o novostavbu s podlahovým kúrením, býva to veľmi vhodný smer; pri staršom dome s radiátormi treba najprv overiť potrebnú teplotu vody a výkon radiátorov.\n\nAby som ťa zaradil správne, napíš mi:\n1. je to novostavba alebo starší dom?\n2. koľko m2 chceš vykurovať?\n3. máš radiátory alebo podlahové kúrenie?",
         "intent": "product",
         "confidence": "high",
@@ -477,7 +477,7 @@
           "serviceIntent": "recommendation",
           "legacyIntent": "product",
           "diagnosticFlowVersion": "diagnostic-v5-recommendation-closure",
-          "serverCommit": "d5679fb",
+          "serverCommit": "d305812",
           "retrievalSourcesCount": 3,
           "contextTopic": "tepelné čerpadlá",
           "contextCarried": true,
@@ -531,7 +531,7 @@
         },
         "action": null,
         "fallbackUsed": false,
-        "responseTimeMs": 3440
+        "responseTimeMs": 3772
       },
       "failures": []
     },
@@ -539,8 +539,8 @@
       "scenario": "greeting_tc_then_old_radiators",
       "message": "Starší 140m radiatory",
       "response": {
-        "conversationId": "con_d32f9969-9503-4c08-94d7-e1249b998843",
-        "answer": "### Tepelné čerpadlo pre starší dom s radiátormi\n\nRozumiem, máš starší dom s rozlohou 140 m² a vykurovanie zabezpečujú radiátory. V takomto prípade je predbežný smer pre teba tepelné čerpadlo typu vzduch-voda.\n\n**Dôvod:** Tepelné čerpadlá vzduch-voda sú najčastejšie používané pri rekonštrukciách starších domov, pretože ich inštalácia je menej náročná ako pri iných typoch. Pri radiátoroch je však kľúčové overiť, či sú schopné efektívne vykurovať dom pri nižšej teplote vody, ktorú tepelné čerpadlo produkuje.\n\n**Typický rozsah riešenia:**\n* Zabezpečíme návrh a montáž vhodného tepelného čerpadla vzduch-voda.\n* Posúdime stav tvojich radiátorov a ich výkon pri nižších teplotách. V niektorých prípadoch môže byť potrebné ich doplniť alebo vymeniť, aby systém fungoval optimálne.\n* Ponúkame kompletné riešenie od návrhu až po realizáciu.\n\nAby som ti mohol čo najlepšie poradiť a pripraviť konkrétnu ponuku, potreboval by som vedieť ešte pár vecí:\n\n1. Aký je tvoj súčasný zdroj tepla (napr. plynový kotol, elektrické kúrenie)?\n2. Plánuješ v blízkej budúcnosti zatepľovať dom alebo meniť okná?",
+        "conversationId": "con_72410e35-aa3e-4f09-9e7c-c3e949f16f92",
+        "answer": "### Odporúčanie pre rekonštrukciu s radiátormi\n\nKeďže ide o starší dom s rozlohou 140 m² a vykurovaním pomocou radiátorov, predbežný smer je zvážiť tepelné čerpadlo typu **vzduch-voda**. Toto riešenie je často vhodné aj pri rekonštrukciách, ale je dôležité overiť si pár vecí.\n\n**Dôvod:** Tepelné čerpadlá vzduch-voda sú univerzálne a dajú sa použiť aj pri existujúcich radiátorových systémoch. Kľúčové je, či tvoje radiátory dokážu efektívne vykúriť dom pri nižšej teplote vody, ktorú tepelné čerpadlo bežne dodáva.\n\n**Typický rozsah riešenia:**\n* Inštalácia tepelného čerpadla vzduch-voda.\n* Overenie výkonu a veľkosti súčasných radiátorov.\n* Možná úprava vykurovacej sústavy alebo výmena niektorých radiátorov, ak by to bolo potrebné pre optimálny výkon.\n\n**Čo potrebujeme ešte vedieť:**\n* Akým zdrojom tepla kúriš teraz a aká je tvoja približná ročná spotreba energie (napr. kWh plynu, elektriny, dreva)?\n* Je dom zateplený, alebo by bolo vhodné zvážiť aj zateplenie?",
         "intent": "product",
         "confidence": "high",
         "topScore": 442.31,
@@ -571,7 +571,7 @@
           "requestedFields": []
         },
         "lead": {
-          "id": "lead_73614add-d972-424d-9e46-508535c4c326",
+          "id": "lead_e851604b-9b24-42d9-81e2-16949a267cd5",
           "captured": false,
           "score": 30,
           "temperature": "cold",
@@ -609,7 +609,7 @@
           "serviceIntent": "recommendation",
           "legacyIntent": "product",
           "diagnosticFlowVersion": "diagnostic-v5-recommendation-closure",
-          "serverCommit": "d5679fb",
+          "serverCommit": "d305812",
           "retrievalSourcesCount": 3,
           "contextTopic": "tepelné čerpadlá",
           "contextCarried": true,
@@ -637,7 +637,7 @@
             "requestedFields": []
           },
           "lead": {
-            "id": "lead_73614add-d972-424d-9e46-508535c4c326",
+            "id": "lead_e851604b-9b24-42d9-81e2-16949a267cd5",
             "captured": false,
             "score": 30,
             "temperature": "cold",
@@ -662,7 +662,7 @@
         },
         "action": null,
         "fallbackUsed": false,
-        "responseTimeMs": 3129
+        "responseTimeMs": 2767
       },
       "failures": []
     },
@@ -670,7 +670,7 @@
       "scenario": "old_house_radiators_wood",
       "message": "ahoj, ake cerpadlo je najlepsie?",
       "response": {
-        "conversationId": "con_e423a537-04d2-430d-808f-a7649426bbee",
+        "conversationId": "con_892d37fb-b891-4cee-99ad-8b056e00df18",
         "answer": "### Predbežný smer\n\nNajčastejšie sa pri rodinných domoch začína pri tepelnom čerpadle **vzduch-voda**. Ak ide o novostavbu s podlahovým kúrením, býva to veľmi vhodný smer; pri staršom dome s radiátormi treba najprv overiť potrebnú teplotu vody a výkon radiátorov.\n\nAby som ťa zaradil správne, napíš mi:\n1. je to novostavba alebo starší dom?\n2. koľko m2 chceš vykurovať?\n3. máš radiátory alebo podlahové kúrenie?",
         "intent": "product",
         "confidence": "high",
@@ -737,7 +737,7 @@
           "serviceIntent": "recommendation",
           "legacyIntent": "product",
           "diagnosticFlowVersion": "diagnostic-v5-recommendation-closure",
-          "serverCommit": "d5679fb",
+          "serverCommit": "d305812",
           "retrievalSourcesCount": 3,
           "contextTopic": "tepelné čerpadlá",
           "contextCarried": true,
@@ -791,7 +791,7 @@
         },
         "action": null,
         "fallbackUsed": false,
-        "responseTimeMs": 3030
+        "responseTimeMs": 2717
       },
       "failures": []
     },
@@ -799,8 +799,8 @@
       "scenario": "old_house_radiators_wood",
       "message": "starsi dom, 150m, mame radiatory",
       "response": {
-        "conversationId": "con_e423a537-04d2-430d-808f-a7649426bbee",
-        "answer": "### Tepelné čerpadlo pre starší dom s radiátormi\n\nNa základe toho, že ide o starší dom s rozlohou 150 m² a vykurovaním pomocou radiátorov, predbežne odporúčame tepelné čerpadlo typu **vzduch-voda**.\n\n**Dôvod:** Tepelné čerpadlá vzduch-voda sú univerzálnym riešením, ktoré sa dá použiť aj pri rekonštrukcii staršieho domu. Pri radiátoroch je však kľúčové overiť, či sú schopné efektívne vykurovať interiér pri nižšej teplote vody, ktorú tepelné čerpadlo bežne dodáva. Ak by radiátory nedokázali zabezpečiť dostatočný výkon, mohla by byť potrebná ich úprava alebo výmena.\n\n**Typický rozsah riešenia:** V takomto prípade sa zameriavame na výber tepelného čerpadla, ktoré dokáže pracovať s vyššou výstupnou teplotou vody, aby bolo kompatibilné s existujúcimi radiátormi. Zároveň je dôležité zohľadniť aj celkové zateplenie domu a jeho tepelné straty.\n\n**Čo potrebujeme ešte vedieť:**\n* Akým zdrojom tepla kúrite teraz (napr. plyn, elektrina, pevné palivo)?\n* Máte záujem aj o prípravu teplej úžitkovej vody (TÚV) pomocou tepelného čerpadla?\n\nPo získaní týchto informácií ti budeme vedieť lepšie poradiť s konkrétnym riešením a značkou.",
+        "conversationId": "con_892d37fb-b891-4cee-99ad-8b056e00df18",
+        "answer": "### Tepelné čerpadlo pre starší dom s radiátormi\n\nNa základe tvojich informácií – starší dom, 150 m² a radiátory – je predbežným smerom tepelné čerpadlo **vzduch-voda**.\n\n**Dôvod:** Tepelné čerpadlá vzduch-voda sú univerzálnym riešením, ktoré sa dá použiť aj pri rekonštrukcii staršieho domu. Pri radiátoroch je však kľúčové overiť, či sú schopné efektívne vykurovať dom pri nižšej teplote vody, ktorú tepelné čerpadlo zvyčajne dodáva. Ak by radiátory potrebovali príliš vysokú teplotu, mohla by byť potrebná ich úprava alebo výmena.\n\n**Typický rozsah riešenia:**\n* Navrhneme tepelné čerpadlo vzduch-voda, ktoré bude spĺňať tepelné straty domu.\n* Overíme kompatibilitu s tvojimi súčasnými radiátormi.\n* Zabezpečíme kompletnú montáž a uvedenie do prevádzky.\n\n**Čo potrebujeme vedieť ďalej:**\n1. Aký je tvoj súčasný zdroj tepla (napr. plynový kotol, elektrické kúrenie)?\n2. Ako je dom zateplený (ak vieš)?\n\nTieto informácie nám pomôžu lepšie posúdiť celkové riešenie a prípadné úpravy.",
         "intent": "product",
         "confidence": "high",
         "topScore": 442.03,
@@ -831,7 +831,7 @@
           "requestedFields": []
         },
         "lead": {
-          "id": "lead_548c54d9-4176-40b4-a7de-1e88e6bb166e",
+          "id": "lead_ac4450ac-923a-40b4-a26f-d4d78c8a92e0",
           "captured": false,
           "score": 30,
           "temperature": "cold",
@@ -870,7 +870,7 @@
           "serviceIntent": "recommendation",
           "legacyIntent": "product",
           "diagnosticFlowVersion": "diagnostic-v5-recommendation-closure",
-          "serverCommit": "d5679fb",
+          "serverCommit": "d305812",
           "retrievalSourcesCount": 3,
           "contextTopic": "tepelné čerpadlá",
           "contextCarried": true,
@@ -898,7 +898,7 @@
             "requestedFields": []
           },
           "lead": {
-            "id": "lead_548c54d9-4176-40b4-a7de-1e88e6bb166e",
+            "id": "lead_ac4450ac-923a-40b4-a26f-d4d78c8a92e0",
             "captured": false,
             "score": 30,
             "temperature": "cold",
@@ -923,7 +923,7 @@
         },
         "action": null,
         "fallbackUsed": false,
-        "responseTimeMs": 3328
+        "responseTimeMs": 3745
       },
       "failures": []
     },
@@ -931,8 +931,8 @@
       "scenario": "old_house_radiators_wood",
       "message": "kotol mame drevom a netusim, mam vlastne drevo",
       "response": {
-        "conversationId": "con_e423a537-04d2-430d-808f-a7649426bbee",
-        "answer": "### Tepelné čerpadlo k vášmu kotlu na drevo\n\nRozumiem, že teraz kúrite kotlom na drevo a máte vlastné drevo. To je dobrý základ na posúdenie, ako by tepelné čerpadlo zapadlo do vášho systému.\n\n**Predbežný smer:** Tepelné čerpadlo vzduch-voda je stále relevantnou možnosťou, aj keď teraz používate kotol na drevo. Dôležité bude zistiť, akú teplotu vody vaše radiátory potrebujú a aký je celkový tepelný výkon systému.\n\n**Dôvod:** Využívanie vlastného dreva môže znamenať, že máte nižšie prevádzkové náklady na kúrenie, ale tepelné čerpadlo môže priniesť komfort, automatizáciu a potenciálne aj úspory na iných energiách (napr. elektrina na chod kotla, ak nejaká je). Zároveň je dôležité zistiť, či by tepelné čerpadlo dokázalo pokryť celú potrebu tepla, alebo by ste ho využívali len čiastočne.\n\n**Čo potrebujeme ešte vedieť:**\n* Máte záujem aj o prípravu teplej úžitkovej vody (TÚV) pomocou tepelného čerpadla?\n* Ako ste spokojný so súčasným vykurovaním drevom (výkon, komfort, práca)?\n\nPo zodpovedaní týchto otázok budeme môcť lepšie zhodnotiť, aké riešenie tepelného čerpadla by bolo pre vás najvhodnejšie.\n\nPred finálnym návrhom by som ešte overil hlavne zateplenie domu, orientačné množstvo dreva za sezónu, akumulačnú nádrž a to, či má tepelné čerpadlo riešiť aj teplú vodu.",
+        "conversationId": "con_892d37fb-b891-4cee-99ad-8b056e00df18",
+        "answer": "### Tepelné čerpadlo k vášmu kotlu na drevo\n\nRozumiem, že teraz kúrite kotlom na drevo a máte vlastné drevo. Pri staršom dome s radiátormi a výmerou 150 m² je predbežným smerom tepelné čerpadlo **vzduch-voda**.\n\n**Dôvod:** Aj keď máte kotol na drevo, tepelné čerpadlo môže byť efektívnou a ekologickejšou alternatívou, najmä ak chcete znížiť závislosť od manuálneho prikladania a potenciálne aj prevádzkové náklady. Pri radiátoroch je dôležité overiť ich schopnosť pracovať s nižšou teplotou vody, ktorú tepelné čerpadlo dodáva.\n\n**Typický rozsah riešenia:**\n* Navrhneme tepelné čerpadlo vzduch-voda s dostatočným výkonom pre váš dom.\n* Posúdime, či vaše súčasné radiátory budú vyhovovať, alebo či bude potrebná ich úprava.\n* Zabezpečíme kompletnú realizáciu od návrhu až po montáž a spustenie.\n\n**Čo potrebujeme vedieť ďalej:**\n1. Ako je dom zateplený (ak máš predstavu)?\n2. Potrebujete zabezpečiť aj ohrev teplej úžitkovej vody?\n\nTieto informácie nám pomôžu doladiť návrh a zistiť, či nie sú potrebné ďalšie úpravy.",
         "intent": "product",
         "confidence": "high",
         "topScore": 602.44,
@@ -963,7 +963,7 @@
           "requestedFields": []
         },
         "lead": {
-          "id": "lead_548c54d9-4176-40b4-a7de-1e88e6bb166e",
+          "id": "lead_ac4450ac-923a-40b4-a26f-d4d78c8a92e0",
           "captured": false,
           "score": 30,
           "temperature": "cold",
@@ -1005,16 +1005,18 @@
           "serviceIntent": "recommendation",
           "legacyIntent": "product",
           "diagnosticFlowVersion": "diagnostic-v5-recommendation-closure",
-          "serverCommit": "d5679fb",
+          "serverCommit": "d305812",
           "retrievalSourcesCount": 3,
           "contextTopic": "tepelné čerpadlá",
           "contextCarried": true,
           "fallbackUsed": false,
           "fallbackType": null,
           "validatorsTriggered": [
-            "wood_replacement_followup_repaired"
+            "inspection_claim_sanitized"
           ],
-          "bannedClaimsRemoved": [],
+          "bannedClaimsRemoved": [
+            "bezplatná alebo nezáväzná obhliadka"
+          ],
           "questionRoundsCount": 2,
           "closureGateTriggered": false,
           "closureReason": null,
@@ -1031,7 +1033,7 @@
             "requestedFields": []
           },
           "lead": {
-            "id": "lead_548c54d9-4176-40b4-a7de-1e88e6bb166e",
+            "id": "lead_ac4450ac-923a-40b4-a26f-d4d78c8a92e0",
             "captured": false,
             "score": 30,
             "temperature": "cold",
@@ -1056,7 +1058,7 @@
         },
         "action": null,
         "fallbackUsed": false,
-        "responseTimeMs": 3814
+        "responseTimeMs": 3773
       },
       "failures": []
     },
@@ -1064,7 +1066,7 @@
       "scenario": "old_house_radiators_wood",
       "message": "4m, zateplene vsetko",
       "response": {
-        "conversationId": "con_e423a537-04d2-430d-808f-a7649426bbee",
+        "conversationId": "con_892d37fb-b891-4cee-99ad-8b056e00df18",
         "answer": "### Predbežné uzavretie odporúčania\n\nPodľa toho, čo píšeš, by som to už predbežne uzavrel: **najlepší smer je tepelné čerpadlo vzduch-voda vhodné pre radiátorový systém** v zateplenom staršom dome s plochou približne 150 m².\n\n**Prečo:** máš radiátory a dom je zateplený, takže šanca na funkčné riešenie je výrazne lepšia než pri nezateplenom dome. Keďže máš vlastné drevo, nehodnotil by som to iba cez úsporu. Ekonomiku treba overiť, ale hlavný prínos môže byť komfort: automatické kúrenie bez prikladania, menej práce s drevom a možnosť nechať drevo ako zálohu. Beriem údaj **4 m dreva za sezónu** ako orientačnú spotrebu dreva za sezónu. Ak je jednotka iná, pri návrhu sa to jednoducho spresní.\n\n**Reálne by som pozeral na dve možnosti:**\n1. **Tepelné čerpadlo vzduch-voda ako hlavný zdroj kúrenia.** Vhodné, ak chceš čo najviac obmedziť prikladanie a mať automatickú prevádzku.\n2. **Hybridné zapojenie: tepelné čerpadlo + ponechaný kotol na drevo ako záloha alebo doplnkový zdroj.** Vhodné, ak máš vlastné drevo a chceš ho občas využívať ako zálohu alebo doplnok.\n\nZ portfólia firmy by dávalo zmysel pozrieť sa na vhodné riešenie od **NIBE alebo Vaillant** pre radiátorový systém, ale konkrétny model by sa vybral až podľa výkonu, radiátorov, kotolne a prípravy teplej vody.\n\nTypicky by sa riešila vonkajšia jednotka, vnútorné hydraulické zapojenie, regulácia, prípadne zásobník TÚV, akumulačná nádrž alebo využitie existujúcej nádrže a napojenie na radiátorový systém.\n\nFinálne treba preveriť hlavne teplotu vody pre radiátory, existujúcu akumulačnú nádrž, priestor v kotolni a či má čerpadlo riešiť aj teplú vodu.\n\nĎalší krok: pošli fotky kotolne, radiátorov a prípadnej akumulačnej nádrže. Potom sa dá pripraviť konkrétnejší návrh alebo dohodnúť obhliadka.",
         "intent": "product",
         "confidence": "high",
@@ -1096,7 +1098,7 @@
           "requestedFields": []
         },
         "lead": {
-          "id": "lead_548c54d9-4176-40b4-a7de-1e88e6bb166e",
+          "id": "lead_ac4450ac-923a-40b4-a26f-d4d78c8a92e0",
           "captured": false,
           "score": 30,
           "temperature": "cold",
@@ -1141,7 +1143,7 @@
           "serviceIntent": "recommendation",
           "legacyIntent": "product",
           "diagnosticFlowVersion": "diagnostic-v5-recommendation-closure",
-          "serverCommit": "d5679fb",
+          "serverCommit": "d305812",
           "retrievalSourcesCount": 3,
           "contextTopic": "tepelné čerpadlá",
           "contextCarried": true,
@@ -1177,7 +1179,7 @@
             "requestedFields": []
           },
           "lead": {
-            "id": "lead_548c54d9-4176-40b4-a7de-1e88e6bb166e",
+            "id": "lead_ac4450ac-923a-40b4-a26f-d4d78c8a92e0",
             "captured": false,
             "score": 30,
             "temperature": "cold",
@@ -1202,7 +1204,7 @@
         },
         "action": null,
         "fallbackUsed": false,
-        "responseTimeMs": 5064
+        "responseTimeMs": 7813
       },
       "failures": []
     },
@@ -1210,8 +1212,8 @@
       "scenario": "tc_brand_then_new_build_closure",
       "message": "aké máte tč?",
       "response": {
-        "conversationId": "con_7e704b4d-9076-424d-8676-3e36228a0ad2",
-        "answer": "Ponúkame tepelné čerpadlá značiek NIBE a Vaillant. Značku IVT považujeme za neistú a vyžaduje si dodatočné overenie. Ostatné značky ako Daikin či Mitsubishi pri tepelných čerpadlách zatiaľ nekomunikujeme.\n\nPre výber konkrétneho modelu potrebujeme poznať viac informácií o vašej nehnuteľnosti. Aký typ vykurovania máte (radiátory alebo podlahové kúrenie) a aká je približná plocha domu?",
+        "conversationId": "con_dcc78d14-4b74-4570-84f0-fcf583f8ebbd",
+        "answer": "Ponúkame tepelné čerpadlá značiek NIBE a Vaillant. Značku IVT považujeme za neistú, kým ju nepotvrdíme. Ostatné značky ako Daikin alebo Mitsubishi pri tepelných čerpadlách zatiaľ nespomíname.\n\nPre výber konkrétneho modelu potrebujeme viac informácií. Aký typ vykurovania máte (radiátory alebo podlahové kúrenie) a akú máte približnú plochu domu?",
         "intent": "product",
         "confidence": "high",
         "topScore": 308.5,
@@ -1282,7 +1284,7 @@
           "serviceIntent": "brand_model",
           "legacyIntent": "product",
           "diagnosticFlowVersion": "diagnostic-v5-recommendation-closure",
-          "serverCommit": "d5679fb",
+          "serverCommit": "d305812",
           "retrievalSourcesCount": 3,
           "contextTopic": "tepelné čerpadlá",
           "contextCarried": true,
@@ -1335,7 +1337,7 @@
         },
         "action": null,
         "fallbackUsed": false,
-        "responseTimeMs": 2431
+        "responseTimeMs": 2022
       },
       "failures": []
     },
@@ -1343,8 +1345,8 @@
       "scenario": "tc_brand_then_new_build_closure",
       "message": "novostavbu 120m",
       "response": {
-        "conversationId": "con_7e704b4d-9076-424d-8676-3e36228a0ad2",
-        "answer": "### Tepelné čerpadlo pre vašu novostavbu\n\nKeďže ide o novostavbu s plochou 120 m² a predpokladáme podlahové kúrenie (čo je pri novostavbách bežné a ideálne pre tepelné čerpadlá), predbežne by som odporučil tepelné čerpadlo typu vzduch-voda. Tento typ je efektívny pri nízkoteplotnom vykurovaní, ktoré zabezpečuje podlahové kúrenie.\n\n**Prečo vzduch-voda?**\n* Je to najčastejšie používaný typ pre novostavby s podlahovým kúrením.\n* Poskytuje dobrý pomer cena/výkon a je relatívne jednoduchý na inštaláciu.\n* Značky ako NIBE a Vaillant, ktoré ponúkame, sú spoľahlivé a osvedčené.\n\n**Čo ďalej potrebujeme vedieť:**\n1. **Potreba teplej úžitkovej vody:** Koľko osôb bude v domácnosti a aké sú vaše nároky na ohrev TUV?\n2. **Chladenie:** Zvažujete aj možnosť chladenia v lete?\n\nNa základe týchto informácií ti budeme vedieť lepšie poradiť s konkrétnym modelom a pripraviť návrh riešenia.",
+        "conversationId": "con_dcc78d14-4b74-4570-84f0-fcf583f8ebbd",
+        "answer": "### Tepelné čerpadlo pre vašu novostavbu\n\nKeďže ide o novostavbu s plochou 120 m² a plánuješ podlahové kúrenie, predbežne by som odporučil tepelné čerpadlo typu vzduch-voda. Tento typ je ideálny pre nízkoteplotné vykurovacie systémy, akým je práve podlahové kúrenie, a v novostavbách sa osvedčil ako efektívne riešenie.\n\n**Prečo vzduch-voda?**\n* Je to moderné a úsporné riešenie pre nízkoenergetické domy.\n* Vhodné pre podlahové kúrenie, ktoré vyžaduje nižšiu výstupnú teplotu vody.\n* Väčšina moderných jednotiek umožňuje aj letné chladenie.\n\nAby som ti mohol odporučiť konkrétnejší model a zistiť, ako by riešenie vyzeralo u vás, potreboval by som vedieť ešte pár detailov:\n\n1. Koľko osôb bude v dome bývať? (Dôležité pre dimenzovanie ohrevu teplej úžitkovej vody.)\n2. Máte záujem aj o možnosť chladenia v lete?",
         "intent": "product",
         "confidence": "high",
         "topScore": 327.53,
@@ -1375,7 +1377,7 @@
           "requestedFields": []
         },
         "lead": {
-          "id": "lead_444fe555-4aef-4010-8727-28913d7d2bb6",
+          "id": "lead_93b87447-e993-48cb-8770-ecd0a06708bb",
           "captured": false,
           "score": 30,
           "temperature": "cold",
@@ -1414,7 +1416,7 @@
           "serviceIntent": "recommendation",
           "legacyIntent": "product",
           "diagnosticFlowVersion": "diagnostic-v5-recommendation-closure",
-          "serverCommit": "d5679fb",
+          "serverCommit": "d305812",
           "retrievalSourcesCount": 3,
           "contextTopic": "tepelné čerpadlá",
           "contextCarried": true,
@@ -1442,7 +1444,7 @@
             "requestedFields": []
           },
           "lead": {
-            "id": "lead_444fe555-4aef-4010-8727-28913d7d2bb6",
+            "id": "lead_93b87447-e993-48cb-8770-ecd0a06708bb",
             "captured": false,
             "score": 30,
             "temperature": "cold",
@@ -1467,7 +1469,7 @@
         },
         "action": null,
         "fallbackUsed": false,
-        "responseTimeMs": 3360
+        "responseTimeMs": 3585
       },
       "failures": []
     },
@@ -1475,8 +1477,8 @@
       "scenario": "tc_brand_then_new_build_closure",
       "message": "podlahovku",
       "response": {
-        "conversationId": "con_7e704b4d-9076-424d-8676-3e36228a0ad2",
-        "answer": "### Tepelné čerpadlo pre vašu novostavbu s podlahovým kúrením\n\nSuper, ďakujem za upresnenie. Keďže ide o novostavbu s plochou 120 m² a máte podlahové kúrenie, predbežne by som odporučil tepelné čerpadlo typu **vzduch-voda**. Tento typ je ideálny pre nízkoteplotné vykurovacie systémy, akým je práve podlahové kúrenie, a je veľmi efektívny.\n\n**Čo ďalej potrebujeme vedieť:**\n\n1. **Potreba teplej úžitkovej vody:** Koľko osôb bude v domácnosti a aké sú vaše nároky na ohrev TUV? (Napr. počet osôb, či preferujete rýchly ohrev, alebo vám stačí pomalší, ale úspornejší).\n2. **Chladenie:** Zvažujete aj možnosť aktívneho chladenia v lete pomocou tepelného čerpadla?\n\nTieto informácie nám pomôžu zúžiť výber konkrétneho modelu a navrhnúť optimálne riešenie pre váš dom.",
+        "conversationId": "con_dcc78d14-4b74-4570-84f0-fcf583f8ebbd",
+        "answer": "### Predbežný verdikt\n\nPre teba by som predbežne išiel do tepelného čerpadla **vzduch-voda** pre **novostavbu s nízkoteplotným podlahovým kúrením** pri dome cca 120 m². Dáva to zmysel hlavne preto, že podlahovka pracuje s nízkou teplotou vody, čo tepelnému čerpadlu vyhovuje.\nKonkrétny výkon a model by som už riešil v nacenení, nie ďalším dotazníkom.\n\nKoľko osôb bude v dome a chceš riešiť aj chladenie v lete?",
         "intent": "product",
         "confidence": "high",
         "topScore": 445.2,
@@ -1507,7 +1509,7 @@
           "requestedFields": []
         },
         "lead": {
-          "id": "lead_444fe555-4aef-4010-8727-28913d7d2bb6",
+          "id": "lead_93b87447-e993-48cb-8770-ecd0a06708bb",
           "captured": false,
           "score": 30,
           "temperature": "cold",
@@ -1547,14 +1549,15 @@
           "serviceIntent": "recommendation",
           "legacyIntent": "product",
           "diagnosticFlowVersion": "diagnostic-v5-recommendation-closure",
-          "serverCommit": "d5679fb",
+          "serverCommit": "d305812",
           "retrievalSourcesCount": 3,
           "contextTopic": "tepelné čerpadlá",
           "contextCarried": true,
           "fallbackUsed": false,
           "fallbackType": null,
           "validatorsTriggered": [
-            "inspection_claim_sanitized"
+            "inspection_claim_sanitized",
+            "hard_verdict_inserted"
           ],
           "bannedClaimsRemoved": [
             "bezplatná alebo nezáväzná obhliadka"
@@ -1575,7 +1578,7 @@
             "requestedFields": []
           },
           "lead": {
-            "id": "lead_444fe555-4aef-4010-8727-28913d7d2bb6",
+            "id": "lead_93b87447-e993-48cb-8770-ecd0a06708bb",
             "captured": false,
             "score": 30,
             "temperature": "cold",
@@ -1600,7 +1603,7 @@
         },
         "action": null,
         "fallbackUsed": false,
-        "responseTimeMs": 2581
+        "responseTimeMs": 2320
       },
       "failures": []
     },
@@ -1608,7 +1611,7 @@
       "scenario": "tc_brand_then_new_build_closure",
       "message": "5 osob, áno plánujem",
       "response": {
-        "conversationId": "con_7e704b4d-9076-424d-8676-3e36228a0ad2",
+        "conversationId": "con_dcc78d14-4b74-4570-84f0-fcf583f8ebbd",
         "answer": "### Predbežné uzavretie odporúčania\n\nPodľa toho, čo píšeš, by som to už uzavrel: **najlepší smer je tepelné čerpadlo vzduch-voda pre novostavbu s nízkoteplotným podlahovým kúrením** pri dome približne 120 m², so zásobníkom TÚV dimenzovaným pre 5 osôb.\n\nDáva to zmysel preto, že podlahovka pracuje s nízkou teplotou vody a tepelnému čerpadlu to vyhovuje. Keďže chceš aj chladenie, nerátal by som automaticky s tým, že samotná podlahovka bude stačiť. Chladenie by som nacenil ako samostatný variant: stropné chladenie, fancoily alebo klimatizácia podľa toho, aký komfort v lete chceš.\n\n**Pozrel by som sa na tieto možnosti:**\n1. **Vaillant aroTHERM plus** ako moderné vzduch-voda riešenie pre podlahové kúrenie a TÚV.\n2. **Vaillant aroTHERM Split** ako splitové riešenie, ak bude lepšie sedieť technickému umiestneniu.\n3. **NIBE vzduch-voda riešenie, napríklad S2125**, ak bude podľa aktuálnej ponuky a konfigurácie vhodné pre dom.\n\nĎalší krok by som už nerobil ďalším dotazníkom. Dajme si krátku konzultáciu alebo stretnutie, kde sa vyberú 2-3 konkrétne zostavy, preverí sa TÚV a chladenie a pripraví sa nacenenie.",
         "intent": "product",
         "confidence": "high",
@@ -1640,7 +1643,7 @@
           "requestedFields": []
         },
         "lead": {
-          "id": "lead_444fe555-4aef-4010-8727-28913d7d2bb6",
+          "id": "lead_93b87447-e993-48cb-8770-ecd0a06708bb",
           "captured": false,
           "score": 30,
           "temperature": "cold",
@@ -1683,7 +1686,7 @@
           "serviceIntent": "recommendation",
           "legacyIntent": "product",
           "diagnosticFlowVersion": "diagnostic-v5-recommendation-closure",
-          "serverCommit": "d5679fb",
+          "serverCommit": "d305812",
           "retrievalSourcesCount": 3,
           "contextTopic": "tepelné čerpadlá",
           "contextCarried": true,
@@ -1691,6 +1694,9 @@
           "fallbackType": null,
           "validatorsTriggered": [
             "inspection_claim_sanitized",
+            "hard_verdict_inserted",
+            "new_build_closure_docs_question_replaced",
+            "new_build_cooling_caveat_repaired",
             "recommendation_closure_repaired"
           ],
           "bannedClaimsRemoved": [
@@ -1718,7 +1724,7 @@
             "requestedFields": []
           },
           "lead": {
-            "id": "lead_444fe555-4aef-4010-8727-28913d7d2bb6",
+            "id": "lead_93b87447-e993-48cb-8770-ecd0a06708bb",
             "captured": false,
             "score": 30,
             "temperature": "cold",
@@ -1743,7 +1749,7 @@
         },
         "action": null,
         "fallbackUsed": false,
-        "responseTimeMs": 4746
+        "responseTimeMs": 4300
       },
       "failures": []
     },
@@ -1751,8 +1757,8 @@
       "scenario": "air_conditioning_two_rooms",
       "message": "chcem klimatizaciu do obyvacky a spalne",
       "response": {
-        "conversationId": "con_20a48393-a4bd-415e-92c5-0662274d3dcc",
-        "answer": "### Klimatizácia do obývačky a spálne\n\nRozumiem, chceš riešenie na chladenie do dvoch miestností. Pre takéto prípady sa najčastejšie používajú buď dve samostatné nástenné klimatizačné jednotky, alebo jeden multisplit systém s jednou vonkajšou jednotkou a dvoma vnútornými.\n\n**Predbežný verdikt:** Pre tvoje potreby sa hodí klimatizácia.\n\n**Dôvod:** Klimatizácia je efektívny spôsob, ako schladiť konkrétne miestnosti, ako je obývačka a spálňa.\n\n**Typický rozsah riešenia:**\n* **Samostatné jednotky:** Každá miestnosť má svoju vlastnú vnútornú a vonkajšiu jednotku. Výhodou je jednoduchšia inštalácia a možnosť individuálneho ovládania.\n* **Multisplit systém:** Jedna vonkajšia jednotka napája dve vnútorné jednotky v každej miestnosti. Šetrí miesto na fasáde, ale inštalácia je zložitejšia.\n\nAby som ti mohol poradiť konkrétnejšie, potreboval by som vedieť pár detailov:\n1. Aká je približná výmera obývačky a spálne?\n2. Ide o novostavbu alebo starší dom/byt?",
+        "conversationId": "con_8469a032-a2fa-4edf-9830-66918261cccf",
+        "answer": "### Predbežný smer\n\nDo obývačky a spálne by som predbežne porovnal dve riešenia: buď dve samostatné klimatizačné jednotky, alebo multisplit s jednou vonkajšou jednotkou. Dôvod je, že pri dvoch miestnostiach rozhoduje dispozícia, vzdialenosť potrubia, hlučnosť a miesto pre vonkajšiu jednotku.\n\nTypicky treba overiť plochu miestností, orientáciu na slnko a kadiaľ sa dajú viesť rozvody.\n\nKoľko m² má obývačka a spálňa a kde by mohla byť vonkajšia jednotka?",
         "intent": "product",
         "confidence": "high",
         "topScore": 791.74,
@@ -1819,14 +1825,15 @@
           "serviceIntent": "recommendation",
           "legacyIntent": "product",
           "diagnosticFlowVersion": "diagnostic-v5-recommendation-closure",
-          "serverCommit": "d5679fb",
+          "serverCommit": "d305812",
           "retrievalSourcesCount": 3,
           "contextTopic": "klimatizácie",
           "contextCarried": true,
           "fallbackUsed": false,
           "fallbackType": null,
           "validatorsTriggered": [
-            "inspection_claim_sanitized"
+            "inspection_claim_sanitized",
+            "air_conditioning_verdict_repaired"
           ],
           "bannedClaimsRemoved": [
             "bezplatná alebo nezáväzná obhliadka"
@@ -1872,7 +1879,7 @@
         },
         "action": null,
         "fallbackUsed": false,
-        "responseTimeMs": 3641
+        "responseTimeMs": 3223
       },
       "failures": []
     },
@@ -1880,8 +1887,8 @@
       "scenario": "heat_recovery_new_build",
       "message": "staviam dom a chcem lepsi vzduch bez otvarania okien",
       "response": {
-        "conversationId": "con_e326f395-7ed8-4e71-a840-036a4404a2ee",
-        "answer": "### Rekuperácia pre váš nový dom\n\nJasné, rozumiem. Chceš si zabezpečiť kvalitný vzduch v novom dome bez toho, aby si musel otvárať okná, a to najmä kvôli úsporám tepla. To je presne to, na čo slúži rekuperácia.\n\nRekuperácia je moderný systém riadeného vetrania, ktorý zabezpečuje neustály prísun čerstvého vzduchu a zároveň minimalizuje tepelné straty. Vzduch zvnútra domu sa odvádza cez výmenník tepla, kde odovzdáva svoju energiu čerstvému vzduchu zvonku, ktorý sa tak predhrieva. Týmto spôsobom šetríš energiu na vykurovanie a zároveň máš stále svieži vzduch.\n\nKeďže staviaš novostavbu, je ideálny čas na návrh a montáž centrálneho systému rekuperácie. V tomto štádiu je najjednoduchšie integrovať rozvody vzduchu do projektu domu, napríklad do stropných podhľadov alebo stien.\n\nAby som ti mohol lepšie poradiť s konkrétnym riešením, potreboval by som vedieť ešte pár detailov:\n\n* Máš už hotový projekt domu?\n* Ide ti o vetranie celého domu, alebo len vybraných miestností?",
+        "conversationId": "con_dd80ba14-147e-48a6-ba7b-1fbcb147b0ab",
+        "answer": "### Rekuperácia pre váš nový dom\n\nJasné, rozumiem! Chceš si zabezpečiť svieži vzduch v novom dome bez toho, aby si musel otvárať okná, a to s minimálnymi tepelnými stratami. To je presne to, na čo je rekuperácia ideálna.\n\n**Prečo rekuperácia?**\nRekuperácia je moderný systém riadeného vetrania, ktorý ti zabezpečí neustály prísun čerstvého vzduchu a zároveň minimalizuje tepelné straty, ktoré by vznikli pri bežnom vetraní otvorenými oknami. Vďaka tomu šetríš energiu a zároveň máš doma príjemnú klímu.\n\n**Čo potrebujeme vedieť ďalej?**\nKeďže staviaš nový dom, najlepšie riešenie je centrálna rekuperácia, ktorá sa dá ideálne naplánovať už pri tvorbe projektu. Aby som ti mohol poradiť konkrétnejšie, potreboval by som vedieť:\n\n1. **Máš už vypracovaný projekt domu?**\n2. **Ide ti o vetranie celého domu, alebo len vybraných miestností?**\n\nKeď budeme mať tieto informácie, môžeme sa pozrieť na konkrétne možnosti a riešenia pre tvoj dom.",
         "intent": "product",
         "confidence": "high",
         "topScore": 569,
@@ -1948,7 +1955,7 @@
           "serviceIntent": "recommendation",
           "legacyIntent": "product",
           "diagnosticFlowVersion": "diagnostic-v5-recommendation-closure",
-          "serverCommit": "d5679fb",
+          "serverCommit": "d305812",
           "retrievalSourcesCount": 3,
           "contextTopic": "rekuperácia",
           "contextCarried": true,
@@ -2001,7 +2008,7 @@
         },
         "action": null,
         "fallbackUsed": false,
-        "responseTimeMs": 4208
+        "responseTimeMs": 3342
       },
       "failures": []
     },
@@ -2009,7 +2016,7 @@
       "scenario": "nibe_service_fault",
       "message": "tepelne cerpadlo NIBE mi hlasi chybu",
       "response": {
-        "conversationId": "con_2e3ac5ce-5f7f-42af-bf34-b0cde7530741",
+        "conversationId": "con_e2d4a487-7e6e-4c02-9c29-84cc0d4dcce0",
         "answer": "### Servisný smer\n\nRozumiem, NIBE hlási chybu. Pri poruche by som neradil žiadny svojpomocný zásah do zariadenia; najprv treba zistiť presný model, chybový kód a lokalitu, aby sa dalo posúdiť, či ide o servisný zásah a aký postup je bezpečný.\n\nPri zariadeniach montovaných inou firmou treba dostupnosť servisu potvrdiť podľa značky a prípadu.\n\nPošli mi prosím model alebo fotku štítku, chybový kód z displeja a mesto, kde je zariadenie.\n\nJasné, ďalší krok je, aby sa vám vedel ozvať technik alebo obchodník a dohodol postup. Pošlite prosím telefón alebo e-mail, prípadne aj meno. Kontakt použijeme iba na spätné ozvanie k tomuto dopytu.",
         "intent": "service",
         "confidence": "high",
@@ -2044,7 +2051,7 @@
           ]
         },
         "lead": {
-          "id": "lead_25f1a1a0-b9e0-4e65-bbd0-a73544e55874",
+          "id": "lead_bfc8069d-10a4-421f-869c-7408440d2b41",
           "captured": false,
           "score": 20,
           "temperature": "cold",
@@ -2079,7 +2086,7 @@
           "serviceIntent": "service_fault",
           "legacyIntent": "service",
           "diagnosticFlowVersion": "diagnostic-v5-recommendation-closure",
-          "serverCommit": "d5679fb",
+          "serverCommit": "d305812",
           "retrievalSourcesCount": 3,
           "contextTopic": "servis zariadení",
           "contextCarried": true,
@@ -2087,10 +2094,12 @@
           "fallbackType": null,
           "validatorsTriggered": [
             "inspection_claim_sanitized",
+            "third_party_service_claim_sanitized",
             "service_fault_data_request_repaired"
           ],
           "bannedClaimsRemoved": [
-            "bezplatná alebo nezáväzná obhliadka"
+            "bezplatná alebo nezáväzná obhliadka",
+            "servis cudzej montáže"
           ],
           "questionRoundsCount": 0,
           "closureGateTriggered": false,
@@ -2111,7 +2120,7 @@
             ]
           },
           "lead": {
-            "id": "lead_25f1a1a0-b9e0-4e65-bbd0-a73544e55874",
+            "id": "lead_bfc8069d-10a4-421f-869c-7408440d2b41",
             "captured": false,
             "score": 20,
             "temperature": "cold",
@@ -2126,7 +2135,7 @@
             "created": true,
             "priority": "medium",
             "reason": "Kvalifikovaný lead bez kontaktu",
-            "id": "out_89169561-2b5c-4377-9ca1-e3ed57c356d1"
+            "id": "out_72e4a4fd-1e16-43a3-b47c-38ce830ea63e"
           },
           "persistence": {
             "conversationSaved": true,
@@ -2136,7 +2145,7 @@
         },
         "action": null,
         "fallbackUsed": false,
-        "responseTimeMs": 3148
+        "responseTimeMs": 3044
       },
       "failures": []
     },
@@ -2144,8 +2153,8 @@
       "scenario": "subsidy",
       "message": "pomozete mi s dotaciou?",
       "response": {
-        "conversationId": "con_98c6476b-22b4-427d-9bc9-b3c1566d4d63",
-        "answer": "Jasné, s dotáciami ti vieme pomôcť. Naša firma poskytuje asistenciu pri vybavovaní dotácií na energeticky úsporné riešenia, ako sú napríklad tepelné čerpadlá.\n\n**Čo to znamená pre teba:**\n* Pomôžeme ti zorientovať sa v možnostiach a podmienkach aktuálnych dotačných programov.\n* Môžeme ti poradiť, aké zariadenia sú na dotácie najvhodnejšie.\n\n**Čo ešte potrebujeme vedieť:**\nAby som ti mohol presnejšie poradiť, potreboval by som vedieť pár základných vecí:\n1. Aké konkrétne zariadenie by si chcel riešiť cez dotáciu (napr. tepelné čerpadlo, klimatizácia, rekuperácia)?\n2. Ide o rodinný dom, alebo iný typ objektu?\n3. Ide o novú realizáciu, alebo výmenu starého zariadenia?\n\nPodmienky dotácií sa často menia, takže je dôležité všetko overiť podľa aktuálnych výziev.",
+        "conversationId": "con_14782bab-b4f6-4e47-bdee-29ed86e8a129",
+        "answer": "### Pomoc s dotáciami na energeticky úsporné riešenia\n\nÁno, s dotáciami ti vieme pomôcť. Naša firma asistuje pri získavaní dotácií na moderné technológie, ako sú tepelné čerpadlá, klimatizácie či rekuperácia.\n\n**Prečo je to dôležité:** Dotácie ti môžu výrazne znížiť počiatočné náklady na inštaláciu nových, ekologických systémov vykurovania a chladenia.\n\n**Čo typicky riešime:** Pomáhame klientom zorientovať sa v aktuálnych programoch a podmienkach, aby mohli čo najvýhodnejšie získať financie na svoje nové zariadenia.\n\nAby som ti mohol lepšie poradiť, potreboval by som vedieť pár základných vecí:\n\n1. Aké konkrétne zariadenie by si chcel riešiť prostredníctvom dotácie (napr. tepelné čerpadlo, klimatizácia)?\n2. Ide o rodinný dom, alebo iný typ objektu?\n3. Ide o novostavbu, alebo výmenu starého systému?",
         "intent": "subsidy",
         "confidence": "high",
         "topScore": 277.36,
@@ -2211,7 +2220,7 @@
           "serviceIntent": "subsidy",
           "legacyIntent": "subsidy",
           "diagnosticFlowVersion": "diagnostic-v5-recommendation-closure",
-          "serverCommit": "d5679fb",
+          "serverCommit": "d305812",
           "retrievalSourcesCount": 3,
           "contextTopic": "dotácie",
           "contextCarried": true,
@@ -2264,7 +2273,7 @@
         },
         "action": null,
         "fallbackUsed": false,
-        "responseTimeMs": 3188
+        "responseTimeMs": 2672
       },
       "failures": []
     },
@@ -2272,7 +2281,7 @@
       "scenario": "direct_brand_price_regression",
       "message": "potreboval by som vybrat tepelne cerpadlo",
       "response": {
-        "conversationId": "con_3961eb5d-f3eb-490c-8986-44d3c42150fa",
+        "conversationId": "con_010d3b73-5a94-4512-9a8e-7dad24b4e3c9",
         "answer": "### Predbežný smer\n\nNajčastejšie sa pri rodinných domoch začína pri tepelnom čerpadle **vzduch-voda**. Ak ide o novostavbu s podlahovým kúrením, býva to veľmi vhodný smer; pri staršom dome s radiátormi treba najprv overiť potrebnú teplotu vody a výkon radiátorov.\n\nAby som ťa zaradil správne, napíš mi:\n1. je to novostavba alebo starší dom?\n2. koľko m2 chceš vykurovať?\n3. máš radiátory alebo podlahové kúrenie?",
         "intent": "product",
         "confidence": "high",
@@ -2339,7 +2348,7 @@
           "serviceIntent": "recommendation",
           "legacyIntent": "product",
           "diagnosticFlowVersion": "diagnostic-v5-recommendation-closure",
-          "serverCommit": "d5679fb",
+          "serverCommit": "d305812",
           "retrievalSourcesCount": 3,
           "contextTopic": "tepelné čerpadlá",
           "contextCarried": true,
@@ -2393,7 +2402,7 @@
         },
         "action": null,
         "fallbackUsed": false,
-        "responseTimeMs": 3495
+        "responseTimeMs": 2868
       },
       "failures": []
     },
@@ -2401,8 +2410,8 @@
       "scenario": "direct_brand_price_regression",
       "message": "mam starsi dom, radiatory a chcem usetrit",
       "response": {
-        "conversationId": "con_3961eb5d-f3eb-490c-8986-44d3c42150fa",
-        "answer": "### Tepelné čerpadlo pre starší dom s radiátormi\n\nRozumiem, chceš nájsť riešenie na úsporu energie pre tvoj starší dom s radiátormi. Tepelné čerpadlo vzduch-voda je v takýchto prípadoch častokrát vhodnou voľbou, najmä ak ide o modernizáciu existujúceho systému.\n\n**Predbežný smer:**\nPre starší dom s radiátormi sa najčastejšie zvažuje tepelné čerpadlo vzduch-voda. Dôležité je však overiť, či tvoje súčasné radiátory dokážu efektívne vykurovať dom pri nižšej teplote vody, ktorú tepelné čerpadlo bežne dodáva. Ak sú radiátory menšie alebo dom potrebuje vyššiu teplotu vody, môže byť potrebné ich prispôsobiť alebo zvážiť špecifické vysokoteplotné riešenie.\n\n**Čo potrebujeme vedieť ďalej:**\nAby som ti mohol čo najlepšie poradiť, potreboval by som vedieť ešte pár detailov:\n1. **Aký je celkový vykurovaný objem alebo plocha domu?** (Ak si to už nespomínal/a v predchádzajúcej správe.)\n2. **Aký je tvoj súčasný zdroj tepla a aká je približná ročná spotreba energie na kúrenie?** (Napríklad spotreba plynu, elektriny, dreva.)\n\nTieto informácie nám pomôžu lepšie odhadnúť potrebný výkon tepelného čerpadla a celkovú vhodnosť riešenia.",
+        "conversationId": "con_010d3b73-5a94-4512-9a8e-7dad24b4e3c9",
+        "answer": "### Tepelné čerpadlo pre starší dom s radiátormi\n\nRozumiem, chceš nájsť vhodné tepelné čerpadlo pre tvoj starší dom s radiátormi a zároveň ušetriť na energiách. To je skvelý cieľ a tepelné čerpadlo je na to často výborné riešenie.\n\n**Predbežný smer:**\nPre starší dom s radiátormi sa najčastejšie zvažuje tepelné čerpadlo typu **vzduch-voda**. Dôležité však je overiť, či tvoje súčasné radiátory dokážu efektívne vykurovať dom pri nižšej teplote vody, ktorú tepelné čerpadlo bežne dodáva. V niektorých prípadoch môže byť potrebné radiátory upraviť alebo vymeniť, ale nie vždy je to nutné. Existujú aj vysokoteplotné tepelné čerpadlá, ktoré sú špeciálne navrhnuté pre rekonštrukcie a dokážu pracovať s vyššou teplotou vody, čím sa často dajú ponechať pôvodné radiátory.\n\n**Čo potrebujeme vedieť ďalej:**\nAby som ti mohol čo najlepšie poradiť, potreboval by som vedieť ešte pár vecí:\n\n1. **Akým zdrojom tepla kúriš teraz?** (Napr. plynový kotol, elektrické kúrenie, tuhé palivo?)\n2. **Aká je približná ročná spotreba energie na kúrenie?** (Napr. koľko kWh elektriny, plynu, alebo koľko dreva/uhlia ročne spotrebuješ?)\n\nTieto informácie nám pomôžu lepšie odhadnúť potrebný výkon tepelného čerpadla a potenciálne úspory.",
         "intent": "product",
         "confidence": "high",
         "topScore": 438.09,
@@ -2433,7 +2442,7 @@
           "requestedFields": []
         },
         "lead": {
-          "id": "lead_8cdb9de3-6294-4da5-b3a3-9d3eb3102eca",
+          "id": "lead_757ee738-423e-404a-bc0c-01055430ad00",
           "captured": false,
           "score": 30,
           "temperature": "cold",
@@ -2471,7 +2480,7 @@
           "serviceIntent": "recommendation",
           "legacyIntent": "product",
           "diagnosticFlowVersion": "diagnostic-v5-recommendation-closure",
-          "serverCommit": "d5679fb",
+          "serverCommit": "d305812",
           "retrievalSourcesCount": 3,
           "contextTopic": "tepelné čerpadlá",
           "contextCarried": true,
@@ -2499,7 +2508,7 @@
             "requestedFields": []
           },
           "lead": {
-            "id": "lead_8cdb9de3-6294-4da5-b3a3-9d3eb3102eca",
+            "id": "lead_757ee738-423e-404a-bc0c-01055430ad00",
             "captured": false,
             "score": 30,
             "temperature": "cold",
@@ -2524,7 +2533,7 @@
         },
         "action": null,
         "fallbackUsed": false,
-        "responseTimeMs": 3817
+        "responseTimeMs": 3519
       },
       "failures": []
     },
@@ -2532,8 +2541,8 @@
       "scenario": "direct_brand_price_regression",
       "message": "dom ma asi 120m",
       "response": {
-        "conversationId": "con_3961eb5d-f3eb-490c-8986-44d3c42150fa",
-        "answer": "### Tepelné čerpadlo pre starší dom s radiátormi (120 m²)\n\nĎakujem za upresnenie. Máš starší rodinný dom s rozlohou približne 120 m² a vykurovanie zabezpečujú radiátory. V tomto prípade je tepelné čerpadlo vzduch-voda stále jednou z najčastejších a najefektívnejších možností, ako dosiahnuť úsporu energie.\n\n**Predbežný smer:**\nPre tvoj dom je predbežne vhodné tepelné čerpadlo vzduch-voda. Kľúčové bude overiť, či tvoje súčasné radiátory dokážu efektívne pracovať s nižšou teplotou vykurovacej vody, ktorú tepelné čerpadlo typicky dodáva. Ak by bol problém s výkonom radiátorov pri nižšej teplote, existujú riešenia ako napríklad výmena časti radiátorov za výkonnejšie, alebo zváženie špecifického vysokoteplotného tepelného čerpadla.\n\n**Čo potrebujeme vedieť ďalej:**\nAby som ti mohol dať presnejšie odporúčanie, potreboval by som vedieť ešte:\n1. **Aký je tvoj súčasný zdroj tepla a aká je približná ročná spotreba energie na kúrenie?** (Napríklad spotreba plynu, elektriny, dreva v kWh alebo inej jednotke.)\n2. **Potrebuješ zabezpečiť aj ohrev teplej úžitkovej vody?** Ak áno, pre koľko osôb?\n\nTieto informácie nám pomôžu lepšie odhadnúť výkon čerpadla a celkové riešenie.",
+        "conversationId": "con_010d3b73-5a94-4512-9a8e-7dad24b4e3c9",
+        "answer": "### Tepelné čerpadlo pre starší dom s radiátormi (120 m²)\n\nĎakujem za upresnenie. Máš starší rodinný dom s rozlohou približne 120 m² a vykurovanie zabezpečujú radiátory. Cieľom je úspora energií.\n\n**Predbežný smer:**\nPre tvoj dom je najpravdepodobnejším riešením tepelné čerpadlo typu **vzduch-voda**. S rozlohou 120 m² a existujúcimi radiátormi je dôležité overiť, či sú radiátory dostatočne dimenzované na vykurovanie s nižšou teplotou vody, ktorú tepelné čerpadlo bežne dodáva. Ak by to nestačilo, existujú aj vysokoteplotné verzie tepelných čerpadiel, ktoré sú vhodné pre rekonštrukcie a dokážu pracovať s vyššou teplotou vody, čím sa často dajú ponechať pôvodné radiátory.\n\n**Ďalšie kroky:**\nAby som ti mohol čo najpresnejšie poradiť a navrhnúť konkrétne riešenie, potreboval by som ešte vedieť:\n\n1. **Akým zdrojom tepla kúriš teraz?** (Napr. plynový kotol, elektrické kúrenie, tuhé palivo?)\n2. **Aká je približná ročná spotreba energie na kúrenie?** (Napr. v kWh elektriny, plynu, alebo v jednotkách paliva ako drevo/uhlie.)\n\nTieto informácie nám pomôžu určiť optimálny výkon tepelného čerpadla a odhadnúť potenciálne úspory.",
         "intent": "product",
         "confidence": "high",
         "topScore": 441.78,
@@ -2564,7 +2573,7 @@
           "requestedFields": []
         },
         "lead": {
-          "id": "lead_8cdb9de3-6294-4da5-b3a3-9d3eb3102eca",
+          "id": "lead_757ee738-423e-404a-bc0c-01055430ad00",
           "captured": false,
           "score": 30,
           "temperature": "cold",
@@ -2603,7 +2612,7 @@
           "serviceIntent": "recommendation",
           "legacyIntent": "product",
           "diagnosticFlowVersion": "diagnostic-v5-recommendation-closure",
-          "serverCommit": "d5679fb",
+          "serverCommit": "d305812",
           "retrievalSourcesCount": 3,
           "contextTopic": "tepelné čerpadlá",
           "contextCarried": true,
@@ -2631,7 +2640,7 @@
             "requestedFields": []
           },
           "lead": {
-            "id": "lead_8cdb9de3-6294-4da5-b3a3-9d3eb3102eca",
+            "id": "lead_757ee738-423e-404a-bc0c-01055430ad00",
             "captured": false,
             "score": 30,
             "temperature": "cold",
@@ -2656,7 +2665,7 @@
         },
         "action": null,
         "fallbackUsed": false,
-        "responseTimeMs": 3548
+        "responseTimeMs": 3305
       },
       "failures": []
     },
@@ -2664,8 +2673,8 @@
       "scenario": "direct_brand_price_regression",
       "message": "a znacka?",
       "response": {
-        "conversationId": "con_3961eb5d-f3eb-490c-8986-44d3c42150fa",
-        "answer": "Pri tepelných čerpadlách môžem bezpečne komunikovať značky **NIBE** a **Vaillant**. Značku IVT je potrebné overiť, Daikin a Mitsubishi pri tepelných čerpadlách vzduch-voda alebo voda-voda zatiaľ nespomínam. Výber konkrétneho modelu závisí od detailov ako je potrebný výkon, typ vykurovania (radiátory/podlahovka) a požiadavky na ohrev teplej úžitkovej vody.",
+        "conversationId": "con_010d3b73-5a94-4512-9a8e-7dad24b4e3c9",
+        "answer": "Pri tepelných čerpadlách môžem bezpečne komunikovať značky **NIBE** a **Vaillant**. Ostatné značky ako IVT by som spomínal opatrne a Daikin či Mitsubishi pri tepelných čerpadlách radšej neuvádzal, pokiaľ nemám konkrétne firemné potvrdenie. Výber konkrétneho modelu závisí od mnohých faktorov, ako je výkon, typ vykurovania a potreba teplej vody.",
         "intent": "product",
         "confidence": "high",
         "topScore": 470.74,
@@ -2696,7 +2705,7 @@
           "requestedFields": []
         },
         "lead": {
-          "id": "lead_8cdb9de3-6294-4da5-b3a3-9d3eb3102eca",
+          "id": "lead_757ee738-423e-404a-bc0c-01055430ad00",
           "captured": false,
           "score": 30,
           "temperature": "cold",
@@ -2740,7 +2749,7 @@
           "serviceIntent": "brand_model",
           "legacyIntent": "product",
           "diagnosticFlowVersion": "diagnostic-v5-recommendation-closure",
-          "serverCommit": "d5679fb",
+          "serverCommit": "d305812",
           "retrievalSourcesCount": 3,
           "contextTopic": "tepelné čerpadlá",
           "contextCarried": true,
@@ -2768,7 +2777,7 @@
             "requestedFields": []
           },
           "lead": {
-            "id": "lead_8cdb9de3-6294-4da5-b3a3-9d3eb3102eca",
+            "id": "lead_757ee738-423e-404a-bc0c-01055430ad00",
             "captured": false,
             "score": 30,
             "temperature": "cold",
@@ -2793,7 +2802,7 @@
         },
         "action": null,
         "fallbackUsed": false,
-        "responseTimeMs": 2739
+        "responseTimeMs": 2449
       },
       "failures": []
     },
@@ -2801,8 +2810,8 @@
       "scenario": "direct_brand_price_regression",
       "message": "cize geotherm robi aj Daikin?",
       "response": {
-        "conversationId": "con_3961eb5d-f3eb-490c-8986-44d3c42150fa",
-        "answer": "Geotherm sa primárne zameriava na značky tepelných čerpadiel **NIBE** a **Vaillant**. O značke IVT je potrebné informácie overiť.Pri tepelných čerpadlách viem bezpečne komunikovať NIBE a Vaillant; Daikin alebo Mitsubishi treba pri TČ potvrdiť podľa aktuálnej ponuky.",
+        "conversationId": "con_010d3b73-5a94-4512-9a8e-7dad24b4e3c9",
+        "answer": "Geotherm sa špecializuje na tepelné čerpadlá značiek **NIBE** a **Vaillant**. Značku Daikin pri tepelných čerpadlách bežne nekomunikujeme, skôr sa spája s klimatizáciami alebo systémami vzduch-vzduch. Pre tepelné čerpadlá je pre nás prioritou overená kvalita a spoľahlivosť týchto značiek.",
         "intent": "product",
         "confidence": "high",
         "topScore": 477.67,
@@ -2833,7 +2842,7 @@
           "requestedFields": []
         },
         "lead": {
-          "id": "lead_8cdb9de3-6294-4da5-b3a3-9d3eb3102eca",
+          "id": "lead_757ee738-423e-404a-bc0c-01055430ad00",
           "captured": false,
           "score": 30,
           "temperature": "cold",
@@ -2877,7 +2886,7 @@
           "serviceIntent": "brand_model",
           "legacyIntent": "product",
           "diagnosticFlowVersion": "diagnostic-v5-recommendation-closure",
-          "serverCommit": "d5679fb",
+          "serverCommit": "d305812",
           "retrievalSourcesCount": 3,
           "contextTopic": "tepelné čerpadlá",
           "contextCarried": true,
@@ -2886,12 +2895,9 @@
           "validatorsTriggered": [
             "direct_answer_gate_used",
             "latest_direct_question_answered",
-            "direct_answer_composed_by_llm",
-            "unsupported_heat_pump_brand_sanitized"
+            "direct_answer_composed_by_llm"
           ],
-          "bannedClaimsRemoved": [
-            "Daikin/Mitsubishi pri tepelných čerpadlách"
-          ],
+          "bannedClaimsRemoved": [],
           "questionRoundsCount": 3,
           "closureGateTriggered": false,
           "closureReason": null,
@@ -2908,7 +2914,7 @@
             "requestedFields": []
           },
           "lead": {
-            "id": "lead_8cdb9de3-6294-4da5-b3a3-9d3eb3102eca",
+            "id": "lead_757ee738-423e-404a-bc0c-01055430ad00",
             "captured": false,
             "score": 30,
             "temperature": "cold",
@@ -2933,7 +2939,7 @@
         },
         "action": null,
         "fallbackUsed": false,
-        "responseTimeMs": 2178
+        "responseTimeMs": 2047
       },
       "failures": []
     },
@@ -2941,8 +2947,8 @@
       "scenario": "direct_brand_price_regression",
       "message": "mne povedali ze robia iba NIBE a vaillant",
       "response": {
-        "conversationId": "con_3961eb5d-f3eb-490c-8986-44d3c42150fa",
-        "answer": "Áno, správne. Pri tepelných čerpadlách sa primárne zameriavame na značky **NIBE** a **Vaillant**. Ak som predtým spomenul Daikin alebo Mitsubishi v kontexte tepelných čerpadiel, ber to ako chybu. Tieto značky sa v našej ponuke tepelných čerpadiel bežne neuvádzajú.",
+        "conversationId": "con_010d3b73-5a94-4512-9a8e-7dad24b4e3c9",
+        "answer": "Prepáč, ak som ťa zmiatol. Geotherm sa zameriava na tepelné čerpadlá značiek **NIBE** a **Vaillant**. Značku Daikin pri tepelných čerpadlách bežne nekomunikujeme, pretože sa skôr spája s klimatizáciami alebo systémami vzduch-vzduch. Pre naše tepelné čerpadlá uprednostňujeme overenú kvalitu a spoľahlivosť spomínaných značiek.",
         "intent": "product",
         "confidence": "high",
         "topScore": 480.52,
@@ -2973,7 +2979,7 @@
           "requestedFields": []
         },
         "lead": {
-          "id": "lead_8cdb9de3-6294-4da5-b3a3-9d3eb3102eca",
+          "id": "lead_757ee738-423e-404a-bc0c-01055430ad00",
           "captured": false,
           "score": 30,
           "temperature": "cold",
@@ -3017,7 +3023,7 @@
           "serviceIntent": "complaint_or_correction",
           "legacyIntent": "product",
           "diagnosticFlowVersion": "diagnostic-v5-recommendation-closure",
-          "serverCommit": "d5679fb",
+          "serverCommit": "d305812",
           "retrievalSourcesCount": 3,
           "contextTopic": "tepelné čerpadlá",
           "contextCarried": true,
@@ -3045,7 +3051,7 @@
             "requestedFields": []
           },
           "lead": {
-            "id": "lead_8cdb9de3-6294-4da5-b3a3-9d3eb3102eca",
+            "id": "lead_757ee738-423e-404a-bc0c-01055430ad00",
             "captured": false,
             "score": 30,
             "temperature": "cold",
@@ -3070,7 +3076,7 @@
         },
         "action": null,
         "fallbackUsed": false,
-        "responseTimeMs": 2282
+        "responseTimeMs": 2091
       },
       "failures": []
     },
@@ -3078,8 +3084,8 @@
       "scenario": "direct_brand_price_regression",
       "message": "ake mate Vaillant?",
       "response": {
-        "conversationId": "con_3961eb5d-f3eb-490c-8986-44d3c42150fa",
-        "answer": "Pri značke Vaillant sa v našej ponuke zvyčajne stretnete s modelmi ako aroTHERM plus a aroTHERM Split, ktoré sú určené pre systémy vzduch-voda. Tieto sú často vhodné pre rekonštrukcie s existujúcimi radiátormi.\n\nPre váš dom s rozlohou 120 m² a radiátormi by sme mohli zvážiť vhodný model Vaillant. Je však dôležité si uvedomiť, že toto je len predbežný smer. Finálny výber konkrétneho modelu a jeho výkonu závisí od presných potrieb vášho domu, ako aj od požiadaviek na ohrev teplej úžitkovej vody a hydrauliky systému.\n\nPotrebovali by ste ešte upresniť, či máte záujem o konkrétny typ inštalácie (napr. vonkajšia jednotka pri dome, alebo delená s vnútornou jednotkou)?",
+        "conversationId": "con_010d3b73-5a94-4512-9a8e-7dad24b4e3c9",
+        "answer": "Geotherm ponúka tepelné čerpadlá značiek **NIBE** a **Vaillant**. Pri značke Vaillant sa spomínajú napríklad modely aroTHERM plus a aroTHERM Split, ktoré sú vhodné pre systémy vzduch-voda.\n\nPre váš dom (rekonštrukcia, 120 m², radiátory) by sme tieto modely mohli zvážiť, ale finálny výber závisí od presného návrhu výkonu, potreby teplej vody a hydrauliky.",
         "intent": "product",
         "confidence": "high",
         "topScore": 480.9,
@@ -3110,7 +3116,7 @@
           "requestedFields": []
         },
         "lead": {
-          "id": "lead_8cdb9de3-6294-4da5-b3a3-9d3eb3102eca",
+          "id": "lead_757ee738-423e-404a-bc0c-01055430ad00",
           "captured": false,
           "score": 30,
           "temperature": "cold",
@@ -3154,7 +3160,7 @@
           "serviceIntent": "brand_model",
           "legacyIntent": "product",
           "diagnosticFlowVersion": "diagnostic-v5-recommendation-closure",
-          "serverCommit": "d5679fb",
+          "serverCommit": "d305812",
           "retrievalSourcesCount": 3,
           "contextTopic": "tepelné čerpadlá",
           "contextCarried": true,
@@ -3182,7 +3188,7 @@
             "requestedFields": []
           },
           "lead": {
-            "id": "lead_8cdb9de3-6294-4da5-b3a3-9d3eb3102eca",
+            "id": "lead_757ee738-423e-404a-bc0c-01055430ad00",
             "captured": false,
             "score": 30,
             "temperature": "cold",
@@ -3207,7 +3213,7 @@
         },
         "action": null,
         "fallbackUsed": false,
-        "responseTimeMs": 2972
+        "responseTimeMs": 2178
       },
       "failures": []
     },
@@ -3215,8 +3221,8 @@
       "scenario": "direct_brand_price_regression",
       "message": "a split?",
       "response": {
-        "conversationId": "con_3961eb5d-f3eb-490c-8986-44d3c42150fa",
-        "answer": "Áno, Vaillant aroTHERM Split je splitové riešenie vzduch-voda. Pri rekonštrukcii s existujúcimi radiátormi je dôležité overiť, či sú radiátory schopné efektívne pracovať s nižšou výstupnou teplotou vody, ktorú tepelné čerpadlo zvyčajne poskytuje.\n\nPre váš dom s rozlohou 120 m² a radiátormi je to orientačný smer. Finálny výber konkrétneho modelu a jeho výkonu však závisí od presných potrieb vášho domu a hydrauliky systému.",
+        "conversationId": "con_010d3b73-5a94-4512-9a8e-7dad24b4e3c9",
+        "answer": "Áno, Vaillant aroTHERM Split je splitové tepelné čerpadlo typu vzduch-voda. Pri rekonštrukcii s radiátormi je dôležité overiť, či sú radiátory schopné efektívne pracovať s nižšou výstupnou teplotou vody, ktorú tepelné čerpadlo bežne dodáva.\n\nPre váš dom (120 m², rekonštrukcia, radiátory) je to možná voľba, ale finálny výber konkrétneho modelu a jeho výkonu vždy závisí od detailného návrhu, ktorý zohľadňuje potrebu tepla, ohrevu TÚV a hydraulické pomery vo vašej vykurovacej sústave.",
         "intent": "product",
         "confidence": "high",
         "topScore": 480.9,
@@ -3247,7 +3253,7 @@
           "requestedFields": []
         },
         "lead": {
-          "id": "lead_8cdb9de3-6294-4da5-b3a3-9d3eb3102eca",
+          "id": "lead_757ee738-423e-404a-bc0c-01055430ad00",
           "captured": false,
           "score": 30,
           "temperature": "cold",
@@ -3276,7 +3282,7 @@
             "property_type": "rodinný dom",
             "area_m2": 120,
             "heating_distribution": "radiátory",
-            "qualification_question_rounds": 4,
+            "qualification_question_rounds": 3,
             "last_direct_topic": "Vaillant Split",
             "last_brand_model_topic": "Vaillant Split"
           },
@@ -3291,7 +3297,7 @@
           "serviceIntent": "brand_model",
           "legacyIntent": "product",
           "diagnosticFlowVersion": "diagnostic-v5-recommendation-closure",
-          "serverCommit": "d5679fb",
+          "serverCommit": "d305812",
           "retrievalSourcesCount": 3,
           "contextTopic": "tepelné čerpadlá",
           "contextCarried": true,
@@ -3303,7 +3309,7 @@
             "direct_answer_composed_by_llm"
           ],
           "bannedClaimsRemoved": [],
-          "questionRoundsCount": 4,
+          "questionRoundsCount": 3,
           "closureGateTriggered": false,
           "closureReason": null,
           "directAnswerGateTriggered": true,
@@ -3319,7 +3325,7 @@
             "requestedFields": []
           },
           "lead": {
-            "id": "lead_8cdb9de3-6294-4da5-b3a3-9d3eb3102eca",
+            "id": "lead_757ee738-423e-404a-bc0c-01055430ad00",
             "captured": false,
             "score": 30,
             "temperature": "cold",
@@ -3344,7 +3350,7 @@
         },
         "action": null,
         "fallbackUsed": false,
-        "responseTimeMs": 2645
+        "responseTimeMs": 2327
       },
       "failures": []
     },
@@ -3352,8 +3358,8 @@
       "scenario": "direct_brand_price_regression",
       "message": "F2040 uz sa nevyraba",
       "response": {
-        "conversationId": "con_3961eb5d-f3eb-490c-8986-44d3c42150fa",
-        "answer": "Máš pravdu, model F2040 by som nemal ponúkať ako aktuálny pre novú inštaláciu. Ak sa objavil v starších podkladoch, ber ho ako archívny.\n\nPre váš dom s rozlohou 120 m² a radiátormi sa budeme orientovať na riešenie vzduch-voda. Konkrétny aktuálny model od značiek NIBE alebo Vaillant vyberieme až na základe podrobnejšieho návrhu.\n\nMáte záujem o konkrétny typ inštalácie (napr. vonkajšia jednotka pri dome, alebo delená s vnútornou jednotkou)?",
+        "conversationId": "con_010d3b73-5a94-4512-9a8e-7dad24b4e3c9",
+        "answer": "Máš pravdu, model F2040 už nie je aktuálny a nemal by som ho ponúkať ako novú inštaláciu. Vždy sa budem držať súčasnej ponuky značiek NIBE a Vaillant. Pre váš dom s radiátormi a plochou 120 m² by sme sa zamerali na vhodné tepelné čerpadlo typu vzduch-voda od týchto výrobcov.\n\nPotreboval by som ešte vedieť, či ide o novostavbu alebo rekonštrukciu? A akú máte približnú ročnú spotrebu energie na vykurovanie?",
         "intent": "product",
         "confidence": "high",
         "topScore": 479.04,
@@ -3384,7 +3390,7 @@
           "requestedFields": []
         },
         "lead": {
-          "id": "lead_8cdb9de3-6294-4da5-b3a3-9d3eb3102eca",
+          "id": "lead_757ee738-423e-404a-bc0c-01055430ad00",
           "captured": false,
           "score": 30,
           "temperature": "cold",
@@ -3413,7 +3419,7 @@
             "property_type": "rodinný dom",
             "area_m2": 120,
             "heating_distribution": "radiátory",
-            "qualification_question_rounds": 4,
+            "qualification_question_rounds": 3,
             "last_direct_topic": "F2040_obsolete",
             "last_brand_model_topic": "Vaillant Split"
           },
@@ -3428,7 +3434,7 @@
           "serviceIntent": "complaint_or_correction",
           "legacyIntent": "product",
           "diagnosticFlowVersion": "diagnostic-v5-recommendation-closure",
-          "serverCommit": "d5679fb",
+          "serverCommit": "d305812",
           "retrievalSourcesCount": 3,
           "contextTopic": "tepelné čerpadlá",
           "contextCarried": true,
@@ -3440,7 +3446,7 @@
             "direct_answer_composed_by_llm"
           ],
           "bannedClaimsRemoved": [],
-          "questionRoundsCount": 4,
+          "questionRoundsCount": 3,
           "closureGateTriggered": false,
           "closureReason": null,
           "directAnswerGateTriggered": true,
@@ -3456,7 +3462,7 @@
             "requestedFields": []
           },
           "lead": {
-            "id": "lead_8cdb9de3-6294-4da5-b3a3-9d3eb3102eca",
+            "id": "lead_757ee738-423e-404a-bc0c-01055430ad00",
             "captured": false,
             "score": 30,
             "temperature": "cold",
@@ -3481,7 +3487,7 @@
         },
         "action": null,
         "fallbackUsed": false,
-        "responseTimeMs": 2624
+        "responseTimeMs": 2597
       },
       "failures": []
     },
@@ -3489,8 +3495,8 @@
       "scenario": "direct_brand_price_regression",
       "message": "A F2050?",
       "response": {
-        "conversationId": "con_3961eb5d-f3eb-490c-8986-44d3c42150fa",
-        "answer": "Model NIBE F2050 nemám potvrdený ako aktuálne komunikovaný v našej ponuke. Preto ho nebudem odporúčať ani uvádzať jeho parametre.\n\nPre váš starší dom s rozlohou 120 m² a radiátormi je predbežne vhodný systém vzduch-voda. Konkrétny aktuálny model od značiek NIBE alebo Vaillant vyberieme až na základe podrobnejšieho návrhu.\n\nMáte záujem o konkrétny typ inštalácie (napr. vonkajšia jednotka pri dome, alebo delená s vnútornou jednotkou)?",
+        "conversationId": "con_010d3b73-5a94-4512-9a8e-7dad24b4e3c9",
+        "answer": "Model NIBE F2050 nemám potvrdený ako aktuálne komunikovaný model v našej ponuke. Preto sa budem držať bezpečného postupu a zamerať sa na overené značky ako NIBE a Vaillant.\n\nPre váš starší dom s rozlohou 120 m² a radiátormi by sme hľadali vhodný systém vzduch-voda, ktorý dokáže efektívne pracovať s radiátormi. Konkrétny model a jeho výkon potom určíme na základe detailného návrhu.\n\nPotreboval by som ešte upresniť, či ide o novostavbu alebo rekonštrukciu a aká je vaša približná ročná spotreba energie na vykurovanie.",
         "intent": "product",
         "confidence": "high",
         "topScore": 472.1,
@@ -3521,7 +3527,7 @@
           "requestedFields": []
         },
         "lead": {
-          "id": "lead_8cdb9de3-6294-4da5-b3a3-9d3eb3102eca",
+          "id": "lead_757ee738-423e-404a-bc0c-01055430ad00",
           "captured": false,
           "score": 30,
           "temperature": "cold",
@@ -3550,7 +3556,7 @@
             "property_type": "rodinný dom",
             "area_m2": 120,
             "heating_distribution": "radiátory",
-            "qualification_question_rounds": 5,
+            "qualification_question_rounds": 4,
             "last_direct_topic": "F2050",
             "last_brand_model_topic": "F2050"
           },
@@ -3565,7 +3571,7 @@
           "serviceIntent": "brand_model",
           "legacyIntent": "product",
           "diagnosticFlowVersion": "diagnostic-v5-recommendation-closure",
-          "serverCommit": "d5679fb",
+          "serverCommit": "d305812",
           "retrievalSourcesCount": 3,
           "contextTopic": "tepelné čerpadlá",
           "contextCarried": true,
@@ -3577,7 +3583,7 @@
             "direct_answer_composed_by_llm"
           ],
           "bannedClaimsRemoved": [],
-          "questionRoundsCount": 5,
+          "questionRoundsCount": 4,
           "closureGateTriggered": false,
           "closureReason": null,
           "directAnswerGateTriggered": true,
@@ -3593,7 +3599,7 @@
             "requestedFields": []
           },
           "lead": {
-            "id": "lead_8cdb9de3-6294-4da5-b3a3-9d3eb3102eca",
+            "id": "lead_757ee738-423e-404a-bc0c-01055430ad00",
             "captured": false,
             "score": 30,
             "temperature": "cold",
@@ -3618,7 +3624,7 @@
         },
         "action": null,
         "fallbackUsed": false,
-        "responseTimeMs": 2490
+        "responseTimeMs": 2700
       },
       "failures": []
     },
@@ -3626,8 +3632,8 @@
       "scenario": "direct_brand_price_regression",
       "message": "ake su ceny vratane instalacie",
       "response": {
-        "conversationId": "con_3961eb5d-f3eb-490c-8986-44d3c42150fa",
-        "answer": "Cenu kompletnej realizácie tepelného čerpadla bez obhliadky a konkrétneho návrhu neviem presne stanoviť. Cena zahŕňa nielen samotné zariadenie, ale aj montáž, elektroinštaláciu, úpravy v kotolni, prípadnú akumulačnú nádrž a uvedenie do prevádzky.\n\nPre váš dom s rozlohou 120 m² a existujúcimi radiátormi je dôležité zohľadniť výkon čerpadla a schopnosť radiátorov efektívne pracovať s nižšou výstupnou teplotou vody.\n\nMáte už k dispozícii predbežný návrh výkonu tepelného čerpadla alebo informácie o vašej ročnej spotrebe energie na vykurovanie?\n\nJasné, ďalší krok je, aby sa vám vedel ozvať technik alebo obchodník a dohodol postup. Pošlite prosím telefón alebo e-mail, prípadne aj meno. Kontakt použijeme iba na spätné ozvanie k tomuto dopytu.",
+        "conversationId": "con_010d3b73-5a94-4512-9a8e-7dad24b4e3c9",
+        "answer": "Cenu tepelného čerpadla vrátane inštalácie ti bez konkrétnej ponuky nepotvrdím. Je dôležité rozlišovať cenu samotného zariadenia a cenu kompletnej realizácie.\n\nPre tvoj dom (rekonštrukcia, 120 m², radiátory) cenu ovplyvňuje výkon čerpadla, potreba ohrevu TÚV, typ regulácie, montážny materiál, elektroinštalácia a prípadné úpravy. Ak máš už nejakú cenovú ponuku, porovnaj si, čo všetko je v nej zahrnuté.\n\nJasné, ďalší krok je, aby sa vám vedel ozvať technik alebo obchodník a dohodol postup. Pošlite prosím telefón alebo e-mail, prípadne aj meno. Kontakt použijeme iba na spätné ozvanie k tomuto dopytu.",
         "intent": "quote",
         "confidence": "high",
         "topScore": 473.24,
@@ -3661,7 +3667,7 @@
           ]
         },
         "lead": {
-          "id": "lead_8cdb9de3-6294-4da5-b3a3-9d3eb3102eca",
+          "id": "lead_757ee738-423e-404a-bc0c-01055430ad00",
           "captured": false,
           "score": 45,
           "temperature": "warm",
@@ -3690,7 +3696,7 @@
             "property_type": "rodinný dom",
             "area_m2": 120,
             "heating_distribution": "radiátory",
-            "qualification_question_rounds": 6,
+            "qualification_question_rounds": 4,
             "last_direct_topic": "price",
             "last_price_topic": "price",
             "last_brand_model_topic": "F2050"
@@ -3706,7 +3712,7 @@
           "serviceIntent": "price",
           "legacyIntent": "quote",
           "diagnosticFlowVersion": "diagnostic-v5-recommendation-closure",
-          "serverCommit": "d5679fb",
+          "serverCommit": "d305812",
           "retrievalSourcesCount": 3,
           "contextTopic": "tepelné čerpadlá",
           "contextCarried": true,
@@ -3718,7 +3724,7 @@
             "direct_answer_composed_by_llm"
           ],
           "bannedClaimsRemoved": [],
-          "questionRoundsCount": 6,
+          "questionRoundsCount": 4,
           "closureGateTriggered": false,
           "closureReason": null,
           "directAnswerGateTriggered": true,
@@ -3737,7 +3743,7 @@
             ]
           },
           "lead": {
-            "id": "lead_8cdb9de3-6294-4da5-b3a3-9d3eb3102eca",
+            "id": "lead_757ee738-423e-404a-bc0c-01055430ad00",
             "captured": false,
             "score": 45,
             "temperature": "warm",
@@ -3752,7 +3758,7 @@
             "created": true,
             "priority": "medium",
             "reason": "Dopyt na cenu bez kontaktu",
-            "id": "out_2f732f6f-64d7-404d-967f-8335cae2655c"
+            "id": "out_a302f847-4cc9-4f4a-8608-3796ab2695c9"
           },
           "persistence": {
             "conversationSaved": true,
@@ -3762,7 +3768,7 @@
         },
         "action": null,
         "fallbackUsed": false,
-        "responseTimeMs": 3123
+        "responseTimeMs": 2630
       },
       "failures": []
     },
@@ -3770,8 +3776,8 @@
       "scenario": "direct_brand_price_regression",
       "message": "7tis je asi malo nie?",
       "response": {
-        "conversationId": "con_3961eb5d-f3eb-490c-8986-44d3c42150fa",
-        "answer": "Áno, 7 tisíc môže byť pri kompletnej realizácii tepelného čerpadla podozrivo nízka suma, najmä ak ide o starší dom s radiátormi. Takáto cena by pravdepodobne nezahŕňala všetky potrebné komponenty a práce.\n\nPri vašom dome (120 m², rekonštrukcia, radiátory) je dôležité zohľadniť nielen cenu samotného zariadenia, ale aj montáž, elektroinštaláciu, prípadnú akumulačnú nádrž, reguláciu a uvedenie do prevádzky.\n\nMáte k dispozícii konkrétnu ponuku, kde je táto suma uvedená, alebo ide o predbežný odhad?\n\nJasné, ďalší krok je, aby sa vám vedel ozvať technik alebo obchodník a dohodol postup. Pošlite prosím telefón alebo e-mail, prípadne aj meno. Kontakt použijeme iba na spätné ozvanie k tomuto dopytu.",
+        "conversationId": "con_010d3b73-5a94-4512-9a8e-7dad24b4e3c9",
+        "answer": "Áno, 7 tisíc môže byť pri kompletnej inštalácii tepelného čerpadla podozrivo nízka suma, najmä pre starší dom s radiátormi a výmenou kotla. Je dôležité presne overiť, čo všetko je v tejto cene zahrnuté.\n\nMôže to byť cena len za samotné zariadenie, alebo môže chýbať montážny materiál, práca, regulácia, ohrev TÚV, akumulačná nádrž, elektropríprava alebo uvedenie do prevádzky. Pre váš dom (rekonštrukcia, 120 m², radiátory) by som to bral skôr ako orientačný nástrel, nie ako finálnu cenu kompletnej realizácie.\n\nPotreboval by som ešte vedieť, aká je vaša približná ročná spotreba energie na vykurovanie?\n\nJasné, ďalší krok je, aby sa vám vedel ozvať technik alebo obchodník a dohodol postup. Pošlite prosím telefón alebo e-mail, prípadne aj meno. Kontakt použijeme iba na spätné ozvanie k tomuto dopytu.",
         "intent": "quote",
         "confidence": "high",
         "topScore": 443.85,
@@ -3805,7 +3811,7 @@
           ]
         },
         "lead": {
-          "id": "lead_8cdb9de3-6294-4da5-b3a3-9d3eb3102eca",
+          "id": "lead_757ee738-423e-404a-bc0c-01055430ad00",
           "captured": false,
           "score": 45,
           "temperature": "warm",
@@ -3834,7 +3840,8 @@
             "property_type": "rodinný dom",
             "area_m2": 120,
             "heating_distribution": "radiátory",
-            "qualification_question_rounds": 7,
+            "hot_water": false,
+            "qualification_question_rounds": 4,
             "last_direct_topic": "low_price_scope",
             "last_price_topic": "low_price_scope",
             "last_brand_model_topic": "F2050"
@@ -3850,7 +3857,7 @@
           "serviceIntent": "price",
           "legacyIntent": "quote",
           "diagnosticFlowVersion": "diagnostic-v5-recommendation-closure",
-          "serverCommit": "d5679fb",
+          "serverCommit": "d305812",
           "retrievalSourcesCount": 3,
           "contextTopic": "tepelné čerpadlá",
           "contextCarried": true,
@@ -3862,7 +3869,7 @@
             "direct_answer_composed_by_llm"
           ],
           "bannedClaimsRemoved": [],
-          "questionRoundsCount": 7,
+          "questionRoundsCount": 4,
           "closureGateTriggered": false,
           "closureReason": null,
           "directAnswerGateTriggered": true,
@@ -3881,7 +3888,7 @@
             ]
           },
           "lead": {
-            "id": "lead_8cdb9de3-6294-4da5-b3a3-9d3eb3102eca",
+            "id": "lead_757ee738-423e-404a-bc0c-01055430ad00",
             "captured": false,
             "score": 45,
             "temperature": "warm",
@@ -3896,7 +3903,7 @@
             "created": true,
             "priority": "medium",
             "reason": "Dopyt na cenu bez kontaktu",
-            "id": "out_2f732f6f-64d7-404d-967f-8335cae2655c"
+            "id": "out_a302f847-4cc9-4f4a-8608-3796ab2695c9"
           },
           "persistence": {
             "conversationSaved": true,
@@ -3906,7 +3913,7 @@
         },
         "action": null,
         "fallbackUsed": false,
-        "responseTimeMs": 2800
+        "responseTimeMs": 2619
       },
       "failures": []
     },
@@ -3914,8 +3921,8 @@
       "scenario": "direct_brand_price_regression",
       "message": "potrebujem akumulacku, ci aj ta je v cene?",
       "response": {
-        "conversationId": "con_3961eb5d-f3eb-490c-8986-44d3c42150fa",
-        "answer": "Neviem potvrdiť, či je akumulačná nádrž zahrnutá v cene, pokiaľ to nie je explicitne uvedené v ponuke. Pri starších domoch s radiátormi môže byť akumulačná nádrž potrebná, ale jej zahrnutie do celkovej ceny treba overiť.\n\nCena 7 tisíc eur za kompletnú realizáciu tepelného čerpadla, najmä pre starší dom s radiátormi, sa zdá byť nízka. Je dôležité si overiť, čo presne táto suma pokrýva – či ide len o zariadenie, alebo aj o montáž, elektroinštaláciu, reguláciu, prípadnú akumulačnú nádrž a uvedenie do prevádzky.\n\nJasné, ďalší krok je, aby sa vám vedel ozvať technik alebo obchodník a dohodol postup. Pošlite prosím telefón alebo e-mail, prípadne aj meno. Kontakt použijeme iba na spätné ozvanie k tomuto dopytu.",
+        "conversationId": "con_010d3b73-5a94-4512-9a8e-7dad24b4e3c9",
+        "answer": "Neviem potvrdiť, či je akumulačná nádrž zahrnutá v cene, pokiaľ to nie je explicitne uvedené v ponuke. Pri vykurovaní radiátormi môže byť akumulačná nádrž potrebná, ale jej zahrnutie do celkovej ceny je potrebné overiť.\n\nCena 7 tisíc eur za kompletnú realizáciu tepelného čerpadla pre váš dom (rekonštrukcia, 120 m², radiátory) sa zdá byť nízka. Je dôležité si overiť, či táto suma pokrýva nielen samotné zariadenie, ale aj montáž, reguláciu, ohrev TÚV, elektroinštaláciu a prípadnú akumulačnú nádrž.\n\nAká je vaša približná ročná spotreba energie na vykurovanie?\n\nJasné, ďalší krok je, aby sa vám vedel ozvať technik alebo obchodník a dohodol postup. Pošlite prosím telefón alebo e-mail, prípadne aj meno. Kontakt použijeme iba na spätné ozvanie k tomuto dopytu.",
         "intent": "quote",
         "confidence": "high",
         "topScore": 443.58,
@@ -3949,7 +3956,7 @@
           ]
         },
         "lead": {
-          "id": "lead_8cdb9de3-6294-4da5-b3a3-9d3eb3102eca",
+          "id": "lead_757ee738-423e-404a-bc0c-01055430ad00",
           "captured": false,
           "score": 45,
           "temperature": "warm",
@@ -3978,7 +3985,8 @@
             "property_type": "rodinný dom",
             "area_m2": 120,
             "heating_distribution": "radiátory",
-            "qualification_question_rounds": 8,
+            "hot_water": false,
+            "qualification_question_rounds": 5,
             "last_direct_topic": "buffer_tank_price_scope",
             "last_price_topic": "buffer_tank_price_scope",
             "last_brand_model_topic": "F2050"
@@ -3994,7 +4002,7 @@
           "serviceIntent": "price",
           "legacyIntent": "quote",
           "diagnosticFlowVersion": "diagnostic-v5-recommendation-closure",
-          "serverCommit": "d5679fb",
+          "serverCommit": "d305812",
           "retrievalSourcesCount": 3,
           "contextTopic": "tepelné čerpadlá",
           "contextCarried": true,
@@ -4006,7 +4014,7 @@
             "direct_answer_composed_by_llm"
           ],
           "bannedClaimsRemoved": [],
-          "questionRoundsCount": 8,
+          "questionRoundsCount": 5,
           "closureGateTriggered": false,
           "closureReason": null,
           "directAnswerGateTriggered": true,
@@ -4025,7 +4033,7 @@
             ]
           },
           "lead": {
-            "id": "lead_8cdb9de3-6294-4da5-b3a3-9d3eb3102eca",
+            "id": "lead_757ee738-423e-404a-bc0c-01055430ad00",
             "captured": false,
             "score": 45,
             "temperature": "warm",
@@ -4040,7 +4048,7 @@
             "created": true,
             "priority": "medium",
             "reason": "Dopyt na cenu bez kontaktu",
-            "id": "out_2f732f6f-64d7-404d-967f-8335cae2655c"
+            "id": "out_a302f847-4cc9-4f4a-8608-3796ab2695c9"
           },
           "persistence": {
             "conversationSaved": true,
@@ -4050,7 +4058,7 @@
         },
         "action": null,
         "fallbackUsed": false,
-        "responseTimeMs": 2485
+        "responseTimeMs": 2411
       },
       "failures": []
     },
@@ -4058,8 +4066,8 @@
       "scenario": "direct_brand_price_regression",
       "message": "z coho?",
       "response": {
-        "conversationId": "con_3961eb5d-f3eb-490c-8986-44d3c42150fa",
-        "answer": "Cena sa zvyčajne skladá z ceny samotného zariadenia a ceny kompletnej realizácie. Tá druhá zahŕňa aj montáž, elektroinštaláciu, prípadnú akumulačnú nádrž, reguláciu a uvedenie do prevádzky. Bez presnej ponuky nie je možné potvrdiť, čo konkrétna suma pokrýva.\n\nAkumulačná nádrž je v cene iba vtedy, keď je výslovne uvedená v konkrétnej ponuke; bez toho to treba overiť.\n\nJasné, ďalší krok je, aby sa vám vedel ozvať technik alebo obchodník a dohodol postup. Pošlite prosím telefón alebo e-mail, prípadne aj meno. Kontakt použijeme iba na spätné ozvanie k tomuto dopytu.",
+        "conversationId": "con_010d3b73-5a94-4512-9a8e-7dad24b4e3c9",
+        "answer": "Cena tepelného čerpadla sa skladá z ceny samotného zariadenia a ceny kompletnej realizácie. Kompletná cena môže zahŕňať tepelné čerpadlo, vnútorný modul, reguláciu, montážny materiál, prácu, uvedenie do prevádzky, prípravu TÚV a prípadne aj akumulačnú nádrž. Bez presnej ponuky nie je možné potvrdiť, čo všetko je zahrnuté v cene.\n\nJasné, ďalší krok je, aby sa vám vedel ozvať technik alebo obchodník a dohodol postup. Pošlite prosím telefón alebo e-mail, prípadne aj meno. Kontakt použijeme iba na spätné ozvanie k tomuto dopytu.",
         "intent": "quote",
         "confidence": "high",
         "topScore": 443.67,
@@ -4093,7 +4101,7 @@
           ]
         },
         "lead": {
-          "id": "lead_8cdb9de3-6294-4da5-b3a3-9d3eb3102eca",
+          "id": "lead_757ee738-423e-404a-bc0c-01055430ad00",
           "captured": false,
           "score": 45,
           "temperature": "warm",
@@ -4122,7 +4130,8 @@
             "property_type": "rodinný dom",
             "area_m2": 120,
             "heating_distribution": "radiátory",
-            "qualification_question_rounds": 8,
+            "hot_water": false,
+            "qualification_question_rounds": 6,
             "last_direct_topic": "price_basis",
             "last_price_topic": "price_basis",
             "last_brand_model_topic": "F2050"
@@ -4138,7 +4147,7 @@
           "serviceIntent": "price",
           "legacyIntent": "quote",
           "diagnosticFlowVersion": "diagnostic-v5-recommendation-closure",
-          "serverCommit": "d5679fb",
+          "serverCommit": "d305812",
           "retrievalSourcesCount": 3,
           "contextTopic": "tepelné čerpadlá",
           "contextCarried": true,
@@ -4147,13 +4156,10 @@
           "validatorsTriggered": [
             "direct_answer_gate_used",
             "latest_direct_question_answered",
-            "direct_answer_composed_by_llm",
-            "buffer_tank_included_claim_sanitized"
+            "direct_answer_composed_by_llm"
           ],
-          "bannedClaimsRemoved": [
-            "akumulačná nádrž zahrnutá v cene"
-          ],
-          "questionRoundsCount": 8,
+          "bannedClaimsRemoved": [],
+          "questionRoundsCount": 6,
           "closureGateTriggered": false,
           "closureReason": null,
           "directAnswerGateTriggered": true,
@@ -4172,7 +4178,7 @@
             ]
           },
           "lead": {
-            "id": "lead_8cdb9de3-6294-4da5-b3a3-9d3eb3102eca",
+            "id": "lead_757ee738-423e-404a-bc0c-01055430ad00",
             "captured": false,
             "score": 45,
             "temperature": "warm",
@@ -4187,7 +4193,7 @@
             "created": true,
             "priority": "medium",
             "reason": "Dopyt na cenu bez kontaktu",
-            "id": "out_2f732f6f-64d7-404d-967f-8335cae2655c"
+            "id": "out_a302f847-4cc9-4f4a-8608-3796ab2695c9"
           },
           "persistence": {
             "conversationSaved": true,
@@ -4197,7 +4203,7 @@
         },
         "action": null,
         "fallbackUsed": false,
-        "responseTimeMs": 2190
+        "responseTimeMs": 2470
       },
       "failures": []
     },
@@ -4205,8 +4211,8 @@
       "scenario": "direct_answer_clarification",
       "message": "ahoj, ake TC mate?",
       "response": {
-        "conversationId": "con_902142a2-afb2-49c7-b951-3dadcbc4a737",
-        "answer": "Ponúkame tepelné čerpadlá značiek NIBE a Vaillant. Značku IVT považujeme za neistú, kým ju nepotvrdíme. Ostatné značky ako Daikin či Mitsubishi pri tepelných čerpadlách bežne nekomunikujeme.\n\nPre výber konkrétneho modelu potrebujeme viac informácií o vašej nehnuteľnosti. Aké je to typ domu (novostavba/rekonštrukcia), akú má rozlohu a aký typ vykurovania používate (radiátory/podlahové kúrenie)?",
+        "conversationId": "con_0c9e5ccd-ac5d-4bbf-ba4f-640a24fd48df",
+        "answer": "Ponúkame tepelné čerpadlá značiek NIBE a Vaillant. Značku IVT považujeme za neistú, kým ju nepotvrdíme. Ostatné značky ako Daikin alebo Mitsubishi pri tepelných čerpadlách zatiaľ nekomunikujeme.\n\nPre výber konkrétneho modelu potrebujeme viac informácií. Aký typ vykurovania máte (radiátory alebo podlahové kúrenie) a akú máte približnú plochu domu?",
         "intent": "product",
         "confidence": "high",
         "topScore": 308.07,
@@ -4277,7 +4283,7 @@
           "serviceIntent": "brand_model",
           "legacyIntent": "product",
           "diagnosticFlowVersion": "diagnostic-v5-recommendation-closure",
-          "serverCommit": "d5679fb",
+          "serverCommit": "d305812",
           "retrievalSourcesCount": 3,
           "contextTopic": "tepelné čerpadlá",
           "contextCarried": true,
@@ -4330,7 +4336,7 @@
         },
         "action": null,
         "fallbackUsed": false,
-        "responseTimeMs": 2505
+        "responseTimeMs": 2308
       },
       "failures": []
     },
@@ -4338,7 +4344,7 @@
       "scenario": "direct_answer_clarification",
       "message": "?",
       "response": {
-        "conversationId": "con_902142a2-afb2-49c7-b951-3dadcbc4a737",
+        "conversationId": "con_0c9e5ccd-ac5d-4bbf-ba4f-640a24fd48df",
         "answer": "### Upresnenie\n\nMyslel som tým: pri tepelných čerpadlách viem ako bezpečné firemné portfólio komunikovať hlavne NIBE a Vaillant. To ešte nie je výber vhodného čerpadla pre tvoj dom.\n\nAk chceš, aby som odporučil smer pre teba, napíš mi, či ide o novostavbu alebo starší dom a či máš radiátory alebo podlahovku.",
         "intent": "product",
         "confidence": "high",
@@ -4410,7 +4416,7 @@
           "serviceIntent": "brand_model",
           "legacyIntent": "product",
           "diagnosticFlowVersion": "diagnostic-v5-recommendation-closure",
-          "serverCommit": "d5679fb",
+          "serverCommit": "d305812",
           "retrievalSourcesCount": 3,
           "contextTopic": "tepelné čerpadlá",
           "contextCarried": true,
@@ -4464,7 +4470,7 @@
         },
         "action": null,
         "fallbackUsed": false,
-        "responseTimeMs": 2117
+        "responseTimeMs": 2119
       },
       "failures": []
     }

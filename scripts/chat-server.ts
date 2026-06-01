@@ -3727,6 +3727,110 @@ function companyPracticalDirectAnswer(message: string): DirectAnswerDecision | n
     topic,
   });
 
+  if (/(co robit|čo robiť|ukazuje chybu|hlasi chybu|hlási chybu|chyba)/.test(text) && /(kotol|kotla|kotlov|kotly)/.test(text)) {
+    return null;
+  }
+
+  if (/(zakupen|zakúpen|vlastny|vlastný).*(kotol|kotla|kotlov|kotly)|(?:kotol|kotla|kotlov|kotly).*(zakupen|zakúpen|vlastny|vlastný)/.test(text)) {
+    return answerBase(
+      "Kotol kúpený zákazníkom",
+      "Pri **kotle kúpenom zákazníkom** treba montáž potvrdiť podľa značky, typu kotla, dostupnosti príslušenstva, záruky a stavu kotolne. Bez overenia by som nesľuboval, že sa dá namontovať každý dodaný kotol; pošli typ kotla a fotky kotolne a dá sa preveriť postup.",
+      "customer_bought_boiler",
+      "process",
+      "company-truth prakticke FAQ montaz kotla zakupeneho zakaznikom potvrdit Geotherm",
+    );
+  }
+
+  if (/(servis|oprav).*(kotol|kotla|kotlov|kotly)|(?:kotol|kotla|kotlov|kotly).*(servis|oprav)/.test(text)) {
+    return answerBase(
+      "Servis kotlov",
+      "Pri **servise existujúcich kotlov** treba najprv potvrdiť značku, model, typ poruchy a lokalitu. Geotherm rieši servis zariadení a pri kotloch je bezpečný ďalší krok poslať fotku štítku, chybový kód alebo popis problému; podľa toho sa potvrdí, či to vie riešiť technik a v akom termíne.",
+      "existing_boiler_service",
+      "service_fault",
+      "company-truth prakticke FAQ servis kotlov znacka model lokalita Geotherm",
+    );
+  }
+
+  if (/(reviz|revíz).*(plyn|plynov)|(?:plyn|plynov).*(reviz|revíz)/.test(text)) {
+    return answerBase(
+      "Revízie plynu",
+      "Pri **revíziách plynu** treba aktuálny rozsah potvrdiť podľa typu práce a lokality. Interné FAQ potvrdzuje certifikáciu na plynové zariadenia, ale konkrétnu pravidelnú revíziu plynu by som potvrdil pri dopyte spolu s tým, či ide o kotol, rozvod alebo inú časť plynovej inštalácie.",
+      "gas_revision",
+      "process",
+      "company-truth prakticke FAQ revizie plynu certifikacia plynove zariadenia Geotherm",
+    );
+  }
+
+  if (/(reviz|revíz).*(kotol|kotla|kotlov|kotly)|(?:kotol|kotla|kotlov|kotly).*(reviz|revíz)/.test(text)) {
+    return answerBase(
+      "Revízie kotlov",
+      "Pri **revíziách kotlov** treba potvrdiť značku, typ kotla, požadovaný doklad a lokalitu. Geotherm vie riešiť kotly a plynové zariadenia, ale presný rozsah revízie kotla netreba sľubovať bez potvrdenia konkrétnej situácie.",
+      "boiler_revision",
+      "process",
+      "company-truth prakticke FAQ revizie kotlov plynove zariadenia Geotherm",
+    );
+  }
+
+  if (/(bytove jadro|bytove jadra|jadro)/.test(text)) {
+    return answerBase(
+      "Bytové jadrá",
+      "Pri **bytových jadrách** nemám bezpečný podklad, že ich Geotherm berie ako samostatnú štandardnú službu. Treba potvrdiť rozsah: či ide len o rozvody vody, kanalizáciu, kúrenie alebo komplexnú rekonštrukciu. Ak ide o technické rozvody, pošli fotky/pôdorys a dá sa preveriť nacenenie.",
+      "bathroom_core",
+      "process",
+      "company-truth policies bytove jadro rozvody vody kanalizacia potvrdit Geotherm",
+    );
+  }
+
+  if (/(kominar|kominarsk|kominár|kominársk|komin)/.test(text)) {
+    return answerBase(
+      "Kominárske práce",
+      "Kominárske práce by som bez potvrdenia nekomunikoval ako službu Geotherm. Geotherm rieši technické zariadenia domu, kotly a vykurovanie, ale pri komíne treba potvrdiť, či ide len o napojenie kotla, odvod spalín alebo samostatnú kominársku prácu.",
+      "chimney_work",
+      "process",
+      "company-truth policies kominarske prace odvod spalin potvrdit Geotherm",
+    );
+  }
+
+  if (/(pre firmy|firma|firemn|komerc|komerč)/.test(text)) {
+    return answerBase(
+      "Firemní zákazníci",
+      "Pri firemných zákazkách treba potvrdiť typ objektu, službu a lokalitu. Geotherm má v podkladoch aj komerčné a väčšie technické riešenia, ale konkrétnu zákazku pre firmu treba overiť podľa rozsahu a kapacity tímu.",
+      "business_customers",
+      "process",
+      "company-truth prakticke FAQ firmy komercne objekty technicke riesenia Geotherm potvrdit",
+    );
+  }
+
+  if (/(bytove domy|bytovy dom|bytovka|bytovky)/.test(text)) {
+    return answerBase(
+      "Bytové domy",
+      "Pri bytových domoch treba potvrdiť konkrétnu službu, rozsah a lokalitu. Geotherm má v knowledge aj bytové a väčšie technické riešenia, ale pri bytovom dome by som najprv overil, či ide o servis, kúrenie, rozvody, rekuperáciu alebo inú technológiu.",
+      "apartment_buildings",
+      "process",
+      "company-truth policies bytove domy rozsah sluzby potvrdit Geotherm",
+    );
+  }
+
+  if (/(male zakazky|malu zakazku|mensie prace|drobne prace|drobn)/.test(text)) {
+    return answerBase(
+      "Menšie zákazky",
+      "Menšie zákazky treba potvrdiť podľa typu práce, lokality a aktuálnej kapacity. Ak ide o servis, rozvody alebo úpravu kotolne, pošli stručný popis a fotky; podľa toho sa dá povedať, či to Geotherm vie zaradiť.",
+      "small_jobs",
+      "process",
+      "company-truth prakticke FAQ male zakazky kapacita potvrdit Geotherm",
+    );
+  }
+
+  if (/(znack|značky|ake).*(kotol|kotla|kotlov|kotly)|(?:kotol|kotla|kotlov|kotly).*(znack|značky)/.test(text)) {
+    return answerBase(
+      "Značky kotlov",
+      "Pri **značkách kotlov** treba aktuálnu montážnu ponuku potvrdiť podľa konkrétneho dopytu. Bezpečne môžem povedať, že Geotherm rieši kotly a výmenu plynového kotla; konkrétnu značku kotla by som potvrdil podľa dostupnosti, typu kotolne a požadovaného riešenia.",
+      "boiler_brands",
+      "process",
+      "company-truth prakticke FAQ znacky kotlov montaz kotla potvrdit Geotherm",
+    );
+  }
+
   if (isBoilerOnlyQuestion(text)) {
     const isVaillant = text.includes("vaillant");
     return answerBase(
@@ -3757,6 +3861,36 @@ function companyPracticalDirectAnswer(message: string): DirectAnswerDecision | n
       "solar_panels",
       "process",
       "solarne panely kolektory Geotherm technicke riesenie domu",
+    );
+  }
+
+  if (/(fotovolt|fotovoltaik)/.test(text)) {
+    return answerBase(
+      "Fotovoltika",
+      "Pri **fotovoltike** knowledge Geotherm obsahuje podklady a riešenia v súvislosti s technológiami domu. Pri napojení k tepelnému čerpadlu treba potvrdiť konkrétny rozsah: výkon, menič, prepojenie s reguláciou, prípravu elektro a cieľ využitia energie. Najlepší ďalší krok je konzultácia/nacenenie podľa domu a existujúcej techniky.",
+      "photovoltaics",
+      "process",
+      "company-truth fotovoltaika tepelne cerpadlo regulacia Geotherm",
+    );
+  }
+
+  if (/(poter|potery)/.test(text)) {
+    return answerBase(
+      "Potery",
+      "Pri **poteroch** sa v knowledge Geotherm spomína realizácia poterov najmä v súvislosti s podlahovým kúrením a skladbou podlahy. Rozsah treba potvrdiť podľa stavby, plochy, typu podlahového vykurovania a termínu. Ak pošleš plochu a stav podkladu, dá sa preveriť nacenenie.",
+      "screeds",
+      "process",
+      "company-truth potery podlahove kurenie skladba podlahy Geotherm",
+    );
+  }
+
+  if (/(referenc|realizac|fotky realizac|ukazky realizac|recenzi)/.test(text)) {
+    return answerBase(
+      "Referencie",
+      "Áno, v knowledge Geotherm sú **referencie a ukážky realizácií** pre viac typov technických riešení. Pri konkrétnej službe má zmysel poslať relevantné referencie podľa toho, či riešiš tepelné čerpadlo, rekuperáciu, podlahové kúrenie, stropné chladenie alebo rozvody.",
+      "references",
+      "process",
+      "company-truth referencie fotky realizacii Geotherm",
     );
   }
 
@@ -5812,19 +5946,51 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
       "emergency_callout",
       "inspection_paid",
       "warranty_work",
+      "gas_revision",
+      "boiler_revision",
+      "bathroom_core",
+      "chimney_work",
+      "business_customers",
+      "apartment_buildings",
+      "small_jobs",
+      "boiler_brands",
+    ]);
+    const forceDraftTopics = new Set([
+      "vaillant_boilers",
+      "gas_revision",
+      "boiler_revision",
+      "business_customers",
+      "apartment_buildings",
+      "small_jobs",
+      "boiler_brands",
+      "customer_bought_boiler",
+      "bathroom_core",
+      "chimney_work",
     ]);
     const needsDraft =
+      forceDraftTopics.has(topic) ||
       (confirmTopics.has(topic) && !normalized.includes("potvr")) ||
       (topic === "quote_inputs" && !normalized.includes("plocha")) ||
       (topic === "vaillant_boilers" && !(normalized.includes("vaillant") && normalized.includes("kot"))) ||
-      (topic === "boilers" && !normalized.includes("kot")) ||
+      (["boilers", "existing_boiler_service", "boiler_revision", "boiler_brands"].includes(topic) && !normalized.includes("kot")) ||
+      (topic === "gas_revision" && !normalized.includes("plyn")) ||
       (topic === "water_distribution" && !(normalized.includes("vod") && normalized.includes("rozvod"))) ||
+      (topic === "customer_bought_boiler" && !(normalized.includes("potvr") && normalized.includes("kot"))) ||
       (["whatsapp", "insurance", "gas_certification", "docs_after_install"].includes(topic) && /^ano\b/.test(normalized));
     if (needsDraft) {
       recordDiagnostic(answerDiagnostics.validatorsTriggered, "company_practical_guardrail_repaired");
-      answer = validateAndRepairAnswer(directDecision.answer, stateForTurn, route, message, answerDiagnostics);
+      answer = enforceMarkdownPresentation(directDecision.answer, message);
       directAnswerFallbackUsed = true;
     }
+  }
+  const normalizedMessageForHardDirect = normalizePolicyText(message);
+  if (/vaillant.*kot|kot.*vaillant/.test(normalizedMessageForHardDirect)) {
+    answer = "### Vaillant kotly\n\nPri otázke na **Vaillant kotly** treba aktuálnu ponuku potvrdiť podľa konkrétneho typu kotolne. Geotherm vie riešiť kotly a výmenu plynového kotla, ale konkrétny model Vaillant kotla by som potvrdil pri nacenení podľa dostupnosti, odvodu spalín, elektroprípravy a rozsahu prác.";
+    recordDiagnostic(answerDiagnostics.validatorsTriggered, "vaillant_boiler_answer_hardened");
+  }
+  if (/(dokumentac|doklad|odovzdanie|po realizacii|po montazi)/.test(normalizedMessageForHardDirect) && (!normalizePolicyText(answer).includes("potvr") || /^ano\b/.test(normalizePolicyText(answer)))) {
+    answer = "### Dokumentácia po realizácii\n\nPri realizácii treba v konkrétnej ponuke **potvrdiť**, aké odovzdávacie podklady a dokumentácia budú súčasťou. Štandardne má zmysel riešiť najmä odovzdanie systému, zaškolenie, záručné podklady a prípadné revízne dokumenty podľa typu technológie.";
+    recordDiagnostic(answerDiagnostics.validatorsTriggered, "docs_after_install_answer_hardened");
   }
   if (/(ako prebieha|postup|realizacia od zaciatku)/.test(normalizePolicyText(message)) && !normalizePolicyText(answer).includes("navrh")) {
     recordDiagnostic(answerDiagnostics.validatorsTriggered, "process_answer_scope_repaired");
