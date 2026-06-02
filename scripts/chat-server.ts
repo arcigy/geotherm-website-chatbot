@@ -9161,10 +9161,10 @@ async function legacyCreateChatResponse(requestBody: ChatRequest, knowledgePath?
     });
 
     const answerMode = routePlan.answerMode === "rag_answer" ? "general_chat" : routePlan.answerMode;
-    const noRetrievalSmallTalk = answerMode === "general_chat" && isSmallTalkMessage(answerMessage);
+    const noRetrievalSmallTalk = answerMode === "general_chat" && isSmallTalkMessage(message);
     const fallbackStructured =
       noRetrievalSmallTalk
-        ? pureSmallTalkFallback(answerMessage)
+        ? pureSmallTalkFallback(message)
         : answerMode === "general_chat"
           ? {
               shortAnswer: "Toto je chat k webu Geotherm a témam okolo vykurovania, chladenia a tepelných čerpadiel.",
@@ -9193,7 +9193,7 @@ async function legacyCreateChatResponse(requestBody: ChatRequest, knowledgePath?
     const structuredAnswer =
       noRetrievalSmallTalk && llm.structuredAnswer
         ? {
-            shortAnswer: compactPureSmallTalkAnswer(llm.structuredAnswer.shortAnswer, answerMessage),
+            shortAnswer: compactPureSmallTalkAnswer(llm.structuredAnswer.shortAnswer, message),
             details: [],
             followUpQuestion: null,
             shouldAskFollowUp: false,
@@ -9202,7 +9202,7 @@ async function legacyCreateChatResponse(requestBody: ChatRequest, knowledgePath?
           }
         : structuredAnswerForLeadCapture(llm.structuredAnswer || fallbackStructured, leadCapture);
     let answer = renderStructuredAnswer(structuredAnswer, sources, llm.structuredAnswer ? llm.answerMode : answerMode, { message: answerMessage, intent });
-    if (noRetrievalSmallTalk) answer = compactPureSmallTalkAnswer(answer, answerMessage);
+    if (noRetrievalSmallTalk) answer = compactPureSmallTalkAnswer(answer, message);
     const persistedState = stateWithLastAskedQuestion(finalState, structuredAnswer);
 
     insertEvent({
