@@ -4425,6 +4425,16 @@ function companyPracticalDirectAnswer(message: string): DirectAnswerDecision | n
     );
   }
 
+  if (/(pripom|pripomin|pripomína).*(reviz|revíz|servis|prehliad)|(?:reviz|revíz|servis|prehliad).*(pripom|pripomin|pripomína)/.test(text)) {
+    return answerBase(
+      "Pripomenutie servisu alebo revízie",
+      "Pripomenutie pravidelného servisu alebo revízie by som bez potvrdenia nesľuboval ako automatickú službu pre každého zákazníka. Prakticky sa to dá riešiť pri konkrétnej zákazke: potvrdiť zariadenie, interval, kontakt a ďalší termín. Najlepšie je dohodnúť servisný follow-up priamo s Geotherm pri realizácii alebo servise.",
+      "service_revision_reminder",
+      "service_fault",
+      "company-truth prakticke FAQ pravidelny servis revizia pripomenutie termin kontakt Geotherm",
+    );
+  }
+
   if (/(reviz|revíz).*(plyn|plynov)|(?:plyn|plynov).*(reviz|revíz)/.test(text)) {
     return answerBase(
       "Revízie plynu",
@@ -6809,7 +6819,7 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     responseMimeType: "text/plain",
   });
   let cleanedAnswer = composerLlm.error || !composerLlm.content ? "" : cleanAnswerText(composerLlm.content);
-  if (isIncompleteAnswer(cleanedAnswer)) {
+  if (isIncompleteAnswer(cleanedAnswer) && !pureSmallTalkTurn) {
     const repairLlm = await callLlmText({
       systemPrompt: [
         activeComposerSystemPrompt,
@@ -6822,6 +6832,7 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
         ? Number.parseInt(process.env.LLM_ANSWER_TIMEOUT_MS || "10000", 10)
         : Math.min(Number.parseInt(process.env.LLM_FAST_REQUEST_TIMEOUT_MS || "3500", 10), 3500),
       responseMimeType: "text/plain",
+      singleCandidate: false,
     });
     const repairedAnswer = repairLlm.error || !repairLlm.content ? "" : cleanAnswerText(repairLlm.content);
     if (!isIncompleteAnswer(repairedAnswer)) {
@@ -6852,6 +6863,7 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
       maxOutputTokens: 700,
       timeoutMs: Math.min(Math.max(Number.parseInt(process.env.LLM_FAST_REQUEST_TIMEOUT_MS || "5000", 10), 4500), 5500),
       responseMimeType: "text/plain",
+      singleCandidate: false,
     });
     const directRepairedAnswer = directRepairLlm.error || !directRepairLlm.content ? "" : cleanAnswerText(directRepairLlm.content);
     if (!isIncompleteAnswer(directRepairedAnswer)) {
@@ -7078,6 +7090,9 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
       "air_to_water_direction",
       "existing_heat_pump_mounting_ambiguity",
       "annual_maintenance_scope",
+      "winter_work_scope",
+      "nonstop_line_scope",
+      "service_revision_reminder",
     ]);
     const needsDraft =
       forceDraftTopics.has(topic) ||
