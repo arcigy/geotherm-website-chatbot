@@ -7476,7 +7476,7 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     isContactQuestion(message) ||
     explicitOutdoorUnitQuestion ||
     /(dotac|poukazk|prispevok|cena|cenu|kolko|koľko|stoji|stojí|montaz|montáž|realizacia|realizácia|podorys|pôdorys|spustenie|dokumentac|zaruk|záruk|rozdiel|porovn)/.test(routerFallbackText);
-  const pureSmallTalkTurn = isPureSmallTalkMessage(message);
+  const pureSmallTalkTurn = isPureSmallTalkMessage(message) || isLooseSmallTalkMessage(message);
 
   if (pureSmallTalkTurn) {
     route.serviceType = "unknown";
