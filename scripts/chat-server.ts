@@ -2200,7 +2200,7 @@ function isGeneralChatWithoutRetrieval(message: string): boolean {
 function isPureSmallTalkMessage(message: string): boolean {
   const text = normalizePolicyText(message);
   if (/(tc|tepel|cerpad|klimatiz|rekuper|servis|dotac|cena|kontakt|montaz|kuren|chladen|vykurov|kotol|radiator|podlah|nibe|vaillant)/.test(text)) return false;
-  return /^(ahoj|cau|hello|hi|hey|dobry den|dobry vecer|zdravim|ako sa mas|ako sa mate|ako sa ma|ako sa m|dakujem|vdaka|super|ok|kto si|co si zac)$/.test(text) ||
+  return /^(ahoj|cau|hello|hi|hey|dobry den|dobry vecer|zdravim|ako sa mas|ako sa mate|ako sa ma|ako sa m|dakujem|vdaka|dik|diky|super|ok|haha|test|kto si|co si zac)$/.test(text) ||
     /^(ahoj|cau|hello|hi|hey|dobry den|dobry vecer|zdravim)\s+(ako sa mas|ako sa mate|ako sa ma|ako sa m)$/.test(text);
 }
 
@@ -2209,7 +2209,7 @@ function isLooseSmallTalkMessage(message: string): boolean {
   if (text.length > 60) return false;
   if (/(tc|tepel|cerpad|klimatiz|rekuper|servis|dotac|cena|kontakt|montaz|kuren|chladen|vykurov|kotol|radiator|podlah|nibe|vaillant)/.test(text)) return false;
   return /^(ahoj|cau|hello|hi|hey|dobry den|dobry vecer|zdravim)(\s+(ako sa mas|ako sa mate|ako sa ma|ako sa m))?$/.test(text) ||
-    /^(ako sa mas|ako sa mate|ako sa ma|ako sa m)$/.test(text);
+    /^(ako sa mas|ako sa mate|ako sa ma|ako sa m|dakujem|vdaka|dik|diky|super|ok|haha|test|kto si|co si zac)$/.test(text);
 }
 
 function shouldHardClampSmallTalk(message: string): boolean {
@@ -2217,7 +2217,7 @@ function shouldHardClampSmallTalk(message: string): boolean {
   if (text.length > 60) return false;
   if (/(tc|tepel|cerpad|klimatiz|rekuper|servis|dotac|cena|kontakt|montaz|kuren|chladen|vykurov|kotol|radiator|podlah|nibe|vaillant)/.test(text)) return false;
   return /^(ahoj|cau|hello|hi|hey|dobry den|dobry vecer|zdravim)(\s+(ako sa mas|ako sa mate|ako sa ma|ako sa m))?$/.test(text) ||
-    /^(ako sa mas|ako sa mate|ako sa ma|ako sa m)$/.test(text);
+    /^(ako sa mas|ako sa mate|ako sa ma|ako sa m|dakujem|vdaka|dik|diky|super|ok|haha|test|kto si|co si zac)$/.test(text);
 }
 
 function shouldApiClampSmallTalk(message: string): boolean {
@@ -2225,7 +2225,8 @@ function shouldApiClampSmallTalk(message: string): boolean {
   const text = normalizePolicyText(raw);
   if (text.length > 80) return false;
   if (/(tč|\btc\b|tepel|cerpad|klimatiz|rekuper|servis|dotac|cena|kontakt|montaz|kuren|chladen|vykurov|kotol|radiator|podlah|nibe|vaillant)/i.test(raw) || /(tc|tepel|cerpad|klimatiz|rekuper|servis|dotac|cena|kontakt|montaz|kuren|chladen|vykurov|kotol|radiator|podlah|nibe|vaillant)/.test(text)) return false;
-  return /(ahoj|cau|čau|hello|hi|hey|dobry den|dobrý deň|zdravim|zdravím|ako sa m)/i.test(raw) || /(ahoj|cau|hello|hi|hey|dobry den|zdravim|ako sa m)/.test(text);
+  return /(ahoj|cau|čau|hello|hi|hey|dobry den|dobrý deň|zdravim|zdravím|ako sa m|dakujem|ďakujem|vdaka|vďaka|dik|dík|diky|super|ok|haha|test)/i.test(raw) ||
+    /(ahoj|cau|hello|hi|hey|dobry den|zdravim|ako sa m|dakujem|vdaka|dik|diky|super|ok|haha|test)/.test(text);
 }
 
 function pureSmallTalkFallback(message: string): StructuredAnswer {
@@ -2233,10 +2234,12 @@ function pureSmallTalkFallback(message: string): StructuredAnswer {
   const shortAnswer =
     text.includes("ako sa mas") || text.includes("ako sa mate") || text === "ako sa ma" || text === "ako sa m"
       ? "Mám sa dobre, vďaka. Som tu, keď budeš chcieť s niečím pomôcť."
-      : text.includes("dakujem") || text.includes("vdaka")
+      : text.includes("dakujem") || text.includes("vdaka") || text === "dik" || text === "diky"
         ? "Rado sa stalo."
         : text === "ok" || text === "super"
           ? "Jasné."
+          : text === "haha" || text === "test"
+            ? "Jasné, som tu."
           : text.includes("kto si") || text.includes("co si zac")
             ? "Som Geotherm chatbot a pomáham s orientáciou v technických riešeniach domu."
             : "Ahoj, som tu.";

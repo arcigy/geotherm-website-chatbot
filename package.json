@@ -43,6 +43,7 @@
     "audit:provider-resilience": "tsx scripts/audit-provider-resilience.ts",
     "audit:live-question-surface": "tsx scripts/audit-live-question-surface.ts",
     "audit:wordpress-surface": "tsx scripts/audit-wordpress-surface.ts",
+    "audit:small-talk-surface": "tsx scripts/audit-small-talk-surface.ts",
     "preview:embed": "vite dist-embed --host 127.0.0.1 --port 4321",
     "test:embed-ui": "tsx scripts/test-embed-ui.ts",
     "analyze:manual-transcript": "tsx scripts/analyze-debug-transcript.ts",
