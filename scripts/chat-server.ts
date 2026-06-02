@@ -5615,7 +5615,26 @@ function brandModelDirectAnswer(message: string, state: QualificationState): Dir
   const asksVaillant = text.includes("vaillant");
   const asksNibe = text.includes("nibe");
   const asksSplit = /\bsplit\b/.test(text);
+  const asksF2040 = text.includes("f2040");
   const asksF2050 = text.includes("f2050");
+
+  if (asksF2040) {
+    return {
+      triggered: true,
+      answerMode: "brand_model_answer",
+      reason: "direct_nibe_f2040_question",
+      serviceIntent: "brand_model",
+      topic: "F2040_obsolete",
+      retrievalQuery: "company-truth product-facts NIBE F2040 obsolete archivny model aktualne modely Geotherm",
+      answer: [
+        "### NIBE F2040",
+        "",
+        "**NIBE F2040 by som neodporúčal ako aktuálny model pre novú realizáciu.** Ak sa objaví v starších podkladoch, beriem ho ako archívny alebo historický model, nie ako bezpečnú aktuálnu ponuku.",
+        "",
+        "Pre nový návrh by som ostal pri značkách **NIBE alebo Vaillant**, ale konkrétny aktuálny model treba potvrdiť podľa domu, výkonu, TÚV, vykurovacej sústavy a aktuálnej dostupnosti. Praktický ďalší krok je konzultácia alebo nacenenie aktuálnej zostavy.",
+      ].join("\n"),
+    };
+  }
 
   if (asksF2050) {
     return {
@@ -6262,6 +6281,21 @@ function directAnswerDecision(message: string, state: QualificationState, route:
   }
   const currentTurnAsksPrice =
     /(cena|cenu|ceny|cenov|cennik|ponuk|nacen|najlacn|najlacnej|lacne riesenie|lacné riešenie|cheapest|koľko|kolko|stoji|stojí|navratnost|návratnosť|usetr|úspor|uspora|rozpocet|rozpočet|\b5k\b|\b5000\b|5\s*000|zlav|zľav|akci|akciov|vratane instalacie|vrátane inštalácie|7\s*tis|7000|7\s*000|akumulac|akumula|v cene|z coho|z čoho)/.test(text);
+  if (
+    /(dotac|dotác|prispev|príspev|poukaz|podpor)/.test(text) &&
+    /(garant|zaruc|zaruč|isty|istý|iste|odpoc|odpoč|odrat|odrát|zniz|zníž|z ceny|ceny)/.test(text)
+  ) {
+    return {
+      triggered: true,
+      answerMode: "subsidy_answer",
+      reason: "direct_subsidy_guarantee_or_deduction",
+      answer:
+        "### Dotácia a odpočet z ceny\n\nDotáciu by som bez overenia negarantoval a nesľuboval by som ani automatický odpočet z ceny. Pri dotáciách treba najprv preveriť aktuálny program, podmienky, vhodnú technológiu a konkrétnu ponuku.\n\nPraktický ďalší krok je konzultácia s Geotherm: overiť nárok a potom pripraviť nacenenie, kde bude jasné, či a ako sa podpora dá zohľadniť.",
+      serviceIntent: "subsidy",
+      retrievalQuery: "company-truth subsidy dotacie garancia odpocet z ceny podmienky overenie konzultacia Geotherm",
+      topic: "subsidy_guarantee_scope",
+    };
+  }
   if (/(kotol|zariadenie|nibe|vaillant|cerpadlo|čerpadlo).*(chyba|chybu|kod|kód)|(?:chyba|chybu|kod|kód).*(kotol|zariadenie|nibe|vaillant|cerpadlo|čerpadlo)/.test(text)) {
     return {
       triggered: true,
@@ -7853,6 +7887,7 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     if (directDecision.topic && /(boiler|ecotec|eloblock|logamax|buderus|compact)/.test(directDecision.topic)) route.serviceType = "service";
     if (directDecision.topic && /heat_recovery/.test(directDecision.topic)) route.serviceType = "heat_recovery";
     if (directDecision.topic && /ceiling_cooling|bkt/.test(directDecision.topic)) route.serviceType = "ceiling_cooling";
+    if (directDecision.serviceIntent === "service_fault") route.serviceType = "service";
     stateForTurn = {
       ...stateForTurn,
       ...(route.serviceType !== "unknown" ? { service_type: route.serviceType } : {}),
@@ -8054,6 +8089,8 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     "vaillant_boilers",
     "services_overview",
     "heat_pump_brands",
+    "F2040_obsolete",
+    "F2050",
     "gas_leak_safety_scope",
     "initial_heat_pump_short",
     "heat_pump_comfort_scope",
@@ -8135,6 +8172,7 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     "vaillant_anniversary_subsidy_scope",
     "subsidy_general_scope",
     "subsidy_oze_scope",
+    "subsidy_guarantee_scope",
     "subsidy_help_handoff",
     "heating_reconstruction_scope",
     "older_houses_scope",

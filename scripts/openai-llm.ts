@@ -41,6 +41,7 @@ export type AnswerMode =
   | "correction_answer"
   | "handoff_cta"
   | "service_fault_triage"
+  | "subsidy_answer"
   | "ai_fallback";
 
 export type StructuredAnswer = {
