@@ -4425,12 +4425,12 @@ function companyPracticalDirectAnswer(message: string): DirectAnswerDecision | n
     );
   }
 
-  if (/(pripom|pripomin|pripomína).*(reviz|revíz|servis|prehliad)|(?:reviz|revíz|servis|prehliad).*(pripom|pripomin|pripomína)/.test(text)) {
+  if (/(pripom).*(rev|servis|prehliad)|(?:rev|servis|prehliad).*(pripom)/.test(text)) {
     return answerBase(
       "Pripomenutie servisu alebo revízie",
       "Pripomenutie pravidelného servisu alebo revízie by som bez potvrdenia nesľuboval ako automatickú službu pre každého zákazníka. Prakticky sa to dá riešiť pri konkrétnej zákazke: potvrdiť zariadenie, interval, kontakt a ďalší termín. Najlepšie je dohodnúť servisný follow-up priamo s Geotherm pri realizácii alebo servise.",
       "service_revision_reminder",
-      "service_fault",
+      "process",
       "company-truth prakticke FAQ pravidelny servis revizia pripomenutie termin kontakt Geotherm",
     );
   }
@@ -7202,6 +7202,7 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     answer = unsupportedCompanyFactAnswer(message);
   }
   if (
+    directDecision.topic !== "service_revision_reminder" &&
     (route.serviceType === "service" ||
       /servisny smer|servisný smer|zariadenie hlasi chybu|zariadenie hlási chybu|kotly|oprav|poruch|hluk|huci|hučí/.test(normalizePolicyText(answer))) &&
     countQuestionMarks(answer) === 0
