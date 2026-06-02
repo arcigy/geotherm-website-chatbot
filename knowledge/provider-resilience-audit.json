@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-02T16:48:35.633Z",
+  "generatedAt": "2026-06-02T17:16:51.280Z",
   "repeats": 3,
   "maxMs": 8000,
   "attempts": [
@@ -21,7 +21,7 @@
         }
       },
       "run": 1,
-      "ms": 3406,
+      "ms": 2890,
       "llmUsed": true,
       "mode": "general_chat",
       "service": "unknown",
@@ -43,122 +43,6 @@
             "klimatiz",
             "rekuper",
             "servis"
-          ]
-        }
-      },
-      "run": 1,
-      "ms": 2430,
-      "llmUsed": true,
-      "mode": "direct_answer",
-      "service": "unknown",
-      "intent": "general",
-      "sources": 3,
-      "answer": "Nemám dostatočne jasný podklad na túto tému.\n\n### Naše služby\n\nGeotherm ponúka komplexné riešenia pre váš dom, od návrhu až po montáž a servis. Zameriavame sa na moderné technológie ako sú **tepelné čerpadlá**, **klimatizácia** a **rekuperácia**. Realizujeme tiež systémy **podlahového kúrenia**, stropného chladenia, radiátorov, kotlov, vodoinštalácií a fotovoltických či solárnych riešení. Pomôžeme vám aj s orientáciou v možnostiach dotácií. Ak máte záujem o konkrétne riešenie, radi vám poradíme.",
-      "failures": []
-    },
-    {
-      "scenario": {
-        "id": "vague_heat_pump_followup",
-        "messages": [
-          "Ahoj, chcem tč"
-        ],
-        "expectLast": {
-          "serviceType": "heat_pump",
-          "serviceIntent": "recommendation",
-          "minSources": 1,
-          "mustContain": [
-            "vzduch-voda"
-          ],
-          "requireQuestion": true
-        }
-      },
-      "run": 1,
-      "ms": 1944,
-      "llmUsed": true,
-      "mode": "qualification_question",
-      "service": "heat_pump",
-      "intent": "recommendation",
-      "sources": 3,
-      "answer": "### Predbežný smer\n\nNajčastejšie sa pri rodinných domoch začína pri tepelnom čerpadle **vzduch-voda**. Ak ide o novostavbu s podlahovým kúrením, býva to veľmi vhodný smer; pri staršom dome s radiátormi treba najprv overiť potrebnú teplotu vody a výkon radiátorov.\n\nAby som ťa zaradil správne, napíš mi:\n1. je to novostavba alebo starší dom.\n2. koľko m2 chceš vykurovať.\n3. máš radiátory alebo podlahové kúrenie?",
-      "failures": []
-    },
-    {
-      "scenario": {
-        "id": "old_house_radiators_verdict",
-        "messages": [
-          "Ahoj, chcem tč",
-          "Starší 140m radiátory"
-        ],
-        "expectLast": {
-          "serviceType": "heat_pump",
-          "serviceIntent": "recommendation",
-          "minSources": 1,
-          "mustContain": [
-            "radi",
-            "vzduch-voda"
-          ]
-        }
-      },
-      "run": 1,
-      "ms": 2681,
-      "llmUsed": true,
-      "mode": "diagnostic_verdict",
-      "service": "heat_pump",
-      "intent": "recommendation",
-      "sources": 3,
-      "answer": "### Starší dom s radiátormi\n\nPre starší dom s radiátormi zvažujeme tepelné čerpadlo **vzduch-voda**, ktoré je vhodné pre radiátorový systém. Pri radiátoroch je kľúčové overiť potrebnú teplotu vody a výkon radiátorov.\n\nTypicky sa rieši vonkajšia jednotka, hydraulické zapojenie a regulácia. V závislosti od návrhu môže byť potrebné zohľadniť aj ohrev TÚV alebo akumulačnú nádrž. Ďalším krokom by bola konzultácia alebo nacenenie na základe fotografií vašej kotolne a súčasného zdroja tepla.",
-      "failures": []
-    },
-    {
-      "scenario": {
-        "id": "new_build_closure_models_cta",
-        "messages": [
-          "aké tč máte?",
-          "novostavba 120m",
-          "podlahovku",
-          "5 osôb, áno plánujem chladenie"
-        ],
-        "expectLast": {
-          "serviceType": "heat_pump",
-          "serviceIntent": "recommendation",
-          "minSources": 1,
-          "mustContain": [
-            "S2125",
-            "aroTHERM"
-          ],
-          "mustNotContain": [
-            "tepelná strata",
-            "energetický certifikát"
-          ],
-          "requireMeetingCta": true
-        }
-      },
-      "run": 1,
-      "ms": 4478,
-      "llmUsed": true,
-      "mode": "recommendation_closure",
-      "service": "heat_pump",
-      "intent": "recommendation",
-      "sources": 3,
-      "answer": "### Predbežné uzavretie odporúčania\n\nPodľa toho, čo píšeš, by som to už uzavrel: **najlepší smer je tepelné čerpadlo vzduch-voda pre novostavbu s nízkoteplotným podlahovým kúrením** pri dome približne 120 m², so zásobníkom TÚV dimenzovaným pre 5 osôb.\n\nDáva to zmysel preto, že podlahovka pracuje s nízkou teplotou vody a tepelnému čerpadlu to vyhovuje. Keďže chceš aj chladenie, nerátal by som automaticky s tým, že samotná podlahovka bude stačiť. Chladenie by som nacenil ako samostatný variant: stropné chladenie, fancoily alebo klimatizácia podľa toho, aký komfort v lete chceš.\n\n**Pozrel by som sa na tieto možnosti:**\n1. **Vaillant aroTHERM plus** ako moderné vzduch-voda riešenie pre podlahové kúrenie a TÚV.\n2. **Vaillant aroTHERM Split** ako splitové riešenie, ak bude lepšie sedieť technickému umiestneniu.\n3. **NIBE vzduch-voda riešenie, napríklad S2125**, ak bude podľa aktuálnej ponuky a konfigurácie vhodné pre dom.\n\nĎalší krok by som už nerobil ďalším dotazníkom. Dajme si krátku konzultáciu alebo stretnutie, kde sa vyberú 2-3 konkrétne zostavy, preverí sa TÚV a chladenie a pripraví sa nacenenie.",
-      "failures": []
-    },
-    {
-      "scenario": {
-        "id": "third_party_service_cautious",
-        "messages": [
-          "Viete spraviť servis aj cudzej montáže?"
-        ],
-        "expectLast": {
-          "serviceType": "service",
-          "serviceIntent": "service_fault",
-          "minSources": 1,
-          "mustContain": [
-            "potvr"
-          ],
-          "mustNotContain": [
-            "určite áno",
-            "servisujeme cudzie"
           ]
         }
       },
@@ -166,6 +50,122 @@
       "ms": 2122,
       "llmUsed": true,
       "mode": "direct_answer",
+      "service": "unknown",
+      "intent": "general",
+      "sources": 3,
+      "answer": "Nemám dostatočne jasný podklad na túto tému.\n\n### Služby Geotherm\n\nGeotherm ponúka komplexné riešenia pre váš dom, od návrhu až po montáž a servis. Zameriavame sa na moderné technológie ako sú tepelné čerpadlá, klimatizácie, rekuperácia, podlahové kúrenie a stropné chladenie. Ponúkame aj riešenia pre radiátory, kotly, rozvody vody, fotovoltiku a solárne systémy. Radi vám pomôžeme aj s orientáciou v možnostiach dotácií. Ak máte záujem o konkrétne riešenie, či už ide o kúrenie, chladenie, vetranie, servis alebo kompletné riešenie domu, radi vám poradíme.",
+      "failures": []
+    },
+    {
+      "scenario": {
+        "id": "vague_heat_pump_followup",
+        "messages": [
+          "Ahoj, chcem tč"
+        ],
+        "expectLast": {
+          "serviceType": "heat_pump",
+          "serviceIntent": "recommendation",
+          "minSources": 1,
+          "mustContain": [
+            "vzduch-voda"
+          ],
+          "requireQuestion": true
+        }
+      },
+      "run": 1,
+      "ms": 3087,
+      "llmUsed": true,
+      "mode": "qualification_question",
+      "service": "heat_pump",
+      "intent": "recommendation",
+      "sources": 3,
+      "answer": "### Predbežný smer\n\nNajčastejšie sa pri rodinných domoch začína pri tepelnom čerpadle **vzduch-voda**. Ak ide o novostavbu s podlahovým kúrením, býva to veľmi vhodný smer; pri staršom dome s radiátormi treba najprv overiť potrebnú teplotu vody a výkon radiátorov.\n\nAby som ťa zaradil správne, napíš mi:\n1. je to novostavba alebo starší dom.\n2. koľko m2 chceš vykurovať.\n3. máš radiátory alebo podlahové kúrenie?",
+      "failures": []
+    },
+    {
+      "scenario": {
+        "id": "old_house_radiators_verdict",
+        "messages": [
+          "Ahoj, chcem tč",
+          "Starší 140m radiátory"
+        ],
+        "expectLast": {
+          "serviceType": "heat_pump",
+          "serviceIntent": "recommendation",
+          "minSources": 1,
+          "mustContain": [
+            "radi",
+            "vzduch-voda"
+          ]
+        }
+      },
+      "run": 1,
+      "ms": 2407,
+      "llmUsed": true,
+      "mode": "diagnostic_verdict",
+      "service": "heat_pump",
+      "intent": "recommendation",
+      "sources": 3,
+      "answer": "### Starší dom s radiátormi\n\nPre starší dom s radiátormi zvažujeme tepelné čerpadlo **vzduch-voda**, ktoré je vhodné pre radiátorový systém. Pri radiátoroch je dôležité overiť ich výkon a potrebnú teplotu vody.\n\nTypicky sa rieši vonkajšia jednotka, hydraulické zapojenie a regulácia. V závislosti od návrhu môžeme zvážiť aj ohrev TÚV alebo akumulačnú nádrž. Ďalším krokom by bola konzultácia alebo nacenenie na základe fotiek vašej kotolne a aktuálneho zdroja tepla.",
+      "failures": []
+    },
+    {
+      "scenario": {
+        "id": "new_build_closure_models_cta",
+        "messages": [
+          "aké tč máte?",
+          "novostavba 120m",
+          "podlahovku",
+          "5 osôb, áno plánujem chladenie"
+        ],
+        "expectLast": {
+          "serviceType": "heat_pump",
+          "serviceIntent": "recommendation",
+          "minSources": 1,
+          "mustContain": [
+            "S2125",
+            "aroTHERM"
+          ],
+          "mustNotContain": [
+            "tepelná strata",
+            "energetický certifikát"
+          ],
+          "requireMeetingCta": true
+        }
+      },
+      "run": 1,
+      "ms": 3228,
+      "llmUsed": true,
+      "mode": "recommendation_closure",
+      "service": "heat_pump",
+      "intent": "recommendation",
+      "sources": 3,
+      "answer": "### Predbežné uzavretie odporúčania\n\nPodľa toho, čo píšeš, by som to už uzavrel: **najlepší smer je tepelné čerpadlo vzduch-voda pre novostavbu s nízkoteplotným podlahovým kúrením** pri dome približne 120 m², so zásobníkom TÚV dimenzovaným pre 5 osôb.\n\nDáva to zmysel preto, že podlahovka pracuje s nízkou teplotou vody a tepelnému čerpadlu to vyhovuje. Keďže chceš aj chladenie, nerátal by som automaticky s tým, že samotná podlahovka bude stačiť. Chladenie by som nacenil ako samostatný variant: stropné chladenie, fancoily alebo klimatizácia podľa toho, aký komfort v lete chceš.\n\n**Pozrel by som sa na tieto možnosti:**\n1. **Vaillant aroTHERM plus** ako moderné vzduch-voda riešenie pre podlahové kúrenie a TÚV.\n2. **Vaillant aroTHERM Split** ako splitové riešenie, ak bude lepšie sedieť technickému umiestneniu.\n3. **NIBE vzduch-voda riešenie, napríklad S2125**, ak bude podľa aktuálnej ponuky a konfigurácie vhodné pre dom.\n\nĎalší krok by som už nerobil ďalším dotazníkom. Dajme si krátku konzultáciu alebo stretnutie, kde sa vyberú 2-3 konkrétne zostavy, preverí sa TÚV a chladenie a pripraví sa nacenenie.",
+      "failures": []
+    },
+    {
+      "scenario": {
+        "id": "third_party_service_cautious",
+        "messages": [
+          "Viete spraviť servis aj cudzej montáže?"
+        ],
+        "expectLast": {
+          "serviceType": "service",
+          "serviceIntent": "service_fault",
+          "minSources": 1,
+          "mustContain": [
+            "potvr"
+          ],
+          "mustNotContain": [
+            "určite áno",
+            "servisujeme cudzie"
+          ]
+        }
+      },
+      "run": 1,
+      "ms": 2442,
+      "llmUsed": true,
+      "mode": "direct_answer",
       "service": "service",
       "intent": "service_fault",
       "sources": 3,
@@ -190,13 +190,13 @@
         }
       },
       "run": 1,
-      "ms": 2111,
+      "ms": 2153,
       "llmUsed": true,
       "mode": "price_answer",
       "service": "heat_pump",
       "intent": "price",
       "sources": 3,
-      "answer": "Bez výslovnej položky v konkrétnej ponuke akumulačnú nádrž nepovažuj za zahrnutú súčasť rozsahu. Jej potreba a rozsah musia byť špecifikované v konkrétnej ponuke. Pri cene 7000 eur je dôležité overiť, či ide o cenu samotného zariadenia, alebo o kompletnú realizáciu vrátane montáže a ostatných prác.",
+      "answer": "Nie je bezpečné tvrdiť, že akumulačná nádrž je automaticky zahrnutá v cene. Musí to byť uvedené v konkrétnej ponuke. Pri cene 7000 eur by som si overil, či ide o cenu samotného zariadenia, alebo o kompletnú realizáciu vrátane montáže, regulácie, TÚV, elektroprác a prípadnej akumulačnej nádrže.\n\nPotrebujete ešte upresniť, aký typ vykurovania máte teraz a aká je vaša ročná spotreba energie?",
       "failures": []
     },
     {
@@ -217,7 +217,7 @@
         }
       },
       "run": 1,
-      "ms": 2242,
+      "ms": 2478,
       "llmUsed": true,
       "mode": "direct_answer",
       "service": "subsidy",
@@ -242,7 +242,7 @@
         }
       },
       "run": 1,
-      "ms": 3084,
+      "ms": 2777,
       "llmUsed": true,
       "mode": "direct_answer",
       "service": "heat_pump",
@@ -267,7 +267,7 @@
         }
       },
       "run": 1,
-      "ms": 2404,
+      "ms": 2410,
       "llmUsed": true,
       "mode": "direct_answer",
       "service": "complex_solution",
@@ -292,7 +292,7 @@
         }
       },
       "run": 1,
-      "ms": 1826,
+      "ms": 2347,
       "llmUsed": true,
       "mode": "direct_answer",
       "service": "unknown",
@@ -316,7 +316,7 @@
         }
       },
       "run": 1,
-      "ms": 2261,
+      "ms": 2419,
       "llmUsed": true,
       "mode": "direct_answer",
       "service": "air_conditioning",
@@ -343,7 +343,7 @@
         }
       },
       "run": 2,
-      "ms": 3146,
+      "ms": 2888,
       "llmUsed": true,
       "mode": "general_chat",
       "service": "unknown",
@@ -369,13 +369,13 @@
         }
       },
       "run": 2,
-      "ms": 2359,
+      "ms": 2269,
       "llmUsed": true,
       "mode": "direct_answer",
       "service": "unknown",
       "intent": "general",
       "sources": 3,
-      "answer": "Nemám dostatočne jasný podklad na túto tému.\n\n### Naše služby\n\nGeotherm ponúka komplexné riešenia pre váš dom, od návrhu až po montáž a servis. Zameriavame sa na moderné technológie ako sú **tepelné čerpadlá**, **klimatizácia**, **rekuperácia** či **podlahové kúrenie**. Poskytujeme tiež riešenia pre stropné chladenie, radiátory, kotly, vodoinštalácie, fotovoltiku a solárne systémy. Pomôžeme vám s orientáciou v možnostiach dotácií. Ak máte záujem o konkrétne riešenie, radi vám poradíme.",
+      "answer": "Nemám dostatočne jasný podklad na túto tému.\n\n### Naše služby\n\nGeotherm ponúka komplexné riešenia pre váš dom, od návrhu až po montáž a servis. Zameriavame sa na moderné technológie ako sú **tepelné čerpadlá**, **klimatizácia**, **rekuperácia** či **podlahové kúrenie**. Poskytujeme aj riešenia pre stropné chladenie, radiátory, kotly, rozvody vody, fotovoltiku a solárne systémy. Radi vám pomôžeme aj s orientáciou v možnostiach dotácií. Ak máte záujem o konkrétne riešenie, radi vám poradíme.",
       "failures": []
     },
     {
@@ -395,7 +395,7 @@
         }
       },
       "run": 2,
-      "ms": 2004,
+      "ms": 2187,
       "llmUsed": true,
       "mode": "qualification_question",
       "service": "heat_pump",
@@ -422,13 +422,13 @@
         }
       },
       "run": 2,
-      "ms": 2783,
+      "ms": 2260,
       "llmUsed": true,
       "mode": "diagnostic_verdict",
       "service": "heat_pump",
       "intent": "recommendation",
       "sources": 3,
-      "answer": "### Starší dom s radiátormi\n\nPre starší dom s radiátormi zvažujeme tepelné čerpadlo **vzduch-voda**, ktoré je vhodné pre radiátorové systémy. Dôležité je overiť potrebnú teplotu vody, výkon radiátorov a stav vašej kotolne.\n\nTypicky sa rieši vonkajšia jednotka, hydraulické zapojenie a regulácia. V prípade záujmu je možná krátka konzultácia alebo nacenenie na základe fotografií vašej kotolne a aktuálneho zdroja tepla.",
+      "answer": "### Predbežný verdikt\n\nPri staršom alebo existujúcom dome s radiátormi pri dome cca 140 m² by som predbežne riešil tepelné čerpadlo **vzduch-voda vhodné pre radiátorový systém**. Dôležité je overiť, či radiátory vykúria dom aj pri nižšej teplote vody, alebo či bude treba upraviť časť vykurovania.\n\nPred finálnym návrhom treba poznať aktuálny zdroj tepla, zateplenie a aspoň orientačnú spotrebu alebo náhradný odhad.\n\nČím kúriš teraz a je dom zateplený?",
       "failures": []
     },
     {
@@ -456,7 +456,7 @@
         }
       },
       "run": 2,
-      "ms": 4712,
+      "ms": 4965,
       "llmUsed": true,
       "mode": "recommendation_closure",
       "service": "heat_pump",
@@ -485,7 +485,7 @@
         }
       },
       "run": 2,
-      "ms": 2496,
+      "ms": 2434,
       "llmUsed": true,
       "mode": "direct_answer",
       "service": "service",
@@ -512,13 +512,13 @@
         }
       },
       "run": 2,
-      "ms": 2363,
+      "ms": 2445,
       "llmUsed": true,
       "mode": "price_answer",
       "service": "heat_pump",
       "intent": "price",
       "sources": 3,
-      "answer": "Pri cene 7 tisíc eur je potrebné overiť, či ide o cenu samotného zariadenia, alebo o kompletnú realizáciu vrátane montáže, regulácie, elektroprác a prípadnej akumulačnej nádrže.Bez výslovnej položky v konkrétnej ponuke akumulačnú nádrž nepovažuj za zahrnutú súčasť rozsahu.\n\nPotrebujete ešte upresniť, akým spôsobom v súčasnosti vykurujete a akú máte ročnú spotrebu energie?",
+      "answer": "Bez výslovnej položky v konkrétnej ponuke akumulačnú nádrž nepovažuj za zahrnutú súčasť rozsahu. Jej potreba závisí od konkrétneho systému a vykurovacích telies (napr. pri starších radiátoroch môže byť potrebná). Vždy si overte v konkrétnej ponuke, či je akumulačná nádrž súčasťou dodávky a montáže. Pri cene 7000 eur je dôležité rozlišovať, či ide o cenu samotného zariadenia, alebo o kompletnú realizáciu vrátane všetkých prác a príslušenstva.",
       "failures": []
     },
     {
@@ -539,7 +539,7 @@
         }
       },
       "run": 2,
-      "ms": 2714,
+      "ms": 2408,
       "llmUsed": true,
       "mode": "direct_answer",
       "service": "subsidy",
@@ -564,7 +564,7 @@
         }
       },
       "run": 2,
-      "ms": 2729,
+      "ms": 2663,
       "llmUsed": true,
       "mode": "direct_answer",
       "service": "heat_pump",
@@ -589,7 +589,7 @@
         }
       },
       "run": 2,
-      "ms": 2253,
+      "ms": 2320,
       "llmUsed": true,
       "mode": "direct_answer",
       "service": "complex_solution",
@@ -614,7 +614,7 @@
         }
       },
       "run": 2,
-      "ms": 2444,
+      "ms": 2284,
       "llmUsed": true,
       "mode": "direct_answer",
       "service": "unknown",
@@ -638,7 +638,7 @@
         }
       },
       "run": 2,
-      "ms": 2284,
+      "ms": 2349,
       "llmUsed": true,
       "mode": "direct_answer",
       "service": "air_conditioning",
@@ -665,7 +665,7 @@
         }
       },
       "run": 3,
-      "ms": 2560,
+      "ms": 2875,
       "llmUsed": true,
       "mode": "general_chat",
       "service": "unknown",
@@ -691,13 +691,13 @@
         }
       },
       "run": 3,
-      "ms": 2199,
+      "ms": 2314,
       "llmUsed": true,
       "mode": "direct_answer",
       "service": "unknown",
       "intent": "general",
       "sources": 3,
-      "answer": "Nemám dostatočne jasný podklad na túto tému.\n\n### Naše služby\n\nGeotherm ponúka komplexné riešenia pre váš dom, od návrhu až po montáž a servis. Zameriavame sa na moderné technológie ako sú **tepelné čerpadlá**, **klimatizácia**, **rekuperácia** či **podlahové kúrenie**. Poskytujeme tiež riešenia pre stropné chladenie, radiátory, kotly, rozvody vody, fotovoltiku a solárne systémy. Radi vám pomôžeme aj s orientáciou v možnostiach dotácií.",
+      "answer": "Nemám dostatočne jasný podklad na túto tému.\n\n### Služby Geotherm\n\nGeotherm ponúka komplexné riešenia pre váš dom, od návrhu až po montáž a servis. Zameriavame sa na moderné technológie ako sú tepelné čerpadlá, klimatizácie, rekuperácia, podlahové kúrenie a stropné chladenie. Ponúkame aj riešenia pre radiátory, kotly, rozvody vody, fotovoltiku či solárne systémy. Pomôžeme vám zorientovať sa v možnostiach dotácií. Ak máte záujem o konkrétne riešenie, či už ide o kúrenie, chladenie, vetranie, servis alebo kompletné riešenie domu, radi vám poradíme.",
       "failures": []
     },
     {
@@ -717,7 +717,7 @@
         }
       },
       "run": 3,
-      "ms": 1941,
+      "ms": 2256,
       "llmUsed": true,
       "mode": "qualification_question",
       "service": "heat_pump",
@@ -744,7 +744,7 @@
         }
       },
       "run": 3,
-      "ms": 2361,
+      "ms": 2281,
       "llmUsed": true,
       "mode": "diagnostic_verdict",
       "service": "heat_pump",
@@ -778,7 +778,7 @@
         }
       },
       "run": 3,
-      "ms": 5524,
+      "ms": 3942,
       "llmUsed": true,
       "mode": "recommendation_closure",
       "service": "heat_pump",
@@ -807,7 +807,7 @@
         }
       },
       "run": 3,
-      "ms": 2879,
+      "ms": 2395,
       "llmUsed": true,
       "mode": "direct_answer",
       "service": "service",
@@ -834,13 +834,13 @@
         }
       },
       "run": 3,
-      "ms": 2891,
+      "ms": 2563,
       "llmUsed": true,
       "mode": "price_answer",
       "service": "heat_pump",
       "intent": "price",
       "sources": 3,
-      "answer": "Pri cene 7 tisíc eur je potrebné overiť, či ide o cenu samotného zariadenia, alebo o kompletnú realizáciu vrátane montáže, regulácie, elektroprác a prípadnej akumulačnej nádrže.Bez výslovnej položky v konkrétnej ponuke akumulačnú nádrž nepovažuj za zahrnutú súčasť rozsahu. Musí byť uvedená v ponuke.",
+      "answer": "Pri cene 7 tisíc eur je potrebné overiť, či ide len o samotné zariadenie, alebo o kompletnú realizáciu vrátane montáže, regulácie, TÚV a prípadnej akumulačnej nádrže.Bez výslovnej položky v konkrétnej ponuke akumulačnú nádrž nepovažuj za zahrnutú súčasť rozsahu.\n\nPotrebujete tepelné čerpadlo do novostavby alebo staršieho domu s radiátormi?",
       "failures": []
     },
     {
@@ -861,7 +861,7 @@
         }
       },
       "run": 3,
-      "ms": 2941,
+      "ms": 2808,
       "llmUsed": true,
       "mode": "direct_answer",
       "service": "subsidy",
@@ -886,7 +886,7 @@
         }
       },
       "run": 3,
-      "ms": 2935,
+      "ms": 3214,
       "llmUsed": true,
       "mode": "direct_answer",
       "service": "heat_pump",
@@ -911,7 +911,7 @@
         }
       },
       "run": 3,
-      "ms": 2569,
+      "ms": 2190,
       "llmUsed": true,
       "mode": "direct_answer",
       "service": "complex_solution",
@@ -936,7 +936,7 @@
         }
       },
       "run": 3,
-      "ms": 2450,
+      "ms": 2543,
       "llmUsed": true,
       "mode": "direct_answer",
       "service": "unknown",
@@ -960,7 +960,7 @@
         }
       },
       "run": 3,
-      "ms": 2439,
+      "ms": 2291,
       "llmUsed": true,
       "mode": "direct_answer",
       "service": "air_conditioning",

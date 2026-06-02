@@ -259,6 +259,161 @@ const scenarios: Scenario[] = [
       },
     ],
   },
+  {
+    id: "messy_heat_pump_price_contact_paraphrase",
+    title: "Parafrazy TČ flowu, cena, akumulacka a prechod na konzultaciu",
+    turns: [
+      {
+        message: "cafte, riesim cerpadlo ale neviem ci to dava zmysel",
+        expect: {
+          service: "heat_pump",
+          intent: "recommendation",
+          anyOf: ["cerpad", "vzduch", "voda", "dom", "vykurov"],
+          maxQuestions: 3,
+        },
+      },
+      {
+        message: "dom je starsi asi 130m2, radiatory, plyn",
+        expect: {
+          service: "heat_pump",
+          intent: "recommendation",
+          anyOf: ["radiator", "plyn", "teplot", "vykon", "vzduch"],
+          maxQuestions: 2,
+        },
+      },
+      {
+        message: "nechcem dalsi dotaznik, co teda navrhujete",
+        expect: {
+          service: "heat_pump",
+          intent: "recommendation",
+          anyOf: ["vzduch", "voda", "radiator", "konzult", "nacen", "stretn"],
+          forbidden: ["energeticky certifikat", "tepelnu stratu", "dalsi dotaznik"],
+          maxQuestions: 1,
+        },
+      },
+      {
+        message: "ok a rovno cenovo + ci treba aku nadrz",
+        expect: {
+          service: "heat_pump",
+          intent: "price",
+          anyOf: ["cena", "akumul", "ponuk", "nacen", "rozsah"],
+          forbidden: ["akumulacna nadrz je v cene", "presna cena je"],
+          maxQuestions: 1,
+        },
+      },
+      {
+        message: "tak si dajme konzultaciu",
+        expect: {
+          service: "heat_pump",
+          intent: ["contact", "inspection", "quote", "recommendation"],
+          anyOf: ["konzult", "kontakt", "telefon", "email", "nacen", "stretn"],
+          maxQuestions: 1,
+        },
+      },
+    ],
+  },
+  {
+    id: "messy_complex_paraphrase_switches",
+    title: "Komplexne riesenie domu s prepinanim medzi kurenim, vetranim a chladenim",
+    turns: [
+      {
+        message: "potrebujem do novostavby kurenie aj vzduch aj v lete chlad",
+        expect: {
+          service: "complex_solution",
+          intent: "recommendation",
+          anyOf: ["kuren", "vetr", "chladen", "komplex", "cerpad", "rekuper"],
+          maxQuestions: 2,
+        },
+      },
+      {
+        message: "120m2 podlahovka 4 ludia",
+        expect: {
+          service: ["complex_solution", "heat_pump"],
+          anyOf: ["podlah", "120", "cerpad", "rekuper", "chladen"],
+          maxQuestions: 2,
+        },
+      },
+      {
+        message: "a rekuperacia musi byt vsade?",
+        expect: {
+          service: ["heat_recovery", "complex_solution"],
+          anyOf: ["rekuper", "cely dom", "miestnost", "rozvod", "vetr"],
+          maxQuestions: 2,
+        },
+      },
+      {
+        message: "stropne chladenie je lepsie ako klima?",
+        expect: {
+          service: ["ceiling_cooling", "complex_solution"],
+          intent: ["comparison", "recommendation"],
+          anyOf: ["strop", "klimatiz", "chladen", "vlhk", "rosn"],
+          forbidden: ["automaticky nahradi klimatizaciu"],
+          maxQuestions: 1,
+        },
+      },
+      {
+        message: "zhrn co by ste riesili a uz ma posunte dalej",
+        expect: {
+          service: ["complex_solution", "ceiling_cooling", "heat_recovery"],
+          anyOf: ["cerpad", "rekuper", "chladen", "konzult", "nacen", "stretn"],
+          maxQuestions: 1,
+        },
+      },
+    ],
+  },
+  {
+    id: "service_vague_no_model_contact_paraphrase",
+    title: "Vagny servis bez modelu, lokalita a kontakt",
+    turns: [
+      {
+        message: "nieco mi huci v kotolni",
+        expect: {
+          service: "service",
+          intent: "service_fault",
+          anyOf: ["hluk", "huci", "model", "servis", "technik"],
+          maxQuestions: 2,
+        },
+      },
+      {
+        message: "neviem typ, je to stare",
+        expect: {
+          service: "service",
+          intent: "service_fault",
+          anyOf: ["stitok", "fotk", "model", "servis", "technik"],
+          maxQuestions: 2,
+        },
+      },
+      {
+        message: "nebudem to rozoberat, chcem nech pride niekto",
+        expect: {
+          service: "service",
+          intent: ["service_fault", "contact", "inspection"],
+          anyOf: ["servis", "technik", "kontakt", "lokalit"],
+          forbidden: ["rozoberte"],
+          maxQuestions: 2,
+        },
+      },
+      {
+        message: "Nitra",
+        expect: {
+          service: "service",
+          anyOf: ["nitra", "servis", "kontakt", "technik"],
+          maxQuestions: 2,
+        },
+      },
+      {
+        message: "Marek Test, 0903123456",
+        expect: {
+          service: "service",
+          anyOf: ["kontakt", "servis", "ozv", "technik"],
+          leadCaptured: true,
+          minLeadScore: 70,
+          leadStatus: ["service_requested", "contact_captured", "qualified"],
+          maxQuestions: 1,
+        },
+      },
+    ],
+  },
 ];
 
 function normalize(value: string): string {

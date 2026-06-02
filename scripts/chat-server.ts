@@ -717,6 +717,7 @@ function detectSafetyRoute(message: string): SafetyRoute {
   const guarantee = hasAny(["garant", "zarucit", "zarucite", "urcite"]);
   const exact = hasAny(["presne", "presnu", "presny", "konkretnu", "kolko presne"]);
   const asksElectricConsumption = hasAny(["spotreb", "zere", "kolko elektriny", "uct", "naklad", "mesac", "plati"]);
+  const userRefusesDisassembly = /(nebudem|nechcem|nejdem|neidem).{0,30}(rozobra|rozobrat|rozoberat|otvorit)/.test(text);
 
   let reason: string | null = null;
   let intent: SalesIntent = "service";
@@ -727,7 +728,7 @@ function detectSafetyRoute(message: string): SafetyRoute {
     reason = "pressure";
   } else if (hasAny(["chladivo", "freon", "unik chladiva", "unika chladivo"])) {
     reason = "refrigerant";
-  } else if (hasAny(["rozobra", "rozobrat", "rozoberat", "otvorit jednotku", "vonkajsiu jednotku"])) {
+  } else if (!userRefusesDisassembly && hasAny(["rozobra", "rozobrat", "rozoberat", "otvorit jednotku", "vonkajsiu jednotku"])) {
     reason = "disassembly";
   } else if (
     hasFaultOrLeakSignal() &&
@@ -2462,7 +2463,7 @@ function inferServiceRoute(message: string, state: QualificationState, history: 
   const hasExplicitServiceSignal =
     heatPumpAbbreviation ||
     outdoorUnitPlacement ||
-    /(tepelne cerpad|heat pump|cerpadl|klimatiz|rekuper|vetran|podlahov|strop.*chladen|servis|porucha|dotac|subsidy|poukaz|prispev|plyn|plynov|kotol|radiator|vykurov|kurenie|topeni|topenie)/.test(text);
+    /(tepelne cerpad|heat pump|cerpadl|klimatiz|rekuper|vetran|podlahov|strop.*chladen|servis|porucha|chyb|kod|kód|\bf\d{2,3}\b|dotac|subsidy|poukaz|prispev|plyn|plynov|kotol|radiator|vykurov|kurenie|topeni|topenie|konzult|stretn|meeting|termin|termín)/.test(text);
   const slotOnlyReply =
     !hasExplicitServiceSignal &&
     previousService !== "unknown" &&
@@ -2486,8 +2487,10 @@ function inferServiceRoute(message: string, state: QualificationState, history: 
     (complexSignalCount >= 2 && /(novostav|cely system|cel[ey] dom|usporn[ey] riesenie|technicke riesenie|komplex|spolu|\baj\b)/.test(combined));
   const serviceType: ServiceType =
     slotOnlyReply
-      ? previousService
-      : /(servis|porucha|chyba|diagnostik|revizi|udrzb|údržb|nekuri|nefunguje|hlasi|hlási|tlak|huci|hučí|hluk|hlucnost)/.test(text)
+      ? previousIntent === "service_fault"
+        ? "service"
+        : previousService
+      : /(servis|porucha|chyb|kod|kód|\bf\d{2,3}\b|diagnostik|revizi|udrzb|údržb|nekuri|nefunguje|hlasi|hlási|tlak|huci|hučí|hluk|hlucnost)/.test(text)
       ? "service"
       : /(dotac|subsidy|poukazk|prispevok|zelen[ae] domacnost)/.test(text)
         ? "subsidy"
@@ -2519,11 +2522,11 @@ function inferServiceRoute(message: string, state: QualificationState, history: 
       ? previousIntent
       : isServiceAreaQuestion(message) || /(pridete|chodite|dojdete|vyjazd|lokalit|mesto|okres|som z|sme z|v bratislave|v kosiciach)/.test(text)
       ? "location"
-      : /(kontakt|kontaktovat|telefon|email|e-mail|ako vas|kde vas|najdem)/.test(text)
+      : /(kontakt|kontaktovat|telefon|email|e-mail|ako vas|kde vas|najdem|konzult|stretn|meeting|termin|termín)/.test(text)
         ? "contact"
       : /(cena|cenu|cennik|kolko|koľko|stoji|stojí|rozpocet|rozpočet|ponuk)/.test(text)
         ? "price"
-        : /(porucha|chyba|nekuri|nefunguje|hlasi|hlási|diagnostik|servis|tlak|huci|hučí|hluk|hlucnost)/.test(text)
+        : /(porucha|chyb|kod|kód|\bf\d{2,3}\b|nekuri|nefunguje|hlasi|hlási|diagnostik|servis|tlak|huci|hučí|hluk|hlucnost)/.test(text)
           ? "service_fault"
           : /(dotac|subsidy|poukazk|prispevok)/.test(text)
             ? "subsidy"
@@ -2593,7 +2596,7 @@ function serviceCardSummary(serviceType: ServiceType): string {
     floor_heating:
       "Service card podlahové kúrenie: minimálne údaje sú novostavba/rekonštrukcia, plocha a zdroj tepla. Pri novostavbe je vhodné pre nízkoteplotné systémy a tepelné čerpadlo. Pri rekonštrukcii treba overiť skladbu podlahy a stavebné možnosti.",
     ceiling_cooling:
-      "Service card stropné chladenie: minimálne údaje sú novostavba/rekonštrukcia, rozsah chladenia a projekt. Je komfortné a skryté, ale musí byť navrhnuté projektovo s reguláciou a vlhkosťou. Nesľubuj, že automaticky nahradí klimatizáciu bez projektu.",
+      "Service card stropné chladenie: minimálne údaje sú novostavba/rekonštrukcia, rozsah chladenia a projekt. Je komfortné a skryté, ale musí byť navrhnuté projektovo s reguláciou a vlhkosťou. Neprezentuj ho ako plnú náhradu klimatizácie v každom dome bez projektu.",
     service:
       "Service card servis: minimálne údaje sú značka, model alebo fotka štítku, chybový kód/problém a lokalita. Pri poruche si vypýtaj servisné údaje a neposkytuj nebezpečné technické návody. Servis cudzích montáží treba potvrdiť.",
     subsidy:
@@ -3421,6 +3424,9 @@ function inferExistingRadiatorState(state: QualificationState, message: string, 
 
 function requiresHardVerdict(state: QualificationState, route: Pick<ServiceRoute, "serviceType" | "serviceIntent">, message: string): boolean {
   const inferredState = inferExistingRadiatorState(state, message, route.serviceType);
+  const currentService = normalizeServiceType(route.serviceType, "unknown");
+  if (["air_conditioning", "heat_recovery", "floor_heating", "ceiling_cooling", "service", "subsidy"].includes(currentService)) return false;
+  if (/(rekuper|vetran|strop.*chladen|klimatiz|servis|porucha|chyb|dotac)/.test(normalizePolicyText(message))) return false;
   const service = normalizeServiceType(state.service_type || route.serviceType, "unknown");
   const intent = normalizeServiceIntent(state.service_intent || route.serviceIntent, "general");
   const complaint = /nepovedal|neodpovedal|povedz mi|konkretne|najleps/.test(normalizePolicyText(message));
@@ -3577,7 +3583,24 @@ function expectedServiceFaultAnswer(message?: string): string {
       "Pre Geotherm je praktické poslať fotku štítku, približný vek zariadenia a popis hluku. Podľa toho sa dá rozhodnúť, či má zmysel servisné preverenie alebo konzultácia k výmene.",
     ].join("\n");
   }
-  const deviceLabel = mentionedBrand ? `${mentionedBrand} hlási chybu` : normalizedMessage.includes("kotol") ? "kotol ukazuje chybu" : "zariadenie hlási chybu";
+  if (/(neviem|neviem typ|stare|staré|starsie|staršie)/.test(normalizedMessage)) {
+    return [
+      "### Servisný smer",
+      "",
+      "Ak nevieš presný typ a zariadenie je staršie, nevadí. Pre servis je najpraktickejšie poslať **fotku štítku**, fotku zariadenia a stručne popísať prejav problému.",
+      "",
+      "Pri cudzích montážach treba dostupnosť servisu potvrdiť podľa značky a prípadu.",
+      "",
+      "Ďalší krok je doplniť lokalitu a kontakt, aby sa dalo preveriť servisné riešenie.",
+    ].join("\n");
+  }
+  const deviceLabel = mentionedBrand
+    ? `${mentionedBrand} hlási chybu`
+    : /(huci|hučí|hluk|hluc)/.test(normalizedMessage)
+      ? "niečo hučí v kotolni"
+      : normalizedMessage.includes("kotol")
+        ? "kotol ukazuje chybu"
+        : "zariadenie hlási chybu";
   return [
     "### Servisný smer",
     "",
@@ -4019,7 +4042,7 @@ function companyPracticalDirectAnswer(message: string): DirectAnswerDecision | n
     topic,
   });
 
-  if (/(chcem|potrebujem|dohodnut|dohodnúť|dat|dať|riesit|riešiť).*(stretn|meeting|konzult|termin|termín)|(?:stretn|meeting|konzult).*(geotherm|technik|obchodnik|ponuk|nacen)/.test(text)) {
+  if (/(chcem|potrebujem|dohodnut|dohodnúť|dat|dať|dajme|dame|dáme|riesit|riešiť).*(stretn|meeting|konzult|termin|termín)|(?:stretn|meeting|konzult).*(geotherm|technik|obchodnik|ponuk|nacen)/.test(text)) {
     return answerBase(
       "Dohodnutie konzultácie",
       "Áno, v tomto bode už dáva zmysel dohodnúť krátku konzultáciu alebo stretnutie s Geotherm a pripraviť nacenenie podľa rozsahu. Pošli ideálne telefón alebo e-mail, lokalitu a stručne čo riešiš; pri tepelnom čerpadle pomôžu aj fotky kotolne alebo základné údaje o dome.",
@@ -4276,7 +4299,7 @@ function companyPracticalDirectAnswer(message: string): DirectAnswerDecision | n
     );
   }
 
-  if (/^(rekuperacia|rekuperácia)\??$|(?:rekuperacia|rekuperácia|vetranie).*(tepla|robite|robíte|viete|vysvetlit|vysvetliť|porad|nacen|naceň|cena)|(?:robite|robíte|viete|montujete|nacen|naceň|cena).*(rekuperacia|rekuperácia|vetranie)/.test(text)) {
+  if (/^(rekuperacia|rekuperácia)\??$|(?:rekuperacia|rekuperácia|vetranie).*(tepla|robite|robíte|viete|vysvetlit|vysvetliť|porad|nacen|naceň|cena|musi|musí|vsade|všade|cely dom|celý dom|miestnost|miestnosť)|(?:robite|robíte|viete|montujete|nacen|naceň|cena|musi|musí|vsade|všade|cely dom|celý dom|miestnost|miestnosť).*(rekuperacia|rekuperácia|vetranie)/.test(text)) {
     return answerBase(
       "Rekuperácia",
       "Rekuperácia rieši riadené vetranie s výmenou vzduchu bez bežného otvárania okien. Pri dome dáva najväčší zmysel navrhnúť centrálnu rekuperáciu spolu s rozvodmi, jednotkou, filtrami, odťahom z kúpeľní/kuchyne a prívodom čerstvého vzduchu do obytných miestností. Pre nacenenie treba vedieť, či ide o novostavbu alebo rekonštrukciu, približnú plochu a či sa má vetrať celý dom.",
@@ -4359,7 +4382,7 @@ function companyPracticalDirectAnswer(message: string): DirectAnswerDecision | n
   if (/(strop|stropne|stropné).*(chladen|chladi)|(?:chladen|chladi).*(strop|stropne|stropné)/.test(text)) {
     return answerBase(
       "Stropné chladenie",
-      "Áno, stropné chladenie sa dá riešiť ako komfortné plošné chladenie domu. Treba ho navrhnúť odborne, hlavne kvôli regulácii vlhkosti a rosnému bodu; bez návrhu by som nesľuboval, že automaticky nahradí klimatizáciu. Najlepší ďalší krok je konzultácia alebo nacenenie podľa toho, či ide o novostavbu alebo rekonštrukciu a aký rozsah miestností sa má chladiť.",
+      "Áno, stropné chladenie sa dá riešiť ako komfortné plošné chladenie domu. Treba ho navrhnúť odborne, hlavne kvôli regulácii vlhkosti a rosnému bodu; bez návrhu by som nesľuboval, že bude plnohodnotnou náhradou klimatizácie v každom dome. Najlepší ďalší krok je konzultácia alebo nacenenie podľa toho, či ide o novostavbu alebo rekonštrukciu a aký rozsah miestností sa má chladiť.",
       "ceiling_cooling_scope",
       "recommendation",
       "service-card-ceiling-cooling stropne chladenie regulacia vlhkost rosny bod Geotherm",
@@ -5900,6 +5923,20 @@ function directAnswerDecision(message: string, state: QualificationState, route:
       topic: "solution_selection_followup",
     };
   }
+  if (/(nepytaj|nepýtaj|bez dalsich otazok|bez ďalších otázok|dalsi dotaznik|ďalší dotazník|navrhni smer|navrhni riesenie|navrhni riešenie|uz ma posunte|už ma posuňte)/.test(text)) {
+    const complex = activeService === "complex_solution" || previousActiveService === "complex_solution" || state.wants_cooling;
+    return {
+      triggered: true,
+      answerMode: "direct_answer",
+      reason: "direct_no_more_questionnaire_handoff",
+      answer: complex
+        ? "### Predbežný smer\n\nUž by som nepokračoval ďalším dotazníkom. Pre novostavbu s podlahovkou by som riešil tepelné čerpadlo vzduch-voda ako základ kúrenia a TÚV, k tomu rekuperáciu pre riadené vetranie a chladenie samostatne ako variant: stropné chladenie, fancoily alebo klimatizáciu podľa komfortu. Ďalší krok je konzultácia alebo nacenenie celého rozsahu."
+        : "### Predbežný smer\n\nUž by som nepokračoval ďalším dotazníkom. Podľa doterajších údajov treba uzavrieť technický smer, vybrať 2-3 vhodné zostavy a posunúť to na konzultáciu alebo nacenenie s Geotherm. Konkrétny model a cena sa majú potvrdiť podľa rozsahu, nie hádať v chate.",
+      serviceIntent: "recommendation",
+      retrievalQuery: "company-truth complex solution tepelne cerpadlo rekuperacia chladenie konzultacia nacenenie Geotherm",
+      topic: "no_more_questionnaire_handoff",
+    };
+  }
   if (/(chcem|potrebujem|zhanam|zháňam|hladam|hľadám).*(tepelne cerpad|tepelné čerpad|\btc\b|\btč\b)/.test(text)) {
     return {
       triggered: true,
@@ -6137,6 +6174,23 @@ function directAnswerDecision(message: string, state: QualificationState, route:
       serviceIntent: "service_fault",
       retrievalQuery: "company-truth service chybovy kod displej znacka model lokalita Geotherm",
       topic: "error_code_service_scope",
+    };
+  }
+  if (
+    (route.serviceType === "service" || route.serviceIntent === "service_fault" || state.service_intent === "service_fault") &&
+    /(vaillant|nibe|ivt|\bf\d{2,3}\b|chcem servis|neviem typ|stare|staré|nebudem.*rozoberat|nebudem.*rozoberať|nech pride|nech príde|pride niekto|príde niekto)/.test(text)
+  ) {
+    const wantsTechnician = /(nech pride|nech príde|pride niekto|príde niekto|chcem servis)/.test(text);
+    return {
+      triggered: true,
+      answerMode: "service_fault_triage",
+      reason: "direct_service_fault_context_followup",
+      answer: wantsTechnician
+        ? "### Servisný zásah\n\nRozumiem, v tomto bode už netreba ďalší technický dotazník. Pri servise je dôležité nerobiť svojpomocný zásah; Geotherm potrebuje hlavne lokalitu, kontakt a ak vieš, aj značku/model alebo fotku štítku. Pošli mesto a telefón alebo e-mail, aby sa dal preveriť servisný postup."
+        : "### Servisný smer\n\nBeriem to ako pokračovanie servisného problému. Ak poznáš značku alebo kód, pomáha to, ale pri staršom zariadení stačí aj fotka štítku a krátky popis prejavu. Pri cudzích montážach treba dostupnosť servisu potvrdiť podľa značky a prípadu. Ďalší krok je doplniť lokalitu a kontakt.",
+      serviceIntent: wantsTechnician ? "contact" : "service_fault",
+      retrievalQuery: "company-truth servis porucha znacka model chybovy kod lokalita kontakt technik Geotherm",
+      topic: "service_fault_context_followup",
     };
   }
   if ((route.serviceType === "service" || route.serviceIntent === "service_fault") && !currentTurnAsksPrice) {
@@ -7315,9 +7369,12 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     if (!/(bezpečnosť|bezpecnost|odborný servis|odborny servis|odborná montáž|odborna montaz|servis)/i.test(safetyWithPhone)) {
       safetyWithPhone = `${safetyWithPhone}\n\nKvôli bezpečnosti to ber ako vec pre odborný servis alebo odbornú montáž, nie svojpomocný zásah.`;
     }
-    const safetyLlmUsed = Boolean(safetyLlm.content && !safetyLlm.error && !isIncompleteAnswer(safetyCandidate));
+    const safetyCandidateIsLegacyFallback = /prepac teraz neviem|prepáč teraz neviem|skus mi prosim napisat otazku|skús mi prosím napísať otázku/i.test(
+      safetyCandidate,
+    );
+    const safetyLlmUsed = Boolean(safetyLlm.content && !safetyLlm.error && !isIncompleteAnswer(safetyCandidate) && !safetyCandidateIsLegacyFallback);
     const answer = enforceMarkdownPresentation(
-      isIncompleteAnswer(safetyWithPhone) ? safetyRoute.answer : safetyWithPhone,
+      isIncompleteAnswer(safetyWithPhone) || safetyCandidateIsLegacyFallback ? safetyRoute.answer : safetyWithPhone,
       message,
     );
     const confidence: "low" = "low";
@@ -7684,6 +7741,7 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     route.retrievalQuery = directDecision.retrievalQuery || route.retrievalQuery || message;
     route.directAnswer = directDecision.answer;
     if (directDecision.serviceIntent) route.serviceIntent = directDecision.serviceIntent;
+    if (directDecision.serviceIntent === "service_fault") route.serviceType = "service";
     if (
       directDecision.topic &&
       /^(F2040_obsolete|F2050|NIBE|Vaillant|heat_pump_brands|nibe_vaillant_comparison|nibe_noise_scope|ivt_nordic_inverter_scope)$/.test(
@@ -7692,6 +7750,8 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     ) {
       route.serviceType = "heat_pump";
     }
+    if (directDecision.topic && /heat_recovery/.test(directDecision.topic)) route.serviceType = "heat_recovery";
+    if (directDecision.topic && /ceiling_cooling|bkt/.test(directDecision.topic)) route.serviceType = "ceiling_cooling";
     stateForTurn = {
       ...stateForTurn,
       ...(route.serviceType !== "unknown" ? { service_type: route.serviceType } : {}),
@@ -7975,9 +8035,11 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     "boiler_electrical_scope",
     "service_order_process",
     "service_visit_process",
+    "service_fault_context_followup",
     "pre_realization_requirements",
     "realization_contact",
     "heating_references_scope",
+    "no_more_questionnaire_handoff",
   ]);
   const useCompactDirectComposer = directDecision.triggered && compactDirectComposerTopics.has(directDecision.topic ?? "");
   const compactDirectComposerSystemPrompt = [
