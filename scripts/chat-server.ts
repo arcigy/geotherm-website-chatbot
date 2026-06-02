@@ -2197,6 +2197,14 @@ function isLooseSmallTalkMessage(message: string): boolean {
     /^(ako sa mas|ako sa mate|ako sa ma|ako sa m)$/.test(text);
 }
 
+function shouldHardClampSmallTalk(message: string): boolean {
+  const text = normalizePolicyText(message);
+  if (text.length > 60) return false;
+  if (/(tc|tepel|cerpad|klimatiz|rekuper|servis|dotac|cena|kontakt|montaz|kuren|chladen|vykurov|kotol|radiator|podlah|nibe|vaillant)/.test(text)) return false;
+  return /^(ahoj|cau|hello|hi|hey|dobry den|dobry vecer|zdravim)(\s+(ako sa mas|ako sa mate|ako sa ma|ako sa m))?$/.test(text) ||
+    /^(ako sa mas|ako sa mate|ako sa ma|ako sa m)$/.test(text);
+}
+
 function pureSmallTalkFallback(message: string): StructuredAnswer {
   const text = normalizePolicyText(message);
   const shortAnswer =
@@ -9241,6 +9249,7 @@ async function legacyCreateChatResponse(requestBody: ChatRequest, knowledgePath?
         : structuredAnswerForLeadCapture(llm.structuredAnswer || fallbackStructured, leadCapture);
     let answer = renderStructuredAnswer(structuredAnswer, sources, llm.structuredAnswer ? llm.answerMode : answerMode, { message: answerMessage, intent });
     if (noRetrievalSmallTalk) answer = compactPureSmallTalkAnswer(answer, message);
+    if (sources.length === 0 && shouldHardClampSmallTalk(message)) answer = pureSmallTalkFallback(message).shortAnswer;
     const persistedState = stateWithLastAskedQuestion(finalState, structuredAnswer);
 
     insertEvent({
@@ -9503,6 +9512,9 @@ async function legacyCreateChatResponse(requestBody: ChatRequest, knowledgePath?
   }
   if (sources.length === 0 && (isSmallTalkMessage(message) || isLooseSmallTalkMessage(message))) {
     answer = compactPureSmallTalkAnswer(answer, message);
+  }
+  if (sources.length === 0 && shouldHardClampSmallTalk(message)) {
+    answer = pureSmallTalkFallback(message).shortAnswer;
   }
   const persistedState = stateWithLastAskedQuestion(finalState, structuredAnswer);
   if (leadCaptured) {
