@@ -6206,7 +6206,7 @@ function directAnswerDecision(message: string, state: QualificationState, route:
       topic: "video_inspection_scope",
     };
   }
-  if (/(rezervovat|rezervovať|objednat|objednať|dohodnut|dohodnúť).*(termin|termín)|(?:termin|termín).*(rezervovat|rezervovať|objednat|objednať|dohodnut|dohodnúť)/.test(text)) {
+  if (/(rezerv|objedn|dohod).*(termin|termín)|(?:termin|termín).*(rezerv|objedn|dohod)/.test(text)) {
     return {
       triggered: true,
       answerMode: "direct_answer",
