@@ -8920,6 +8920,8 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
       "error_code_service_scope",
       "technician_inspection_visit",
       "existing_system_check",
+      "booking_process",
+      "booking_lead_time",
       "services_overview",
     ].includes(directDecision.topic ?? "") &&
     (route.serviceType === "service" ||
