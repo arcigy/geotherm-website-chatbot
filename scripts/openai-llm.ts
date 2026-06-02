@@ -630,6 +630,7 @@ type RawCallOptions = {
   maxOutputTokens?: number;
   timeoutMs?: number;
   singleCandidate?: boolean;
+  modelOverride?: string;
   systemPrompt?: string;
   responseMimeType?: "application/json" | "text/plain";
   responseSchema?: object;
@@ -637,7 +638,7 @@ type RawCallOptions = {
 
 async function callGeminiRaw(prompt: string, options: RawCallOptions = {}): Promise<RawLlmResult> {
   const provider: LlmProvider = "gemini";
-  const model = llmModel(provider);
+  const model = options.modelOverride || llmModel(provider);
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey || process.env.ARCIGY_LLM_ENABLED === "false") {
     return { provider, model, error: "GEMINI_API_KEY is not configured." };
@@ -747,6 +748,7 @@ export async function callLlmText(input: {
   responseMimeType?: "application/json" | "text/plain";
   provider?: LlmProvider;
   singleCandidate?: boolean;
+  modelOverride?: string;
 }): Promise<RawLlmResult> {
   loadLocalEnv();
   return callRaw(
@@ -756,6 +758,7 @@ export async function callLlmText(input: {
       maxOutputTokens: input.maxOutputTokens,
       timeoutMs: input.timeoutMs,
       singleCandidate: input.singleCandidate ?? true,
+      modelOverride: input.modelOverride,
       responseMimeType: input.responseMimeType || "text/plain",
     },
     input.provider,

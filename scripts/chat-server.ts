@@ -3941,7 +3941,7 @@ function projectContextLine(state: QualificationState): string {
 function isBoilerOnlyQuestion(text: string): boolean {
   return (
     /\b(kotol|kotla|kotle|kotlov|kotly|kondenza|plynovy|plynove|elektricky|elektricke)\b/.test(text) &&
-    !/(tepelne cerpad|cerpadl|\btc\b|nahrad|vymen|usporn|radiator|podlah|tepelneho cerpadla|certifik|opravnen)/.test(text)
+    !/(tepelne cerpad|cerpadl|\btc\b|nahrad|usporn|radiator|podlah|tepelneho cerpadla|certifik|opravnen)/.test(text)
   );
 }
 
@@ -4042,6 +4042,16 @@ function companyPracticalDirectAnswer(message: string): DirectAnswerDecision | n
     );
   }
 
+  if (/(strop|stropne|stropné).*(chladen|chladi)|(?:chladen|chladi).*(strop|stropne|stropné)/.test(text)) {
+    return answerBase(
+      "Stropné chladenie",
+      "Áno, stropné chladenie sa dá riešiť ako komfortné plošné chladenie domu. Treba ho navrhnúť odborne, hlavne kvôli regulácii vlhkosti a rosnému bodu; bez návrhu by som nesľuboval, že automaticky nahradí klimatizáciu. Najlepší ďalší krok je konzultácia alebo nacenenie podľa toho, či ide o novostavbu alebo rekonštrukciu a aký rozsah miestností sa má chladiť.",
+      "ceiling_cooling_scope",
+      "recommendation",
+      "service-card-ceiling-cooling stropne chladenie regulacia vlhkost rosny bod Geotherm",
+    );
+  }
+
   if (/^(kontakt|kontakt\?|kontaktovat|kontaktovať)$/.test(text)) {
     return answerBase(
       "Kontakt",
@@ -4079,6 +4089,16 @@ function companyPracticalDirectAnswer(message: string): DirectAnswerDecision | n
       "pressure_drop_service_scope",
       "service_fault",
       "company-truth service tlak kurenie unik vody expanzna nadoba diagnostika Geotherm",
+    );
+  }
+
+  if (/(nejde|nefunguje|nekuri|nekúri).*(kuren|kúren|vykurov|kotol|cerpad|čerpad)|(?:kuren|kúren|vykurov|kotol|cerpad|čerpad).*(nejde|nefunguje|nekuri|nekúri)/.test(text)) {
+    return answerBase(
+      "Keď nejde kúrenie",
+      "Ak nejde kúrenie, beriem to ako servisnú triáž. Najprv netreba robiť zásahy do zariadenia naslepo; treba zistiť značku a model zdroja, chybový kód alebo hlásenie, aktuálny tlak, či ide aj teplá voda a lokalitu. Pri cudzích montážach sa dostupnosť servisu musí potvrdiť podľa značky a prípadu. Najlepší ďalší krok je poslať fotku displeja alebo štítku, popis prejavu a kontakt.",
+      "heating_not_working_triage",
+      "service_fault",
+      "company-truth service nejde kurenie porucha kotol tepelne cerpadlo chybovy kod tlak lokalita Geotherm",
     );
   }
 
@@ -4645,6 +4665,16 @@ function companyPracticalDirectAnswer(message: string): DirectAnswerDecision | n
     );
   }
 
+  if (/(ako rychlo|ako rýchlo|kedy|dokedy).*(odpoved|odpoveď|ozvete|reagujete|dopyt)|(?:odpoved|odpoveď|ozvete|reagujete|dopyt).*(ako rychlo|ako rýchlo|kedy|dokedy)/.test(text)) {
+    return answerBase(
+      "Odpoveď na dopyt",
+      "Presný čas odpovede by som bez aktuálnej kapacity nesľuboval. Pri dopyte pomôže, keď pošleš službu, lokalitu, fotky alebo projekt a kontakt; Geotherm potom vie zaradiť ponuku, servis alebo konzultáciu podľa rozsahu. Ak ide o poruchu, pridaj značku/model a chybový kód.",
+      "response_time_scope",
+      "contact",
+      "company-truth dopyt odpoved kontakt servis ponuka konzultacia kapacita Geotherm",
+    );
+  }
+
   if (/(bytove domy|bytovy dom|bytovka|bytovky)/.test(text)) {
     return answerBase(
       "Bytové domy",
@@ -5067,7 +5097,7 @@ function priceDirectAnswer(message: string, state: QualificationState): DirectAn
     answer = [
       "### Akumulačná nádrž a cena",
       "",
-      "**Neviem potvrdiť, že akumulačná nádrž je v cene**, pokiaľ to nie je priamo uvedené v konkrétnej ponuke. Pri radiátoroch alebo komplikovanejšej kotolni môže byť akumulačná nádrž potrebná, ale jej zahrnutie treba overiť v konkrétnom rozsahu ponuky.",
+      "**Bez konkrétnej ponuky akumulačnú nádrž nepovažuj za zahrnutú položku.** Pri radiátoroch alebo komplikovanejšej kotolni môže byť potrebná, ale jej rozsah musí byť samostatne uvedený v ponuke.",
       "",
       "Pri cene 7 tisíc by som obzvlášť overil, či ide iba o zariadenie/zostavu, alebo o kompletnú realizáciu vrátane montáže, regulácie, TÚV, akumulačnej nádrže, elektroprác a uvedenia do prevádzky.",
     ].join("\n");
@@ -5110,6 +5140,8 @@ function priceDirectAnswer(message: string, state: QualificationState): DirectAn
       `Áno, **7 tisíc môže byť pri kompletnom tepelnom čerpadle podozrivo nízka suma**, najmä ak sa bavíme o staršom dome s radiátormi a výmenou kotla. ${context} by som to nebral ako potvrdenú kompletnú cenu.`,
       "",
       "Treba presne overiť, čo je v tej sume: samotná zostava, montážny materiál, práca, regulácia, TÚV zásobník, akumulačná nádrž, elektropríprava, uvedenie do prevádzky a prípadné úpravy kotolne.",
+      "",
+      "Pri akumulačnej nádrži platí: nie je automaticky súčasťou rozsahu; rozhoduje konkrétna ponuka.",
     ].join("\n");
   } else if (/(najtich|tiche|tiché|hluk|hlucn|hlučn)/.test(text) && /(najlacn|najlacnej|lacne|lacné|cena|cheapest)/.test(text)) {
     reason = "direct_quietest_cheapest_pressure";
@@ -5254,6 +5286,194 @@ function directAnswerDecision(message: string, state: QualificationState, route:
       serviceIntent: null,
       retrievalQuery: null,
       topic: null,
+    };
+  }
+  if (/(poradit|poradiť).*(vyber|výber|riesen|riešen)|(?:vyber|výber).*(riesen|riešen)|ake riesenie|aké riešenie/.test(text)) {
+    return {
+      triggered: true,
+      answerMode: "direct_answer",
+      reason: "direct_solution_selection_followup",
+      answer:
+        "### Výber riešenia\n\nÁno, s výberom riešenia sa dá začať tu, ale bez cieľa by som nehádal jednu technológiu. Geotherm rieši kúrenie, chladenie, vetranie, podlahové kúrenie, stropné chladenie, servis aj dotácie.\n\nNajprv treba určiť, či chceš riešiť úsporu kúrenia, chladenie v lete, čerstvý vzduch, poruchu existujúceho zariadenia alebo celé technické riešenie domu.",
+      serviceIntent: "recommendation",
+      retrievalQuery: "company-truth sluzby Geotherm vyber riesenia kurenie chladenie vetranie servis dotacie",
+      topic: "solution_selection_followup",
+    };
+  }
+  if (/(chcem|potrebujem|zhanam|zháňam|hladam|hľadám).*(tepelne cerpad|tepelné čerpad|\btc\b|\btč\b)/.test(text)) {
+    return {
+      triggered: true,
+      answerMode: "qualification_question",
+      reason: "direct_initial_heat_pump_short",
+      answer:
+        "### Predbežný smer\n\nPri rodinnom dome sa najčastejšie začína tepelným čerpadlom **vzduch-voda**. Pri novostavbe s podlahovkou je to veľmi vhodný smer; pri staršom dome s radiátormi treba overiť teplotu vody a výkon radiátorov.\n\nAby som ťa zaradil správne, napíš mi: je to novostavba alebo starší dom, koľko m2 chceš vykurovať a či máš radiátory alebo podlahové kúrenie.",
+      serviceIntent: "recommendation",
+      retrievalQuery: "service-card-heat-pump tepelne cerpadla vyber riesenia novostavba starsi dom radiatory podlahove kurenie",
+      topic: "initial_heat_pump_short",
+    };
+  }
+  const asksHeatPumpBrandOrModelInventory =
+    /(?:ake|aké).*(?:mate|máte).*(?:tepelne cerpad|tepelné čerpad|\btc\b|\btč\b)|(?:ake|aké).*(?:tepelne cerpad|tepelné čerpad|\btc\b|\btč\b).*(?:mate|máte)|(?:znack|značk|model|split).*(?:tepelne cerpad|tepelné čerpad|\btc\b|\btč\b|nibe|vaillant)|(?:tepelne cerpad|tepelné čerpad|\btc\b|\btč\b).*(?:znack|značk|model|split)/.test(
+      text,
+    );
+  if (
+    !/(vrt|vrty|hlbin)/.test(text) &&
+    !asksHeatPumpBrandOrModelInventory &&
+    /(robite|robíte|mate|máte|ponukate|ponúkate).*(tepelne cerpad|tepelné čerpad|\btc\b|\btč\b)|(?:tepelne cerpad|tepelné čerpad|\btc\b|\btč\b).*(robite|robíte|mate|máte|ponukate|ponúkate)/.test(text)
+  ) {
+    return {
+      triggered: true,
+      answerMode: "direct_answer",
+      reason: "direct_heat_pump_service_scope",
+      answer:
+        "### Tepelné čerpadlá\n\nÁno, Geotherm rieši tepelné čerpadlá ako návrh, dodávku, montáž a následný servis vlastných riešení. Bezpečne komunikované značky tepelných čerpadiel sú najmä NIBE a Vaillant.\n\nKonkrétny typ a model sa vyberá podľa domu, výkonu, vykurovania, teplej vody, chladenia a technických možností. Najlepší ďalší krok je krátka konzultácia alebo nacenenie podľa domu.",
+      serviceIntent: "process",
+      retrievalQuery: "company-truth tepelne cerpadla NIBE Vaillant navrh montaz servis Geotherm",
+      topic: "heat_pump_service_scope",
+    };
+  }
+  if (/(centraln|centráln).*(vysavac|vysávač)|(?:vysavac|vysávač).*(centraln|centráln)/.test(text)) {
+    return {
+      triggered: true,
+      answerMode: "direct_answer",
+      reason: "direct_central_vacuum_scope",
+      answer:
+        "### Centrálny vysávač\n\nCentrálny vysávač sa v knowledge Geotherm spomína ako súčasť technických riešení domu. Pri konkrétnom dopyte treba potvrdiť rozsah: či ide o novostavbu, prípravu rozvodov, doplnenie do existujúceho domu alebo servis.\n\nNajpraktickejší ďalší krok je poslať pôdorys alebo popis domu a Geotherm potvrdí, či a ako sa to dá naceniť.",
+      serviceIntent: "process",
+      retrievalQuery: "centralny vysavac Geotherm technicke riesenie domu",
+      topic: "central_vacuum_scope",
+    };
+  }
+  if (/(elektro|elektr).*(kotol|kotla|kotlom|kotlov)|(?:kotol|kotla|kotlom|kotlov).*(elektro|elektr)/.test(text)) {
+    return {
+      triggered: true,
+      answerMode: "direct_answer",
+      reason: "direct_boiler_electrical_scope",
+      answer:
+        "### Elektropríprava ku kotlu\n\nElektroprípravu alebo elektro časť pri kotle treba potvrdiť podľa konkrétnej kotolne a rozsahu výmeny. Pri realizácii sa rieši napájanie, regulácia, bezpečné zapojenie a súčinnosť s odbornou montážou.\n\nBez obhliadky alebo fotiek by som nesľuboval presný rozsah. Najlepší krok je poslať fotky kotolne a typ kotla, potom sa potvrdí postup.",
+      serviceIntent: "process",
+      retrievalQuery: "company-truth elektroinstalacia kotol elektropriprava regulacia montaz Geotherm",
+      topic: "boiler_electrical_scope",
+    };
+  }
+  if (/(ako).*(prebieha).*(servisny|servisný).*(zasah|zásah)|(?:servisny|servisný).*(zasah|zásah).*(prebieha)/.test(text)) {
+    return {
+      triggered: true,
+      answerMode: "direct_answer",
+      reason: "direct_service_visit_process",
+      answer:
+        "### Servisný zásah\n\nServisný zásah sa najprv začína identifikáciou zariadenia a problému: značka, model alebo fotka štítku, chybový kód, prejav poruchy a lokalita. Podľa toho sa potvrdí, či ide o diagnostiku, nastavenie, výjazd alebo iný postup.\n\nPri cudzích montážach treba dostupnosť servisu potvrdiť podľa značky a prípadu. Najlepší krok je poslať fotku štítku, popis problému a kontakt.",
+      serviceIntent: "service_fault",
+      retrievalQuery: "company-truth servisny zasah diagnostika znacka model chybovy kod lokalita Geotherm",
+      topic: "service_visit_process",
+    };
+  }
+  if (/(radiator|radiatory|radiatorov|radiátor|radiátory|radiátorov)/.test(text) && /(robite|robíte|viete|mate|máte|ponuk|rieš|ries)/.test(text)) {
+    return {
+      triggered: true,
+      answerMode: "direct_answer",
+      reason: "direct_radiators_scope",
+      answer:
+        "### Radiátory\n\nRadiátory sa v podkladoch Geotherm riešia ako súčasť vykurovacieho systému. Pri novej realizácii alebo výmene treba potvrdiť výkon, teplotný spád, typ zdroja tepla a stav rozvodov.\n\nPri tepelnom čerpadle je dôležité overiť, či radiátory vykúria dom pri nižšej teplote vody, alebo bude treba časť vykurovacích telies upraviť.",
+      serviceIntent: "process",
+      retrievalQuery: "company-truth radiatory vykurovacie telesa tepelne cerpadlo teplotny spad Geotherm",
+      topic: "radiators_scope",
+    };
+  }
+  if (/(robite|robíte|viete|da sa|dá sa).*(novostav|novy dom|nový dom)|(?:novostav|novy dom|nový dom).*(robite|robíte|viete|da sa|dá sa)/.test(text)) {
+    return {
+      triggered: true,
+      answerMode: "direct_answer",
+      reason: "direct_new_build_scope",
+      answer:
+        "### Novostavby\n\nÁno, novostavby dávajú zmysel riešiť už vo fáze návrhu, lebo kúrenie, chladenie, teplá voda, vetranie a prípadná fotovoltika sa dajú navrhnúť ako jeden systém.\n\nTypicky sa pri novostavbe rieši tepelné čerpadlo, podlahové kúrenie, rekuperácia, chladenie a regulácia. Najlepší ďalší krok je krátka konzultácia alebo nacenenie podľa projektu, plochy domu a toho, čo všetko má systém pokrývať.",
+      serviceIntent: "process",
+      retrievalQuery: "company-truth novostavba komplexne technicke riesenie tepelne cerpadlo rekuperacia podlahove kurenie Geotherm",
+      topic: "new_build_scope",
+    };
+  }
+  if (/(bez).*(odstavk|odstávk).*(vod|vody)|(?:vod|vody).*(bez).*(odstavk|odstávk)/.test(text)) {
+    return {
+      triggered: true,
+      answerMode: "direct_answer",
+      reason: "direct_water_shutdown_scope",
+      answer:
+        "### Odstávka vody\n\nČi sa práca dá urobiť bez odstávky vody, závisí od konkrétneho zásahu a zapojenia. Pri niektorých servisných alebo montážnych prácach môže byť krátka odstávka nutná; bez obhliadky alebo fotiek by som nesľuboval, že voda zostane po celý čas zapnutá.\n\nNajistejšie je poslať fotky miesta a rozsah práce, potom Geotherm potvrdí postup.",
+      serviceIntent: "process",
+      retrievalQuery: "company-truth prakticke FAQ odstavka vody montaz servis rozsah prac Geotherm",
+      topic: "water_shutdown_scope",
+    };
+  }
+  if (/(bez).*(odstavk|odstávk).*(kuren|kúren|vykurov)|(?:kuren|kúren|vykurov).*(bez).*(odstavk|odstávk)/.test(text)) {
+    return {
+      triggered: true,
+      answerMode: "direct_answer",
+      reason: "direct_heating_shutdown_scope",
+      answer:
+        "### Odstávka kúrenia\n\nČi sa práca dá spraviť bez odstávky kúrenia, závisí od zásahu, sezóny a zapojenia systému. Pri niektorých úpravách kotolne, servise alebo výmene časti systému môže byť krátka odstávka nutná.\n\nBez konkrétneho rozsahu by som to nesľuboval. Najlepší krok je poslať fotky kotolne a popis práce, aby Geotherm potvrdil postup.",
+      serviceIntent: "process",
+      retrievalQuery: "company-truth odstavka kurenia servis montaz kotolna postup Geotherm",
+      topic: "heating_shutdown_scope",
+    };
+  }
+  if (/(obhliad|pozriet|pozrieť).*(videohovor|video|online)|(?:videohovor|video|online).*(obhliad|pozriet|pozrieť)/.test(text)) {
+    return {
+      triggered: true,
+      answerMode: "direct_answer",
+      reason: "direct_video_inspection_scope",
+      answer:
+        "### Obhliadka cez videohovor\n\nObhliadku cez videohovor by som nesľuboval automaticky ako plnú náhradu osobnej obhliadky. Na prvé preverenie však často pomôžu fotky, video, pôdorys alebo krátky telefonát.\n\nPri jednoduchej orientácii sa dá začať online; pri presnej ponuke, montáži alebo servisnom zásahu môže byť potrebné osobné preverenie podľa rozsahu.",
+      serviceIntent: "inspection",
+      retrievalQuery: "company-truth obhliadka videohovor fotky online konzultacia Geotherm",
+      topic: "video_inspection_scope",
+    };
+  }
+  if (/(rezervovat|rezervovať|objednat|objednať|dohodnut|dohodnúť).*(termin|termín)|(?:termin|termín).*(rezervovat|rezervovať|objednat|objednať|dohodnut|dohodnúť)/.test(text)) {
+    return {
+      triggered: true,
+      answerMode: "direct_answer",
+      reason: "direct_booking_process",
+      answer:
+        "### Rezervácia termínu\n\nTermín sa dá dohodnúť podľa typu služby, lokality, rozsahu práce a aktuálnej kapacity. Pri servise pomôže značka/model, popis problému a fotka štítku; pri montáži alebo ponuke stručný rozsah, fotky alebo projekt.\n\nNajpraktickejší ďalší krok je poslať kontakt a základné podklady, aby Geotherm potvrdil reálny termín.",
+      serviceIntent: "process",
+      retrievalQuery: "company-truth rezervacia termin kapacita servis montaz kontakt Geotherm",
+      topic: "booking_process",
+    };
+  }
+  if (/(pozarucn|pozáručn).*(servis|oprava|udrzba|údržba)|(?:servis|oprava|udrzba|údržba).*(pozarucn|pozáručn)/.test(text)) {
+    return {
+      triggered: true,
+      answerMode: "direct_answer",
+      reason: "direct_post_warranty_service_scope",
+      answer:
+        "### Pozáručný servis\n\nPozáručný servis treba potvrdiť podľa zariadenia, značky, modelu, problému a lokality. Pri vlastných realizáciách je následný servis prirodzená súčasť spolupráce; pri cudzích montážach by som ho nesľuboval automaticky.\n\nNajlepší krok je poslať fotku štítku, popis problému a kontakt na preverenie termínu.",
+      serviceIntent: "service_fault",
+      retrievalQuery: "company-truth service pozarucny servis vlastne realizacie cudzie montaze znacka model lokalita Geotherm",
+      topic: "post_warranty_service_scope",
+    };
+  }
+  if (/(pred).*(realizaci|realizáci).*(vybavit|vybaviť|potreb)|(?:potrebujem|treba).*(pred).*(realizaci|realizáci)/.test(text)) {
+    return {
+      triggered: true,
+      answerMode: "direct_answer",
+      reason: "direct_pre_realization_requirements",
+      answer:
+        "### Pred realizáciou\n\nPred realizáciou netreba hneď všetko vybavovať dopredu, ale pomôžu základné podklady: fotky miesta, projekt alebo pôdorys, informácia o aktuálnom kúrení, požadovaný rozsah a lokalita.\n\nPri konkrétnej zákazke sa potom potvrdí termín, prístup na stavbu, potrebné prípravy, elektro alebo voda a čo zabezpečí zákazník.",
+      serviceIntent: "process",
+      retrievalQuery: "company-truth pred realizaciou podklady fotky projekt priprava Geotherm",
+      topic: "pre_realization_requirements",
+    };
+  }
+  if (/(kto).*(kontakt).*(realizaci|realizáci)|(?:kontakt).*(pocas|počas).*(realizaci|realizáci)/.test(text)) {
+    return {
+      triggered: true,
+      answerMode: "direct_answer",
+      reason: "direct_realization_contact",
+      answer:
+        "### Kontakt počas realizácie\n\nPri konkrétnej realizácii má zmysel mať dohodnutý jasný kontakt za Geotherm, ktorý rieši termín, podklady, priebeh prác a prípadné doplnenia. Meno konkrétnej osoby by som bez zákazky nesľuboval.\n\nNajlepší ďalší krok je poslať dopyt alebo kontakt, aby Geotherm priradil zodpovednú osobu podľa typu zákazky.",
+      serviceIntent: "contact",
+      retrievalQuery: "company-truth kontakt pocas realizacie zodpovedna osoba Geotherm",
+      topic: "realization_contact",
     };
   }
   const genericRecommendationFollowup = /^(co|čo)\s+odpor(u|ú)[cč]ate\??$/.test(text) || /^(ake|aké)\s+riesenie\??$/.test(text);
@@ -5771,7 +5991,7 @@ function sanitizeAnswerForDiagnosticRules(
       sentence.includes("akumulac") &&
       /(je v cene|v tej cene|zahrnuta|zahrnute|sucastou ceny|zapocitava)/.test(sentence) &&
       !/(neviem potvrdit|nie je bezpecne|ak je uveden|treba overit|nemusi byt)/.test(sentence),
-    "Akumulačná nádrž je v cene iba vtedy, keď je výslovne uvedená v konkrétnej ponuke; bez toho to treba overiť.",
+    "Bez výslovnej položky v konkrétnej ponuke akumulačnú nádrž nepovažuj za zahrnutú súčasť rozsahu.",
   );
   if (state.own_wood) {
     next = applySanitizerRule(
@@ -6617,7 +6837,7 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     systemPrompt: routerSystemPrompt,
     prompt: routerInput,
     maxOutputTokens: 240,
-    timeoutMs: Math.min(Number.parseInt(process.env.LLM_ROUTER_TIMEOUT_MS || "2500", 10), 2500),
+    timeoutMs: Math.min(Number.parseInt(process.env.LLM_ROUTER_TIMEOUT_MS || "1200", 10), 1200),
     responseMimeType: "application/json",
   });
   const deterministicRoute = inferServiceRoute(message, previousState, previousMessages);
@@ -6986,8 +7206,11 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
   );
   const compactDirectComposerTopics = new Set([
     "vaillant_boilers",
+    "heat_pump_brands",
+    "initial_heat_pump_short",
     "boilers",
     "boiler_brands",
+    "heat_pump_service_scope",
     "photovoltaics",
     "solar_panels",
     "geberit_wc_scope",
@@ -6998,14 +7221,27 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     "emergency_service_scope",
     "post_warranty_service_scope",
     "pressure_drop_service_scope",
+    "heating_not_working_triage",
     "regular_service_booking",
     "booking_lead_time",
+    "weekends",
+    "response_time_scope",
     "error_code_service_scope",
     "technician_inspection_visit",
     "existing_system_check",
     "water_shutdown_scope",
+    "heating_shutdown_scope",
     "solution_selection_followup",
     "radiators_scope",
+    "new_build_scope",
+    "video_inspection_scope",
+    "booking_process",
+    "central_vacuum_scope",
+    "ceiling_cooling_scope",
+    "boiler_electrical_scope",
+    "service_visit_process",
+    "pre_realization_requirements",
+    "realization_contact",
   ]);
   const useCompactDirectComposer = directDecision.triggered && compactDirectComposerTopics.has(directDecision.topic ?? "");
   const compactDirectComposerSystemPrompt = [
@@ -7045,7 +7281,23 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     responseMimeType: "text/plain",
   });
   let cleanedAnswer = composerLlm.error || !composerLlm.content ? "" : cleanAnswerText(composerLlm.content);
-  if (isIncompleteAnswer(cleanedAnswer) && !pureSmallTalkTurn) {
+  if (pureSmallTalkTurn && isIncompleteAnswer(cleanedAnswer)) {
+    const smallTalkRetryLlm = await callLlmText({
+      systemPrompt:
+        "Si krátky slovenský chatbot Geotherm. Odpovedz na small-talk prirodzene jednou vetou, bez RAG, bez obchodného dotazníka a bez markdown nadpisu.",
+      prompt: `Používateľ napísal: ${message}\nOdpovedz stručne.`,
+      maxOutputTokens: 80,
+      timeoutMs: Math.min(Math.max(Number.parseInt(process.env.LLM_FAST_REQUEST_TIMEOUT_MS || "1800", 10), 1200), 1800),
+      responseMimeType: "text/plain",
+      modelOverride: process.env.GEMINI_FAST_FALLBACK_MODEL || "gemini-2.5-flash-lite",
+    });
+    const smallTalkRetryAnswer = smallTalkRetryLlm.error || !smallTalkRetryLlm.content ? "" : cleanAnswerText(smallTalkRetryLlm.content);
+    if (!isIncompleteAnswer(smallTalkRetryAnswer)) {
+      composerLlm = smallTalkRetryLlm;
+      cleanedAnswer = compactPureSmallTalkAnswer(smallTalkRetryAnswer, message);
+    }
+  }
+  if (isIncompleteAnswer(cleanedAnswer) && !pureSmallTalkTurn && !directDecision.triggered) {
     const repairLlm = await callLlmText({
       systemPrompt: [
         activeComposerSystemPrompt,
@@ -7087,9 +7339,11 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
         2,
       ),
       maxOutputTokens: 700,
-      timeoutMs: Math.min(Math.max(Number.parseInt(process.env.LLM_FAST_REQUEST_TIMEOUT_MS || "5000", 10), 4500), 5500),
+      timeoutMs: useCompactDirectComposer
+        ? Math.min(Math.max(Number.parseInt(process.env.LLM_FAST_REQUEST_TIMEOUT_MS || "2200", 10), 1800), 2200)
+        : Math.min(Math.max(Number.parseInt(process.env.LLM_FAST_REQUEST_TIMEOUT_MS || "5000", 10), 4500), 5500),
       responseMimeType: "text/plain",
-      singleCandidate: false,
+      modelOverride: useCompactDirectComposer ? process.env.GEMINI_FAST_FALLBACK_MODEL || "gemini-2.5-flash-lite" : undefined,
     });
     const directRepairedAnswer = directRepairLlm.error || !directRepairLlm.content ? "" : cleanAnswerText(directRepairLlm.content);
     if (!isIncompleteAnswer(directRepairedAnswer)) {
@@ -7327,16 +7581,30 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
       "pressure_drop_service_scope",
       "regular_service_booking",
       "booking_lead_time",
+      "weekends",
       "error_code_service_scope",
       "technician_inspection_visit",
       "older_houses_scope",
       "solution_selection_followup",
+      "initial_heat_pump_short",
       "existing_system_check",
       "water_shutdown_scope",
+      "heating_shutdown_scope",
+      "heating_not_working_triage",
+      "response_time_scope",
       "project_help_scope",
       "geberit_wc_scope",
       "solar_panels",
       "radiators_scope",
+      "new_build_scope",
+      "video_inspection_scope",
+      "booking_process",
+      "central_vacuum_scope",
+      "ceiling_cooling_scope",
+      "boiler_electrical_scope",
+      "service_visit_process",
+      "pre_realization_requirements",
+      "realization_contact",
     ]);
     const needsDraft =
       forceDraftTopics.has(topic) ||
@@ -7432,6 +7700,19 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
   ) {
     recordDiagnostic(answerDiagnostics.validatorsTriggered, "budget_scope_cautious_repaired");
     answer = validateAndRepairAnswer(priceDirectAnswer(message, stateForTurn).answer || answer, stateForTurn, route, message, answerDiagnostics);
+  }
+  if (
+    directDecision.triggered &&
+    directDecision.answerMode === "price_answer" &&
+    (directDecision.topic === "low_price_scope" || directDecision.topic === "buffer_tank_price_scope") &&
+    !/(konkretnej ponuke|konkrétnej ponuke|nie je automaticky|zavisi od konkretneho navrhu|závisí od konkrétneho návrhu|overit co presne|overiť čo presne)/.test(
+      normalizePolicyText(answer),
+    )
+  ) {
+    answer = `${answer.trim()}\n\nPri akumulačnej nádrži platí: nie je automaticky súčasťou rozsahu; rozhoduje konkrétna ponuka.`;
+  }
+  if (directDecision.triggered && directDecision.topic === "weekends" && !/potvr/.test(normalizePolicyText(answer))) {
+    answer = `${answer.trim()}\n\nVíkendový termín alebo výjazd treba vždy potvrdiť podľa typu prípadu, lokality a aktuálnej kapacity.`;
   }
   if (currentMessagePolicy.kind === "adversarial") {
     recordDiagnostic(answerDiagnostics.validatorsTriggered, "adversarial_refusal_repaired");
