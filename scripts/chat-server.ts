@@ -4145,6 +4145,16 @@ function companyPracticalDirectAnswer(message: string): DirectAnswerDecision | n
     );
   }
 
+  if (/(nibe).*(rekuper|vetran)|(?:rekuper|vetran).*(nibe)/.test(text)) {
+    return answerBase(
+      "NIBE rekuperácia",
+      "Pri otázke na NIBE rekuperáciu by som neprepínal automaticky na tepelné čerpadlá. Ide o vetranie/rekuperáciu, kde treba potvrdiť aktuálnu ponuku, vhodnú jednotku, filtre, rozvody a reguláciu podľa domu. Ak riešiš nový dom alebo rekonštrukciu, najlepší ďalší krok je konzultácia a nacenenie vetrania spolu s ostatnými technológiami.",
+      "nibe_heat_recovery_scope",
+      "brand_model",
+      "service-card-heat-recovery NIBE rekuperacia vetranie filtre jednotka Geotherm",
+    );
+  }
+
   if (/(navrh|návrh|navrhem|návrhem).*(vytap|vytáp|vykur|kuren|kúren)|(?:vytap|vytáp|vykur|kuren|kúren).*(navrh|návrh|navrhem|návrhem)/.test(text)) {
     return answerBase(
       "Návrh vykurovania",
@@ -4975,6 +4985,16 @@ function companyPracticalDirectAnswer(message: string): DirectAnswerDecision | n
       "business_customers",
       "process",
       "company-truth prakticke FAQ firmy komercne objekty technicke riesenia Geotherm potvrdit",
+    );
+  }
+
+  if (/(casopis|časopis|magazin|magazín|referenc|ukazk|ukážk).*(vykurov|kuren|kúren|realizac)|(?:vykurov|kuren|kúren|realizac).*(casopis|časopis|magazin|magazín|referenc|ukazk|ukážk)/.test(text)) {
+    return answerBase(
+      "Referencie a ukážky vykurovania",
+      "Tému vykurovania v časopisoch by som bral ako referencie alebo ukážky realizácií, často aj pri riešeniach s tepelným čerpadlom, nie ako technický návrh pre konkrétny dom. Môže pomôcť na inšpiráciu, ale vhodné tepelné čerpadlo alebo iný zdroj vykurovania sa vyberá podľa domu, výkonu, teplej vody a rozsahu montáže. Ak chceš reálne nacenenie, najlepší krok je krátka konzultácia podľa typu domu a fotiek alebo projektu.",
+      "heating_references_scope",
+      "process",
+      "company-truth referencie ukazky realizacii vykurovanie casopisy Geotherm",
     );
   }
 
@@ -7599,20 +7619,25 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     "buderus_logamax_boiler_scope",
     "gree_air_conditioning_scope",
     "air_conditioning_general_scope",
+    "nibe_heat_recovery_scope",
+    "vaillant_heat_recovery_scope",
     "solar_collector_tank_scope",
     "subsidy_conditions_scope",
     "subsidy_general_scope",
     "subsidy_oze_scope",
     "heating_reconstruction_scope",
+    "older_houses_scope",
     "boiler_electrical_scope",
     "service_visit_process",
     "pre_realization_requirements",
     "realization_contact",
+    "heating_references_scope",
   ]);
   const useCompactDirectComposer = directDecision.triggered && compactDirectComposerTopics.has(directDecision.topic ?? "");
   const compactDirectComposerSystemPrompt = [
     "Si AI poradca Geotherm. Odpovedaj po slovensky, prirodzene a stručne.",
     "Prepíš safeAnswerDraft na finálnu odpoveď pre zákazníka. Zachovaj firemné obmedzenia a nič nepridávaj ako istý fakt.",
+    "Zachovaj hlavné technologické slová zo safeAnswerDraft, napríklad tepelné čerpadlo, rekuperácia, klimatizácia alebo podlahové kúrenie.",
     "Použi 60 až 110 slov, čistý Markdown s krátkym nadpisom, najviac jeden otáznik.",
   ].join("\n");
   const compactDirectComposerInput = JSON.stringify(
@@ -7628,10 +7653,43 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
   const fastOutOfScopeComposerSystemPrompt =
     "Si krátky slovenský chatbot Geotherm. Otázka je mimo tém Geotherm. Odpovedz cez AI maximálne dvoma vetami: neodpovedaj na externú tému, krátko presmeruj na kúrenie, chladenie, vetranie, servis, dotácie alebo ponuku. Nepouži RAG ani markdown nadpis.";
   const fastOutOfScopeComposerInput = `Používateľ napísal: ${message}\nOdpovedz stručne a bezpečne.`;
+  const fastQualificationServices = new Set<ServiceType>([
+    "heat_pump",
+    "air_conditioning",
+    "heat_recovery",
+    "floor_heating",
+    "ceiling_cooling",
+    "complex_solution",
+  ]);
+  const useFastQualificationComposer =
+    !directDecision.triggered &&
+    !closureDecision.triggered &&
+    fastQualificationServices.has(route.serviceType) &&
+    (route.serviceIntent === "recommendation" || route.serviceIntent === "quote" || route.serviceIntent === "process" || route.serviceIntent === "brand_model") &&
+    questionRoundsCount <= 1;
+  const fastQualificationComposerSystemPrompt = [
+    "Si AI technicko-obchodný poradca Geotherm. Odpovedaj po slovensky, stručne a vecne.",
+    "Daj predbežný smer, krátky dôvod, typický rozsah a najviac 1-2 otázky alebo CTA na konzultáciu/nacenenie.",
+    "Nesľubuj cenu, termín, bezplatnú obhliadku ani servis cudzej montáže bez potvrdenia. Nepíš frázu Stručne k otázke.",
+    "Odpoveď drž do 90-150 slov, čistý Markdown s krátkym nadpisom.",
+  ].join("\n");
+  const fastQualificationComposerInput = JSON.stringify(
+    {
+      latestUserMessage: message,
+      route: { service_type: route.serviceType, intent: route.serviceIntent },
+      state: stateForTurn,
+      serviceManual: serviceCardSummary(route.serviceType),
+      ragContext: ragContext.slice(0, 1200),
+    },
+    null,
+    2,
+  );
   const activeComposerSystemPrompt = useCompactDirectComposer
     ? compactDirectComposerSystemPrompt
     : useFastOutOfScopeComposer
       ? fastOutOfScopeComposerSystemPrompt
+      : useFastQualificationComposer
+        ? fastQualificationComposerSystemPrompt
     : directDecision.triggered
       ? directComposerSystemPrompt
       : composerSystemPrompt;
@@ -7639,6 +7697,8 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     ? compactDirectComposerInput
     : useFastOutOfScopeComposer
       ? fastOutOfScopeComposerInput
+      : useFastQualificationComposer
+        ? fastQualificationComposerInput
       : directDecision.triggered
         ? directComposerInput
         : composerInput;
@@ -7648,18 +7708,31 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
   let composerLlm = await callLlmText({
     systemPrompt: activeComposerSystemPrompt,
     prompt: activeComposerInput,
-    maxOutputTokens: useFastOutOfScopeComposer ? 180 : useCompactDirectComposer ? 300 : directDecision.triggered ? 520 : 1200,
+    maxOutputTokens: useFastOutOfScopeComposer ? 180 : useCompactDirectComposer ? 300 : useFastQualificationComposer ? 420 : directDecision.triggered ? 520 : 1200,
     timeoutMs: useCompactDirectComposer
       ? Math.min(Math.max(Number.parseInt(process.env.LLM_FAST_REQUEST_TIMEOUT_MS || "2500", 10), 1800), 2500)
       : useFastOutOfScopeComposer
         ? Math.min(Math.max(Number.parseInt(process.env.LLM_FAST_REQUEST_TIMEOUT_MS || "1600", 10), 1000), 1600)
+        : useFastQualificationComposer
+          ? Math.min(Math.max(Number.parseInt(process.env.LLM_FAST_REQUEST_TIMEOUT_MS || "3200", 10), 2400), 3200)
       : directDecision.triggered
       ? Math.min(Math.max(Number.parseInt(process.env.LLM_FAST_REQUEST_TIMEOUT_MS || "3500", 10), 3000), 3500)
       : route.needsRetrieval
       ? Number.parseInt(process.env.LLM_ANSWER_TIMEOUT_MS || "10000", 10)
       : Math.min(Number.parseInt(process.env.LLM_FAST_REQUEST_TIMEOUT_MS || "3500", 10), 3500),
     responseMimeType: "text/plain",
+    modelOverride: useFastQualificationComposer ? process.env.GEMINI_FAST_FALLBACK_MODEL || "gemini-2.5-flash-lite" : undefined,
   });
+  if ((useFastQualificationComposer || useCompactDirectComposer) && (composerLlm.error || !composerLlm.content)) {
+    const retryLlm = await callLlmText({
+      systemPrompt: activeComposerSystemPrompt,
+      prompt: activeComposerInput,
+      maxOutputTokens: useCompactDirectComposer ? 300 : 420,
+      timeoutMs: Math.min(Math.max(Number.parseInt(process.env.LLM_FAST_REQUEST_TIMEOUT_MS || "3000", 10), 2200), 3000),
+      responseMimeType: "text/plain",
+    });
+    if (!retryLlm.error && retryLlm.content) composerLlm = retryLlm;
+  }
   let cleanedAnswer = composerLlm.error || !composerLlm.content ? "" : cleanAnswerText(composerLlm.content);
   if (pureSmallTalkTurn && isIncompleteAnswer(cleanedAnswer)) {
     const smallTalkRetryLlm = await callLlmText({
