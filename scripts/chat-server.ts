@@ -3944,6 +3944,16 @@ function companyPracticalDirectAnswer(message: string): DirectAnswerDecision | n
     );
   }
 
+  if (/\bnibe+\b/.test(text) && /(hluc|hluč|tich|hluk)/.test(text)) {
+    return answerBase(
+      "Hlučnosť NIBE",
+      "Pri NIBE sa hlučnosť nedá hodnotiť jedným číslom pre všetky modely. Záleží od konkrétnej jednotky, výkonu, režimu, umiestnenia pri dome, podstavca a nočného režimu. Pri výbere by som porovnal aktuálnu zostavu podľa technického listu a montážnych možností, nie iba podľa značky.",
+      "nibe_noise_scope",
+      "brand_model",
+      "company-truth NIBE hlučnosť tepelné čerpadlo model umiestnenie technický list Geotherm",
+    );
+  }
+
   if (text.includes("nibe") && text.includes("vaillant") && /(vs|versus|porov|leps|lepší|recommend|odporuc|odporúč)/.test(text)) {
     return answerBase(
       "Vaillant vs. NIBE",
@@ -4859,6 +4869,22 @@ function directAnswerDecision(message: string, state: QualificationState, route:
   const hasExistingDiagnosticContext = Boolean(
     state.project_type || state.area_m2 || state.heating_distribution || state.current_heating || state.qualification_question_rounds,
   );
+  if (
+    /(montaz|montáž)/i.test(raw) &&
+    /(zajtra|hned|hneď)/i.test(raw) &&
+    /(neviem|aky system|aký systém|aký syst[eé]m)/i.test(raw)
+  ) {
+    return {
+      triggered: true,
+      answerMode: "direct_answer",
+      reason: "direct_contradictory_installation_timing",
+      answer:
+        "### Najprv systém, potom termín\n\nMontáž hneď zajtra by som **bez podkladov a bez potvrdeného systému nesľuboval**. Najprv treba určiť, či ide o tepelné čerpadlo, klimatizáciu, rekuperáciu, podlahové kúrenie alebo inú technológiu; až potom sa dá potvrdiť termín, kapacita a cena.\n\nAk nevieš systém, začal by som krátkou konzultáciou: kúrenie, chladenie, vetranie alebo komplexné riešenie domu?",
+      serviceIntent: "process",
+      retrievalQuery: "company-truth montaz termin system cena rozsah Geotherm",
+      topic: "contradictory_installation_timing",
+    };
+  }
   if (raw.includes("certifik") && raw.includes("plyn")) {
     return {
       triggered: true,
@@ -6828,6 +6854,7 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
       "vaillant_boilers",
       "Daikin",
       "Mitsubishi",
+      "nibe_noise_scope",
       "contact_details",
       "contact_short_followup",
       "warranty_service_check",
@@ -6944,6 +6971,13 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
   ) {
     recordDiagnostic(answerDiagnostics.validatorsTriggered, "recommendation_closure_repaired");
     answer = validateAndRepairAnswer(expectedRecommendationClosureAnswer(stateForTurn, closureDecision), stateForTurn, route, message, answerDiagnostics);
+  }
+  if (
+    closureDecision.triggered &&
+    !/(konzult|nacen|nacenen|ponuk|stretn|meeting)/.test(normalizePolicyText(answer))
+  ) {
+    recordDiagnostic(answerDiagnostics.validatorsTriggered, "recommendation_closure_cta_appended");
+    answer = `${answer.trim()}\n\nĎalší krok: dohodnúť krátku konzultáciu alebo stretnutie s Geotherm, kde sa preverí technický rozsah a pripraví nacenenie.`.trim();
   }
   if (currentMessagePolicy.kind === "adversarial") {
     recordDiagnostic(answerDiagnostics.validatorsTriggered, "adversarial_refusal_repaired");
