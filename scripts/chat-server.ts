@@ -3968,6 +3968,16 @@ function companyPracticalDirectAnswer(message: string): DirectAnswerDecision | n
     );
   }
 
+  if (/(ake informacie|aké informácie|ake udaje|aké údaje|co potrebujete|čo potrebujete).*(ponuk|nacenen|cenu)|(?:ponuk|nacenen|cenu).*(ake informacie|aké informácie|ake udaje|aké údaje|co potrebujete|čo potrebujete)/.test(text)) {
+    return answerBase(
+      "Podklady na ponuku",
+      "Na rozumnú cenovú ponuku treba hlavne: čo chceš riešiť, či ide o novostavbu alebo rekonštrukciu, **plochu v m²**, lokalitu, aktuálne kúrenie alebo plánované rozvody, požiadavku na teplú vodu alebo chladenie a ideálne fotky kotolne alebo projekt. Potom má zmysel dohodnúť konzultáciu, kde sa vyberie riešenie a nacení rozsah.",
+      "quote_inputs",
+      "quote",
+      "company-truth pricing-rules podklady na cenovu ponuku plocha fotky projekt Geotherm",
+    );
+  }
+
   if (/(to je cele|to je celé|a co dalej|a čo dalej|co dalej|čo dalej)\??$/.test(text)) {
     return answerBase(
       "Ďalší krok",
@@ -3992,6 +4002,59 @@ function companyPracticalDirectAnswer(message: string): DirectAnswerDecision | n
     );
   }
 
+  if (/(unik|únik).*(plyn|plynu)|(?:plyn|plynu).*(unik|únik)/.test(text)) {
+    return answerBase(
+      "Únik plynu",
+      "Pri podozrení na únik plynu to neberiem ako bežný servisný dopyt v chate. Najprv treba bezpečne vetrať, nepoužívať otvorený oheň ani elektrické spínače a kontaktovať plynárenskú pohotovosť alebo tiesňovú linku podľa situácie. Geotherm môže následne riešiť vykurovanie alebo výmenu zdroja, ale ak ide o akútny únik plynu, priorita je bezpečnostný zásah.",
+      "gas_leak_safety_scope",
+      "service_fault",
+      "company-truth safety unik plynu pohotovost kotol vykurovanie Geotherm",
+    );
+  }
+
+  if (/(tepelne cerpad|tepelné čerpad|cerpad|čerpad).*(komfort|dome|domu)|(?:komfort|dome|domu).*(tepelne cerpad|tepelné čerpad|cerpad|čerpad)/.test(text)) {
+    return answerBase(
+      "Tepelné čerpadlo pre komfort v dome",
+      "Tepelné čerpadlo môže byť dobrý základ komfortného vykurovania domu, hlavne ak je správne navrhnuté spolu s vykurovacou sústavou, teplou vodou, reguláciou a servisom. Predbežný smer je často vzduch-voda, ale pri staršom dome s radiátormi treba overiť teplotu vody a výkon radiátorov. Ak chceš riešiť konkrétnu ponuku, najlepší ďalší krok je krátka konzultácia s Geotherm podľa typu domu, plochy a vykurovania.",
+      "heat_pump_comfort_scope",
+      "recommendation",
+      "service-card-heat-pump tepelne cerpadlo komfort dom vzduch-voda radiator podlahove kurenie Geotherm",
+    );
+  }
+
+  if (
+    !/(cena|ceny|cenov|vratane|vrátane|kolko|koľko|stoji|stojí)/.test(text) &&
+    (/(instalac|inštalác|montaz|montáž).*(tepelne cerpad|tepelné čerpad|cerpad|čerpad)|(?:tepelne cerpad|tepelné čerpad|cerpad|čerpad).*(instalac|inštalác|montaz|montáž)/.test(text))
+  ) {
+    return answerBase(
+      "Inštalácia tepelného čerpadla",
+      "Inštalácia tepelného čerpadla má začať návrhom, nie iba výberom jednotky. Treba overiť výkon pre dom, vykurovaciu sústavu, TÚV, umiestnenie vonkajšej jednotky, elektroprípravu, hydrauliku, montáž a uvedenie do prevádzky. Geotherm vie pripraviť kompletný postup od návrhu po realizáciu; konkrétnu zostavu a cenu by som riešil cez konzultáciu a nacenenie.",
+      "heat_pump_installation_scope",
+      "process",
+      "service-card-heat-pump instalacia tepelne cerpadlo montaz navrh uvedenie do prevadzky Geotherm",
+    );
+  }
+
+  if (/(tepelne cerpad|tepelné čerpad|cerpad|čerpad).*(vzduch voda|rychly prehlad|rýchly prehľad|prehlad|prehľad)|(?:vzduch voda|rychly prehlad|rýchly prehľad|prehlad|prehľad).*(tepelne cerpad|tepelné čerpad|cerpad|čerpad)/.test(text)) {
+    return answerBase(
+      "Tepelné čerpadlo vzduch-voda",
+      "Tepelné čerpadlo vzduch-voda je najčastejší smer pri rodinných domoch, lebo nepotrebuje vrt ani plošný kolektor a vie riešiť kúrenie aj teplú vodu. Pri novostavbe s podlahovkou býva veľmi vhodné; pri staršom dome s radiátormi treba overiť výkon radiátorov a potrebnú teplotu vody. Konkrétnu zostavu by som riešil cez konzultáciu a nacenenie.",
+      "heat_pump_air_water_overview_scope",
+      "recommendation",
+      "service-card-heat-pump tepelne cerpadlo vzduch-voda rodinny dom radiator podlahove kurenie Geotherm",
+    );
+  }
+
+  if (/(komfort|rodin|rodina).*(vykurov|kuren|kúren)|(?:vykurov|kuren|kúren).*(komfort|rodin|rodina)/.test(text)) {
+    return answerBase(
+      "Komfortné vykurovanie",
+      "Komfortné vykurovanie pre rodinný dom sa má riešiť ako celý systém: zdroj tepla, podlahové kúrenie alebo radiátory, regulácia, teplá voda a servis. Predbežne môže dávať zmysel tepelné čerpadlo vzduch-voda, najmä pri novostavbe alebo nízkoteplotnom vykurovaní. Pri konkrétnej rodine a dome by som už smer presunul na konzultáciu a nacenenie podľa plochy, vykurovania a požiadaviek na TÚV.",
+      "comfortable_heating_scope",
+      "recommendation",
+      "service-card-heat-pump komfortne vykurovanie tepelne cerpadlo rodinny dom regulacia TUV Geotherm",
+    );
+  }
+
   if (/(stars|starš|starsi|starší).*(dom).*(plyn|plynov|ucet|účet).*(cerpad|čerpad|podlah|dotac|dotác)|(?:cerpad|čerpad|podlah|dotac|dotác).*(stars|starš|starsi|starší).*(dom).*(plyn|plynov|ucet|účet)/.test(text)) {
     return answerBase(
       "Najprv rozhodnúť smer",
@@ -4009,6 +4072,36 @@ function companyPracticalDirectAnswer(message: string): DirectAnswerDecision | n
       "subsidy_order_followup",
       "subsidy",
       "company-truth dotacie prispevok poukaz poradie ziadost ponuka kontrola tepelne cerpadlo fotovoltaika Geotherm",
+    );
+  }
+
+  if (/(dotac|dotác|prispev|príspev|podpor).*(oze|obnovitel|obnoviteľ)|(?:oze|obnovitel|obnoviteľ).*(dotac|dotác|prispev|príspev|podpor)/.test(text)) {
+    return answerBase(
+      "Dotácie OZE",
+      "Pri dotáciách na OZE vieme pomôcť orientačne s tým, aký typ riešenia dáva zmysel, ale aktuálne pravidlá programu treba vždy overiť. Bez potvrdenia nesľubujem nárok, odpočet z ceny ani kompletné vybavenie. Pri Geotherm to má zmysel riešiť spolu s návrhom konkrétneho zariadenia, napríklad tepelného čerpadla alebo iného podporovaného riešenia.",
+      "subsidy_oze_scope",
+      "subsidy",
+      "company-truth dotacie OZE obnovitelne zdroje tepelne cerpadlo podpora Geotherm",
+    );
+  }
+
+  if (/(dotac|dotác|prispev|príspev|poukaz|cerpanie dotac|čerpanie dotác|aktualny stav|aktuálny stav).*(dotac|dotác|podpor|prispev|príspev|poukaz)|(?:dotac|dotác|podpor|prispev|príspev|poukaz).*(cerpanie|čerpanie|aktualny|aktuálny|otazk|otázk)/.test(text)) {
+    return answerBase(
+      "Dotácie",
+      "Pri dotáciách treba rozlišovať aktuálne pravidlá programu a konkrétnu ponuku. Geotherm môže pomôcť s orientáciou a návrhom vhodného riešenia, ale bez overenia nesľubujem nárok, termín, odpočet z ceny ani kompletné vybavenie. Najlepší ďalší krok je krátka konzultácia: aké zariadenie riešiš, či ide o nový dom alebo výmenu a aký program podpory prichádza do úvahy.",
+      "subsidy_general_scope",
+      "subsidy",
+      "company-truth dotacie podpora prispevok poukaz aktualne podmienky ponuka Geotherm",
+    );
+  }
+
+  if (/(podmienky podpory|vyrocna dotacia|výročná dotácia|dotac|dotác|prispev|príspev|poukaz).*(vaillant|tepelne cerpad|tepelné čerpad|cerpad|čerpad|podpor)|(?:vaillant|tepelne cerpad|tepelné čerpad|cerpad|čerpad|podpor).*(podmienky podpory|vyrocna dotacia|výročná dotácia|dotac|dotác|prispev|príspev|poukaz)/.test(text)) {
+    return answerBase(
+      "Dotácia a podmienky podpory",
+      "S dotáciou vieme pomôcť orientačne, ale pri dotácii alebo podpore k tepelnému čerpadlu treba najprv overiť aktuálne podmienky programu a konkrétnu zostavu. Bez potvrdenia nesľubujem nárok, odpočet z ceny ani kompletné vybavenie. Pri Vaillante alebo NIBE sa dá pripraviť vhodná ponuka až podľa domu a platných pravidiel. Najlepší ďalší krok je krátka konzultácia s Geotherm.",
+      "subsidy_conditions_scope",
+      "subsidy",
+      "company-truth dotacia podmienky podpory Vaillant NIBE tepelne cerpadlo ponuka Geotherm",
     );
   }
 
@@ -4032,6 +4125,26 @@ function companyPracticalDirectAnswer(message: string): DirectAnswerDecision | n
     );
   }
 
+  if (/(rekuper|vetran).*(filter|filtre)|(?:filter|filtre).*(rekuper|vetran)/.test(text)) {
+    return answerBase(
+      "Filtre pre rekuperáciu",
+      "Filtre pri rekuperácii sú bežná servisná a údržbová téma. Treba ich riešiť podľa konkrétnej jednotky, typu filtrov a prostredia v dome; bez modelu jednotky by som nepotvrdil presný filter ani interval. Praktický ďalší krok je poslať značku/model rekuperácie alebo fotku štítku a Geotherm vie potvrdiť vhodný servis alebo výmenu filtrov.",
+      "heat_recovery_filters_scope",
+      "service_fault",
+      "service-card-heat-recovery rekuperacia filtre vetranie servis Geotherm",
+    );
+  }
+
+  if (/(vaillant).*(rekuper|vetran)|(?:rekuper|vetran).*(vaillant)/.test(text)) {
+    return answerBase(
+      "Vaillant rekuperácia",
+      "Pri otázke na Vaillant rekuperáciu by som neprepínal automaticky na tepelné čerpadlá. Ide o vetranie/rekuperáciu, kde treba potvrdiť aktuálnu ponuku, vhodnú jednotku, rozvody, filtre a spôsob regulácie podľa domu. Ak riešiš nový dom alebo rekonštrukciu, najlepší ďalší krok je konzultácia a nacenenie vetrania spolu s ostatnými technológiami.",
+      "vaillant_heat_recovery_scope",
+      "brand_model",
+      "service-card-heat-recovery Vaillant rekuperacia vetranie filtre jednotka Geotherm",
+    );
+  }
+
   if (/(navrh|návrh|navrhem|návrhem).*(vytap|vytáp|vykur|kuren|kúren)|(?:vytap|vytáp|vykur|kuren|kúren).*(navrh|návrh|navrhem|návrhem)/.test(text)) {
     return answerBase(
       "Návrh vykurovania",
@@ -4052,6 +4165,26 @@ function companyPracticalDirectAnswer(message: string): DirectAnswerDecision | n
     );
   }
 
+  if (/(podlah|podlahov).*(vykurov|kuren|kúren|nastav|regul|nacen|naceň|cena)|(?:vykurov|kuren|kúren|nastav|regul|nacen|naceň|cena).*(podlah|podlahov)/.test(text)) {
+    return answerBase(
+      "Podlahové vykurovanie",
+      "Podlahové vykurovanie je nízkoteplotný systém, ktorý sa dobre kombinuje s tepelným čerpadlom a správnou reguláciou. Pri nacenení alebo nastavení rozhoduje plocha, skladba podlahy, rozdeľovače, zdroj tepla a to, či ide o novostavbu alebo rekonštrukciu. Praktický ďalší krok je konzultácia alebo nacenenie podľa plochy, projektu a fotiek rozdeľovača.",
+      "floor_heating_scope",
+      "process",
+      "service-card-floor-heating podlahove vykurovanie podlahove kurenie nizkoteplotne tepelne cerpadlo Geotherm",
+    );
+  }
+
+  if (/(cenov|cena|nacen|naceň|ponuk).*(vykurov|vetran|chladen)|(?:vykurov|vetran|chladen).*(cenov|cena|nacen|naceň|ponuk)/.test(text)) {
+    return answerBase(
+      "Cenová ponuka na technické riešenie",
+      "Pri cenovej ponuke na vykurovanie, vetranie alebo chladenie sa nedá férovo potvrdiť jedna cena bez rozsahu. Treba rozdeliť, či ide o tepelné čerpadlo, rekuperáciu, klimatizáciu alebo komplexné riešenie s reguláciou a montážou. Najlepší ďalší krok je poslať základné údaje o objekte a dohodnúť konzultáciu, aby Geotherm pripravil konkrétne nacenenie.",
+      "complex_solution_price_scope",
+      "price",
+      "company-truth cena ponuka vykurovanie vetranie rekuperacia chladenie montaz Geotherm",
+    );
+  }
+
   if (/(strop|stropne|stropné).*(chladen|chladi)|(?:chladen|chladi).*(strop|stropne|stropné)/.test(text)) {
     return answerBase(
       "Stropné chladenie",
@@ -4059,6 +4192,176 @@ function companyPracticalDirectAnswer(message: string): DirectAnswerDecision | n
       "ceiling_cooling_scope",
       "recommendation",
       "service-card-ceiling-cooling stropne chladenie regulacia vlhkost rosny bod Geotherm",
+    );
+  }
+
+  if (/(temperovanie betonoveho jadra|temperovanie betónového jadra|\bbkt\b)/.test(text)) {
+    return answerBase(
+      "Temperovanie betónového jadra BKT",
+      "Temperovanie betónového jadra BKT je plošné vykurovanie a chladenie integrované do betónovej konštrukcie. Dáva zmysel najmä pri novostavbách alebo väčších objektoch, kde sa systém navrhne už v projekte. Treba riešiť reguláciu, vlhkosť, zdroj tepla/chladu a skladbu stavby. Praktický ďalší krok je technická konzultácia a nacenenie podľa projektu.",
+      "bkt_ceiling_cooling_scope",
+      "recommendation",
+      "service-card-ceiling-cooling BKT temperovanie betonoveho jadra chladenie vykurovanie Geotherm",
+    );
+  }
+
+  if (/(stenov|stenové|stenove).*(vykurov|kuren|kúren|chladen|chladi)|(?:vykurov|kuren|kúren|chladen|chladi).*(stenov|stenové|stenove)/.test(text)) {
+    return answerBase(
+      "Stenové vykurovanie a chladenie",
+      "Stenové vykurovanie alebo chladenie patrí medzi plošné systémy, kde je dôležitý návrh skladby, regulácie a vlhkosti. Pri kúrení ide o komfortné nízkoteplotné riešenie, pri chladení treba strážiť rosný bod podobne ako pri stropnom chladení. Najlepší ďalší krok je konzultácia alebo nacenenie podľa projektu, miestností a toho, či ide o novostavbu alebo rekonštrukciu.",
+      "wall_heating_cooling_scope",
+      "recommendation",
+      "service-card-ceiling-cooling stenove vykurovanie chladenie plosny system regulacia vlhkost Geotherm",
+    );
+  }
+
+  if (/(podlah|podlahov).*(vykurov|kuren|kúren)/.test(text)) {
+    return answerBase(
+      "Podlahové vykurovanie",
+      "Podlahové vykurovanie je nízkoteplotný systém, ktorý sa dobre kombinuje s tepelným čerpadlom a správnou reguláciou. Pri nacenení rozhoduje plocha, skladba podlahy, rozdeľovače, zdroj tepla a to, či ide o novostavbu alebo rekonštrukciu. Ak riešiš realizáciu, praktický ďalší krok je konzultácia alebo nacenenie podľa plochy a projektu.",
+      "floor_heating_scope",
+      "process",
+      "service-card-floor-heating podlahove vykurovanie podlahove kurenie nizkoteplotne tepelne cerpadlo Geotherm",
+    );
+  }
+
+  if (/(komplexne|komplexné).*(riesenie|riešenie|budov|vykurov|vetran|chladen)|(?:vykurov|vetran|chladen).*(komplexne|komplexné)/.test(text)) {
+    return answerBase(
+      "Komplexné riešenie budovy",
+      "Áno, toto by som bral ako komplexné technické riešenie, nie ako výber jedného zariadenia. Typicky sa skladá z vykurovania, prípravy teplej vody, vetrania alebo rekuperácie, chladenia, regulácie a následného servisu. V chate sa dá určiť smer, ale finálne nacenenie má ísť cez konzultáciu s Geotherm podľa objektu a požadovaného rozsahu.",
+      "complex_solution_scope",
+      "process",
+      "company-truth complex solution vykurovanie vetranie chladenie rekuperacia regulacia servis Geotherm",
+    );
+  }
+
+  if (/(podlah|podlahov).*(nastav|regul|vyregul)|(?:nastav|regul|vyregul).*(podlah|podlahov)/.test(text)) {
+    return answerBase(
+      "Nastavenie podlahového kúrenia",
+      "Podlahové kúrenie sa dá nastavovať cez reguláciu, prietoky a teplotu vykurovacej vody, ale bez znalosti rozdeľovača a zdroja tepla by som nedával presný postup. Ak je doma nerovnomerná teplota, pomalá reakcia alebo vysoká spotreba, Geotherm vie preveriť nastavenie systému a navrhnúť úpravy. Praktický krok je konzultácia alebo servisné preverenie podľa fotiek rozdeľovača a zdroja.",
+      "floor_heating_setting_scope",
+      "service_fault",
+      "company-truth podlahove kurenie nastavenie regulacia rozdelovac prietoky servis Geotherm",
+    );
+  }
+
+  if (/(zmakcovac|zmäkčovač|uprava vody|úprava vody|katex)/.test(text)) {
+    return answerBase(
+      "Zmäkčovač a úprava vody",
+      "Zmäkčovač vody alebo úprava vody sa rieši podľa tvrdosti vody, prietoku, počtu osôb a miesta montáže. Bez rozboru alebo aspoň údajov o tvrdosti by som nevybral konkrétne zariadenie. Ak to má byť súčasť technickej miestnosti, dáva zmysel prebrať to spolu s kúrením, TÚV alebo rozvodmi a následne pripraviť nacenenie.",
+      "water_softener_scope",
+      "process",
+      "company-truth zmakcovac vody uprava vody technicka miestnost rozvody Geotherm",
+    );
+  }
+
+  if (/^(cementove|cementové|anhydritove|anhydritové)\??$|(?:poter|potery|cementove|cementové|anhydritove|anhydritové).*(robite|robíte|viete|mate|máte|nacen|naceň|porad)|(?:robite|robíte|viete|mate|máte|nacen|naceň|porad).*(poter|potery|cementove|cementové|anhydritove|anhydritové)/.test(text)) {
+    return answerBase(
+      "Potery",
+      "Pri poteroch treba rozlíšiť cementový a anhydritový poter, podklad, hrúbku, plochu a to, či ide aj o podlahové kúrenie. Bez týchto údajov by som nepotvrdil presnú cenu ani vhodný typ. Praktický ďalší krok je poslať plochu, typ stavby a skladbu podlahy; Geotherm potom vie potvrdiť, či je téma v rozsahu ponuky a pripraviť nacenenie.",
+      "screeds_scope",
+      "price",
+      "company-truth potery cementovy anhydritovy poter podlahove kurenie nacenenie Geotherm",
+    );
+  }
+
+  if (/(fernox|ochranne.*kvapalin|ochranné.*kvapalin|udrzbove.*kvapalin|údržbové.*kvapalin|nemrznuca kvapalina|nemrznúca kvapalina|teplonosne kvapaliny|teplonosné kvapaliny)/.test(text)) {
+    return answerBase(
+      "Ochranné a údržbové kvapaliny",
+      "Ochranné, údržbové alebo teplonosné kvapaliny sa riešia pri vykurovacích, chladiacich aj solárnych systémoch podľa typu sústavy, materiálov, objemu vody a požadovanej ochrany. Bez kontroly systému by som neodporúčal konkrétny prípravok ani dávkovanie. Praktický ďalší krok je servisné preverenie alebo konzultácia, kde sa potvrdí stav vody, zariadenia a vhodná údržba.",
+      "system_fluids_scope",
+      "service_fault",
+      "company-truth ochranne udrzbove kvapaliny Fernox voda vykurovaci solarny system servis Geotherm",
+    );
+  }
+
+  if (/(ecocompact|eco compact|aurocompact|auro compact|compact vsc)/.test(text)) {
+    return answerBase(
+      "Vaillant compact riešenia",
+      "ecoCOMPACT alebo auroCOMPACT by som nebral ako aktuálny výber tepelného čerpadla. Ide o názvy Vaillant compact riešení spájaných skôr s kotlovou alebo zásobníkovou zostavou, preto treba overiť presný model a aktuálnu ponuku. Ak riešiš nové vykurovanie cez Geotherm, bezpečnejšie je porovnať aktuálne riešenie Vaillant alebo NIBE podľa domu a pripraviť nacenenie.",
+      "vaillant_compact_boiler_scope",
+      "brand_model",
+      "company-truth Vaillant ecoCOMPACT auroCOMPACT compact kotol zasobnik aktualna ponuka Geotherm",
+    );
+  }
+
+  if (/(ecotec|eco tec|vcw|vu)\b/.test(text)) {
+    return answerBase(
+      "Vaillant ecoTEC",
+      "ecoTEC plus VU alebo VCW by som bral ako Vaillant kotlovú tému, nie ako výber tepelného čerpadla. Pri takomto označení treba overiť presný model, či ide o existujúci kotol, výmenu alebo nové riešenie. Ak cieľom je úspora vykurovania, Geotherm môže porovnať servis/náhradu kotla s novším riešením, napríklad tepelným čerpadlom podľa domu.",
+      "vaillant_ecotec_boiler_scope",
+      "brand_model",
+      "company-truth Vaillant ecoTEC VU VCW kotol kondenzačný kotol Geotherm",
+    );
+  }
+
+  if (/(logamax|gb122|gb 122)/.test(text)) {
+    return answerBase(
+      "Buderus Logamax",
+      "Logamax GB122 by som bral ako Buderus kotlovú tému, nie ako výber tepelného čerpadla. Pri existujúcom zariadení treba overiť presný model, stav kotla a či ide o servis alebo výmenu. Ak cieľom je nové úspornejšie vykurovanie, Geotherm môže pri konzultácii porovnať kotlové riešenie s inou technológiou podľa domu.",
+      "buderus_logamax_boiler_scope",
+      "brand_model",
+      "company-truth Buderus Logamax GB122 kotol vykurovanie servis vymena Geotherm",
+    );
+  }
+
+  if (/\bbuderus\b/.test(text)) {
+    return answerBase(
+      "Buderus",
+      "Buderus by som v chate bral opatrne ako značku vykurovacej techniky, hlavne kotlovú tému, nie ako potvrdené hlavné portfólio tepelných čerpadiel Geotherm. Ak ide o existujúci kotol Buderus, treba riešiť servis alebo výmenu podľa modelu. Ak ide o nové riešenie, aktuálnu ponuku značiek a vhodnú náhradu treba potvrdiť pri konzultácii.",
+      "buderus_brand_scope",
+      "brand_model",
+      "company-truth Buderus kotol vykurovacia technika servis vymena Geotherm",
+    );
+  }
+
+  if (/\bgree\b/.test(text)) {
+    return answerBase(
+      "Klimatizácia GREE",
+      "GREE by som bral ako klimatizačnú tému, nie ako potvrdené portfólio tepelných čerpadiel voda/voda alebo vzduch/voda. Pri klimatizácii treba overiť miestnosti, výkon, umiestnenie vnútornej a vonkajšej jednotky, hlučnosť a servis. Ak chceš nové chladenie, ďalší krok je konzultácia a nacenenie podľa miestností.",
+      "gree_air_conditioning_scope",
+      "brand_model",
+      "service-card-air-conditioning klimatizacia GREE chladenie vonkajsia jednotka servis Geotherm",
+    );
+  }
+
+  if (/^(klimatizacia|klimatizácia)\??$|(?:klimatizacia|klimatizácia).*(robite|robíte|viete|porad|nacen|naceň|cena|montaz|montáž)/.test(text)) {
+    return answerBase(
+      "Klimatizácia",
+      "Klimatizáciu by som riešil podľa miestností, tepelnej záťaže, umiestnenia vnútornej a vonkajšej jednotky, hlučnosti, odvodu kondenzátu a servisu. Pri viacerých miestnostiach sa porovnáva viac samostatných jednotiek alebo multisplit. Najlepší ďalší krok je konzultácia a nacenenie podľa plochy miestností a požadovaného komfortu v lete.",
+      "air_conditioning_general_scope",
+      "recommendation",
+      "service-card-air-conditioning klimatizacia chladenie multisplit montaz servis Geotherm",
+    );
+  }
+
+  if (/(eloblock|elo block|ve 6|ve 9|ve 12|ve 14|ve 18|ve 21|ve 24|ve 28)/.test(text)) {
+    return answerBase(
+      "Vaillant eloBLOCK",
+      "eloBLOCK VE by som bral ako Vaillant elektrokotol alebo kotlovú tému, nie ako tepelné čerpadlo. Pri otázke na tento rad treba overiť, či ide o existujúce zariadenie, výmenu alebo nový zdroj tepla. Ak cieľom je úspora prevádzky, Geotherm môže porovnať elektrokotol s vhodnejším riešením vykurovania, napríklad tepelným čerpadlom podľa domu.",
+      "vaillant_eloblock_boiler_scope",
+      "brand_model",
+      "company-truth Vaillant eloBLOCK VE elektrokotol kotol vykurovanie Geotherm",
+    );
+  }
+
+  if (/(ivt).*(nordic inverter)|(?:nordic inverter).*(ivt)/.test(text)) {
+    return answerBase(
+      "IVT Nordic Inverter",
+      "IVT Nordic Inverter by som bez aktuálneho potvrdenia nekomunikoval ako štandardné nové portfólio Geotherm. Pri názve ide skôr o konkrétny produkt alebo staršiu/modelovú informáciu, ktorú treba overiť podľa aktuálnej ponuky a servisu. Ak chceš nové riešenie, bezpečne sa pri tepelných čerpadlách komunikuje hlavne NIBE a Vaillant; pri existujúcom IVT je najlepší ďalší krok overiť model a dostupnosť servisu.",
+      "ivt_nordic_inverter_scope",
+      "brand_model",
+      "company-truth IVT Nordic Inverter vzduch tepelne cerpadlo servis NIBE Vaillant Geotherm",
+    );
+  }
+
+  if (/(zostavy tlakove|tlakove zostavy|tlakové zostavy|tlakove.*zasobnik|tlakové.*zásobník|zasobnik.*kolektor|zásobník.*kolektor|aurostep|drain back|slnecne kolektor|slnečné kolektor)/.test(text)) {
+    return answerBase(
+      "Solárne zostavy a zásobníky",
+      "Pri tlakových solárnych zostavách alebo zásobníkoch nejde o poruchu tlaku v kúrení, ale o zostavu pre ohrev vody alebo solárne riešenie. Treba overiť typ kolektorov, objem zásobníka, napojenie na existujúci zdroj a rozsah montáže. Bez konkrétnej zostavy by som nepotvrdil cenu ani dostupnosť; vhodný ďalší krok je konzultácia a nacenenie podľa objektu.",
+      "solar_collector_tank_scope",
+      "process",
+      "company-truth solarne kolektory tlakove zostavy zasobnik ohrev vody Geotherm",
     );
   }
 
@@ -4092,7 +4395,7 @@ function companyPracticalDirectAnswer(message: string): DirectAnswerDecision | n
     );
   }
 
-  if (/(pada|padá|klesa|klesá).*(tlak)|(?:tlak).*(pada|padá|klesa|klesá)/.test(text)) {
+  if (/(pada|padá|klesa|klesá).*\btlak\b|\btlak\b.*(pada|padá|klesa|klesá)/.test(text)) {
     return answerBase(
       "Pokles tlaku v kúrení",
       "Ak padá tlak v kúrení, beriem to ako servisný problém. Môže ísť o únik vody, expanznú nádobu, poistný ventil, dopúšťanie alebo problém v kotolni; bezpečné je nerobiť zásahy naslepo. Najpraktickejší ďalší krok je poslať značku/model zdroja, aktuálny tlak za studena a za tepla, či niekde vidno vodu, lokalitu a kontakt na servisné preverenie.",
@@ -7030,8 +7333,17 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     route.retrievalQuery = directDecision.retrievalQuery || route.retrievalQuery || message;
     route.directAnswer = directDecision.answer;
     if (directDecision.serviceIntent) route.serviceIntent = directDecision.serviceIntent;
+    if (
+      directDecision.topic &&
+      /^(F2040_obsolete|F2050|NIBE|Vaillant|heat_pump_brands|nibe_vaillant_comparison|nibe_noise_scope|ivt_nordic_inverter_scope)$/.test(
+        directDecision.topic,
+      )
+    ) {
+      route.serviceType = "heat_pump";
+    }
     stateForTurn = {
       ...stateForTurn,
+      ...(route.serviceType !== "unknown" ? { service_type: route.serviceType } : {}),
       ...(directDecision.serviceIntent ? { service_intent: directDecision.serviceIntent } : {}),
       ...(directDecision.topic ? { last_direct_topic: directDecision.topic } : {}),
       ...(directDecision.answerMode === "price_answer" && directDecision.topic ? { last_price_topic: directDecision.topic } : {}),
@@ -7229,16 +7541,24 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
   const compactDirectComposerTopics = new Set([
     "vaillant_boilers",
     "heat_pump_brands",
+    "gas_leak_safety_scope",
     "initial_heat_pump_short",
+    "heat_pump_comfort_scope",
+    "comfortable_heating_scope",
+    "heat_pump_installation_scope",
+    "heat_pump_air_water_overview_scope",
     "existing_radiator_heat_pump_standalone",
     "boilers",
     "boiler_brands",
     "heat_pump_service_scope",
+    "heat_recovery_filters_scope",
+    "vaillant_heat_recovery_scope",
     "photovoltaics",
     "solar_panels",
     "geberit_wc_scope",
     "project_help_scope",
     "own_material_scope",
+    "quote_inputs",
     "diagnostic_price_scope",
     "installation_preparation",
     "emergency_service_scope",
@@ -7253,6 +7573,7 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     "technician_inspection_visit",
     "existing_system_check",
     "water_shutdown_scope",
+    "water_distribution",
     "heating_shutdown_scope",
     "solution_selection_followup",
     "radiators_scope",
@@ -7261,6 +7582,27 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     "booking_process",
     "central_vacuum_scope",
     "ceiling_cooling_scope",
+    "bkt_ceiling_cooling_scope",
+    "wall_heating_cooling_scope",
+    "complex_solution_scope",
+    "complex_solution_price_scope",
+    "floor_heating_scope",
+    "floor_heating_setting_scope",
+    "water_softener_scope",
+    "screeds_scope",
+    "system_fluids_scope",
+    "ivt_nordic_inverter_scope",
+    "vaillant_compact_boiler_scope",
+    "vaillant_ecotec_boiler_scope",
+    "vaillant_eloblock_boiler_scope",
+    "buderus_brand_scope",
+    "buderus_logamax_boiler_scope",
+    "gree_air_conditioning_scope",
+    "air_conditioning_general_scope",
+    "solar_collector_tank_scope",
+    "subsidy_conditions_scope",
+    "subsidy_general_scope",
+    "subsidy_oze_scope",
     "heating_reconstruction_scope",
     "boiler_electrical_scope",
     "service_visit_process",
@@ -7560,6 +7902,7 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     ]);
     const forceDraftTopics = new Set([
       "vaillant_boilers",
+      "gas_leak_safety_scope",
       "Daikin",
       "Mitsubishi",
       "budget_scope",
@@ -7576,6 +7919,8 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
       "mixed_language_subsidy_followup",
       "business_heating_followup",
       "heat_pump_service_scope",
+      "heat_recovery_filters_scope",
+      "vaillant_heat_recovery_scope",
       "warranty_work",
       "gas_revision",
       "boiler_revision",
@@ -7625,9 +7970,13 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
       "older_houses_scope",
       "solution_selection_followup",
       "initial_heat_pump_short",
+      "heat_pump_comfort_scope",
+      "comfortable_heating_scope",
+      "heat_pump_installation_scope",
+      "heat_pump_air_water_overview_scope",
       "existing_radiator_heat_pump_standalone",
-      "existing_system_check",
       "water_shutdown_scope",
+      "water_distribution",
       "heating_shutdown_scope",
       "heating_not_working_triage",
       "response_time_scope",
@@ -7640,6 +7989,27 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
       "booking_process",
       "central_vacuum_scope",
       "ceiling_cooling_scope",
+      "bkt_ceiling_cooling_scope",
+      "wall_heating_cooling_scope",
+      "complex_solution_scope",
+      "complex_solution_price_scope",
+      "floor_heating_scope",
+      "floor_heating_setting_scope",
+      "water_softener_scope",
+      "screeds_scope",
+      "system_fluids_scope",
+      "ivt_nordic_inverter_scope",
+      "vaillant_compact_boiler_scope",
+      "vaillant_ecotec_boiler_scope",
+      "vaillant_eloblock_boiler_scope",
+      "buderus_brand_scope",
+      "buderus_logamax_boiler_scope",
+      "gree_air_conditioning_scope",
+      "air_conditioning_general_scope",
+      "solar_collector_tank_scope",
+      "subsidy_conditions_scope",
+      "subsidy_general_scope",
+      "subsidy_oze_scope",
       "heating_reconstruction_scope",
       "boiler_electrical_scope",
       "service_visit_process",
