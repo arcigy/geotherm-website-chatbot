@@ -2185,7 +2185,8 @@ function isGeneralChatWithoutRetrieval(message: string): boolean {
 function isPureSmallTalkMessage(message: string): boolean {
   const text = normalizePolicyText(message);
   if (/(tc|tepel|cerpad|klimatiz|rekuper|servis|dotac|cena|kontakt|montaz|kuren|chladen|vykurov|kotol|radiator|podlah|nibe|vaillant)/.test(text)) return false;
-  return /^(ahoj|cau|hello|hi|hey|dobry den|dobry vecer|zdravim|ako sa mas|ako sa mate|ako sa ma|ako sa m|dakujem|vdaka|super|ok|kto si|co si zac)$/.test(text);
+  return /^(ahoj|cau|hello|hi|hey|dobry den|dobry vecer|zdravim|ako sa mas|ako sa mate|ako sa ma|ako sa m|dakujem|vdaka|super|ok|kto si|co si zac)$/.test(text) ||
+    /^(ahoj|cau|hello|hi|hey|dobry den|dobry vecer|zdravim)\s+(ako sa mas|ako sa mate|ako sa ma|ako sa m)$/.test(text);
 }
 
 function pureSmallTalkFallback(message: string): StructuredAnswer {
@@ -2220,6 +2221,7 @@ function compactPureSmallTalkAnswer(answer: string, message: string): string {
   const normalizedCompact = normalizePolicyText(compact);
   if ((normalizedMessage.includes("ako sa mas") || normalizedMessage.includes("ako sa mate")) && !normalizedCompact.includes("dobre")) return fallback;
   if (/^(ahoj|cau|hello|hi|hey|dobry den|dobry vecer|zdravim)$/.test(normalizedMessage) && !normalizedCompact.includes("som tu")) return fallback;
+  if (/(tepelne cerpad|klimatiz|rekuper|podlah|stropne chladen|servis|dotac|nacenen|ponuk)/.test(normalizedCompact)) return fallback;
   return compact.length > 120 ? `${compact.slice(0, 117).trim()}...` : compact || fallback;
 }
 
@@ -8523,6 +8525,10 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     recordDiagnostic(answerDiagnostics.validatorsTriggered, "followup_questions_limited");
   }
   answer = softenOverconfidentWording(answer, answerDiagnostics);
+  if (!route.needsRetrieval && isPureSmallTalkMessage(message)) {
+    answer = compactPureSmallTalkAnswer(answer, message);
+    recordDiagnostic(answerDiagnostics.validatorsTriggered, "pure_small_talk_final_compacted");
+  }
   const normalizedFinalAnswer = normalizePolicyText(answer);
   const responseConfidenceBase: "high" | "medium" | "low" = currentMessagePolicy.kind === "adversarial" || currentMessagePolicy.kind === "out_of_scope"
     ? "low"
