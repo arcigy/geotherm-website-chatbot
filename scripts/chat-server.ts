@@ -4449,7 +4449,7 @@ function companyPracticalDirectAnswer(message: string): DirectAnswerDecision | n
   }
 
   if (
-    /^(klimatizacia|klimatizácia)\??$|(?:klimatizacia|klimatizácia).*(robite|robíte|viete|porad|nacen|naceň|cena|montaz|montáž)/.test(text) ||
+    /^(klimatizacia|klimatizácia|klimatizacie|klimatizácie)\??$|(?:klimatizacia|klimatizácia|klimatizacie|klimatizácie).*(robite|robíte|viete|porad|nacen|naceň|cena|montaz|montáž)/.test(text) ||
     (!/(strop|podlah|tepelne cerpad|cerpadl|kuren|vykurov|vetran|rekuper)/.test(text) && /(?:chcem|potrebujem|riesim|hľadám|hladam).*(chladen|klimu|klimatiz)|chladenie do domu|chladit dom|chladiť dom/.test(text))
   ) {
     return answerBase(
@@ -8235,7 +8235,6 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     ]);
     const forceDraftTopics = new Set([
       "vaillant_boilers",
-      "services_overview",
       "gas_leak_safety_scope",
       "Daikin",
       "Mitsubishi",
@@ -8505,6 +8504,7 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
       "error_code_service_scope",
       "technician_inspection_visit",
       "existing_system_check",
+      "services_overview",
     ].includes(directDecision.topic ?? "") &&
     (route.serviceType === "service" ||
       /servisny smer|servisný smer|zariadenie hlasi chybu|zariadenie hlási chybu|kotly|oprav|poruch|hluk|huci|hučí/.test(normalizePolicyText(answer))) &&
