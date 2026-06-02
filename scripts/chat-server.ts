@@ -958,7 +958,6 @@ function classifyAnswerPolicy(message: string, intent: SalesIntent): AnswerPolic
     text.includes("etf") ||
     text.includes("bitcoin") ||
     text.includes("hypotek") ||
-    text.includes("nonstop") ||
     text.includes("interny rabat") ||
     text.includes("skladom vsetky") ||
     text.includes("cennik vsetkych") ||
@@ -4589,13 +4588,33 @@ function companyPracticalDirectAnswer(message: string): DirectAnswerDecision | n
     );
   }
 
-  if (/(platb|faktur|zaloha|záloha|splátk|splatk)/.test(text)) {
+  if (/(platb|faktur|zaloh|záloh|zaloha|záloha|splátk|splatk)/.test(text)) {
     return answerBase(
       "Platba",
       "Podľa interného FAQ je potvrdené, že Geotherm **berie zálohy** a **platba na faktúru je možná**. Presný režim platby, výška zálohy a splatnosť sa majú potvrdiť pri konkrétnej ponuke.",
       "payment",
       "price",
       "company-truth prakticke FAQ platba zaloha faktura Geotherm",
+    );
+  }
+
+  if (/(pocas zimy|počas zimy|v zime|zimy|zime).*(rob|realiz|montaz|montáž)|(?:rob|realiz|montaz|montáž).*(pocas zimy|počas zimy|v zime|zimy|zime)/.test(text)) {
+    return answerBase(
+      "Realizácia počas zimy",
+      "Práce počas zimy by som nesľuboval univerzálne bez potvrdenia termínu, počasia a typu zákazky. Servis alebo menší zásah môže byť iný prípad než väčšia montáž vykurovania, rozvodov alebo exteriérové práce. Najistejšie je poslať popis práce a lokalitu, aby Geotherm potvrdil, či je termín a rozsah reálne spraviť.",
+      "winter_work_scope",
+      "process",
+      "company-truth prakticke FAQ terminy realizacia zima servis montaz Geotherm",
+    );
+  }
+
+  if (/(nonstop|24\/7|24 7|pohotovostn[aá] linka|stala linka|stála linka)/.test(text)) {
+    return answerBase(
+      "Nonstop linka",
+      "Bez potvrdeného firemného podkladu by som nesľuboval nonstop linku ani 24/7 dostupnosť. Geotherm vie riešiť servis a havarijné výjazdy u svojich zákazníkov, ale dostupnosť treba potvrdiť podľa problému, lokality a zariadenia. Ak ide o urgentnú poruchu, najpraktickejší krok je poslať popis problému a telefonický kontakt na spätné dohodnutie.",
+      "nonstop_line_scope",
+      "contact",
+      "company-truth prakticke FAQ havarijny vyjazd servis kontakt nonstop potvrdit Geotherm",
     );
   }
 

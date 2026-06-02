@@ -60,7 +60,8 @@ function validate(question: string, body: Awaited<ReturnType<typeof createChatRe
   if ((body.responseTimeMs || 0) > maxMs) failures.push(`responseTimeMs>${maxMs}: ${body.responseTimeMs}`);
   if (/strucne k otazke|co z toho chces upresnit|prepac teraz neviem pripravit dobru odpoved/.test(answer)) failures.push("old fallback phrase");
   if (/pageTitle|sectionHeading|snippet|manual:\/\/|http:\/\/www\.geotherm\.sk/.test(body.answer)) failures.push("raw source leakage");
-  if (isCompanyQuestion(question) && sources < 1 && debug.serviceType !== "unknown") failures.push("company/service answer without sources");
+  if (isCompanyQuestion(question) && sources < 1) failures.push("company/service answer without sources");
+  if (isCompanyQuestion(question) && debug.answerMode === "general_chat") failures.push("company question routed as general_chat");
   return failures;
 }
 
