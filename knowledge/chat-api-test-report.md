@@ -1,7 +1,7 @@
 # Chat API Test Report
 
 Endpoint: `POST /chat`
-Generated: 2026-06-02T13:58:09.932Z
+Generated: 2026-06-02T19:15:19.059Z
 
 ## Summary
 
@@ -24,6 +24,4 @@ Generated: 2026-06-02T13:58:09.932Z
 
 ## Fallback Check
 
-Na toto nemám potvrdený firemný podklad v témach Geotherm.
-
-Počasie, šport ani politiku nebudem miešať do technického poradenstva. Ak riešiš dom, viem pomôcť s kúrením, chladením, vetraním, servisom, dotáciou alebo ponukou.
+Ako chatbot zameraný na geotermaálne technológie, nemám prístup k informáciám o počasí. Môj podklad je obmedzený na témy súvisiace s geotermálnou energiou.

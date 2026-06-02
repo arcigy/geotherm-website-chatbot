@@ -414,6 +414,30 @@ const scenarios: Scenario[] = [
       },
     ],
   },
+  {
+    id: "subsidy_to_water_distribution_switch",
+    title: "Explicitne prepnutie z dotacii na kanalizaciu",
+    turns: [
+      {
+        message: "Riešim Najčastejšie otázky – dotácie. Robíte to a ako by som mal postupovať?",
+        expect: {
+          service: "subsidy",
+          intent: "subsidy",
+          anyOf: ["dot", "podpor", "over", "konzult"],
+          maxQuestions: 1,
+        },
+      },
+      {
+        message: "Potrebujem poradiť alebo naceniť Rozvody kanalizácie, čo by ste odporučili?",
+        expect: {
+          intent: ["process", "price"],
+          anyOf: ["kanal", "rozvod", "vod", "nacen", "pôdorys", "fotk"],
+          forbidden: ["tepelne cerpadlo", "tepelného čerpadla", "vzduch-voda"],
+          maxQuestions: 1,
+        },
+      },
+    ],
+  },
 ];
 
 function normalize(value: string): string {

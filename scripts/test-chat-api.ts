@@ -34,10 +34,12 @@ function passFor(query: string, response: ApiResponse): boolean {
       .replace(/[\u0300-\u036f]/g, "");
     return (
       response.confidence === "low" &&
-      (normalizedAnswer.includes("nenasiel dostatocne jasnu odpoved") ||
-        normalizedAnswer.includes("nemam dostatocne jasny podklad") ||
-        normalizedAnswer.includes("nemam dost jasny podklad") ||
-        normalizedAnswer.includes("nemam potvrdeny firemny podklad"))
+      response.sources.length === 0 &&
+      response.topScore === 0 &&
+      (normalizedAnswer.includes("geotherm") ||
+        normalizedAnswer.includes("geoterm") ||
+        normalizedAnswer.includes("podklad") ||
+        normalizedAnswer.includes("pocasi"))
     );
   }
   if (query.includes("presny model")) {

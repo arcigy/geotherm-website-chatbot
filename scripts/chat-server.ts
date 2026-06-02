@@ -4102,6 +4102,26 @@ function companyPracticalDirectAnswer(message: string): DirectAnswerDecision | n
     );
   }
 
+  if (/(dotac|dotác|prispev|príspev|poukaz|podpor).*(rekonstruk|rekonštruk|stars|starš|obnov)|(?:rekonstruk|rekonštruk|stars|starš|obnov).*(dotac|dotác|prispev|príspev|poukaz|podpor)/.test(text)) {
+    return answerBase(
+      "Dotácia pri rekonštrukcii",
+      "Pri rekonštrukcii alebo staršom rodinnom dome treba dotáciu najprv overiť podľa aktuálneho programu, stavu domu a navrhnutej technológie. Bez preverenia by som nesľuboval nárok, výšku podpory, odpočet z ceny ani kompletné vybavenie. Praktický ďalší krok je konzultácia s Geotherm: overiť podmienky, vybrať vhodné riešenie a pripraviť nacenenie.",
+      "subsidy_reconstruction_scope",
+      "subsidy",
+      "company-truth dotacia rekonstrukcia starsi rodinny dom obnova podmienky programu overenie nacenenie Geotherm",
+    );
+  }
+
+  if (/(slnec|slneč|solar|solár|solarn|solárn|kolektor).*(dotac|dotác|prispev|príspev|poukaz|podpor)|(?:dotac|dotác|prispev|príspev|poukaz|podpor).*(slnec|slneč|solar|solár|solarn|solárn|kolektor)/.test(text)) {
+    return answerBase(
+      "Dotácia na solárne kolektory",
+      "Pri solárnych alebo slnečných kolektoroch treba najprv potvrdiť, či ide o ohrev teplej vody, zásobník a konkrétnu zostavu, a potom overiť aktuálny dotačný program. Bez overenia by som nesľuboval nárok, výšku podpory ani odpočet z ceny. Najpraktickejší ďalší krok je konzultácia s Geotherm a nacenenie zostavy kolektory + zásobník podľa domácnosti.",
+      "solar_collector_subsidy_scope",
+      "subsidy",
+      "company-truth solarne slnecne kolektory dotacia podpora zasobnik TUV ohrev vody overenie Geotherm",
+    );
+  }
+
   if (/(podmienky podpory|podmienk.*podpor)/.test(text)) {
     return answerBase(
       "Podmienky podpory",
@@ -4203,6 +4223,29 @@ function companyPracticalDirectAnswer(message: string): DirectAnswerDecision | n
       "heat_pump_comfort_scope",
       "recommendation",
       "service-card-heat-pump tepelne cerpadlo komfort dom vzduch-voda radiator podlahove kurenie Geotherm",
+    );
+  }
+
+  if (
+    /(tepelne cerpad|tepelné čerpad|cerpad|čerpad).*(vybera|vyberá|odbornik|odborník)|(?:odbornik|odborník).*(tepelne cerpad|tepelné čerpad|cerpad|čerpad)/.test(text) ||
+    (/(tepel|cerpad|čerpad|\btc\b|\btč\b)/.test(text) && /(vyber|odborn)/.test(text))
+  ) {
+    return answerBase(
+      "Tepelné čerpadlo vyberá odborník",
+      "Tepelné čerpadlo je lepšie vyberať ako celý systém, nie iba podľa značky alebo výkonu z katalógu. Odborník musí zohľadniť dom, tepelnú stratu alebo aspoň plochu a stav zateplenia, radiátory alebo podlahovku, teplú vodu, reguláciu a montážne možnosti. Geotherm vie určiť predbežný smer v chate, ale konkrétnu zostavu má zmysel potvrdiť na konzultácii a nacenení.",
+      "heat_pump_expert_selection_scope",
+      "recommendation",
+      "service-card-heat-pump tepelne cerpadlo vybera odbornik navrh systemu vykurovanie montaz Geotherm",
+    );
+  }
+
+  if (/(ako|vyber|vybra|vybrať|najvhodnejs|najvhodnejš).*(montaz|montáž|namont).*(tepelne cerpad|tepelné čerpad|cerpad|čerpad)|(?:ako|vyber|vybra|vybrať|najvhodnejs|najvhodnejš).*(tepelne cerpad|tepelné čerpad|cerpad|čerpad).*(montaz|montáž|namont)|(?:montaz|montáž|namont).*(tepelne cerpad|tepelné čerpad|cerpad|čerpad).*(vyber|vybra|vybrať|najvhodnejs|najvhodnejš)/.test(text)) {
+    return answerBase(
+      "Výber a montáž tepelného čerpadla",
+      "Najvhodnejšie tepelné čerpadlo sa nevyberá iba podľa značky, ale podľa domu, vykurovacej sústavy, teplej vody, umiestnenia jednotky a montáže. Predbežne sa pri rodinných domoch často rieši vzduch-voda; pri novostavbe s podlahovkou je to nízkoteplotný systém, pri staršom dome s radiátormi treba overiť potrebnú teplotu vody. Praktický ďalší krok je konzultácia s Geotherm a nacenenie kompletnej zostavy od návrhu po montáž.",
+      "heat_pump_selection_installation_scope",
+      "recommendation",
+      "service-card-heat-pump vyber najvhodnejsie tepelne cerpadlo montaz navrh kompletna realizacia Geotherm",
     );
   }
 
@@ -5865,9 +5908,24 @@ function directAnswerDecision(message: string, state: QualificationState, route:
       "plan_obnovy_subsidy_scope",
       "subsidy_conditions_direct_scope",
       "vaillant_anniversary_subsidy_scope",
+      "heat_pump_comfort_scope",
+      "heat_pump_expert_selection_scope",
+      "heat_pump_installation_scope",
+      "heat_pump_selection_installation_scope",
+      "heat_pump_air_water_overview_scope",
       "heat_pump_video_guides_scope",
       "mss_solar_system_scope",
       "photovoltaics_heat_pump_scope",
+      "subsidy_faq_scope",
+      "subsidy_reconstruction_scope",
+      "solar_collector_subsidy_scope",
+      "water_distribution",
+      "garden_frost_free_valve_scope",
+      "vaillant_ecotec_boiler_scope",
+      "vaillant_compact_boiler_scope",
+      "vaillant_eloblock_boiler_scope",
+      "buderus_brand_scope",
+      "buderus_logamax_boiler_scope",
       "third_party_service",
     ].includes(priorityPractical.topic || "")
   ) {
@@ -5897,6 +5955,18 @@ function directAnswerDecision(message: string, state: QualificationState, route:
       topic: "subsidy_help_handoff",
     };
   }
+  if ((state.service_type === "subsidy" || state.service_intent === "subsidy") && /(rodinn|dom|vymen|výmen|plyn|plynov|kotol)/.test(text)) {
+    return {
+      triggered: true,
+      answerMode: "direct_answer",
+      reason: "direct_subsidy_replacement_followup",
+      answer:
+        "### Dotácia pri výmene plynového kotla\n\nPri rodinnom dome a výmene plynového kotla treba najprv overiť, či aktuálny dotačný program podporuje konkrétne riešenie a či dom spĺňa podmienky. Bez overenia by som nesľuboval nárok, výšku podpory ani odpočet z ceny.\n\nNajlepší ďalší krok je konzultácia s Geotherm: preveriť podmienky, navrhnúť vhodnú náhradu a pripraviť nacenenie.",
+      serviceIntent: "subsidy",
+      retrievalQuery: "service-card-subsidy dotacia vymena plynoveho kotla rodinny dom overenie podmienok konzultacia Geotherm",
+      topic: "subsidy_replacement_followup",
+    };
+  }
   if (state.last_direct_topic === "water_softener_scope" && /(nacen|ponuk|cena|kolko|stoj|chcem)/.test(text)) {
     return {
       triggered: true,
@@ -5919,6 +5989,21 @@ function directAnswerDecision(message: string, state: QualificationState, route:
       serviceIntent: "process",
       retrievalQuery: "service-card-floor-heating podlahove kurenie novostavba plocha skladba podlahy rozdelovac projekt nacenenie",
       topic: "floor_heating_scope",
+    };
+  }
+  if (
+    /(tepelne cerpad|tepelné čerpad|cerpad|čerpad).*(vybera|vyberá|odbornik|odborník)|(?:odbornik|odborník).*(tepelne cerpad|tepelné čerpad|cerpad|čerpad)/.test(text) ||
+    (/(tepel|cerpad|čerpad|\btc\b|\btč\b)/.test(text) && /(vyber|odborn)/.test(text))
+  ) {
+    return {
+      triggered: true,
+      answerMode: "direct_answer",
+      reason: "direct_heat_pump_expert_selection",
+      answer:
+        "### Tepelné čerpadlo vyberá odborník\n\nTepelné čerpadlo je lepšie vyberať ako celý systém, nie iba podľa značky alebo výkonu z katalógu. Odborník musí zohľadniť dom, vykurovaciu sústavu, teplú vodu, reguláciu a montážne možnosti.\n\nGeotherm vie určiť predbežný smer v chate, ale konkrétnu zostavu má zmysel potvrdiť na konzultácii a nacenení.",
+      serviceIntent: "recommendation",
+      retrievalQuery: "service-card-heat-pump tepelne cerpadlo vybera odbornik navrh systemu vykurovanie montaz Geotherm",
+      topic: "heat_pump_expert_selection_scope",
     };
   }
   if (/(poradit|poradiť).*(vyber|výber|riesen|riešen)|(?:vyber|výber).*(riesen|riešen)|ake riesenie|aké riešenie/.test(text)) {
@@ -7754,12 +7839,15 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     if (directDecision.serviceIntent === "service_fault") route.serviceType = "service";
     if (
       directDecision.topic &&
-      /^(F2040_obsolete|F2050|NIBE|Vaillant|heat_pump_brands|nibe_vaillant_comparison|nibe_noise_scope|ivt_nordic_inverter_scope)$/.test(
+      /^(F2040_obsolete|F2050|NIBE|Vaillant|heat_pump_brands|nibe_vaillant_comparison|nibe_noise_scope|ivt_nordic_inverter_scope|existing_radiator_heat_pump_standalone)$/.test(
         directDecision.topic,
-      )
+      ) ||
+      directDecision.topic?.startsWith("heat_pump_")
     ) {
       route.serviceType = "heat_pump";
     }
+    if (directDecision.topic && /^(subsidy_|plan_obnovy_|vaillant_anniversary_subsidy_scope|solar_collector_subsidy_scope)/.test(directDecision.topic)) route.serviceType = "subsidy";
+    if (directDecision.topic && /(boiler|ecotec|eloblock|logamax|buderus|compact)/.test(directDecision.topic)) route.serviceType = "service";
     if (directDecision.topic && /heat_recovery/.test(directDecision.topic)) route.serviceType = "heat_recovery";
     if (directDecision.topic && /ceiling_cooling|bkt/.test(directDecision.topic)) route.serviceType = "ceiling_cooling";
     stateForTurn = {
@@ -7967,9 +8055,11 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     "initial_heat_pump_short",
     "heat_pump_comfort_scope",
     "heat_pump_video_guides_scope",
+    "heat_pump_expert_selection_scope",
     "comfortable_heating_scope",
     "heating_solution_recommendation_scope",
     "heat_pump_installation_scope",
+    "heat_pump_selection_installation_scope",
     "heat_pump_air_water_overview_scope",
     "existing_radiator_heat_pump_standalone",
     "boilers",
@@ -7983,6 +8073,8 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     "photovoltaics_heat_pump_scope",
     "solar_panels",
     "mss_solar_system_scope",
+    "solar_collector_subsidy_scope",
+    "subsidy_replacement_followup",
     "geberit_wc_scope",
     "project_help_scope",
     "own_material_scope",
@@ -8565,9 +8657,11 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
       "solution_selection_followup",
       "initial_heat_pump_short",
       "heat_pump_comfort_scope",
+      "heat_pump_expert_selection_scope",
       "comfortable_heating_scope",
       "heating_solution_recommendation_scope",
       "heat_pump_installation_scope",
+      "heat_pump_selection_installation_scope",
       "heat_pump_air_water_overview_scope",
       "existing_radiator_heat_pump_standalone",
       "water_shutdown_scope",
@@ -8608,6 +8702,9 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
       "subsidy_conditions_scope",
       "subsidy_conditions_direct_scope",
       "plan_obnovy_subsidy_scope",
+      "subsidy_reconstruction_scope",
+      "solar_collector_subsidy_scope",
+      "subsidy_replacement_followup",
       "subsidy_conditions_direct_scope",
       "vaillant_anniversary_subsidy_scope",
       "subsidy_general_scope",
