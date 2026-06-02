@@ -9161,8 +9161,9 @@ async function legacyCreateChatResponse(requestBody: ChatRequest, knowledgePath?
     });
 
     const answerMode = routePlan.answerMode === "rag_answer" ? "general_chat" : routePlan.answerMode;
+    const noRetrievalSmallTalk = answerMode === "general_chat" && isSmallTalkMessage(answerMessage);
     const fallbackStructured =
-      answerMode === "general_chat" && isPureSmallTalkMessage(answerMessage)
+      noRetrievalSmallTalk
         ? pureSmallTalkFallback(answerMessage)
         : answerMode === "general_chat"
           ? {
@@ -9190,7 +9191,7 @@ async function legacyCreateChatResponse(requestBody: ChatRequest, knowledgePath?
       lastAskedQuestion: previousState.last_asked_question,
     });
     const structuredAnswer =
-      answerMode === "general_chat" && isPureSmallTalkMessage(answerMessage) && llm.structuredAnswer
+      noRetrievalSmallTalk && llm.structuredAnswer
         ? {
             shortAnswer: compactPureSmallTalkAnswer(llm.structuredAnswer.shortAnswer, answerMessage),
             details: [],
@@ -9200,7 +9201,8 @@ async function legacyCreateChatResponse(requestBody: ChatRequest, knowledgePath?
             confidence,
           }
         : structuredAnswerForLeadCapture(llm.structuredAnswer || fallbackStructured, leadCapture);
-    const answer = renderStructuredAnswer(structuredAnswer, sources, llm.structuredAnswer ? llm.answerMode : answerMode, { message: answerMessage, intent });
+    let answer = renderStructuredAnswer(structuredAnswer, sources, llm.structuredAnswer ? llm.answerMode : answerMode, { message: answerMessage, intent });
+    if (noRetrievalSmallTalk) answer = compactPureSmallTalkAnswer(answer, answerMessage);
     const persistedState = stateWithLastAskedQuestion(finalState, structuredAnswer);
 
     insertEvent({
