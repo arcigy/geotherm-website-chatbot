@@ -3981,6 +3981,16 @@ function companyPracticalDirectAnswer(message: string): DirectAnswerDecision | n
     );
   }
 
+  if (/(ake sluzby|aké služby|co poskytujete|čo poskytujete|co robite|čo robíte|sluzby poskytujete|služby poskytujete)/.test(text)) {
+    return answerBase(
+      "Služby Geotherm",
+      "Geotherm rieši technické riešenia domu od návrhu po montáž a servis: tepelné čerpadlá, klimatizácie, rekuperáciu, podlahové kúrenie, stropné chladenie, radiátory, kotly, rozvody vody, fotovoltiku alebo solárne riešenia podľa potvrdeného rozsahu, servis a orientáciu v dotáciách. Ak chceš ísť prakticky ďalej, najprv stačí určiť cieľ: kúrenie, chladenie, vetranie, servis, dotácia alebo kompletné riešenie domu.",
+      "services_overview",
+      "general",
+      "company-truth sluzby Geotherm tepelne cerpadla klimatizacie rekuperacia podlahove kurenie stropne chladenie servis dotacie",
+    );
+  }
+
   if (/(ake informacie|aké informácie|ake udaje|aké údaje|co potrebujete|čo potrebujete).*(ponuk|nacenen|cenu)|(?:ponuk|nacenen|cenu).*(ake informacie|aké informácie|ake udaje|aké údaje|co potrebujete|čo potrebujete)/.test(text)) {
     return answerBase(
       "Podklady na ponuku",
@@ -3988,6 +3998,76 @@ function companyPracticalDirectAnswer(message: string): DirectAnswerDecision | n
       "quote_inputs",
       "quote",
       "company-truth pricing-rules podklady na cenovu ponuku plocha fotky projekt Geotherm",
+    );
+  }
+
+  if (/(plan obnovy|plán obnovy)/.test(text)) {
+    return answerBase(
+      "Plán obnovy",
+      "Pri Pláne obnovy by som to nebral ako bežné nacenenie zariadenia. Najprv treba overiť, či konkrétny dom, technológia a aktuálne pravidlá spĺňajú podmienky podpory alebo dotácie. Bez overenia by som nesľuboval nárok, výšku podpory ani odpočet z ceny. Praktický ďalší krok je konzultácia s Geotherm: preveriť podmienky, potom pripraviť vhodný návrh a až následne nacenenie.",
+      "plan_obnovy_subsidy_scope",
+      "subsidy",
+      "company-truth plan obnovy dotacia podpora overit podmienky tepelne cerpadlo fotovoltaika Geotherm",
+    );
+  }
+
+  if (/(podmienky podpory|podmienk.*podpor)/.test(text)) {
+    return answerBase(
+      "Podmienky podpory",
+      "Podmienky podpory alebo dotácie treba vždy overiť podľa aktuálneho programu a konkrétneho riešenia. Bez preverenia by som nesľuboval nárok, výšku podpory, odpočet z ceny ani kompletné vybavenie. Pri Geotherm je praktický postup najprv konzultácia, potom overenie podmienok a až následne návrh riešenia s nacenením.",
+      "subsidy_conditions_direct_scope",
+      "subsidy",
+      "company-truth podmienky podpory dotacia podpora overit aktualny program Geotherm",
+    );
+  }
+
+  if (/(vyrocna dotacia|výročná dotácia)/.test(text)) {
+    return answerBase(
+      "Výročná dotácia",
+      "Výročnú dotáciu alebo podporu pri Vaillant tepelných čerpadlách treba komunikovať opatrne: aktuálne podmienky, dostupnosť akcie a započítanie do ponuky sa musia overiť pri konkrétnej zostave. Bez potvrdenia nesľubujem nárok ani presnú zľavu. Najlepší ďalší krok je konzultácia s Geotherm, kde sa overia podmienky podpory a pripraví aktuálne nacenenie.",
+      "vaillant_anniversary_subsidy_scope",
+      "subsidy",
+      "company-truth vyrocna dotacia Vaillant podpora overit podmienky aktualna ponuka Geotherm",
+    );
+  }
+
+  if (/(tepelne cerpad|tepelné čerpad|cerpad|čerpad).*(video navod|video návod|navod|návod)|(?:video navod|video návod|navod|návod).*(tepelne cerpad|tepelné čerpad|cerpad|čerpad)/.test(text)) {
+    return answerBase(
+      "Video návody k tepelným čerpadlám",
+      "Video návody sú skôr pomoc k ovládaniu, servisu a údržbe zariadenia, nie samostatné riešenie na nacenenie. Pri tepelnom čerpadle treba vždy poznať konkrétny model a prejav problému alebo otázku k nastaveniu. Ak chceš praktickú pomoc, pošli značku/model zariadenia alebo fotku štítku a Geotherm vie potvrdiť ďalší postup.",
+      "heat_pump_video_guides_scope",
+      "service_fault",
+      "service-card-heat-pump video navody servis udrzba model zariadenie Geotherm",
+    );
+  }
+
+  if (/(rekuper|vetran).*(video|navod|návod)|(?:video|navod|návod).*(rekuper|vetran)/.test(text)) {
+    return answerBase(
+      "Video k rekuperácii",
+      "Video alebo návod k rekuperácii beriem ako pomoc k zariadeniu, ovládaniu, servisu alebo údržbe, nie ako samostatnú cenovú ponuku. Pri rekuperácii rozhoduje konkrétna jednotka, model, filtre, nastavenie a prejav problému. Ak chceš praktický ďalší krok, pošli značku/model jednotky alebo fotku štítku a Geotherm potvrdí vhodný postup.",
+      "heat_recovery_video_scope",
+      "service_fault",
+      "service-card-heat-recovery rekuperacia video navod servis udrzba model zariadenie filtre Geotherm",
+    );
+  }
+
+  if (/\bmss\b|mss system|mss systém/.test(text)) {
+    return answerBase(
+      "MSS systém",
+      "MSS systém by som zaradil medzi solárne riešenia a zásobníkové zostavy, nie ako všeobecné tepelné čerpadlo. Pri takomto dopyte treba potvrdiť, či ide o solárny ohrev vody, kolektory, zásobník alebo kombináciu s vykurovaním. Praktický ďalší krok je konzultácia a nacenenie podľa požadovaného objemu zásobníka, počtu kolektorov a napojenia.",
+      "mss_solar_system_scope",
+      "process",
+      "company-truth MSS solarny system solar kolektor zasobnik ohrev vody Geotherm",
+    );
+  }
+
+  if (/(fotovolt|fotovoltaik).*(tepelne cerpad|tepelné čerpad|cerpad|čerpad|\btc\b|\btč\b)|(?:tepelne cerpad|tepelné čerpad|cerpad|čerpad|\btc\b|\btč\b).*(fotovolt|fotovoltaik)/.test(text)) {
+    return answerBase(
+      "Fotovoltaika a tepelné čerpadlo",
+      "Fotovoltaika a tepelné čerpadlo môžu dávať zmysel ako spoločný systém, ale netreba sľubovať automatickú úsporu bez návrhu. Rozhodujú panely, menič, spotreba domu, riadenie prebytkov, výkon tepelného čerpadla a prípadný zásobník. Najlepší ďalší krok je konzultácia alebo nacenenie celej zostavy, aby sa potvrdilo, čo má pokryť fotovoltaika a čo tepelné čerpadlo.",
+      "photovoltaics_heat_pump_scope",
+      "process",
+      "company-truth fotovoltaika panely tepelne cerpadlo menic zasobnik regulacia Geotherm",
     );
   }
 
@@ -5157,6 +5237,16 @@ function companyPracticalDirectAnswer(message: string): DirectAnswerDecision | n
     );
   }
 
+  if (/(nezamrz|nezámrz|zahradn|záhradn).*(ventil|voda)|(?:ventil).*(nezamrz|nezámrz|zahradn|záhradn)/.test(text)) {
+    return answerBase(
+      "Záhradný nezámrzný ventil",
+      "Záhradný nezámrzný ventil patrí skôr do zdravotechniky a rozvodov vody než do vykurovania. Pri konkrétnej realizácii treba potvrdiť miesto napojenia, prívod vody, uloženie potrubia, prístup na montáž a či ide o novostavbu alebo doplnenie do existujúceho domu. Praktický ďalší krok je poslať fotku alebo pôdorys miesta a Geotherm potvrdí nacenenie.",
+      "garden_frost_free_valve_scope",
+      "process",
+      "company-truth zahradny nezamrzny ventil voda rozvody zdravotechnika Geotherm",
+    );
+  }
+
   if (/(geberit|\bwc\b|zavesne wc|závesné wc)/.test(text)) {
     return answerBase(
       "WC a Geberit",
@@ -5676,6 +5766,21 @@ function directAnswerDecision(message: string, state: QualificationState, route:
       retrievalQuery: null,
       topic: null,
     };
+  }
+  const priorityPractical = companyPracticalDirectAnswer(message);
+  if (
+    priorityPractical &&
+    [
+      "plan_obnovy_subsidy_scope",
+      "subsidy_conditions_direct_scope",
+      "vaillant_anniversary_subsidy_scope",
+      "heat_pump_video_guides_scope",
+      "mss_solar_system_scope",
+      "photovoltaics_heat_pump_scope",
+      "third_party_service",
+    ].includes(priorityPractical.topic || "")
+  ) {
+    return priorityPractical;
   }
   if (state.last_direct_topic === "central_vacuum_scope" && /(novostav|bungalov|dom|m2|postup|ako|nacen|ponuk)/.test(text)) {
     return {
@@ -7697,10 +7802,12 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
   );
   const compactDirectComposerTopics = new Set([
     "vaillant_boilers",
+    "services_overview",
     "heat_pump_brands",
     "gas_leak_safety_scope",
     "initial_heat_pump_short",
     "heat_pump_comfort_scope",
+    "heat_pump_video_guides_scope",
     "comfortable_heating_scope",
     "heating_solution_recommendation_scope",
     "heat_pump_installation_scope",
@@ -7710,10 +7817,13 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     "boiler_brands",
     "heat_pump_service_scope",
     "heat_recovery_general_scope",
+    "heat_recovery_video_scope",
     "heat_recovery_filters_scope",
     "vaillant_heat_recovery_scope",
     "photovoltaics",
+    "photovoltaics_heat_pump_scope",
     "solar_panels",
+    "mss_solar_system_scope",
     "geberit_wc_scope",
     "project_help_scope",
     "own_material_scope",
@@ -7734,6 +7844,7 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     "existing_system_check",
     "water_shutdown_scope",
     "water_distribution",
+    "garden_frost_free_valve_scope",
     "heating_shutdown_scope",
     "solution_selection_followup",
     "radiators_scope",
@@ -7764,6 +7875,9 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     "vaillant_heat_recovery_scope",
     "solar_collector_tank_scope",
     "subsidy_conditions_scope",
+    "subsidy_conditions_direct_scope",
+    "plan_obnovy_subsidy_scope",
+    "vaillant_anniversary_subsidy_scope",
     "subsidy_general_scope",
     "subsidy_oze_scope",
     "subsidy_help_handoff",
@@ -8061,7 +8175,10 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
   }
   if (directDecision.triggered && directDecision.topic === "buffer_tank_price_scope" && directDecision.answer) {
     const normalized = normalizePolicyText(answer);
-    if (!normalized.includes("ponuk")) {
+    const hasSafeBufferTankScope =
+      /akumulac|akumula/.test(normalized) &&
+      /(ponuk|rozsah|nie je automat|nepovazuj|nepovažuj|samostatn|zahrnut)/.test(normalized);
+    if (!hasSafeBufferTankScope) {
       recordDiagnostic(answerDiagnostics.validatorsTriggered, "buffer_tank_scope_repaired");
       answer = validateAndRepairAnswer(directDecision.answer, stateForTurn, route, message, answerDiagnostics);
       directAnswerFallbackUsed = true;
@@ -8118,6 +8235,7 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     ]);
     const forceDraftTopics = new Set([
       "vaillant_boilers",
+      "services_overview",
       "gas_leak_safety_scope",
       "Daikin",
       "Mitsubishi",
@@ -8136,6 +8254,7 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
       "business_heating_followup",
       "heat_pump_service_scope",
       "heat_recovery_general_scope",
+      "heat_recovery_video_scope",
       "heat_recovery_filters_scope",
       "vaillant_heat_recovery_scope",
       "warranty_work",
@@ -8149,6 +8268,7 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
       "bathroom_core",
       "chimney_work",
       "photovoltaics",
+      "photovoltaics_heat_pump_scope",
       "screeds",
       "references",
       "third_party_service",
@@ -8196,12 +8316,14 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
       "existing_radiator_heat_pump_standalone",
       "water_shutdown_scope",
       "water_distribution",
+      "garden_frost_free_valve_scope",
       "heating_shutdown_scope",
       "heating_not_working_triage",
       "response_time_scope",
       "project_help_scope",
       "geberit_wc_scope",
       "solar_panels",
+      "mss_solar_system_scope",
       "radiators_scope",
       "new_build_scope",
       "video_inspection_scope",
@@ -8228,8 +8350,13 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
       "air_conditioning_general_scope",
       "solar_collector_tank_scope",
       "subsidy_conditions_scope",
+      "subsidy_conditions_direct_scope",
+      "plan_obnovy_subsidy_scope",
+      "subsidy_conditions_direct_scope",
+      "vaillant_anniversary_subsidy_scope",
       "subsidy_general_scope",
       "subsidy_oze_scope",
+      "heat_pump_video_guides_scope",
       "heating_reconstruction_scope",
       "boiler_electrical_scope",
       "service_order_process",
@@ -8247,6 +8374,11 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
       (topic === "gas_revision" && !normalized.includes("plyn")) ||
       (topic === "water_distribution" && !(normalized.includes("vod") && normalized.includes("rozvod"))) ||
       (topic === "customer_bought_boiler" && !(normalized.includes("potvr") && normalized.includes("kot"))) ||
+      (["plan_obnovy_subsidy_scope", "subsidy_conditions_direct_scope", "vaillant_anniversary_subsidy_scope"].includes(topic) && !/(dotac|podpor|podmien|over)/.test(normalized)) ||
+      (topic === "heat_pump_video_guides_scope" && !/(servis|udrz|model|zariaden)/.test(normalized)) ||
+      (topic === "heat_recovery_video_scope" && !/(rekuper|vetr|servis|udrz|model|zariaden)/.test(normalized)) ||
+      (topic === "mss_solar_system_scope" && !/(solar|solarn|kolektor|zasobnik)/.test(normalized)) ||
+      (topic === "photovoltaics_heat_pump_scope" && !/(fotovolt|panel)/.test(normalized)) ||
       (["whatsapp", "insurance", "gas_certification", "docs_after_install"].includes(topic) && /^ano\b/.test(normalized));
     if (needsDraft) {
       recordDiagnostic(answerDiagnostics.validatorsTriggered, "company_practical_guardrail_repaired");

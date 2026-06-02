@@ -38,6 +38,7 @@
     "audit:broad-surface": "tsx scripts/audit-broad-surface.ts",
     "audit:cta-coverage": "tsx scripts/audit-cta-coverage.ts",
     "audit:non-heat-pump-flows": "tsx scripts/audit-non-heat-pump-flows.ts",
+    "audit:paraphrase-surface": "tsx scripts/audit-paraphrase-surface.ts",
     "audit:live-question-surface": "tsx scripts/audit-live-question-surface.ts",
     "audit:wordpress-surface": "tsx scripts/audit-wordpress-surface.ts",
     "preview:embed": "vite dist-embed --host 127.0.0.1 --port 4321",

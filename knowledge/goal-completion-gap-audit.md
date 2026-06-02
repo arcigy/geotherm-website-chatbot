@@ -15,6 +15,7 @@ This audit maps the active user goal to current evidence. It does not mark the g
 | Broad service coverage | `knowledge/broad-surface-audit.md`: `58/58`, max 8000 ms, all LLM yes | Proven for covered broad cases |
 | Live question coverage | `knowledge/live-question-surface-audit.md`: `102/102`, max 8000 ms, all LLM yes | Proven for covered live cases |
 | WordPress REST surface coverage | `knowledge/wordpress-surface-audit.md`: `94/94` from 312 exported WordPress items | Proven for generated sampled cases |
+| WordPress paraphrase/fuzz coverage | `knowledge/paraphrase-surface-audit.md`: `282/282`, 94 WordPress-derived topics x 3 customer wording variants, max 8000 ms, LLM required | Proven for covered paraphrases |
 | Non-heat-pump long flows | `knowledge/non-heat-pump-flow-audit.md`: `27/27` across air conditioning, heat recovery, floor heating, ceiling cooling, service, subsidy, complex solution, water softener and central vacuum flows | Proven for covered non-heat-pump multi-turn flows |
 | Production readiness gates | `knowledge/production-readiness-audit.md`: `17/17`, production gates `6/6`, health PASS | Proven for scripted gates |
 | Diagnostic conversations | `knowledge/diagnostic-conversation-test-report.md`: `44/44` | Proven for scripted conversation flows |
@@ -30,15 +31,15 @@ This audit maps the active user goal to current evidence. It does not mark the g
 
 | Requirement | Gap |
 | --- | --- |
-| "Extremely many questions / every possible customer nonsense" | Current audits cover broad, live, and generated WordPress samples, but no finite test proves every possible phrasing. More fuzzing and randomized paraphrase testing would strengthen this. |
+| "Extremely many questions / every possible customer nonsense" | Current audits cover broad, live, generated WordPress samples and 282 WordPress paraphrases, but no finite test proves every possible phrasing. More randomized/adversarial fuzzing would strengthen this. |
 | "No hallucination at all" | Validators and banned-claim checks cover known risks, but zero hallucination cannot be proven globally. Needs continuous adversarial tests and review of new failure transcripts. |
-| "Always asks follow-up when vague, but stops after a few turns" | Diagnostic and non-heat-pump multi-turn tests cover key flows, but more randomized paraphrases are still needed before calling this globally proven. |
-| "Always routes toward meeting/Geotherm consultation" | Dedicated CTA audit now covers key service handoffs, but global "always" still needs wider paraphrase/fuzz testing and monitoring. |
+| "Always asks follow-up when vague, but stops after a few turns" | Diagnostic and non-heat-pump multi-turn tests cover key flows, and paraphrase coverage reduces wording risk. Global behavior still needs more randomized long-flow testing. |
+| "Always routes toward meeting/Geotherm consultation" | Dedicated CTA audit and paraphrase coverage now cover key service handoffs, but global "always" still needs wider randomized monitoring. |
 | "Work in duplicate, do not change main" | Not satisfied literally because repository instruction requires staying on `main` and pushing final changes. Current work followed the higher-priority repo instruction. |
 | "Full production readiness" | Current production audit is green, but production readiness is not a one-time proof. It needs repeated live monitoring under provider load because occasional Gemini high-demand events were observed during earlier runs. |
 
 ## Next Recommended Work
 
-1. Add a paraphrase/fuzz audit for the same 94 WordPress topics with 3-5 wording variants each.
-2. Add provider resilience metrics: how often `llmUsed=false` or >8000 ms appears under repeated runs, even when a single audit pass is green.
+1. Add repeated-run provider resilience metrics: how often `llmUsed=false` or >8000 ms appears under Gemini load, even when a single audit pass is green.
+2. Add randomized/adversarial long-flow tests that combine multiple services and vague follow-ups.
 3. Keep expanding concrete company-truth chunks when new customer transcripts expose missing services, models, price rules or policies.
