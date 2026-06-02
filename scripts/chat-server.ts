@@ -3984,7 +3984,7 @@ function companyPracticalDirectAnswer(message: string): DirectAnswerDecision | n
   if (/(ake informacie|aké informácie|ake udaje|aké údaje|co potrebujete|čo potrebujete).*(ponuk|nacenen|cenu)|(?:ponuk|nacenen|cenu).*(ake informacie|aké informácie|ake udaje|aké údaje|co potrebujete|čo potrebujete)/.test(text)) {
     return answerBase(
       "Podklady na ponuku",
-      "Na rozumnú cenovú ponuku treba hlavne: čo chceš riešiť, či ide o novostavbu alebo rekonštrukciu, **plochu v m²**, lokalitu, aktuálne kúrenie alebo plánované rozvody, požiadavku na teplú vodu alebo chladenie a ideálne fotky kotolne alebo projekt. Potom má zmysel dohodnúť konzultáciu, kde sa vyberie riešenie a nacení rozsah.",
+      "Na rozumnú cenovú ponuku treba hlavne: čo chceš riešiť, či ide o novostavbu alebo rekonštrukciu, **plocha v m²**, lokalitu, aktuálne kúrenie alebo plánované rozvody, požiadavku na teplú vodu alebo chladenie a ideálne fotky kotolne alebo projekt. Potom má zmysel dohodnúť konzultáciu, kde sa vyberie riešenie a nacení rozsah.",
       "quote_inputs",
       "quote",
       "company-truth pricing-rules podklady na cenovu ponuku plocha fotky projekt Geotherm",
@@ -6341,7 +6341,12 @@ function sanitizeAnswerForDiagnosticRules(
     diagnostics,
     "third_party_service_claim_sanitized",
     "servis cudzej montáže",
-    (sentence) => sentence.includes("cudzi") && sentence.includes("montaz") && sentence.includes("servis") && !sentence.includes("treba potvrdit"),
+    (sentence) =>
+      !sentence.includes("treba potvrdit") &&
+      (
+        (sentence.includes("cudzi") && sentence.includes("montaz") && sentence.includes("servis")) ||
+        (/(nebol[io] nami|nie od nas|ina firma|inej firmy)/.test(sentence) && /(servis|oprava|diagnostik)/.test(sentence) && /(mozeme|vieme|vykonat|spravit|urobit)/.test(sentence))
+      ),
     "Pri zariadeniach montovaných inou firmou treba servis najprv potvrdiť podľa značky a dostupnosti.",
   );
   next = applySanitizerRule(
