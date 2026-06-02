@@ -210,10 +210,11 @@ async function fileText(relativePath: string): Promise<string> {
 }
 
 async function runStaticProductionGates(): Promise<Gate[]> {
-  const [chatServer, localDb, crmTest, contradictions, semanticCoverage] = await Promise.all([
+  const [chatServer, localDb, crmTest, securitySelfCheck, contradictions, semanticCoverage] = await Promise.all([
     fileText("scripts/chat-server.ts"),
     fileText("scripts/local-db.ts"),
     fileText("scripts/test-crm-leads.ts"),
+    fileText("scripts/security-self-check.ts"),
     fileText("scripts/detect-knowledge-contradictions.ts"),
     fileText("knowledge/semantic-coverage-report.md").catch(() => ""),
   ]);
@@ -244,6 +245,18 @@ async function runStaticProductionGates(): Promise<Gate[]> {
     chatServer.includes("retrievalSourcesCount") &&
     chatServer.includes("enrichedRetrievalQuery") &&
     chatServer.includes("storedSlots");
+  const hasAbuseControls =
+    chatServer.includes("checkChatRateLimit") &&
+    chatServer.includes("rate_limited") &&
+    chatServer.includes("Retry-After") &&
+    chatServer.includes("rateLimit:") &&
+    securitySelfCheck.includes("rateLimitCheck");
+  const hasSignedSiteAuth =
+    chatServer.includes("verifySiteSignature") &&
+    chatServer.includes("invalid_site_signature") &&
+    chatServer.includes("X-Arcigy-Site-Signature") &&
+    chatServer.includes("ARCIGY_SITE_SIGNATURE_SECRET") &&
+    securitySelfCheck.includes("signedSiteKeyCheck");
 
   return [
     {
@@ -269,6 +282,18 @@ async function runStaticProductionGates(): Promise<Gate[]> {
       title: "Answer quality debug traceability",
       pass: hasResponseQualityDebug,
       evidence: "Requires direct/closure gates, enriched retrieval query, stored slots and source count in debug output.",
+    },
+    {
+      id: "abuse_controls",
+      title: "Chat abuse controls",
+      pass: hasAbuseControls,
+      evidence: "Requires enforced /chat rate limiting, 429 rate_limited errors, Retry-After and security self-check coverage.",
+    },
+    {
+      id: "signed_site_auth",
+      title: "Signed site request authentication",
+      pass: hasSignedSiteAuth,
+      evidence: "Requires optional HMAC signed /chat requests, invalid signature rejection and security self-check coverage.",
     },
   ];
 }

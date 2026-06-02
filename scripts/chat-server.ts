@@ -1,5 +1,6 @@
 ﻿import { createServer, type IncomingMessage, type Server, type ServerResponse } from "node:http";
 import { execFileSync } from "node:child_process";
+import { createHmac, timingSafeEqual } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { type KnowledgeChunk, retrieveKnowledge, tokenize, type RetrievalResult } from "./local-retrieval";
@@ -168,6 +169,25 @@ type StartOptions = {
   port?: number;
   host?: string;
   knowledgePath?: string;
+  rateLimit?: Partial<RateLimitConfig>;
+  siteSignature?: Partial<SiteSignatureConfig>;
+};
+
+type RateLimitConfig = {
+  enabled: boolean;
+  windowMs: number;
+  maxRequests: number;
+};
+
+type RateLimitBucket = {
+  resetAt: number;
+  count: number;
+};
+
+type SiteSignatureConfig = {
+  enabled: boolean;
+  secret: string | null;
+  maxAgeMs: number;
 };
 
 type AnswerPolicy = {
@@ -183,6 +203,7 @@ const diagnosticFlowVersion = "diagnostic-v5-recommendation-closure";
 
 let knowledgeCache: KnowledgeChunk[] | null = null;
 let serverCommitCache: string | null = null;
+const chatRateLimitBuckets = new Map<string, RateLimitBucket>();
 
 const supplementalCompanyTruthTexts = [
   {
@@ -310,7 +331,7 @@ function corsHeaders(origin: string | undefined): Record<string, string> {
   return {
     ...(allowedOrigin ? { "Access-Control-Allow-Origin": allowedOrigin } : {}),
     "Access-Control-Allow-Methods": "GET, POST, PATCH, OPTIONS",
-    "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Admin-Token",
+    "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Admin-Token, X-Arcigy-Site-Timestamp, X-Arcigy-Site-Signature",
     "Access-Control-Max-Age": "86400",
     Vary: "Origin",
   };
@@ -326,6 +347,84 @@ function writeJson(response: ServerResponse, statusCode: number, body: unknown, 
 
 function writeError(response: ServerResponse, statusCode: number, code: string, message: string, origin?: string): void {
   writeJson(response, statusCode, { error: { code, message } }, origin);
+}
+
+function rateLimitConfig(overrides?: Partial<RateLimitConfig>): RateLimitConfig {
+  const disabled = process.env.ARCIGY_RATE_LIMIT_DISABLED === "true";
+  const windowMs = Number.parseInt(process.env.ARCIGY_RATE_LIMIT_WINDOW_MS || "", 10);
+  const maxRequests = Number.parseInt(process.env.ARCIGY_RATE_LIMIT_MAX_REQUESTS || "", 10);
+  return {
+    enabled: overrides?.enabled ?? !disabled,
+    windowMs: overrides?.windowMs ?? (Number.isFinite(windowMs) && windowMs > 0 ? windowMs : 60_000),
+    maxRequests: overrides?.maxRequests ?? (Number.isFinite(maxRequests) && maxRequests > 0 ? maxRequests : 120),
+  };
+}
+
+function siteSignatureConfig(overrides?: Partial<SiteSignatureConfig>): SiteSignatureConfig {
+  const secret = overrides?.secret ?? process.env.ARCIGY_SITE_SIGNATURE_SECRET?.trim() ?? null;
+  const configuredMaxAge = Number.parseInt(process.env.ARCIGY_SITE_SIGNATURE_MAX_AGE_MS || "", 10);
+  return {
+    enabled: overrides?.enabled ?? Boolean(secret),
+    secret,
+    maxAgeMs: overrides?.maxAgeMs ?? (Number.isFinite(configuredMaxAge) && configuredMaxAge > 0 ? configuredMaxAge : 15 * 60_000),
+  };
+}
+
+function clientIp(request: IncomingMessage): string {
+  const forwarded = request.headers["x-forwarded-for"];
+  const value = Array.isArray(forwarded) ? forwarded[0] : forwarded;
+  return value?.split(",")[0]?.trim() || request.socket.remoteAddress || "unknown";
+}
+
+function checkChatRateLimit(request: IncomingMessage, body: ChatRequest, config: RateLimitConfig): { allowed: boolean; retryAfterSeconds: number } {
+  if (!config.enabled || config.maxRequests <= 0 || config.windowMs <= 0) return { allowed: true, retryAfterSeconds: 0 };
+  const now = Date.now();
+  const siteId = body.siteId?.trim() || "unknown-site";
+  const anonymousId = body.anonymousId?.trim() || "anonymous";
+  const key = `${siteId}:${anonymousId}:${clientIp(request)}`;
+  const existing = chatRateLimitBuckets.get(key);
+
+  if (!existing || existing.resetAt <= now) {
+    chatRateLimitBuckets.set(key, { count: 1, resetAt: now + config.windowMs });
+    return { allowed: true, retryAfterSeconds: 0 };
+  }
+
+  existing.count += 1;
+  if (existing.count <= config.maxRequests) return { allowed: true, retryAfterSeconds: 0 };
+  return { allowed: false, retryAfterSeconds: Math.max(1, Math.ceil((existing.resetAt - now) / 1000)) };
+}
+
+function siteSignaturePayload(body: ChatRequest, origin: string | undefined, timestamp: string): string {
+  return [body.siteId?.trim() || "", origin || "", timestamp].join("\n");
+}
+
+function expectedSiteSignature(secret: string, body: ChatRequest, origin: string | undefined, timestamp: string): string {
+  return createHmac("sha256", secret).update(siteSignaturePayload(body, origin, timestamp)).digest("hex");
+}
+
+function safeEqualHex(left: string, right: string): boolean {
+  try {
+    const leftBuffer = Buffer.from(left, "hex");
+    const rightBuffer = Buffer.from(right, "hex");
+    return leftBuffer.length === rightBuffer.length && timingSafeEqual(leftBuffer, rightBuffer);
+  } catch {
+    return false;
+  }
+}
+
+function verifySiteSignature(request: IncomingMessage, body: ChatRequest, origin: string | undefined, config: SiteSignatureConfig): boolean {
+  if (!config.enabled) return true;
+  if (!config.secret) return false;
+  const timestamp = Array.isArray(request.headers["x-arcigy-site-timestamp"])
+    ? request.headers["x-arcigy-site-timestamp"][0]
+    : request.headers["x-arcigy-site-timestamp"];
+  const signature = Array.isArray(request.headers["x-arcigy-site-signature"])
+    ? request.headers["x-arcigy-site-signature"][0]
+    : request.headers["x-arcigy-site-signature"];
+  if (!timestamp || !signature) return false;
+  const parsedTimestamp = Number.parseInt(timestamp, 10);
+  if (!Number.isFinite(parsedTimestamp) || Math.abs(Date.now() - parsedTimestamp) > config.maxAgeMs) return false;
+  return safeEqualHex(signature, expectedSiteSignature(config.secret, body, origin, timestamp));
 }
 
 function isPreviewEnabled(): boolean {
@@ -8124,6 +8223,8 @@ export async function startChatServer(options: StartOptions = {}): Promise<Serve
   const port = options.port ?? Number.parseInt(process.env.CHAT_API_PORT || "4317", 10);
   const host = options.host ?? process.env.CHAT_API_HOST ?? "127.0.0.1";
   const knowledgePath = options.knowledgePath ?? defaultKnowledgePath;
+  const chatRateLimit = rateLimitConfig(options.rateLimit);
+  const chatSiteSignature = siteSignatureConfig(options.siteSignature);
   initDb();
   await loadKnowledge(knowledgePath);
 
@@ -8138,7 +8239,25 @@ export async function startChatServer(options: StartOptions = {}): Promise<Serve
     }
 
     if (request.method === "GET" && requestUrl.pathname === "/health") {
-      writeJson(response, 200, { ok: true, commit: serverCommit(), diagnosticFlowVersion }, origin);
+      writeJson(
+        response,
+        200,
+        {
+          ok: true,
+          commit: serverCommit(),
+          diagnosticFlowVersion,
+          rateLimit: {
+            enabled: chatRateLimit.enabled,
+            windowMs: chatRateLimit.windowMs,
+            maxRequests: chatRateLimit.maxRequests,
+          },
+          siteSignature: {
+            enabled: chatSiteSignature.enabled,
+            maxAgeMs: chatSiteSignature.maxAgeMs,
+          },
+        },
+        origin,
+      );
       return;
     }
 
@@ -8168,6 +8287,20 @@ export async function startChatServer(options: StartOptions = {}): Promise<Serve
       const body = await readJsonBody(request);
       if (!isChatRequest(body)) {
         writeError(response, 400, "bad_request", "Request must include message.", origin);
+        return;
+      }
+      if (!verifySiteSignature(request, body, origin, chatSiteSignature)) {
+        writeError(response, 401, "invalid_site_signature", "Valid site signature is required.", origin);
+        return;
+      }
+      const rateLimit = checkChatRateLimit(request, body, chatRateLimit);
+      if (!rateLimit.allowed) {
+        response.writeHead(429, {
+          "Content-Type": "application/json; charset=utf-8",
+          "Retry-After": String(rateLimit.retryAfterSeconds),
+          ...corsHeaders(origin),
+        });
+        response.end(`${JSON.stringify({ error: { code: "rate_limited", message: "Too many chat requests. Try again later." } }, null, 2)}\n`);
         return;
       }
 
