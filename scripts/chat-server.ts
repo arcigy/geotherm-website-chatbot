@@ -5953,6 +5953,21 @@ function directAnswerDecision(message: string, state: QualificationState, route:
   ) {
     return priorityPractical;
   }
+  if (
+    (state.service_type === "ceiling_cooling" || route.serviceType === "ceiling_cooling" || state.last_direct_topic === "ceiling_cooling_scope") &&
+    /(najleps|najlepš|riesen|riešen|navrh|návrh|odporuc|odporúč|chcem vediet|chcem vedieť)/.test(text)
+  ) {
+    return {
+      triggered: true,
+      answerMode: "direct_answer",
+      reason: "direct_ceiling_cooling_solution_closure",
+      answer:
+        "### Najlepší smer pre stropné chladenie\n\nPre novostavbu a chladenie celého domu by som ako najlepší predbežný smer riešil projektovo navrhnuté stropné chladenie s reguláciou vlhkosti a rosným bodom. Ak má byť komfort v lete silnejší alebo rýchlejší v niektorých miestnostiach, dáva zmysel porovnať aj doplnkové fancoily alebo klimatizáciu.\n\nToto už netreba ťahať ďalším dotazníkom; praktický ďalší krok je konzultácia a nacenenie konkrétneho systému s Geotherm podľa domu a rozsahu.",
+      serviceIntent: "recommendation",
+      retrievalQuery: "service-card-ceiling-cooling novostavba cely dom regulacia vlhkost rosny bod konzultacia nacenenie Geotherm",
+      topic: "ceiling_cooling_solution_closure",
+    };
+  }
   if (state.last_direct_topic === "central_vacuum_scope" && /(novostav|bungalov|dom|m2|postup|ako|nacen|ponuk)/.test(text)) {
     return {
       triggered: true,

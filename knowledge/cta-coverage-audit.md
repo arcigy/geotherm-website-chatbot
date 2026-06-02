@@ -1,6 +1,6 @@
 # CTA Coverage Audit
 
-Generated: 2026-06-02T18:44:20.421Z
+Generated: 2026-06-02T20:54:21.983Z
 Cases: 12
 Passed: 12
 Failed: 0
@@ -11,18 +11,18 @@ Verdict: PASS
 
 | Case | Pass | ms | LLM | Mode | Service | Intent | Sources | Failures |
 | --- | --- | ---: | --- | --- | --- | --- | ---: | --- |
-| heat_pump_initial | yes | 2181 | yes | qualification_question | heat_pump | recommendation | 3 |  |
-| heat_pump_closure | yes | 3916 | yes | recommendation_closure | heat_pump | recommendation | 3 |  |
-| air_conditioning_quote | yes | 2315 | yes | direct_answer | air_conditioning | recommendation | 3 |  |
-| heat_recovery_quote | yes | 2090 | yes | qualification_question | heat_recovery | recommendation | 3 |  |
-| floor_heating_quote | yes | 2157 | yes | direct_answer | floor_heating | process | 3 |  |
-| ceiling_cooling_quote | yes | 2272 | yes | direct_answer | ceiling_cooling | recommendation | 3 |  |
-| complex_solution_quote | yes | 2518 | yes | qualification_question | complex_solution | recommendation | 3 |  |
-| service_fault_handoff | yes | 2282 | yes | direct_answer | service | service_fault | 3 |  |
-| subsidy_handoff | yes | 2663 | yes | direct_answer | subsidy | subsidy | 3 |  |
-| price_handoff | yes | 2092 | yes | price_answer | heat_pump | price | 3 |  |
-| water_distribution_handoff | yes | 2364 | yes | direct_answer | complex_solution | process | 3 |  |
-| small_talk_no_cta | yes | 1896 | yes | general_chat | unknown | general | 0 |  |
+| heat_pump_initial | yes | 2648 | yes | qualification_question | heat_pump | recommendation | 3 |  |
+| heat_pump_closure | yes | 3435 | yes | recommendation_closure | heat_pump | recommendation | 3 |  |
+| air_conditioning_quote | yes | 2472 | yes | direct_answer | air_conditioning | recommendation | 3 |  |
+| heat_recovery_quote | yes | 2151 | yes | qualification_question | heat_recovery | recommendation | 3 |  |
+| floor_heating_quote | yes | 2292 | yes | direct_answer | floor_heating | process | 3 |  |
+| ceiling_cooling_quote | yes | 2063 | yes | direct_answer | ceiling_cooling | recommendation | 3 |  |
+| complex_solution_quote | yes | 2666 | yes | qualification_question | complex_solution | recommendation | 3 |  |
+| service_fault_handoff | yes | 2455 | yes | direct_answer | service | service_fault | 3 |  |
+| subsidy_handoff | yes | 2306 | yes | direct_answer | subsidy | subsidy | 3 |  |
+| price_handoff | yes | 2174 | yes | price_answer | heat_pump | price | 3 |  |
+| water_distribution_handoff | yes | 2146 | yes | direct_answer | complex_solution | process | 3 |  |
+| small_talk_no_cta | yes | 1898 | yes | general_chat | unknown | general | 0 |  |
 
 ## Failed Answer Samples
 
