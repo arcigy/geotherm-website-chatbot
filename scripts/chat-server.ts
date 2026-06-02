@@ -4042,6 +4042,16 @@ function companyPracticalDirectAnswer(message: string): DirectAnswerDecision | n
     );
   }
 
+  if (/(prerab|preráb|rekonstruk|rekonštruk|uprav|úprav).*(kuren|kúren|vykurov).*(star|stary|starý|stare|staré|dom)|(?:star|stary|starý|stare|staré|dom).*(prerab|preráb|rekonstruk|rekonštruk|uprav|úprav).*(kuren|kúren|vykurov)/.test(text)) {
+    return answerBase(
+      "Prerábka kúrenia v staršom dome",
+      "Áno, prerábka kúrenia v staršom dome sa dá riešiť, ale rozsah treba potvrdiť podľa existujúcej kotolne, radiátorov, rozvodov a cieľa. Predbežne môže ísť o úpravu radiátorového systému, výmenu zdroja tepla, reguláciu alebo prípravu na tepelné čerpadlo. Najlepší ďalší krok je konzultácia alebo nacenenie podľa fotiek kotolne, plochy domu a aktuálneho zdroja tepla.",
+      "heating_reconstruction_scope",
+      "process",
+      "company-truth prerabka kurenia starsi dom radiatorovy system kotolna rozvody Geotherm",
+    );
+  }
+
   if (/(strop|stropne|stropné).*(chladen|chladi)|(?:chladen|chladi).*(strop|stropne|stropné)/.test(text)) {
     return answerBase(
       "Stropné chladenie",
@@ -5310,6 +5320,18 @@ function directAnswerDecision(message: string, state: QualificationState, route:
       serviceIntent: "recommendation",
       retrievalQuery: "service-card-heat-pump tepelne cerpadla vyber riesenia novostavba starsi dom radiatory podlahove kurenie",
       topic: "initial_heat_pump_short",
+    };
+  }
+  if (/(stars|starš|starsi|starší|rekon)/.test(text) && /(radiator|radiátor)/.test(text) && /(\d{2,4}\s*m|m2|m²)/.test(text)) {
+    return {
+      triggered: true,
+      answerMode: "diagnostic_verdict",
+      reason: "direct_existing_radiator_heat_pump_standalone",
+      answer:
+        "### Starší dom s radiátormi\n\nPre starší dom s radiátormi dáva predbežne zmysel tepelné čerpadlo **vzduch-voda vhodné pre radiátorový systém**. Pri radiátoroch je dôležité overiť potrebnú teplotu vody, výkon radiátorov a stav kotolne.\n\nTypicky sa rieši vonkajšia jednotka, hydraulické zapojenie, regulácia, prípadne TÚV alebo akumulačná nádrž podľa návrhu. Ďalší krok by bola krátka konzultácia alebo nacenenie podľa fotiek kotolne a aktuálneho zdroja tepla.",
+      serviceIntent: "recommendation",
+      retrievalQuery: "scenar-starsi-dom-radiatory-plyn radiatorovy system vyssia teplota vody tepelne cerpadlo vzduch-voda",
+      topic: "existing_radiator_heat_pump_standalone",
     };
   }
   const asksHeatPumpBrandOrModelInventory =
@@ -7208,6 +7230,7 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     "vaillant_boilers",
     "heat_pump_brands",
     "initial_heat_pump_short",
+    "existing_radiator_heat_pump_standalone",
     "boilers",
     "boiler_brands",
     "heat_pump_service_scope",
@@ -7238,6 +7261,7 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     "booking_process",
     "central_vacuum_scope",
     "ceiling_cooling_scope",
+    "heating_reconstruction_scope",
     "boiler_electrical_scope",
     "service_visit_process",
     "pre_realization_requirements",
@@ -7258,21 +7282,35 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     null,
     2,
   );
+  const useFastOutOfScopeComposer = currentMessagePolicy.kind === "out_of_scope";
+  const fastOutOfScopeComposerSystemPrompt =
+    "Si krátky slovenský chatbot Geotherm. Otázka je mimo tém Geotherm. Odpovedz cez AI maximálne dvoma vetami: neodpovedaj na externú tému, krátko presmeruj na kúrenie, chladenie, vetranie, servis, dotácie alebo ponuku. Nepouži RAG ani markdown nadpis.";
+  const fastOutOfScopeComposerInput = `Používateľ napísal: ${message}\nOdpovedz stručne a bezpečne.`;
   const activeComposerSystemPrompt = useCompactDirectComposer
     ? compactDirectComposerSystemPrompt
+    : useFastOutOfScopeComposer
+      ? fastOutOfScopeComposerSystemPrompt
     : directDecision.triggered
       ? directComposerSystemPrompt
       : composerSystemPrompt;
-  const activeComposerInput = useCompactDirectComposer ? compactDirectComposerInput : directDecision.triggered ? directComposerInput : composerInput;
+  const activeComposerInput = useCompactDirectComposer
+    ? compactDirectComposerInput
+    : useFastOutOfScopeComposer
+      ? fastOutOfScopeComposerInput
+      : directDecision.triggered
+        ? directComposerInput
+        : composerInput;
   const routerDirectAnswer = route.directAnswer ? cleanAnswerText(route.directAnswer) : "";
   let directAnswerComposedByLlm = false;
   let directAnswerFallbackUsed = false;
   let composerLlm = await callLlmText({
     systemPrompt: activeComposerSystemPrompt,
     prompt: activeComposerInput,
-    maxOutputTokens: useCompactDirectComposer ? 300 : directDecision.triggered ? 520 : 1200,
+    maxOutputTokens: useFastOutOfScopeComposer ? 180 : useCompactDirectComposer ? 300 : directDecision.triggered ? 520 : 1200,
     timeoutMs: useCompactDirectComposer
       ? Math.min(Math.max(Number.parseInt(process.env.LLM_FAST_REQUEST_TIMEOUT_MS || "2500", 10), 1800), 2500)
+      : useFastOutOfScopeComposer
+        ? Math.min(Math.max(Number.parseInt(process.env.LLM_FAST_REQUEST_TIMEOUT_MS || "1600", 10), 1000), 1600)
       : directDecision.triggered
       ? Math.min(Math.max(Number.parseInt(process.env.LLM_FAST_REQUEST_TIMEOUT_MS || "3500", 10), 3000), 3500)
       : route.needsRetrieval
@@ -7297,7 +7335,7 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
       cleanedAnswer = compactPureSmallTalkAnswer(smallTalkRetryAnswer, message);
     }
   }
-  if (isIncompleteAnswer(cleanedAnswer) && !pureSmallTalkTurn && !directDecision.triggered) {
+  if (isIncompleteAnswer(cleanedAnswer) && !pureSmallTalkTurn && !directDecision.triggered && !useFastOutOfScopeComposer) {
     const repairLlm = await callLlmText({
       systemPrompt: [
         activeComposerSystemPrompt,
@@ -7340,7 +7378,7 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
       ),
       maxOutputTokens: 700,
       timeoutMs: useCompactDirectComposer
-        ? Math.min(Math.max(Number.parseInt(process.env.LLM_FAST_REQUEST_TIMEOUT_MS || "2200", 10), 1800), 2200)
+        ? Math.min(Math.max(Number.parseInt(process.env.LLM_FAST_REQUEST_TIMEOUT_MS || "3200", 10), 2200), 3200)
         : Math.min(Math.max(Number.parseInt(process.env.LLM_FAST_REQUEST_TIMEOUT_MS || "5000", 10), 4500), 5500),
       responseMimeType: "text/plain",
       modelOverride: useCompactDirectComposer ? process.env.GEMINI_FAST_FALLBACK_MODEL || "gemini-2.5-flash-lite" : undefined,
@@ -7587,6 +7625,7 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
       "older_houses_scope",
       "solution_selection_followup",
       "initial_heat_pump_short",
+      "existing_radiator_heat_pump_standalone",
       "existing_system_check",
       "water_shutdown_scope",
       "heating_shutdown_scope",
@@ -7601,6 +7640,7 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
       "booking_process",
       "central_vacuum_scope",
       "ceiling_cooling_scope",
+      "heating_reconstruction_scope",
       "boiler_electrical_scope",
       "service_visit_process",
       "pre_realization_requirements",
@@ -7713,6 +7753,11 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
   }
   if (directDecision.triggered && directDecision.topic === "weekends" && !/potvr/.test(normalizePolicyText(answer))) {
     answer = `${answer.trim()}\n\nVíkendový termín alebo výjazd treba vždy potvrdiť podľa typu prípadu, lokality a aktuálnej kapacity.`;
+  }
+  if (directDecision.triggered && directDecision.topic === "inspection_paid") {
+    answer = answer
+      .replace(/\bbezplatn[áa]\b/gi, "bez poplatku")
+      .replace(/\bzadarmo\b/gi, "bez poplatku");
   }
   if (currentMessagePolicy.kind === "adversarial") {
     recordDiagnostic(answerDiagnostics.validatorsTriggered, "adversarial_refusal_repaired");
