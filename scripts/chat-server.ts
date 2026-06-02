@@ -2189,6 +2189,14 @@ function isPureSmallTalkMessage(message: string): boolean {
     /^(ahoj|cau|hello|hi|hey|dobry den|dobry vecer|zdravim)\s+(ako sa mas|ako sa mate|ako sa ma|ako sa m)$/.test(text);
 }
 
+function isLooseSmallTalkMessage(message: string): boolean {
+  const text = normalizePolicyText(message);
+  if (text.length > 60) return false;
+  if (/(tc|tepel|cerpad|klimatiz|rekuper|servis|dotac|cena|kontakt|montaz|kuren|chladen|vykurov|kotol|radiator|podlah|nibe|vaillant)/.test(text)) return false;
+  return /^(ahoj|cau|hello|hi|hey|dobry den|dobry vecer|zdravim)(\s+(ako sa mas|ako sa mate|ako sa ma|ako sa m))?$/.test(text) ||
+    /^(ako sa mas|ako sa mate|ako sa ma|ako sa m)$/.test(text);
+}
+
 function pureSmallTalkFallback(message: string): StructuredAnswer {
   const text = normalizePolicyText(message);
   const shortAnswer =
@@ -8009,6 +8017,36 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
       cleanedAnswer = compactPureSmallTalkAnswer(smallTalkRetryAnswer, message);
     }
   }
+  if (closureDecision.triggered && isIncompleteAnswer(cleanedAnswer)) {
+    const closureRetryLlm = await callLlmText({
+      systemPrompt: [
+        "Si AI poradca Geotherm. Napíš stručné uzatvorené odporúčanie po slovensky.",
+        "Nepýtaj ďalší technický dotazník. Daj najlepší predbežný smer, 2-3 možnosti a CTA na konzultáciu alebo nacenenie.",
+        "Pri novostavbe s podlahovkou nespomínaj ako ďalší krok tepelnú stratu, projekt ani energetický certifikát.",
+        "Zachovaj konkrétne modelové možnosti, ak sú v návrhu: NIBE S2125 a Vaillant aroTHERM.",
+      ].join("\n"),
+      prompt: JSON.stringify(
+        {
+          latestUserMessage: message,
+          state: stateForTurn,
+          recommendationOptions: closureDecision.options,
+          safeDraft: expectedRecommendationClosureAnswer(stateForTurn, closureDecision),
+        },
+        null,
+        2,
+      ),
+      maxOutputTokens: 520,
+      timeoutMs: Math.min(Math.max(Number.parseInt(process.env.LLM_FAST_REQUEST_TIMEOUT_MS || "3600", 10), 2600), 4000),
+      responseMimeType: "text/plain",
+      modelOverride: process.env.GEMINI_FAST_FALLBACK_MODEL || "gemini-2.5-flash-lite",
+    });
+    const closureRetryAnswer = closureRetryLlm.error || !closureRetryLlm.content ? "" : cleanAnswerText(closureRetryLlm.content);
+    if (!isIncompleteAnswer(closureRetryAnswer)) {
+      composerLlm = closureRetryLlm;
+      cleanedAnswer = closureRetryAnswer;
+      recordDiagnostic(answerDiagnostics.validatorsTriggered, "recommendation_closure_llm_retry_used");
+    }
+  }
   if (isIncompleteAnswer(cleanedAnswer) && !pureSmallTalkTurn && !directDecision.triggered && !useFastOutOfScopeComposer) {
     const repairLlm = await callLlmText({
       systemPrompt: [
@@ -8118,7 +8156,7 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
   if (isSmallTalkMessage(message)) {
     answer = answer.replace(/^Nemám dostatočne jasný podklad na túto tému\.\s*/i, "").trim();
   }
-  if (!route.needsRetrieval && isPureSmallTalkMessage(message)) {
+  if (!route.needsRetrieval && (isPureSmallTalkMessage(message) || isLooseSmallTalkMessage(message))) {
     answer = compactPureSmallTalkAnswer(answer, message);
     recordDiagnostic(answerDiagnostics.validatorsTriggered, "pure_small_talk_compacted");
   }
@@ -8525,7 +8563,7 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     recordDiagnostic(answerDiagnostics.validatorsTriggered, "followup_questions_limited");
   }
   answer = softenOverconfidentWording(answer, answerDiagnostics);
-  if (!route.needsRetrieval && isPureSmallTalkMessage(message)) {
+  if (!route.needsRetrieval && (isPureSmallTalkMessage(message) || isLooseSmallTalkMessage(message))) {
     answer = compactPureSmallTalkAnswer(answer, message);
     recordDiagnostic(answerDiagnostics.validatorsTriggered, "pure_small_talk_final_compacted");
   }
@@ -9161,7 +9199,7 @@ async function legacyCreateChatResponse(requestBody: ChatRequest, knowledgePath?
     });
 
     const answerMode = routePlan.answerMode === "rag_answer" ? "general_chat" : routePlan.answerMode;
-    const noRetrievalSmallTalk = answerMode === "general_chat" && isSmallTalkMessage(message);
+    const noRetrievalSmallTalk = answerMode === "general_chat" && (isSmallTalkMessage(message) || isLooseSmallTalkMessage(message));
     const fallbackStructured =
       noRetrievalSmallTalk
         ? pureSmallTalkFallback(message)
