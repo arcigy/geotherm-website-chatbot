@@ -3722,6 +3722,7 @@ function scoreCrmLead(input: {
   if (input.contact.phone || input.contact.email) score += 25;
   if (input.state.timeline) score += 10;
   if (input.leadIntent === "service_fault") score += 10;
+  if (input.leadIntent === "service_fault" && (input.contact.phone || input.contact.email)) score += 10;
   if (input.leadIntent === "general" && !input.state.project_type && input.route.serviceType === "unknown") score -= 20;
   return Math.max(0, Math.min(100, score));
 }
@@ -4018,6 +4019,16 @@ function companyPracticalDirectAnswer(message: string): DirectAnswerDecision | n
     topic,
   });
 
+  if (/(chcem|potrebujem|dohodnut|dohodnúť|dat|dať|riesit|riešiť).*(stretn|meeting|konzult|termin|termín)|(?:stretn|meeting|konzult).*(geotherm|technik|obchodnik|ponuk|nacen)/.test(text)) {
+    return answerBase(
+      "Dohodnutie konzultácie",
+      "Áno, v tomto bode už dáva zmysel dohodnúť krátku konzultáciu alebo stretnutie s Geotherm a pripraviť nacenenie podľa rozsahu. Pošli ideálne telefón alebo e-mail, lokalitu a stručne čo riešiš; pri tepelnom čerpadle pomôžu aj fotky kotolne alebo základné údaje o dome.",
+      "meeting_consultation_handoff",
+      "contact",
+      "company-truth kontakt konzultacia stretnutie nacenenie Geotherm telefon email",
+    );
+  }
+
   if (/(zhrn|zhrň|zhrnut|zhrnutie|co vieme|čo vieme|bez garanc)/.test(text)) {
     return answerBase(
       "Bezpečné zhrnutie",
@@ -4265,7 +4276,7 @@ function companyPracticalDirectAnswer(message: string): DirectAnswerDecision | n
     );
   }
 
-  if (/^(rekuperacia|rekuperácia)\??$|(?:rekuperacia|rekuperácia|vetranie).*(tepla|robite|robíte|viete|vysvetlit|vysvetliť|porad|nacen|naceň|cena)/.test(text)) {
+  if (/^(rekuperacia|rekuperácia)\??$|(?:rekuperacia|rekuperácia|vetranie).*(tepla|robite|robíte|viete|vysvetlit|vysvetliť|porad|nacen|naceň|cena)|(?:robite|robíte|viete|montujete|nacen|naceň|cena).*(rekuperacia|rekuperácia|vetranie)/.test(text)) {
     return answerBase(
       "Rekuperácia",
       "Rekuperácia rieši riadené vetranie s výmenou vzduchu bez bežného otvárania okien. Pri dome dáva najväčší zmysel navrhnúť centrálnu rekuperáciu spolu s rozvodmi, jednotkou, filtrami, odťahom z kúpeľní/kuchyne a prívodom čerstvého vzduchu do obytných miestností. Pre nacenenie treba vedieť, či ide o novostavbu alebo rekonštrukciu, približnú plochu a či sa má vetrať celý dom.",
@@ -7495,6 +7506,13 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
       /^[A-ZÁÄČĎÉÍĽĹŇÓÔŔŠŤÚÝŽ][\p{L}\s-]{2,},\s*/u.test(message.trim()));
   const previousServiceType = normalizeServiceType(previousState.service_type, "unknown");
   const previousServiceIntent = normalizeServiceIntent(previousState.service_intent, "general");
+  const explicitServiceSwitch =
+    previousServiceType !== "unknown" &&
+    deterministicRoute.serviceType !== "unknown" &&
+    deterministicRoute.serviceType !== previousServiceType &&
+    /(tepelne cerpad|\btc\b|cerpadl|klimatiz|klima|rekuper|vetran|podlahov|strop.*chladen|servis|porucha|dotac|subsidy|komplex|kuren|vykurov|chladen)/.test(
+      routerFallbackText,
+    );
   const complaintAboutRecommendation = /(nepovedal|neodpovedal|najleps|najlepší|konkretne|konkrétne)/.test(routerFallbackText);
   const subsidyContextReply =
     previousServiceType === "subsidy" &&
@@ -7530,10 +7548,34 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     route.needsRetrieval = true;
     route.retrievalQuery = "company-truth kontakt Geotherm telefon email adresa";
     route.directAnswer = null;
+  } else if (isPersonalDataOnly(message)) {
+    if (previousServiceType !== "unknown") route.serviceType = previousServiceType;
+    if (previousServiceIntent !== "general") route.serviceIntent = previousServiceIntent;
+    route.needsRetrieval = false;
+    route.retrievalQuery = null;
+    route.directAnswer = null;
   } else if (latestQuestionOverridesContext) {
     if (deterministicRoute.serviceType !== "unknown") route.serviceType = deterministicRoute.serviceType;
     else if (route.serviceType === "service" && previousServiceType !== "service" && previousServiceType !== "unknown") route.serviceType = previousServiceType;
     if (deterministicRoute.serviceIntent !== "general") route.serviceIntent = deterministicRoute.serviceIntent;
+  }
+  if (
+    explicitServiceSwitch &&
+    currentMessagePolicy.kind !== "out_of_scope" &&
+    currentMessagePolicy.kind !== "adversarial" &&
+    !isContactQuestion(message)
+  ) {
+    route.serviceType = deterministicRoute.serviceType;
+    if (deterministicRoute.serviceIntent !== "general") route.serviceIntent = deterministicRoute.serviceIntent;
+    else if (route.serviceIntent === "general") route.serviceIntent = "recommendation";
+    route.needsRetrieval = true;
+    route.retrievalQuery = `${serviceSearchKeyword(route.serviceType)} ${message}`;
+    route.directAnswer = null;
+    stateForTurn = {
+      ...stateForTurn,
+      service_type: route.serviceType,
+      service_intent: route.serviceIntent,
+    };
   }
   if (explicitOutdoorUnitQuestion) {
     route.serviceType = "heat_pump";
@@ -7559,10 +7601,10 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
       service_intent: "subsidy",
     };
   }
-  if (contextualSlotReply && previousServiceType !== "unknown") {
+  if (contextualSlotReply && !explicitServiceSwitch && previousServiceType !== "unknown") {
     route.serviceType = previousServiceType;
   }
-  if (contextualSlotReply && previousServiceIntent !== "general" && (route.serviceIntent === "location" || route.serviceIntent === "general")) {
+  if (contextualSlotReply && !explicitServiceSwitch && previousServiceIntent !== "general" && (route.serviceIntent === "location" || route.serviceIntent === "general")) {
     route.serviceIntent = previousServiceIntent;
   }
   if (complaintAboutRecommendation && previousServiceType !== "unknown") {

@@ -36,6 +36,7 @@
     "test:diagnostic-conversation": "tsx scripts/test-diagnostic-conversation.ts",
     "audit:production-readiness": "tsx scripts/audit-production-readiness.ts",
     "audit:broad-surface": "tsx scripts/audit-broad-surface.ts",
+    "audit:adversarial-long-flows": "tsx scripts/audit-adversarial-long-flows.ts",
     "audit:cta-coverage": "tsx scripts/audit-cta-coverage.ts",
     "audit:non-heat-pump-flows": "tsx scripts/audit-non-heat-pump-flows.ts",
     "audit:paraphrase-surface": "tsx scripts/audit-paraphrase-surface.ts",
