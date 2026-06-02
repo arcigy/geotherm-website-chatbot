@@ -9501,6 +9501,9 @@ async function legacyCreateChatResponse(requestBody: ChatRequest, knowledgePath?
     const repairedStructured = deterministicStructuredAnswer(answerMessage, filteredResults, confidence, intent, answerPolicy, leadCapture);
     answer = softenOverconfidentWording(renderStructuredAnswer(repairedStructured, sources, answerMode, { message: answerMessage, intent }));
   }
+  if (sources.length === 0 && (isSmallTalkMessage(message) || isLooseSmallTalkMessage(message))) {
+    answer = compactPureSmallTalkAnswer(answer, message);
+  }
   const persistedState = stateWithLastAskedQuestion(finalState, structuredAnswer);
   if (leadCaptured) {
     const transcript = getConversationMessages(conversation.id);
