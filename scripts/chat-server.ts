@@ -3887,10 +3887,20 @@ function companyPracticalDirectAnswer(message: string): DirectAnswerDecision | n
   if (/(barak|barák|dom).*\b\d{2,4}\s*m/.test(text) && /(co s tym|čo s tým|co teraz|čo teraz|co odporuc|čo odporúč)/.test(text)) {
     return answerBase(
       "Najprv zaraďme cieľ",
-      "Pri dome s touto plochou by som bez ďalších údajov nevybral konkrétnu technológiu. Geotherm vie riešiť kúrenie, chladenie, vetranie aj komplexnejšie technické riešenie domu, ale najprv treba určiť smer. Chceš riešiť hlavne kúrenie, chladenie, vetranie alebo servis existujúceho zariadenia?",
+      "Pri dome s touto plochou by som bez ďalších údajov nevybral konkrétnu technológiu. Geotherm vie riešiť kúrenie, chladenie, vetranie, náklady na prevádzku aj servis existujúceho zariadenia, ale najprv treba určiť smer. Chceš riešiť hlavne kúrenie, chladenie, vetranie alebo servis?",
       "large_house_vague_goal_followup",
       "general",
-      "company-truth service router complex solution heat pump air conditioning heat recovery Geotherm",
+      "company-truth service router complex solution heat pump air conditioning heat recovery cena náklady servis Geotherm",
+    );
+  }
+
+  if (/(stars|starš|starsi|starší).*(dom).*(plyn|plynov|ucet|účet).*(cerpad|čerpad|podlah|dotac|dotác)|(?:cerpad|čerpad|podlah|dotac|dotác).*(stars|starš|starsi|starší).*(dom).*(plyn|plynov|ucet|účet)/.test(text)) {
+    return answerBase(
+      "Najprv rozhodnúť smer",
+      "Pri staršom dome s veľkým účtom za plyn by som najprv nerozhodoval naraz tepelné čerpadlo, podlahovku aj dotáciu. Predbežne dáva zmysel preveriť výmenu plynu za tepelné čerpadlo alebo úpravu vykurovania, ale dotácia ani podlahovka nemusia byť automaticky najlepší prvý krok. Čo je hlavný cieľ: znížiť náklady na kúrenie, riešiť komfort, alebo zistiť možnosť dotácie?",
+      "older_gas_house_chaotic_followup",
+      "recommendation",
+      "company-truth scenar-starsi-dom-radiatory-plyn tepelné čerpadlo plyn náklady podlahové kúrenie dotácia Geotherm",
     );
   }
 
@@ -4733,6 +4743,16 @@ function priceDirectAnswer(message: string, state: QualificationState): DirectAn
       "",
       "Pri cene 7 tisíc by som obzvlášť overil, či ide iba o zariadenie/zostavu, alebo o kompletnú realizáciu vrátane montáže, regulácie, TÚV, akumulačnej nádrže, elektroprác a uvedenia do prevádzky.",
     ].join("\n");
+  } else if (/(rozpocet|rozpočet|\b5k\b|\b5000\b|5\s*000)/.test(text)) {
+    reason = "direct_budget_scope_question";
+    topic = "budget_scope";
+    answer = [
+      "### Rozpočet a odporúčanie",
+      "",
+      "Rozpočet 5k by som pri technickom riešení bral opatrne a **bez podkladov by som nesľuboval kompletné tepelné čerpadlo ani montáž**. Najprv treba oddeliť, či ide o servis, čiastočnú úpravu, klimatizáciu, alebo nové vykurovanie.",
+      "",
+      "Ak ide o nové riešenie domu, ďalší krok je krátka konzultácia a nacenenie reálneho rozsahu. Pri nízkom rozpočte má zmysel jasne povedať, čo sa dá riešiť teraz a čo by bolo mimo rozsahu.",
+    ].join("\n");
   } else if (/(zlav|zľav|akci|akciov)/.test(text)) {
     reason = "direct_discount_scope_question";
     topic = "discount_scope";
@@ -4934,7 +4954,7 @@ function directAnswerDecision(message: string, state: QualificationState, route:
     };
   }
   const currentTurnAsksPrice =
-    /(cena|cenu|ceny|cenov|cennik|ponuk|nacen|najlacn|najlacnej|lacne riesenie|lacné riešenie|cheapest|koľko|kolko|stoji|stojí|navratnost|návratnosť|usetr|úspor|uspora|zlav|zľav|akci|akciov|vratane instalacie|vrátane inštalácie|7\s*tis|7000|7\s*000|akumulac|akumula|v cene|z coho|z čoho)/.test(text);
+    /(cena|cenu|ceny|cenov|cennik|ponuk|nacen|najlacn|najlacnej|lacne riesenie|lacné riešenie|cheapest|koľko|kolko|stoji|stojí|navratnost|návratnosť|usetr|úspor|uspora|rozpocet|rozpočet|\b5k\b|\b5000\b|5\s*000|zlav|zľav|akci|akciov|vratane instalacie|vrátane inštalácie|7\s*tis|7000|7\s*000|akumulac|akumula|v cene|z coho|z čoho)/.test(text);
   if ((route.serviceType === "service" || route.serviceIntent === "service_fault") && !currentTurnAsksPrice) {
     return {
       triggered: false,
@@ -6854,7 +6874,10 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
       "vaillant_boilers",
       "Daikin",
       "Mitsubishi",
+      "budget_scope",
       "nibe_noise_scope",
+      "large_house_vague_goal_followup",
+      "older_gas_house_chaotic_followup",
       "contact_details",
       "contact_short_followup",
       "warranty_service_check",
@@ -6982,6 +7005,13 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
   ) {
     recordDiagnostic(answerDiagnostics.validatorsTriggered, "recommendation_closure_cta_appended");
     answer = `${answer.trim()}\n\nĎalší krok: dohodnúť krátku konzultáciu alebo stretnutie s Geotherm, kde sa preverí technický rozsah a pripraví nacenenie.`.trim();
+  }
+  if (
+    /(rozpocet|rozpočet|\b5k\b|\b5000\b|5\s*000)/.test(normalizedMessageForHardDirect) &&
+    !/(bez|zalezi|záleží|orientac|neda sa|nedá sa)/.test(normalizePolicyText(answer))
+  ) {
+    recordDiagnostic(answerDiagnostics.validatorsTriggered, "budget_scope_cautious_repaired");
+    answer = validateAndRepairAnswer(priceDirectAnswer(message, stateForTurn).answer || answer, stateForTurn, route, message, answerDiagnostics);
   }
   if (currentMessagePolicy.kind === "adversarial") {
     recordDiagnostic(answerDiagnostics.validatorsTriggered, "adversarial_refusal_repaired");
