@@ -9704,6 +9704,17 @@ export async function startChatServer(options: StartOptions = {}): Promise<Serve
       }
 
       const chatResponse = await createChatResponse(body, knowledgePath);
+      if (
+        shouldHardClampSmallTalk(body.message || "") &&
+        chatResponse.sources.length === 0 &&
+        chatResponse.debug?.llmUsed
+      ) {
+        chatResponse.answer = pureSmallTalkFallback(body.message || "").shortAnswer;
+        chatResponse.debug.validatorsTriggered = [
+          ...(chatResponse.debug.validatorsTriggered || []),
+          "api_small_talk_hard_clamped",
+        ];
+      }
       writeJson(response, 200, chatResponse, origin);
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
