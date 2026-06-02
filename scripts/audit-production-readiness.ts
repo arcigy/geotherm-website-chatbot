@@ -63,6 +63,12 @@ const scenarios: Scenario[] = [
     expectLast: { maxSources: 0, mustContain: ["dobre"], mustNotContain: ["?"] },
   },
   {
+    id: "small_talk_greeting_how_are_you",
+    title: "Small talk pozdrav plus ako sa mas bez RAG a bez produktoveho menu",
+    messages: ["ahoj, ako sa mas?"],
+    expectLast: { maxSources: 0, mustContain: ["dobre"], mustNotContain: ["?", "tepel", "klimatiz", "rekuper", "sluzb"] },
+  },
+  {
     id: "vague_heat_pump_followup",
     title: "Vágne TČ -> smer + follow-up",
     messages: ["chcem tepelné čerpadlo"],

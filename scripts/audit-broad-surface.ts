@@ -97,6 +97,7 @@ const cases: Case[] = [
   { id: "small_jobs", message: "Robite aj male zakazky?", mustContain: ["potvr"], mustNotContain: ["ano"], minSources: 1 },
   { id: "customer_bought_boiler", message: "Montujete aj kotly zakupene zakaznikom?", mustContain: ["potvr"], mustNotContain: ["ano"], minSources: 1 },
   { id: "boiler_brand_question", message: "Ake znacky kotlov montujete?", mustContain: ["potvr", "kot"], minSources: 1 },
+  { id: "small_talk_greeting_how_are_you", message: "ahoj, ako sa mas?", mustContain: ["dobre"], mustNotContain: ["?", "novostav", "tepel", "klimatiz", "rekuper", "sluzb"], maxSources: 0 },
   { id: "small_talk", message: "ahoj", mustContain: ["som tu"], mustNotContain: ["?", "novostav", "tepelné čerpadlá", "služby"], maxSources: 0 },
   { id: "small_talk_how_are_you", message: "ako sa máš?", mustContain: ["dobre"], mustNotContain: ["?", "novostav", "tepelné čerpadlá", "služby"], maxSources: 0 },
   { id: "weather_out_of_scope", message: "aké je dnes počasie?", mustContain: ["podklad"], maxSources: 0, maxMs: 8000 },

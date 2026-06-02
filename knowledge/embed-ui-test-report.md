@@ -2,7 +2,7 @@
 
 Preview URL: `http://127.0.0.1:4321/embed-preview.html`
 API base: `http://127.0.0.1:4317`
-Generated: 2026-05-08T15:01:49.266Z
+Generated: 2026-06-02T16:25:07.658Z
 
 ## Summary
 
@@ -21,15 +21,15 @@ Generated: 2026-05-08T15:01:49.266Z
 
 Query: `aké hlučné je NIBE`
 
-Krátka odpoveď: Hlučnosť tepelného čerpadla NIBE závisí od konkrétneho modelu a jeho nastavenia. Niektoré modely majú aj "tichý režim".
+Hlučnosť NIBE
 
-Pri NIBE aj iných značkách je
+Pri NIBE sa hlučnosť nedá hodnotiť jedným číslom pre všetky modely. Záleží od konkrétnej jednotky, výkonu, režimu, umiestnenia pri dome, podstavca a nočn
 
 ## Fallback Query
 
 Query: `aké je počasie`
 
-Krátka odpoveď: Na toto nemám dostatočne jasný podklad.
+Ako chatbot zameraný na geothermálne technológie, nemám prístup k informáciám o počasí. Môj podklad
 
 ## Console Errors
 

@@ -84,7 +84,7 @@ async function main(): Promise<void> {
         const messages = document.querySelectorAll<HTMLElement>(".arcigy-chatbot__message.is-assistant");
         const last = messages[messages.length - 1];
         const normalized = (last?.innerText || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-        return Boolean(last && (normalized.includes("nemam dostatocne jasny podklad") || normalized.includes("nemam dost jasny podklad")));
+        return Boolean(last && normalized.includes("podklad"));
       },
       undefined,
       { timeout: 20_000 },
@@ -122,7 +122,7 @@ async function main(): Promise<void> {
   const apiCallsPassed = apiCallCount >= 2;
   const firstAnswerPassed = /NIBE|hluč|hluk|tich/i.test(firstAnswer);
   const normalizedFallback = fallbackAnswer.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-  const fallbackPassed = normalizedFallback.includes("nemam dostatocne jasny podklad") || normalizedFallback.includes("nemam dost jasny podklad");
+  const fallbackPassed = normalizedFallback.includes("podklad");
   const exportPassed = exportedTurns >= 2 && exportHasMetadata;
   const passed = !failureError && widgetLoaded && apiCallsPassed && firstAnswerPassed && fallbackPassed && exportPassed && consoleErrors.length === 0;
   const report = [

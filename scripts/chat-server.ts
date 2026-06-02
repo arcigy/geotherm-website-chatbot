@@ -198,6 +198,20 @@ type AnswerPolicy = {
 
 const defaultKnowledgePath = path.join(process.cwd(), "knowledge", "chatbot-knowledge.json");
 const localOriginPattern = /^https?:\/\/(?:localhost|127\.0\.0\.1|\[::1\])(?::\d+)?$/i;
+
+function isLocalDevOrigin(origin: string | undefined): boolean {
+  if (!origin || origin === "null" || localOriginPattern.test(origin)) return true;
+  try {
+    const { protocol, hostname } = new URL(origin);
+    if (protocol !== "http:" && protocol !== "https:") return false;
+    const octets = hostname.split(".").map((part) => Number.parseInt(part, 10));
+    if (octets.length !== 4 || octets.some((part) => Number.isNaN(part))) return false;
+    const [a, b] = octets;
+    return a === 10 || (a === 172 && b >= 16 && b <= 31) || (a === 192 && b === 168) || (a === 100 && b >= 64 && b <= 127);
+  } catch {
+    return false;
+  }
+}
 const safetyFollowUp = "Ide o poruchu existujúceho zariadenia alebo plánujete novú montáž?";
 const diagnosticFlowVersion = "diagnostic-v5-recommendation-closure";
 
@@ -325,7 +339,7 @@ function corsHeaders(origin: string | undefined): Record<string, string> {
     .map((value) => value.trim())
     .filter(Boolean);
   const allowedInProduction = origin ? configuredOrigins.includes(origin) : false;
-  const allowedInLocal = !isProduction && (!origin || origin === "null" || localOriginPattern.test(origin));
+  const allowedInLocal = !isProduction && isLocalDevOrigin(origin);
   const allowedOrigin = allowedInProduction || allowedInLocal ? origin || "*" : "";
 
   return {
@@ -8008,7 +8022,7 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
       : directDecision.triggered
       ? Math.min(Math.max(Number.parseInt(process.env.LLM_FAST_REQUEST_TIMEOUT_MS || "3500", 10), 3000), 3500)
       : route.needsRetrieval
-      ? Number.parseInt(process.env.LLM_ANSWER_TIMEOUT_MS || "10000", 10)
+      ? Math.min(Math.max(Number.parseInt(process.env.LLM_ANSWER_TIMEOUT_MS || "5000", 10), 3500), 5000)
       : Math.min(Number.parseInt(process.env.LLM_FAST_REQUEST_TIMEOUT_MS || "3500", 10), 3500),
     responseMimeType: "text/plain",
     modelOverride: useFastQualificationComposer ? process.env.GEMINI_FAST_FALLBACK_MODEL || "gemini-2.5-flash-lite" : undefined,
@@ -8143,10 +8157,38 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     recordDiagnostic(answerDiagnostics.validatorsTriggered, "direct_answer_composed_by_llm");
   }
   if (directDecision.triggered && isIncompleteAnswer(cleanedAnswer) && routerDirectAnswer) {
-    cleanedAnswer = routerDirectAnswer;
-    directAnswerFallbackUsed = true;
-    answerDiagnostics.fallbackType = "direct_answer_deterministic_fallback";
-    recordDiagnostic(answerDiagnostics.validatorsTriggered, "direct_answer_deterministic_fallback");
+    const finalDirectRetryLlm = await callLlmText({
+      systemPrompt: [
+        "Si AI poradca Geotherm. Prepíš bezpečný návrh odpovede do prirodzenej slovenčiny.",
+        "Zachovaj význam, nič nepridávaj ako istý firemný fakt a nepýtaj viac než jednu otázku.",
+        "Odpovedz stručne, bez raw zdrojov a bez frázy Stručne k otázke.",
+      ].join("\n"),
+      prompt: JSON.stringify(
+        {
+          latestUserMessage: message,
+          topic: directDecision.topic,
+          safeAnswerDraft: routerDirectAnswer,
+        },
+        null,
+        2,
+      ),
+      maxOutputTokens: 260,
+      timeoutMs: Math.min(Math.max(Number.parseInt(process.env.LLM_FAST_REQUEST_TIMEOUT_MS || "1200", 10), 900), 1400),
+      responseMimeType: "text/plain",
+      modelOverride: process.env.GEMINI_FAST_FALLBACK_MODEL || "gemini-2.5-flash-lite",
+    });
+    const finalDirectRetryAnswer = finalDirectRetryLlm.error || !finalDirectRetryLlm.content ? "" : cleanAnswerText(finalDirectRetryLlm.content);
+    if (!isIncompleteAnswer(finalDirectRetryAnswer)) {
+      composerLlm = finalDirectRetryLlm;
+      cleanedAnswer = finalDirectRetryAnswer;
+      directAnswerComposedByLlm = true;
+      recordDiagnostic(answerDiagnostics.validatorsTriggered, "direct_answer_final_llm_retry_used");
+    } else {
+      cleanedAnswer = routerDirectAnswer;
+      directAnswerFallbackUsed = true;
+      answerDiagnostics.fallbackType = "direct_answer_deterministic_fallback";
+      recordDiagnostic(answerDiagnostics.validatorsTriggered, "direct_answer_deterministic_fallback");
+    }
   }
   const isOutOfScopeGeneral =
     route.serviceType === "unknown" &&
@@ -8154,7 +8196,44 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     !isSmallTalkMessage(message) &&
     !isPageOverviewQuestion(message) &&
     !isContactQuestion(message);
-  const cleanedAnswerIncomplete = isIncompleteAnswer(cleanedAnswer);
+  let cleanedAnswerIncomplete = isIncompleteAnswer(cleanedAnswer);
+  if (
+    cleanedAnswerIncomplete &&
+    !directDecision.triggered &&
+    !pureSmallTalkTurn &&
+    currentMessagePolicy.kind === "normal"
+  ) {
+    const finalRetryLlm = await callLlmText({
+      systemPrompt: [
+        "Si AI poradca Geotherm. Pôvodná odpoveď zlyhala alebo bola useknutá.",
+        "Napíš kompletnú krátku odpoveď po slovensky. Použi RAG kontext iba ako firemnú pravdu, nič negarantuj bez potvrdenia.",
+        "Daj priamu odpoveď, krátke vysvetlenie a najviac jednu otázku alebo CTA na konzultáciu/nacenenie.",
+        "Nepíš frázu Stručne k otázke a nevkladaj raw zdroje.",
+      ].join("\n"),
+      prompt: JSON.stringify(
+        {
+          latestUserMessage: message,
+          route: { service_type: route.serviceType, intent: route.serviceIntent },
+          state: stateForTurn,
+          safeDraft: fallbackCompleteAnswer(message, stateForTurn, route),
+          ragContext: ragContext.slice(0, 900),
+        },
+        null,
+        2,
+      ),
+      maxOutputTokens: 420,
+      timeoutMs: Math.min(Math.max(Number.parseInt(process.env.LLM_FAST_REQUEST_TIMEOUT_MS || "1800", 10), 1200), 2200),
+      responseMimeType: "text/plain",
+      modelOverride: process.env.GEMINI_FAST_FALLBACK_MODEL || "gemini-2.5-flash-lite",
+    });
+    const finalRetryAnswer = finalRetryLlm.error || !finalRetryLlm.content ? "" : cleanAnswerText(finalRetryLlm.content);
+    if (!isIncompleteAnswer(finalRetryAnswer)) {
+      composerLlm = finalRetryLlm;
+      cleanedAnswer = finalRetryAnswer;
+      cleanedAnswerIncomplete = false;
+      recordDiagnostic(answerDiagnostics.validatorsTriggered, "final_llm_retry_used");
+    }
+  }
   if (cleanedAnswerIncomplete) {
     answerDiagnostics.fallbackType = requiresHardVerdict(stateForTurn, route, message)
       ? "deterministic_verdict"
@@ -8554,8 +8633,29 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     answer = "Konkrétnu cenu bez údajov o dome a rozsahu prác nebudem hádať.\n\nPri nacenení treba rozlíšiť cenu zariadenia a kompletnej realizácie: výkon, typ vykurovania, montáž, reguláciu, TÚV, elektroprípravu, prípadnú akumulačnú nádrž a úpravy kotolne. Najlepší ďalší krok je krátka konzultácia s Geotherm, kde sa rozsah nacení podľa domu.";
   } else if (currentMessagePolicy.kind === "out_of_scope") {
     recordDiagnostic(answerDiagnostics.validatorsTriggered, "unsupported_company_fact_refused");
-    answerDiagnostics.fallbackType = "unsupported_company_fact";
-    answer = unsupportedCompanyFactAnswer(message);
+    const outOfScopeLlm = await callLlmText({
+      systemPrompt: [
+        "Si krátky slovenský chatbot Geotherm.",
+        "Používateľ sa pýta mimo tém Geotherm. Neodpovedaj vecne na počasie, šport, politiku ani iné cudzie témy.",
+        "Odpovedz cez AI jednou až dvomi vetami. Použi slovo podklad. Bez produktového menu, bez zoznamu služieb, bez follow-up otázky.",
+      ].join("\n"),
+      prompt: `Používateľ napísal: ${message}\nNapíš stručné odmietnutie mimo rozsahu Geotherm.`,
+      maxOutputTokens: 120,
+      timeoutMs: Math.min(Math.max(Number.parseInt(process.env.LLM_FAST_REQUEST_TIMEOUT_MS || "2200", 10), 1600), 2600),
+      responseMimeType: "text/plain",
+      modelOverride: process.env.GEMINI_FAST_FALLBACK_MODEL || "gemini-2.5-flash-lite",
+    });
+    const outOfScopeAnswer = outOfScopeLlm.error || !outOfScopeLlm.content ? "" : cleanAnswerText(outOfScopeLlm.content);
+    if (!isIncompleteAnswer(outOfScopeAnswer)) {
+      composerLlm = outOfScopeLlm;
+      answer = /podklad/i.test(normalizePolicyText(outOfScopeAnswer))
+        ? outOfScopeAnswer
+        : `${outOfScopeAnswer}\n\nNa túto tému nemám potvrdený podklad v obsahu Geotherm.`;
+      recordDiagnostic(answerDiagnostics.validatorsTriggered, "out_of_scope_ai_refusal_used");
+    } else {
+      answerDiagnostics.fallbackType = "unsupported_company_fact";
+      answer = unsupportedCompanyFactAnswer(message);
+    }
   }
   if (
     ![

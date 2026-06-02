@@ -446,7 +446,8 @@ async function sendMessage(message: string, config: EmbedConfig): Promise<ChatRe
       if (!response.ok) throw new Error("Backend request failed.");
       return normalizeChatResponse((await response.json()) as BackendChatResponse);
     } catch (error) {
-      if (config.debug) console.warn("[ArcigyChatbot] Backend failed, using fake local response.", error);
+      if (config.debug) console.warn("[ArcigyChatbot] Backend request failed.", error);
+      throw error;
     }
   }
 
@@ -771,9 +772,7 @@ function Chatbot({ config }: { config: EmbedConfig }) {
       await animateAssistantMessage(response);
     } catch {
       setIsLoading(false);
-      await animateAssistantMessage(
-        createResponse("### Chyba\n\nNiečo sa pokazilo. Skús to prosím ešte raz.", "Produkty", "/produkty/", "nibe-s2125", "NIBE S2125"),
-      );
+      await animateAssistantMessage(createTextResponse("### Chyba spojenia\n\nNepodarilo sa spojiť s AI serverom. Skúste správu odoslať ešte raz."));
     }
   }
 
