@@ -2317,7 +2317,7 @@ function inferServiceRoute(message: string, state: QualificationState, history: 
   const hasExplicitServiceSignal =
     heatPumpAbbreviation ||
     outdoorUnitPlacement ||
-    /(tepelne cerpad|cerpadl|klimatiz|rekuper|vetran|podlahov|strop.*chladen|servis|porucha|dotac|plyn|plynov|kotol|radiator|vykurov|kurenie)/.test(text);
+    /(tepelne cerpad|heat pump|cerpadl|klimatiz|rekuper|vetran|podlahov|strop.*chladen|servis|porucha|dotac|subsidy|poukaz|prispev|plyn|plynov|kotol|radiator|vykurov|kurenie|topeni|topenie)/.test(text);
   const slotOnlyReply =
     !hasExplicitServiceSignal &&
     previousService !== "unknown" &&
@@ -2336,7 +2336,7 @@ function inferServiceRoute(message: string, state: QualificationState, history: 
       ? previousService
       : /(servis|porucha|chyba|diagnostik|revizi|udrzb|údržb|nekuri|nefunguje|hlasi|hlási|tlak|huci|hučí|hluk|hlucnost)/.test(text)
       ? "service"
-      : /(dotac|poukazk|prispevok|zelen[ae] domacnost)/.test(text)
+      : /(dotac|subsidy|poukazk|prispevok|zelen[ae] domacnost)/.test(text)
         ? "subsidy"
         : /(klimatiz|klima|split|multisplit)/.test(text)
           ? "air_conditioning"
@@ -2348,14 +2348,14 @@ function inferServiceRoute(message: string, state: QualificationState, history: 
                 ? "floor_heating"
                 : boilerOnly
                   ? "complex_solution"
-                : outdoorUnitPlacement || heatPumpAbbreviation || /(tepelne cerpad|cerpad|vzduch voda|zem voda|voda voda|nibe|vaillant|plyn|plynov|radiator|vykurov|kurenie|kotol)/.test(text)
+                : outdoorUnitPlacement || heatPumpAbbreviation || /(tepelne cerpad|heat pump|cerpad|vzduch voda|zem voda|voda voda|nibe|vaillant|plyn|plynov|radiator|vykurov|kurenie|topeni|topenie|kotol)/.test(text)
                   ? "heat_pump"
                   : (/(vyber.*riesen|poradit.*riesen|vhodn.*riesen)/.test(text) ||
                     (/(novostav|cely system|cel[ey] dom|usporn[ey] riesenie|kurenie a chladenie|vykurovanie a chladenie|technicke riesenie)/.test(combined) &&
                     /(chladen|vetran|tepla voda|rekuper|podlahov|kuren)/.test(combined)
                     ))
                   ? "complex_solution"
-                  : /\btc\b/.test(combined) || /(tepelne cerpad|cerpad|vzduch voda|zem voda|voda voda|nibe|vaillant|plyn|plynov|radiator|vykurov|kurenie|kotol)/.test(combined)
+                  : /\btc\b/.test(combined) || /(tepelne cerpad|heat pump|cerpad|vzduch voda|zem voda|voda voda|nibe|vaillant|plyn|plynov|radiator|vykurov|kurenie|topeni|topenie|kotol)/.test(combined)
                     ? "heat_pump"
                     : previousService !== "unknown" && text.split(/\s+/).filter(Boolean).length <= 4
                       ? previousService
@@ -2372,7 +2372,7 @@ function inferServiceRoute(message: string, state: QualificationState, history: 
         ? "price"
         : /(porucha|chyba|nekuri|nefunguje|hlasi|hlási|diagnostik|servis|tlak|huci|hučí|hluk|hlucnost)/.test(text)
           ? "service_fault"
-          : /(dotac|poukazk|prispevok)/.test(text)
+          : /(dotac|subsidy|poukazk|prispevok)/.test(text)
             ? "subsidy"
             : /(najleps|najlepší|odporuc|odporúč|ake potrebujem|aky potrebujem|vybrat|výber|chcem|riesim|riešim)/.test(text)
               ? "recommendation"
@@ -3904,6 +3904,36 @@ function companyPracticalDirectAnswer(message: string): DirectAnswerDecision | n
     );
   }
 
+  if (/(dotac|dotác|prispev|príspev|poukaz).*(najprv|najskor|najskôr|kupit|kúpiť|poziadat|požiadať|kontrol)|(?:najprv|najskor|najskôr|kupit|kúpiť|poziadat|požiadať|kontrol).*(dotac|dotác|prispev|príspev|poukaz)/.test(text)) {
+    return answerBase(
+      "Poradie pri dotácii",
+      "Pri dotácii by som nekupoval ani nesľuboval nárok naslepo. Najprv sa má overiť, či riešenie a domácnosť spĺňajú aktuálne podmienky programu, potom sa pripraví vhodná ponuka a až následne sa rieši podanie alebo ďalší administratívny krok. Kontrola závisí od konkrétneho programu, preto ju netreba hádať v chate. Riešiš dotáciu k tepelnému čerpadlu, fotovoltike alebo inému riešeniu?",
+      "subsidy_order_followup",
+      "subsidy",
+      "company-truth dotacie prispevok poukaz poradie ziadost ponuka kontrola tepelne cerpadlo fotovoltaika Geotherm",
+    );
+  }
+
+  if (/(state subsidy|subsidy).*(heat pump)|(?:heat pump).*(state subsidy|subsidy)/.test(text)) {
+    return answerBase(
+      "Dotácia na heat pump",
+      "Pri dotácii na heat pump, teda tepelné čerpadlo, by som najprv overil aktuálne podmienky programu a až potom riešil ponuku. Bez potvrdenia nesľubujem nárok, odpočet z ceny ani kompletné vybavenie. Pri návrhu treba rátať aj s rozsahom dodávky, montážou, servisom a konkrétnou zostavou, napríklad NIBE alebo Vaillant podľa ponuky. Ide o nové tepelné čerpadlo do domu alebo výmenu starého zdroja?",
+      "mixed_language_subsidy_followup",
+      "subsidy",
+      "company-truth heat pump tepelne cerpadlo dotacie servis cena NIBE Vaillant Geotherm",
+    );
+  }
+
+  if (/(firmu|firma|business|prevadz|prevádz).*(topeni|topenie|vykurov|kuren|kúren)|(?:topeni|topenie|vykurov|kuren|kúren).*(firmu|firma|business|prevadz|prevádz)/.test(text)) {
+    return answerBase(
+      "Vykurovanie pre firmu",
+      "Pri firme by som to bral ako návrh vykurovania pre konkrétnu prevádzku, nie ako rýchly výber zariadenia. Predbežne sa môže riešiť tepelné čerpadlo, regulácia, prípadne chladenie alebo vetranie; pri väčšom objekte je dôležitý aj servis a prevádzkové náklady. Dotácia alebo podpora sa dá spomenúť len po overení pravidiel. Ide o kancelárie, prevádzku alebo sklad/väčšiu halu?",
+      "business_heating_followup",
+      "recommendation",
+      "company-truth tepelne cerpadlo vykurovanie firma servis dotacia cena NIBE Geotherm",
+    );
+  }
+
   if (/(navrh|návrh|navrhem|návrhem).*(vytap|vytáp|vykur|kuren|kúren)|(?:vytap|vytáp|vykur|kuren|kúren).*(navrh|návrh|navrhem|návrhem)/.test(text)) {
     return answerBase(
       "Návrh vykurovania",
@@ -3924,6 +3954,16 @@ function companyPracticalDirectAnswer(message: string): DirectAnswerDecision | n
     );
   }
 
+  if (/(nechcem|nedam|nedám).*(email|mail)/.test(text)) {
+    return answerBase(
+      "Bez e-mailu",
+      "E-mail nemusíš dávať. Ak ešte nechceš posielať osobné údaje, dá sa najprv pripraviť krátke zhrnutie problému alebo požiadavky priamo tu v chate. Kontakt má zmysel až vtedy, keď chceš, aby sa ti Geotherm ozval späť.",
+      "no_email",
+      "contact",
+      "company-truth contact telefon email Geotherm",
+    );
+  }
+
   if (/^(co s tym|čo s tým|co teraz|čo teraz)\??$/.test(text)) {
     return answerBase(
       "Prvý krok",
@@ -3936,8 +3976,8 @@ function companyPracticalDirectAnswer(message: string): DirectAnswerDecision | n
 
   if (isContactQuestion(message)) {
     return answerBase(
-      "Spojenie s Geotherm",
-      "Otvor oficiálnu stránku Geotherm a použi časť určenú na spojenie s firmou. Číslo ani adresu tu radšej neprepisujem, aby si išiel podľa aktuálnych údajov. Mini-osnova oslovenia: predmet, preferovaný čas reakcie, obec a jedna veta k cieľu. Prílohy sú voliteľné podľa situácie.",
+      "Ako sa spojiť",
+      "Najistejšia cesta je otvoriť web Geotherm a prejsť do sekcie Kontakt. Tam budú aktuálne kanály priamo od firmy. Do správy stačí napísať, že chceš spätnú reakciu k svojej veci; detaily sa môžu doplniť až následne.",
       "contact_details",
       "contact",
       "company-truth kontakt Geotherm telefon email adresa",
@@ -4204,16 +4244,6 @@ function companyPracticalDirectAnswer(message: string): DirectAnswerDecision | n
       "diy_repair",
       "service_fault",
       "company-truth service svojpomocna oprava bezpecnost tepelne cerpadlo Geotherm",
-    );
-  }
-
-  if (/(nechcem|nedam|nedám).*(email|mail)/.test(text)) {
-    return answerBase(
-      "Kontakt bez e-mailu",
-      "E-mail nemusíte dávať. Pri servise alebo nacenení stačí aj telefón, prípadne sa najprv dá zhrnúť problém tu v chate. Kontakt má zmysel pýtať až vtedy, keď chcete, aby sa vám Geotherm ozval k termínu, servisu alebo ponuke.",
-      "no_email",
-      "contact",
-      "company-truth contact telefon email Geotherm",
     );
   }
 
@@ -4942,11 +4972,11 @@ function directAnswerDecision(message: string, state: QualificationState, route:
       answerMode: "direct_answer",
       reason: "direct_heat_pump_flat_suitability",
       answer: [
-        "### Byt nie je rovnaký prípad ako dom",
+        "### Beriem to ako byt",
         "",
-        "Pri byte by som tepelné čerpadlo neodporúčal automaticky. Rozhoduje vlastníctvo priestoru pre vonkajšiu jednotku, hluk, súhlas správcu alebo spoločenstva, typ vykurovania a to, či nejde praktickejšie riešiť klimatizáciu alebo iné lokálne riešenie.",
+        "Vtedy by som nedával rovnaké odporúčanie ako pre rodinný dom. Pre byt je bezpečný záver iba tento: najprv preveriť, či vôbec existuje technicky a právne priechodné miesto pre zdroj tepla. Ak nie, praktickejšie môže byť lokálne chladenie/kúrenie alebo iné riešenie podľa bytovky.",
         "",
-        "Najrozumnejšie je krátke preverenie s Geotherm podľa konkrétneho bytu a možností montáže.",
+        "Ďalší krok by som nerobil ďalším dotazníkom, ale krátkym preverením možností s Geotherm podľa konkrétneho bytu.",
       ].join("\n"),
       serviceIntent: "recommendation",
       retrievalQuery: "company-truth tepelne cerpadlo byt bytovka vonkajsia jednotka povolenie hluk klimatizacia Geotherm",
@@ -6867,6 +6897,7 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
       "noise_ambiguous",
       "problem_or_design",
       "apartment_buildings",
+      "flat_heat_pump_suitability",
       "small_jobs",
       "boiler_brands",
     ]);
@@ -6884,6 +6915,9 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
       "generic_installation_followup",
       "energy_consumption_followup",
       "subsidy_followup",
+      "subsidy_order_followup",
+      "mixed_language_subsidy_followup",
+      "business_heating_followup",
       "heat_pump_service_scope",
       "warranty_work",
       "gas_revision",
@@ -7063,7 +7097,8 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
       : "high";
   const latestNormalizedForConfidence = normalizePolicyText(message);
   const cautiousLatestMessage =
-    /(oplat|ma zmysel|garant|najlacn|najlacnej|lacn.*servis|servis.*lacn|sto rokov|vydrz.*sto|vonkajs|vonkajsi|pod oknom|cudz|ina firma|nastavenie|maintenance|udrzb|raz za rok|pomuzete|vytapeni|navrh.*vykurov|navrh.*vytap)/.test(latestNormalizedForConfidence) ||
+    /(oplat|ma zmysel|garant|najlacn|najlacnej|lacn.*servis|servis.*lacn|lacn.*ponuk|ponuk.*lacn|naletiet|naletieť|sto rokov|vydrz.*sto|vonkajs|vonkajsi|pod oknom|cudz|ina firma|nastavenie|maintenance|udrzb|raz za rok|pomuzete|vytapeni|navrh.*vykurov|navrh.*vytap)/.test(latestNormalizedForConfidence) ||
+    /(?:cena|cenu|stoj|naklad).*(normalne|normalnu|presne|presnu|hned|hneď|nikto|nevie)|(?:normalne|normalnu|presne|presnu|hned|hneď|nikto|nevie).*(cena|cenu|stoj|naklad)/.test(latestNormalizedForConfidence) ||
     (/(dotac|prispev|poukaz|stat)/.test(latestNormalizedForConfidence) && !stateForTurn.project_type) ||
     (latestNormalizedForConfidence.includes("vaillant") && latestNormalizedForConfidence.includes("nibe")) ||
     latestNormalizedForConfidence.includes("nie je od") ||

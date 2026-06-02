@@ -150,8 +150,10 @@ export function normalize(value: string): string {
     .replace(/[\u0300-\u036f]/g, "")
     .replace(/\bserivs\b/g, "servis")
     .replace(/\bservisak\b/g, "servis")
+    .replace(/\b(cenou|ceny|cene|cenu)\b/g, "cena")
     .replace(/\bcerpadllo\b/g, "cerpadlo")
     .replace(/\btepelko\b/g, "tepelne cerpadlo")
+    .replace(/\bcontact\b/g, "kontakt")
     .replace(/\bstrpne\b/g, "stropne")
     .replace(/\bstrpnom\b/g, "stropnom")
     .replace(/\bstrpny\b/g, "stropny")
@@ -268,6 +270,7 @@ function boilerplatePenalty(chunk: KnowledgeChunk, contactIntent: boolean): numb
     haystack.includes("menu");
   if (isNoisePage) return 95;
   if (!isBoilerplate) return 0;
+  if (contactIntent && !haystack.includes("kontakt")) return 85;
   return contactIntent ? 18 : 85;
 }
 
@@ -309,7 +312,8 @@ export function retrieveKnowledge(chunks: KnowledgeChunk[], query: string, limit
   const referenceIntent = ["realizac", "referenc", "praxi"].some((term) => normalizedQuery.includes(term));
   const earthVsAirIntent = normalizedQuery.includes("zem voda") || normalizedQuery.includes("vzduch voda") || normalizedQuery.includes("pozemok");
   const consumptionIntent = ["spotreb", "zere", "elektrin", "uct", "naklad"].some((term) => normalizedQuery.includes(term));
-  const radiatorIntent = ["radiator", "podlahov", "podlahu"].some((term) => normalizedQuery.includes(term));
+  const radiatorIntent = normalizedQuery.includes("radiator");
+  const floorHeatingIntent = ["podlahov", "podlahu", "podlahovka"].some((term) => normalizedQuery.includes(term));
   const rekuperationIntent = ["rekuper", "vetranie", "vydychany"].some((term) => normalizedQuery.includes(term));
   const ceilingCoolingIntent =
     (normalizedQuery.includes("strop") && (normalizedQuery.includes("chladen") || normalizedQuery.includes("chladi") || normalizedQuery.includes("klimatiz"))) ||
@@ -365,6 +369,8 @@ export function retrieveKnowledge(chunks: KnowledgeChunk[], query: string, limit
       (priceIntent && normalizedText.includes("cenovu ponuku") ? 22 : 0) +
       (serviceIntent && (normalizedTitle.includes("servis") || normalizedHeading.includes("servis") || normalizedUrl.includes("servis")) ? 95 : 0) +
       (serviceIntent && normalizedText.includes("servis") ? 25 : 0) +
+      (contactIntent && (normalizedTitle.includes("kontakt") || normalizedHeading.includes("kontakt") || normalizedUrl.includes("kontakt")) ? 135 : 0) +
+      (contactIntent && normalizedText.includes("kontakt") ? 35 : 0) +
       (querySet.has("nibe") && (normalizedTitle.includes("nibe") || normalizedHeading.includes("nibe") || normalizedText.includes("nibe")) ? 70 : 0) +
       (noiseIntent && normalizedUrl.includes("vzduch voda") ? 28 : 0) +
       (noiseIntent && (normalizedTitle.includes("hlucnost") || normalizedHeading.includes("vonkajsej jednotky")) ? 75 : 0) +
@@ -375,11 +381,13 @@ export function retrieveKnowledge(chunks: KnowledgeChunk[], query: string, limit
       (earthVsAirIntent && (normalizedTitle.includes("zem") || normalizedHeading.includes("zem") || normalizedUrl.includes("zem-vs-vzduch")) ? 90 : 0) +
       (consumptionIntent && (normalizedTitle.includes("spotreba") || normalizedHeading.includes("spotreba") || normalizedText.includes("spotreba elektrickej")) ? 70 : 0) +
       (radiatorIntent && (normalizedTitle.includes("radiator") || normalizedHeading.includes("radiator") || normalizedText.includes("radiator")) ? 80 : 0) +
+      (floorHeatingIntent && (normalizedTitle.includes("podlahov") || normalizedHeading.includes("podlahov") || normalizedText.includes("podlahov")) ? 105 : 0) +
       (rekuperationIntent && (normalizedTitle.includes("rekuper") || normalizedHeading.includes("rekuper") || normalizedUrl.includes("rekuper")) ? 95 : 0);
     const manualIntentScore = isManualChunk
       ? (priceIntent && (normalizedTitle.includes("cena") || normalizedHeading.includes("cena")) ? 145 : 0) +
         (priceIntent && (normalizedTitle.includes("ponuka") || normalizedHeading.includes("ponuka")) ? 90 : 0) +
         (radiatorIntent && (normalizedTitle.includes("radiator") || normalizedHeading.includes("radiator")) ? 125 : 0) +
+        (floorHeatingIntent && (normalizedTitle.includes("podlahov") || normalizedHeading.includes("podlahov")) ? 150 : 0) +
         (consumptionIntent && (normalizedTitle.includes("spotreba") || normalizedTitle.includes("uspora") || normalizedTitle.includes("navratnost")) ? 120 : 0) +
         (querySet.has("znack") && (normalizedTitle.includes("znack") || normalizedHeading.includes("znack")) ? 135 : 0) +
         (querySet.has("model") && (normalizedTitle.includes("model") || normalizedHeading.includes("model")) ? 125 : 0) +
@@ -466,6 +474,7 @@ export function retrieveKnowledge(chunks: KnowledgeChunk[], query: string, limit
   const seenFingerprints = new Set<string>();
   const maxChunksPerPage = ceilingCoolingIntent ? 5 : 2;
   for (const result of scored) {
+    if (result.confidence === "no_answer") continue;
     const pageKey = `${result.chunk.sourceType}:${result.chunk.sourceId}`;
     const currentPageCount = pageCounts.get(pageKey) || 0;
     const fingerprint = chunkFingerprint(result.chunk);

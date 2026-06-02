@@ -68,11 +68,11 @@ No warned massive cases.
 
 ## Retrieval Chaos Summary
 - tests: 20
-- pass/warn/fail: 17/3/0
-- top1 relevance: 0.95
+- pass/warn/fail: 20/0/0
+- top1 relevance: 1
 - top3 diversity: 1
 - false positive rate: 0
-- irrelevant source contamination: 0.15
+- irrelevant source contamination: 0
 - overconfident wrong retrievals: 0
 - drift incidents: 0
 
@@ -91,10 +91,10 @@ No warned massive cases.
 ## Long Conversation Summary
 - scenarios: 3
 - turns: 61
-- pass/warn/fail: 60/1/0
+- pass/warn/fail: 61/0/0
 - hallucinations: 0
 - contact aggression: 0
 - source degradation: 0
 
 ## Production Risk Assessment
-USABLE FOR INTERNAL TESTING ONLY. No critical incidents detected, but warnings need manual review before client deployment.
+Strong local evaluation result, but still not production-grade without live monitoring, source freshness, human escalation and abuse controls.

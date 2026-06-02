@@ -12,8 +12,8 @@
 | --- | --- | --- |
 | tepelne cerpadla | 794 | 56% |
 | podlahove kurenie | 698 | 49% |
+| cena a ponuka | 496 | 35% |
 | montaz a instalacia | 474 | 33% |
-| cena a ponuka | 468 | 33% |
 | znacky | 362 | 26% |
 | servis a udrzba | 256 | 18% |
 | bezpecnost a zodpovednost | 242 | 17% |
