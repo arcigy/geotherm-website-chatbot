@@ -6912,11 +6912,15 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     }
   }
   const normalizedMessageForHardDirect = normalizePolicyText(message);
+  const rawMessageForHardDirect = message.toLowerCase();
   if (/(vonkajs|vonkajsi|vonkajsej).*(jednotk)|pod oknom|umiestnenie jednotky/.test(normalizedMessageForHardDirect)) {
     answer = "### Umiestnenie vonkajšej jednotky\n\nPod oknom to nemusí byť automaticky zlé, ale treba to posúdiť opatrne. Rozhoduje hluk v noci, prúdenie vzduchu, kondenzát, odstup od okien a susedov, servisný prístup a miestne možnosti montáže.\n\nBez obhliadky by som to nepotvrdil ako finálne miesto. Pri nacenení by som porovnal tichšie umiestnenie bokom od obytných miestností alebo technické opatrenia proti hluku.";
     recordDiagnostic(answerDiagnostics.validatorsTriggered, "outdoor_unit_placement_answer_hardened");
   }
-  if (/(montaz|montáž).*(zajtra|hned|hneď).*(neviem|neviem aky|neviem aký|aky system|aký systém)|(?:neviem|neviem aky|neviem aký|aky system|aký systém).*(montaz|montáž).*(zajtra|hned|hneď)/.test(normalizedMessageForHardDirect)) {
+  if (
+    ((rawMessageForHardDirect.includes("mont") && rawMessageForHardDirect.includes("zajtra") && rawMessageForHardDirect.includes("neviem")) ||
+      /(montaz|montáž).*(zajtra|hned|hneď).*(neviem|neviem aky|neviem aký|aky system|aký systém)|(?:neviem|neviem aky|neviem aký|aky system|aký systém).*(montaz|montáž).*(zajtra|hned|hneď)/.test(normalizedMessageForHardDirect))
+  ) {
     answer = "### Najprv systém, potom termín\n\nMontáž hneď zajtra by som **bez podkladov a bez potvrdeného systému nesľuboval**. Najprv treba určiť, či ide o tepelné čerpadlo, klimatizáciu, rekuperáciu, podlahové kúrenie alebo inú technológiu; až potom sa dá potvrdiť termín, kapacita a cena.\n\nAk nevieš systém, začal by som krátkou konzultáciou: kúrenie, chladenie, vetranie alebo komplexné riešenie domu?";
     recordDiagnostic(answerDiagnostics.validatorsTriggered, "contradictory_installation_timing_hardened");
   }
