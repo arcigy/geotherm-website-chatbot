@@ -1,7 +1,7 @@
 # Diagnostic Conversation Test Report
 
-Generated: 2026-06-02T01:04:49.517Z
-Endpoint: http://127.0.0.1:55393/chat
+Generated: 2026-06-02T01:44:57.441Z
+Endpoint: http://127.0.0.1:61446/chat
 
 Verdict: PASS
 Failed turns: 0/44
@@ -12,7 +12,7 @@ Failed turns: 0/44
 
 User: ahoj, ake cerpadlo je najlepsie?
 Pass: yes
-responseTimeMs: 3739
+responseTimeMs: 2538
 answerMode: qualification_question
 serviceType: heat_pump
 serviceIntent: recommendation
@@ -28,7 +28,7 @@ retrievalQuery: service router verdict gate service-card-heat-pump tepelne cerpa
 enrichedRetrievalQuery: service router verdict gate service-card-heat-pump tepelne cerpadla tepelné čerpadlá recommendation služba tepelné čerpadlá zámer recommendation ahoj, ake cerpadlo je najlepsie?
 storedSlots: {"service_type":"heat_pump","service_intent":"recommendation","qualification_question_rounds":0}
 newlyExtractedSlots: {}
-flow: diagnostic-v5-recommendation-closure @ 1d93cbe
+flow: diagnostic-v5-recommendation-closure @ cebd8d6
 
 ### Predbežný smer
 
@@ -43,7 +43,7 @@ Aby som ťa zaradil správne, napíš mi:
 
 User: 1. novostavbu, 2. 120, 3. podlahovka
 Pass: yes
-responseTimeMs: 2299
+responseTimeMs: 4182
 answerMode: diagnostic_verdict
 serviceType: heat_pump
 serviceIntent: recommendation
@@ -59,24 +59,22 @@ retrievalQuery: service router verdict gate service-card-heat-pump tepelne cerpa
 enrichedRetrievalQuery: service router verdict gate service-card-heat-pump tepelne cerpadla tepelné čerpadlá recommendation scenar-novostavba-podlahove-kurenie novostavba podlahove kurenie nizkoteplotne vzduch-voda služba tepelné čerpadlá zámer recommendation projekt novostavba plocha 120 m2 vykurovanie podlahové kúrenie ahoj, ake cerpadlo je najlepsie? 1. novostavbu, 2. 120, 3. podlahovka
 storedSlots: {"service_type":"heat_pump","service_intent":"recommendation","project_type":"novostavba","area_m2":120,"heating_distribution":"podlahové kúrenie","qualification_question_rounds":1}
 newlyExtractedSlots: {}
-flow: diagnostic-v5-recommendation-closure @ 1d93cbe
+flow: diagnostic-v5-recommendation-closure @ cebd8d6
 
 ### Odporúčanie pre novostavbu s podlahovým kúrením
 
-Keďže ide o novostavbu s plochou 120 m² a podlahovým kúrením, predbežne sa ako najvhodnejšie riešenie javí **tepelné čerpadlo vzduch-voda**. Tento typ je ideálny pre nízkoteplotné vykurovacie systémy, akým je práve podlahové kúrenie, a je vhodný pre väčšinu moderných stavieb.
+Super, ďakujem za upresnenie! Keďže ide o novostavbu s podlahovým kúrením s plochou 120 m², predbežne sa ako najvhodnejšie riešenie javí **tepelné čerpadlo vzduch-voda**. Tento typ je ideálny pre nízkoteplotné vykurovacie systémy, akým je podlahovka, a je univerzálny pre väčšinu stavieb.
 
-Naše služby zahŕňajú kompletnú realizáciu od návrhu až po montáž. V portfóliu máme overené značky ako NIBE a Vaillant.
+Aby som ti mohol odporučiť konkrétnejší model a zistiť ďalšie detaily, potreboval by som vedieť ešte dve veci:
 
-Aby som ti mohol odporučiť konkrétny model a presnejšie riešenie, potreboval by som vedieť ešte pár detailov:
-
-* Koľko osôb bude v domácnosti. (Pre dimenzovanie ohrevu teplej úžitkovej vody)
+* Koľko osôb bude v dome bývať. (Ovplyvňuje potrebu teplej vody)
 * Plánuješ aj aktívne chladenie v lete?
 
 ### Turn 3
 
 User: 1. 5, 2. ano
 Pass: yes
-responseTimeMs: 4460
+responseTimeMs: 3630
 answerMode: recommendation_closure
 serviceType: heat_pump
 serviceIntent: recommendation
@@ -87,12 +85,12 @@ closureGateTriggered: true
 closureReason: question_budget_exhausted
 recommendationOptions: ["Tepelné čerpadlo vzduch-voda pre nízkoteplotné podlahové kúrenie","Tepelné čerpadlo so zásobníkom TÚV podľa počtu osôb","Samostatne navrhnuté chladenie cez stropné chladenie, fancoily alebo klimatizáciu podľa projektu"]
 remainingCriticalUnknowns: ["výkon a konkrétna zostava sa doriešia pri nacenení"]
-validatorsTriggered: inspection_claim_sanitized, overconfident_wording_softened, recommendation_closure_repaired
+validatorsTriggered: inspection_claim_sanitized, new_build_closure_docs_question_replaced, overconfident_wording_softened, hard_verdict_inserted, new_build_cooling_caveat_repaired, recommendation_closure_repaired
 retrievalQuery: service router verdict gate service-card-heat-pump tepelne cerpadla tepelné čerpadlá recommendation scenar-novostavba-podlahove-kurenie novostavba podlahove kurenie nizkoteplotne vzduch-voda scenar-kurenie-aj-chladenie chladenie cez tepelne cerpadlo stropne chladenie fancoily podlahove chladenie rosny bod zasobnik TUV tepla voda pocet osob 5 služba tepelné čerpadlá zámer recommendation projekt novostavba plocha 120 m2 vykurovanie podlahové kúrenie počet osôb 5 zásobník TÚV pre 5 osôb rieši teplú vodu TÚV rieši chladenie ahoj, ake cerpadlo je najlepsie? 1. novostavbu, 2. 120, 3. podlahovka 1. 5, 2. ano
 enrichedRetrievalQuery: service router verdict gate service-card-heat-pump tepelne cerpadla tepelné čerpadlá recommendation scenar-novostavba-podlahove-kurenie novostavba podlahove kurenie nizkoteplotne vzduch-voda scenar-kurenie-aj-chladenie chladenie cez tepelne cerpadlo stropne chladenie fancoily podlahove chladenie rosny bod zasobnik TUV tepla voda pocet osob 5 služba tepelné čerpadlá zámer recommendation projekt novostavba plocha 120 m2 vykurovanie podlahové kúrenie počet osôb 5 zásobník TÚV pre 5 osôb rieši teplú vodu TÚV rieši chladenie ahoj, ake cerpadlo je najlepsie? 1. novostavbu, 2. 120, 3. podlahovka 1. 5, 2. ano
 storedSlots: {"service_type":"heat_pump","service_intent":"recommendation","project_type":"novostavba","area_m2":120,"heating_distribution":"podlahové kúrenie","wants_cooling":true,"occupants":5,"qualification_question_rounds":2,"recommendation_closure_offered":true}
 newlyExtractedSlots: {}
-flow: diagnostic-v5-recommendation-closure @ 1d93cbe
+flow: diagnostic-v5-recommendation-closure @ cebd8d6
 
 ### Predbežné uzavretie odporúčania
 
@@ -113,7 +111,7 @@ Dáva to zmysel preto, že podlahovka pracuje s nízkou teplotou vody a tepelné
 
 User: Ahoj, chcem tč
 Pass: yes
-responseTimeMs: 3527
+responseTimeMs: 3013
 answerMode: qualification_question
 serviceType: heat_pump
 serviceIntent: recommendation
@@ -124,12 +122,12 @@ closureGateTriggered: false
 closureReason: n/a
 recommendationOptions: []
 remainingCriticalUnknowns: []
-validatorsTriggered: inspection_claim_sanitized, overconfident_wording_softened, initial_heat_pump_recommendation_repaired, followup_questions_limited
+validatorsTriggered: inspection_claim_sanitized, initial_heat_pump_recommendation_repaired, followup_questions_limited
 retrievalQuery: service router verdict gate service-card-heat-pump tepelne cerpadla tepelné čerpadlá recommendation služba tepelné čerpadlá zámer recommendation Ahoj, chcem tč
 enrichedRetrievalQuery: service router verdict gate service-card-heat-pump tepelne cerpadla tepelné čerpadlá recommendation služba tepelné čerpadlá zámer recommendation Ahoj, chcem tč
 storedSlots: {"service_type":"heat_pump","service_intent":"recommendation","qualification_question_rounds":0}
 newlyExtractedSlots: {}
-flow: diagnostic-v5-recommendation-closure @ 1d93cbe
+flow: diagnostic-v5-recommendation-closure @ cebd8d6
 
 ### Predbežný smer
 
@@ -144,7 +142,7 @@ Aby som ťa zaradil správne, napíš mi:
 
 User: Starší 140m radiatory
 Pass: yes
-responseTimeMs: 3443
+responseTimeMs: 3239
 answerMode: diagnostic_verdict
 serviceType: heat_pump
 serviceIntent: recommendation
@@ -160,22 +158,20 @@ retrievalQuery: service router verdict gate service-card-heat-pump tepelne cerpa
 enrichedRetrievalQuery: service router verdict gate service-card-heat-pump tepelne cerpadla tepelné čerpadlá recommendation scenar-starsi-dom-radiatory-plyn radiatorovy system vyssia teplota vody služba tepelné čerpadlá zámer recommendation projekt rekonštrukcia plocha 140 m2 vykurovanie radiátory Ahoj, chcem tč Starší 140m radiatory
 storedSlots: {"service_type":"heat_pump","service_intent":"recommendation","project_type":"rekonštrukcia","area_m2":140,"heating_distribution":"radiátory","qualification_question_rounds":1}
 newlyExtractedSlots: {}
-flow: diagnostic-v5-recommendation-closure @ 1d93cbe
+flow: diagnostic-v5-recommendation-closure @ cebd8d6
 
 ### Tepelné čerpadlo pre starší dom s radiátormi
 
-Na základe informácie, že ide o starší dom s plochou 140 m² a vykurovaním pomocou radiátorov, je predbežným smerom **tepelné čerpadlo vzduch-voda**.
+Rozumiem, máš starší dom s rozlohou 140 m² a vykurovanie zabezpečujú radiátory. V takomto prípade je predbežný smer k tepelnému čerpadlu **vzduch-voda**.
 
-**Dôvod:** Tepelné čerpadlá vzduch-voda sú univerzálnym riešením, ktoré sa dá použiť aj pri rekonštrukciách starších domov. Pri radiátoroch je však kľúčové overiť, či sú schopné efektívne vykurovať dom pri nižšej teplote vody, ktorú tepelné čerpadlo bežne dodáva.
+**Dôvod:** Tepelné čerpadlá vzduch-voda sú najčastejšie používané a vhodné aj pre rekonštrukcie. Pri radiátoroch je však kľúčové overiť, či dokážu efektívne vykurovať dom pri nižšej teplote vody, ktorú tepelné čerpadlo dodáva.
 
-**Čo treba overiť:**
-* **Výkon radiátorov:** Je potrebné zistiť, či súčasné radiátory dokážu dodať dostatočné teplo pri nižšej prevádzkovej teplote tepelného čerpadla. V niektorých prípadoch môže byť potrebné vymeniť radiátory za väčšie alebo pridať ďalšie.
-* **Potrebná teplota vody:** Zistiť, akú maximálnu teplotu vody váš vykurovací systém s radiátormi vyžaduje.
+**Typické riešenie:** V takýchto prípadoch sa zameriavame na overenie výkonu radiátorov a potrebnú teplotu vody. Niekedy môže byť potrebné vymeniť časť radiátorov za výkonnejšie, aby systém optimálne fungoval.
 
-**Ďalšie kroky:**
-Aby som ti mohol odporučiť konkrétnejšie riešenie, potreboval by som vedieť ešte pár detailov:
-1. Aký je váš súčasný zdroj tepla (napr. plynový kotol, elektrické kúrenie).
-2. Plánuješ v blízkej budúcnosti zatepľovať dom alebo meniť okná?
+Aby som ti mohol čo najlepšie poradiť, potreboval by som vedieť ešte pár vecí:
+
+1. Aký je tvoj súčasný zdroj tepla (napr. plynový kotol, elektrické kúrenie).
+2. Máš záujem aj o ohrev teplej úžitkovej vody cez tepelné čerpadlo?
 
 ## Starsi dom + radiatory + plyn + closure
 
@@ -183,7 +179,7 @@ Aby som ti mohol odporučiť konkrétnejšie riešenie, potreboval by som vedie�
 
 User: Ahoj, chcem tc
 Pass: yes
-responseTimeMs: 3623
+responseTimeMs: 3896
 answerMode: qualification_question
 serviceType: heat_pump
 serviceIntent: recommendation
@@ -199,7 +195,7 @@ retrievalQuery: service router verdict gate service-card-heat-pump tepelne cerpa
 enrichedRetrievalQuery: service router verdict gate service-card-heat-pump tepelne cerpadla tepelné čerpadlá recommendation služba tepelné čerpadlá zámer recommendation Ahoj, chcem tc
 storedSlots: {"service_type":"heat_pump","service_intent":"recommendation","qualification_question_rounds":0}
 newlyExtractedSlots: {}
-flow: diagnostic-v5-recommendation-closure @ 1d93cbe
+flow: diagnostic-v5-recommendation-closure @ cebd8d6
 
 ### Predbežný smer
 
@@ -214,7 +210,7 @@ Aby som ťa zaradil správne, napíš mi:
 
 User: Starsi 140m radiatory
 Pass: yes
-responseTimeMs: 4055
+responseTimeMs: 2552
 answerMode: diagnostic_verdict
 serviceType: heat_pump
 serviceIntent: recommendation
@@ -230,21 +226,22 @@ retrievalQuery: service router verdict gate service-card-heat-pump tepelne cerpa
 enrichedRetrievalQuery: service router verdict gate service-card-heat-pump tepelne cerpadla tepelné čerpadlá recommendation scenar-starsi-dom-radiatory-plyn radiatorovy system vyssia teplota vody služba tepelné čerpadlá zámer recommendation projekt rekonštrukcia plocha 140 m2 vykurovanie radiátory Ahoj, chcem tc Starsi 140m radiatory
 storedSlots: {"service_type":"heat_pump","service_intent":"recommendation","project_type":"rekonštrukcia","area_m2":140,"heating_distribution":"radiátory","qualification_question_rounds":1}
 newlyExtractedSlots: {}
-flow: diagnostic-v5-recommendation-closure @ 1d93cbe
+flow: diagnostic-v5-recommendation-closure @ cebd8d6
 
 ### Tepelné čerpadlo pre starší dom s radiátormi
 
-Pre starší dom s rozlohou 140 m² a radiátormi je predbežným smerom tepelné čerpadlo vzduch-voda. Je dôležité overiť, či vaše súčasné radiátory dokážu efektívne vykurovať dom pri nižšej teplote vody, ktorú tepelné čerpadlo dodáva. V niektorých prípadoch môže byť potrebné upraviť vykurovací systém alebo zvážiť zmenu časti radiátorov.
+Keďže ide o starší dom s rozlohou 140 m² a vykurovaním pomocou radiátorov, predbežne sa budeme orientovať na tepelné čerpadlo vzduch-voda. Je dôležité overiť, či vaše súčasné radiátory dokážu efektívne vykúriť dom pri nižšej teplote vody, ktorú tepelné čerpadlo zvyčajne dodáva. V niektorých prípadoch môže byť potrebné upraviť alebo vymeniť časť radiátorov, aby systém fungoval optimálne.
 
-Aby som ti mohol presnejšie poradiť, potrebujem vedieť:
-* Aký je tvoj súčasný zdroj tepla a aká je tvoja ročná spotreba energie (napr. plynu, elektriny).
-* Je dom zateplený?
+Aby som ti mohol čo najlepšie poradiť, potreboval by som vedieť ešte pár vecí:
+
+* Aký je váš súčasný zdroj tepla (napr. plynový kotol, elektrické kúrenie).
+* Ako ste spokojný so súčasným vykurovaním a akú teplotu vody radiátory zvyčajne dosahujú?
 
 ### Turn 3
 
 User: plynovy kotol
 Pass: yes
-responseTimeMs: 3322
+responseTimeMs: 3669
 answerMode: recommendation_closure
 serviceType: heat_pump
 serviceIntent: recommendation
@@ -255,12 +252,12 @@ closureGateTriggered: true
 closureReason: question_budget_exhausted
 recommendationOptions: ["Tepelné čerpadlo vzduch-voda vhodné pre radiátorový systém","Úprava alebo posilnenie časti radiátorov, ak dom potrebuje vyššiu teplotu vody"]
 remainingCriticalUnknowns: ["potrebná teplota vody pre radiátory","zateplenie domu","akumulačná nádrž alebo existujúce zapojenie kotolne","či má systém riešiť teplú vodu"]
-validatorsTriggered: inspection_claim_sanitized, overconfident_wording_softened, recommendation_closure_repaired
+validatorsTriggered: inspection_claim_sanitized, recommendation_closure_repaired
 retrievalQuery: service router verdict gate service-card-heat-pump tepelne cerpadla tepelné čerpadlá recommendation scenar-starsi-dom-radiatory-plyn radiatorovy system vyssia teplota vody služba tepelné čerpadlá zámer recommendation projekt rekonštrukcia plocha 140 m2 vykurovanie radiátory aktuálne kúrenie plyn Ahoj, chcem tc Starsi 140m radiatory plynovy kotol
 enrichedRetrievalQuery: service router verdict gate service-card-heat-pump tepelne cerpadla tepelné čerpadlá recommendation scenar-starsi-dom-radiatory-plyn radiatorovy system vyssia teplota vody služba tepelné čerpadlá zámer recommendation projekt rekonštrukcia plocha 140 m2 vykurovanie radiátory aktuálne kúrenie plyn Ahoj, chcem tc Starsi 140m radiatory plynovy kotol
 storedSlots: {"service_type":"heat_pump","service_intent":"recommendation","project_type":"rekonštrukcia","area_m2":140,"current_heating":"plyn","heating_distribution":"radiátory","qualification_question_rounds":2,"recommendation_closure_offered":true}
 newlyExtractedSlots: {}
-flow: diagnostic-v5-recommendation-closure @ 1d93cbe
+flow: diagnostic-v5-recommendation-closure @ cebd8d6
 
 ### Predbežné uzavretie odporúčania
 
@@ -281,7 +278,7 @@ Typicky by sa riešila vonkajšia jednotka, vnútorné hydraulické zapojenie, r
 
 User: co odporucate?
 Pass: yes
-responseTimeMs: 3658
+responseTimeMs: 3242
 answerMode: recommendation_closure
 serviceType: heat_pump
 serviceIntent: recommendation
@@ -297,9 +294,9 @@ retrievalQuery: service router verdict gate service-card-heat-pump tepelne cerpa
 enrichedRetrievalQuery: service router verdict gate service-card-heat-pump tepelne cerpadla tepelné čerpadlá recommendation scenar-starsi-dom-radiatory-plyn radiatorovy system vyssia teplota vody služba tepelné čerpadlá zámer recommendation projekt rekonštrukcia plocha 140 m2 vykurovanie radiátory aktuálne kúrenie plyn Ahoj, chcem tc Starsi 140m radiatory plynovy kotol co odporucate?
 storedSlots: {"service_type":"heat_pump","service_intent":"recommendation","project_type":"rekonštrukcia","area_m2":140,"current_heating":"plyn","heating_distribution":"radiátory","qualification_question_rounds":2,"recommendation_closure_offered":true}
 newlyExtractedSlots: {}
-flow: diagnostic-v5-recommendation-closure @ 1d93cbe
+flow: diagnostic-v5-recommendation-closure @ cebd8d6
 
-Recommendation closure gate je spustený. Teraz nesmieš pokračovať ďalším dotazníkom. Musíš dať uzatvorené predbežné odporúčanie: najlepší smer, dôvod, 2-3 konkrétne možnosti, typický rozsah riešenia a CTA na konzultáciu, stretnutie alebo nacenenie.
+Recommendation closure gate je aktívny. Nemôžem pokračovať ďalším dotazníkom. Musím dať uzatvorené predbežné odporúčanie.
 
 ### Predbežné uzavretie odporúčania
 
@@ -324,7 +321,7 @@ Ide skôr o výmenu zdroja kúrenia, servis existujúceho zariadenia, alebo náv
 
 User: ahoj, ake cerpadlo je najlepsie?
 Pass: yes
-responseTimeMs: 2551
+responseTimeMs: 2401
 answerMode: qualification_question
 serviceType: heat_pump
 serviceIntent: recommendation
@@ -340,7 +337,7 @@ retrievalQuery: service router verdict gate service-card-heat-pump tepelne cerpa
 enrichedRetrievalQuery: service router verdict gate service-card-heat-pump tepelne cerpadla tepelné čerpadlá recommendation služba tepelné čerpadlá zámer recommendation ahoj, ake cerpadlo je najlepsie?
 storedSlots: {"service_type":"heat_pump","service_intent":"recommendation","qualification_question_rounds":0}
 newlyExtractedSlots: {}
-flow: diagnostic-v5-recommendation-closure @ 1d93cbe
+flow: diagnostic-v5-recommendation-closure @ cebd8d6
 
 ### Predbežný smer
 
@@ -355,7 +352,7 @@ Aby som ťa zaradil správne, napíš mi:
 
 User: starsi dom, 150m, mame radiatory
 Pass: yes
-responseTimeMs: 4211
+responseTimeMs: 3896
 answerMode: diagnostic_verdict
 serviceType: heat_pump
 serviceIntent: recommendation
@@ -371,29 +368,30 @@ retrievalQuery: service router verdict gate service-card-heat-pump tepelne cerpa
 enrichedRetrievalQuery: service router verdict gate service-card-heat-pump tepelne cerpadla tepelné čerpadlá recommendation scenar-starsi-dom-radiatory-plyn radiatorovy system vyssia teplota vody služba tepelné čerpadlá zámer recommendation projekt rekonštrukcia objekt rodinný dom plocha 150 m2 vykurovanie radiátory ahoj, ake cerpadlo je najlepsie? starsi dom, 150m, mame radiatory
 storedSlots: {"service_type":"heat_pump","service_intent":"recommendation","project_type":"rekonštrukcia","property_type":"rodinný dom","area_m2":150,"heating_distribution":"radiátory","qualification_question_rounds":1}
 newlyExtractedSlots: {}
-flow: diagnostic-v5-recommendation-closure @ 1d93cbe
+flow: diagnostic-v5-recommendation-closure @ cebd8d6
 
 ### Tepelné čerpadlo pre starší dom s radiátormi
 
-Na základe toho, že ide o starší dom s plochou 150 m² a radiátormi, predbežný smer je zvážiť tepelné čerpadlo **vzduch-voda**.
+Na základe toho, že ide o starší dom s rozlohou 150 m² a vykurovaním pomocou radiátorov, predbežným smerom je tepelné čerpadlo **vzduch-voda**.
 
-**Dôvod:** Tepelné čerpadlá vzduch-voda sú univerzálne a často sa používajú pri rekonštrukciách starších domov. Kľúčové však bude overiť, či tvoje súčasné radiátory dokážu efektívne vykurovať dom pri nižšej teplote vody, ktorú tepelné čerpadlo dodáva. Ak sú radiátory menšie alebo dom potrebuje vyššiu teplotu vody, môže byť potrebné ich vymeniť alebo upraviť.
+**Dôvod:** Tepelné čerpadlá vzduch-voda sú univerzálnym riešením, ktoré sa dá použiť aj pri rekonštrukcii staršieho domu. Pri radiátoroch je však kľúčové overiť, či sú schopné efektívne vykurovať dom pri nižšej teplote vody, ktorú tepelné čerpadlo zvyčajne dodáva.
 
 **Typický rozsah riešenia:**
-* **Výber vhodného tepelného čerpadla:** Zameriame sa na modely, ktoré zvládajú vyššie výstupné teploty vody, ak to bude potrebné. Značky ako NIBE a Vaillant sú spoľahlivé voľby.
-* **Overenie vykurovacieho systému:** Skontrolujeme veľkosť a typ radiátorov, aby sme zistili ich výkon pri rôznych teplotách vody.
-* **Možné úpravy:** V prípade potreby navrhneme výmenu časti radiátorov alebo iné riešenia na optimalizáciu vykurovania.
+* **Overenie výkonu radiátorov:** Zistíme, či súčasné radiátory dokážu dodať dostatočné teplo pri nižšej prevádzkovej teplote tepelného čerpadla. V niektorých prípadoch môže byť potrebné vymeniť časť radiátorov za väčšie alebo pridať ďalšie.
+* **Výber vhodného tepelného čerpadla:** Zameriame sa na modely, ktoré zvládajú aj vyššie výstupné teploty vody, ak by to bolo potrebné. Značky ako NIBE a Vaillant sú spoľahlivou voľbou.
+* **Komplexná realizácia:** Zabezpečíme celý proces od návrhu až po montáž.
 
-**Ďalšie kroky:**
-Aby som ti mohol čo najlepšie poradiť, potreboval by som vedieť ešte pár vecí:
-1. Aký je tvoj súčasný zdroj tepla (napr. plynový kotol, elektrické kúrenie).
-2. Ako je dom zateplený (ak vieš)?
+**Čo potrebujeme vedieť ďalej:**
+1. Aký je váš súčasný zdroj tepla (napr. plynový kotol, elektrické kúrenie).
+2. Máte záujem aj o ohrev teplej úžitkovej vody (TÚV) pomocou tepelného čerpadla?
+
+Po zodpovedaní týchto otázok ti budeme vedieť dať presnejšie odporúčanie a pripraviť návrh riešenia.
 
 ### Turn 3
 
 User: kotol mame drevom a netusim, mam vlastne drevo
 Pass: yes
-responseTimeMs: 5568
+responseTimeMs: 5352
 answerMode: recommendation_closure
 serviceType: heat_pump
 serviceIntent: recommendation
@@ -404,12 +402,12 @@ closureGateTriggered: true
 closureReason: minimum_slots_plus_enough_context
 recommendationOptions: ["Tepelné čerpadlo vzduch-voda ako hlavný zdroj kúrenia","Hybridné zapojenie: tepelné čerpadlo + ponechaný kotol na drevo ako záloha alebo doplnkový zdroj"]
 remainingCriticalUnknowns: ["potrebná teplota vody pre radiátory","zateplenie domu","akumulačná nádrž alebo existujúce zapojenie kotolne","či má systém riešiť teplú vodu"]
-validatorsTriggered: inspection_claim_sanitized, wood_replacement_followup_repaired, recommendation_closure_repaired
+validatorsTriggered: inspection_claim_sanitized, overconfident_wording_softened, recommendation_closure_repaired
 retrievalQuery: service router verdict gate service-card-heat-pump tepelne cerpadla tepelné čerpadlá recommendation scenar-starsi-dom-radiatory-plyn radiatorovy system vyssia teplota vody scenar-vymena-kotla-na-drevo tuhe palivo radiatory akumulacna nadrz tepelne cerpadlo vzduch-voda služba tepelné čerpadlá zámer recommendation projekt rekonštrukcia objekt rodinný dom plocha 150 m2 vykurovanie radiátory aktuálne kúrenie tuhé palivo ročná spotreba nie je známa zákazník má vlastné drevo ahoj, ake cerpadlo je najlepsie? starsi dom, 150m, mame radiatory kotol mame drevom a netusim, mam vlastne drevo
 enrichedRetrievalQuery: service router verdict gate service-card-heat-pump tepelne cerpadla tepelné čerpadlá recommendation scenar-starsi-dom-radiatory-plyn radiatorovy system vyssia teplota vody scenar-vymena-kotla-na-drevo tuhe palivo radiatory akumulacna nadrz tepelne cerpadlo vzduch-voda služba tepelné čerpadlá zámer recommendation projekt rekonštrukcia objekt rodinný dom plocha 150 m2 vykurovanie radiátory aktuálne kúrenie tuhé palivo ročná spotreba nie je známa zákazník má vlastné drevo ahoj, ake cerpadlo je najlepsie? starsi dom, 150m, mame radiatory kotol mame drevom a netusim, mam vlastne drevo
 storedSlots: {"service_type":"heat_pump","service_intent":"recommendation","project_type":"rekonštrukcia","property_type":"rodinný dom","area_m2":150,"current_heating":"tuhé palivo","heating_distribution":"radiátory","annual_consumption_unknown":true,"own_wood":true,"qualification_question_rounds":2,"recommendation_closure_offered":true}
 newlyExtractedSlots: {}
-flow: diagnostic-v5-recommendation-closure @ 1d93cbe
+flow: diagnostic-v5-recommendation-closure @ cebd8d6
 
 ### Predbežné uzavretie odporúčania
 
@@ -433,7 +431,7 @@ Finálne treba preveriť hlavne teplotu vody pre radiátory, existujúcu akumula
 
 User: 4m, zateplene vsetko
 Pass: yes
-responseTimeMs: 4166
+responseTimeMs: 5578
 answerMode: recommendation_closure
 serviceType: heat_pump
 serviceIntent: recommendation
@@ -444,30 +442,31 @@ closureGateTriggered: true
 closureReason: minimum_slots_plus_enough_context
 recommendationOptions: ["Tepelné čerpadlo vzduch-voda ako hlavný zdroj kúrenia","Hybridné zapojenie: tepelné čerpadlo + ponechaný kotol na drevo ako záloha alebo doplnkový zdroj"]
 remainingCriticalUnknowns: ["potrebná teplota vody pre radiátory","akumulačná nádrž alebo existujúce zapojenie kotolne","či má systém riešiť teplú vodu"]
-validatorsTriggered: inspection_claim_sanitized
+validatorsTriggered: inspection_claim_sanitized, overconfident_wording_softened
 retrievalQuery: service router verdict gate service-card-heat-pump tepelne cerpadla tepelné čerpadlá recommendation scenar-starsi-dom-radiatory-plyn radiatorovy system vyssia teplota vody scenar-vymena-kotla-na-drevo tuhe palivo radiatory akumulacna nadrz tepelne cerpadlo vzduch-voda služba tepelné čerpadlá zámer recommendation projekt rekonštrukcia objekt rodinný dom plocha 150 m2 vykurovanie radiátory aktuálne kúrenie tuhé palivo spotreba 4 m dreva za sezónu ročná spotreba nie je známa zákazník má vlastné drevo zateplenie zateplený alebo čiastočne zateplený ahoj, ake cerpadlo je najlepsie? starsi dom, 150m, mame radiatory kotol mame drevom a netusim, mam vlastne drevo 4m, zateplene vsetko
 enrichedRetrievalQuery: service router verdict gate service-card-heat-pump tepelne cerpadla tepelné čerpadlá recommendation scenar-starsi-dom-radiatory-plyn radiatorovy system vyssia teplota vody scenar-vymena-kotla-na-drevo tuhe palivo radiatory akumulacna nadrz tepelne cerpadlo vzduch-voda služba tepelné čerpadlá zámer recommendation projekt rekonštrukcia objekt rodinný dom plocha 150 m2 vykurovanie radiátory aktuálne kúrenie tuhé palivo spotreba 4 m dreva za sezónu ročná spotreba nie je známa zákazník má vlastné drevo zateplenie zateplený alebo čiastočne zateplený ahoj, ake cerpadlo je najlepsie? starsi dom, 150m, mame radiatory kotol mame drevom a netusim, mam vlastne drevo 4m, zateplene vsetko
 storedSlots: {"service_type":"heat_pump","service_intent":"recommendation","project_type":"rekonštrukcia","property_type":"rodinný dom","area_m2":150,"current_heating":"tuhé palivo","heating_distribution":"radiátory","insulation":"zateplený alebo čiastočne zateplený","annual_consumption":"4 m dreva za sezónu","annual_consumption_unknown":true,"own_wood":true,"qualification_question_rounds":2,"recommendation_closure_offered":true}
 newlyExtractedSlots: {}
-flow: diagnostic-v5-recommendation-closure @ 1d93cbe
+flow: diagnostic-v5-recommendation-closure @ cebd8d6
 
 ### Predbežné uzavretie odporúčania
 
-Podľa toho, čo píšeš, by som to už predbežne uzavrel: **najlepší smer je tepelné čerpadlo vzduch-voda vhodné pre radiátorový systém** v staršom dome s plochou približne 150 m².
+Ďakujem za doplnenie! Informácia o 4 metroch dreva a zateplenom dome potvrdzuje, že predbežné odporúčanie na tepelné čerpadlo vzduch-voda je správnym smerom.
 
-**Prečo:** máš radiátory, takže treba preveriť hlavne teplotu vody, ktorú dom potrebuje v zime. Keďže máš vlastné drevo (4m dreva za sezónu), nehodnotil by som to iba cez úsporu. Ekonomiku treba overiť, ale hlavný prínos môže byť komfort: automatické kúrenie bez prikladania, menej práce s drevom a možnosť nechať drevo ako zálohu. Zateplenie domu je tiež dobrá správa, znižuje tepelné straty.
+**Najlepší smer je tepelné čerpadlo vzduch-voda vhodné pre radiátorový systém** v staršom dome s plochou približne 150 m².
 
-**Reálne by som pozeral na dve možnosti:**
-1. **Tepelné čerpadlo vzduch-voda ako hlavný zdroj kúrenia.** Vhodné, ak chceš čo najviac obmedziť prikladanie a mať automatickú prevádzku.
-2. **Hybridné zapojenie: tepelné čerpadlo + ponechaný kotol na drevo ako záloha alebo doplnkový zdroj.** Vhodné, ak máš vlastné drevo a chceš ho občas využívať ako zálohu alebo doplnok.
+**Prečo:** Máš radiátory, takže hlavne treba preveriť, či zvládnu vykurovať dom pri nižšej teplote vody, ktorú tepelné čerpadlo dodáva. Keďže máš vlastné drevo a dom je zateplený, ekonomika prevádzky tepelného čerpadla bude vieme priaznivá. Hlavným prínosom bude komfort automatického kúrenia bez prikladania a menej práce s drevom. Vlastné drevo môže slúžiť ako spoľahlivá záloha.
 
-Z portfólia firmy by dávalo zmysel pozrieť sa na vhodné riešenie od **NIBE alebo Vaillant** pre radiátorový systém, ale konkrétny model by sa vybral až podľa výkonu, radiátorov, kotolne a prípravy teplej vody.
+**Reálne by som pozeral na dve hlavné možnosti:**
 
-Typicky by sa riešila vonkajšia jednotka, vnútorné hydraulické zapojenie, regulácia, prípadne zásobník TÚV, akumulačná nádrž alebo využitie existujúcej nádrže a napojenie na radiátorový systém.
+1. **Tepelné čerpadlo vzduch-voda ako hlavný zdroj kúrenia:** Ideálne, ak chceš minimalizovať prikladanie dreva a mať komfort automatickej prevádzky.
+2. **Hybridné zapojenie: tepelné čerpadlo + ponechaný kotol na drevo ako záloha alebo doplnkový zdroj:** Vhodné, ak chceš využívať vlastné drevo príležitostne, napríklad počas najväčších mrazov alebo keď máš čas prikladať.
 
-Finálne treba preveriť hlavne teplotu vody pre radiátory, existujúcu akumulačnú nádrž, priestor v kotolni a či má čerpadlo riešiť aj teplú vodu.
+Z portfólia firmy by sa hodilo pozrieť na riešenia od značiek **NIBE alebo Vaillant**, ktoré sú spoľahlivé pre radiátorové systémy. Konkrétny model by sa určil až po detailnom zhodnotení výkonu, veľkosti radiátorov, priestoru v kotolni a požiadaviek na ohrev teplej úžitkovej vody.
 
-Ďalší krok by som už nerobil ďalším dotazníkom. Dajme si krátku konzultáciu alebo stretnutie, kde sa preverí radiátorový systém, kotolňa a prípadná akumulačná nádrž a pripraví sa konkrétne nacenenie.
+**Typické riešenie by zahŕňalo:** vonkajšiu jednotku, vnútorné hydraulické zapojenie, reguláciu, prípadne zásobník na teplú vodu a napojenie na existujúci radiátorový systém.
+
+**Ďalší krok:** Teraz by som už nekládol ďalšie otázky. Navrhujem **krátku konzultáciu alebo stretnutie**, kde preveríme detailne tvoj radiátorový systém, kotolňu a prípadnú akumulačnú nádrž.
 
 ## TČ skratka + kvalifikacia uzavrie odporucanie
 
@@ -475,7 +474,7 @@ Finálne treba preveriť hlavne teplotu vody pre radiátory, existujúcu akumula
 
 User: aké máte tč?
 Pass: yes
-responseTimeMs: 1770
+responseTimeMs: 2127
 answerMode: brand_model_answer
 serviceType: heat_pump
 serviceIntent: brand_model
@@ -486,22 +485,22 @@ closureGateTriggered: false
 closureReason: n/a
 recommendationOptions: []
 remainingCriticalUnknowns: []
-validatorsTriggered: direct_answer_gate_used, latest_direct_question_answered, direct_answer_composed_by_llm, unsupported_heat_pump_brand_sanitized
+validatorsTriggered: direct_answer_gate_used, latest_direct_question_answered, direct_answer_composed_by_llm
 retrievalQuery: company-truth brands NIBE Vaillant IVT Daikin Mitsubishi tepelné čerpadlá portfólio Geotherm
 enrichedRetrievalQuery: company-truth brands NIBE Vaillant IVT Daikin Mitsubishi tepelné čerpadlá portfólio Geotherm
 storedSlots: {"service_type":"heat_pump","service_intent":"brand_model","qualification_question_rounds":0,"last_direct_topic":"heat_pump_brands","last_brand_model_topic":"heat_pump_brands"}
 newlyExtractedSlots: {"service_type":"heat_pump","service_intent":"brand_model"}
-flow: diagnostic-v5-recommendation-closure @ 1d93cbe
+flow: diagnostic-v5-recommendation-closure @ cebd8d6
 
-Ponúkame tepelné čerpadlá značiek NIBE a Vaillant. Značku IVT spomíname opatrne, keďže jej dostupnosť a vhodnosť treba overiť.Pri tepelných čerpadlách viem bezpečne komunikovať NIBE a Vaillant; Daikin alebo Mitsubishi treba pri TČ potvrdiť podľa aktuálnej ponuky.
+Ponúkame tepelné čerpadlá značiek NIBE a Vaillant. IVT spomíname opatrne, nakoľko dostupnosť a vhodnosť konkrétneho modelu treba vždy overiť podľa špecifikácií vášho domu a aktuálnej ponuky.
 
-Pri výbere konkrétneho modelu je dôležité najprv zhodnotiť váš dom a jeho potreby. Máte novostavbu alebo starší dom a aký typ vykurovania preferujete (radiátory alebo podlahové kúrenie)?
+Aby som vám mohol lepšie poradiť s výberom, potreboval by som vedieť viac o vašej nehnuteľnosti. Ide o novostavbu alebo starší dom a aký typ vykurovania preferujete – radiátory alebo podlahové kúrenie?
 
 ### Turn 2
 
 User: novostavbu 120m
 Pass: yes
-responseTimeMs: 3173
+responseTimeMs: 2359
 answerMode: qualification_question
 serviceType: heat_pump
 serviceIntent: recommendation
@@ -517,25 +516,24 @@ retrievalQuery: service router verdict gate service-card-heat-pump tepelne cerpa
 enrichedRetrievalQuery: service router verdict gate service-card-heat-pump tepelne cerpadla tepelné čerpadlá recommendation služba tepelné čerpadlá zámer recommendation projekt novostavba plocha 120 m2 aké máte tč? novostavbu 120m
 storedSlots: {"service_type":"heat_pump","service_intent":"recommendation","project_type":"novostavba","area_m2":120,"qualification_question_rounds":1,"last_direct_topic":"heat_pump_brands","last_brand_model_topic":"heat_pump_brands"}
 newlyExtractedSlots: {}
-flow: diagnostic-v5-recommendation-closure @ 1d93cbe
+flow: diagnostic-v5-recommendation-closure @ cebd8d6
 
 ### Tepelné čerpadlo pre vašu novostavbu
 
-Super, že ide o novostavbu s plochou 120 m². To nám už dosť napovedá.
+Rozumiem, že ide o novostavbu s plochou 120 m². V takom prípade je pre vás predbežne najvhodnejším riešením tepelné čerpadlo typu vzduch-voda. Tento typ je ideálny pre nízkoteplotné vykurovacie systémy, akým je napríklad podlahové kúrenie, ktoré sa v novostavbách často používa.
 
-**Predbežný verdikt:** Pre novostavbu s podlahovým kúrením je najčastejšie najvhodnejším riešením tepelné čerpadlo typu vzduch-voda. Tento typ je efektívny pri nízkych prevádzkových teplotách, ktoré sú ideálne pre podlahové kúrenie.
+Na základe vašich informácií (novostavba, 120 m²) môžeme predpokladať, že budete chcieť riešiť nielen kúrenie, ale aj prípravu teplej úžitkovej vody. Značky ako NIBE a Vaillant sú spoľahlivou voľbou.
 
-**Čo ďalej potrebujeme vedieť:**
-* **Teplá voda:** Potrebujete zabezpečiť aj ohrev teplej úžitkovej vody. Ak áno, aký je váš predpokladaný odber (koľko osôb bude v dome).
-* **Chladenie:** Zvažujete v lete aj aktívne chladenie, napríklad cez podlahové kúrenie alebo stropné chladenie?
+Aby som vám mohol poskytnúť presnejšie odporúčanie, potreboval by som vedieť ešte dve veci:
 
-Keď budeme mať tieto informácie, môžeme sa pozrieť na konkrétnejšie možnosti a návrh riešenia pre váš dom.
+* Budete chcieť tepelné čerpadlo využívať aj na chladenie počas leta.
+* Koľko osôb bude v domácnosti?
 
 ### Turn 3
 
 User: podlahovku
 Pass: yes
-responseTimeMs: 4757
+responseTimeMs: 2790
 answerMode: diagnostic_verdict
 serviceType: heat_pump
 serviceIntent: recommendation
@@ -546,30 +544,25 @@ closureGateTriggered: false
 closureReason: n/a
 recommendationOptions: []
 remainingCriticalUnknowns: []
-validatorsTriggered: inspection_claim_sanitized, followup_questions_limited
+validatorsTriggered: inspection_claim_sanitized, overconfident_wording_softened, hard_verdict_inserted
 retrievalQuery: service router verdict gate service-card-heat-pump tepelne cerpadla tepelné čerpadlá recommendation scenar-novostavba-podlahove-kurenie novostavba podlahove kurenie nizkoteplotne vzduch-voda služba tepelné čerpadlá zámer recommendation projekt novostavba plocha 120 m2 vykurovanie podlahové kúrenie aké máte tč? novostavbu 120m podlahovku
 enrichedRetrievalQuery: service router verdict gate service-card-heat-pump tepelne cerpadla tepelné čerpadlá recommendation scenar-novostavba-podlahove-kurenie novostavba podlahove kurenie nizkoteplotne vzduch-voda služba tepelné čerpadlá zámer recommendation projekt novostavba plocha 120 m2 vykurovanie podlahové kúrenie aké máte tč? novostavbu 120m podlahovku
 storedSlots: {"service_type":"heat_pump","service_intent":"recommendation","project_type":"novostavba","area_m2":120,"heating_distribution":"podlahové kúrenie","qualification_question_rounds":2,"last_direct_topic":"heat_pump_brands","last_brand_model_topic":"heat_pump_brands"}
 newlyExtractedSlots: {}
-flow: diagnostic-v5-recommendation-closure @ 1d93cbe
+flow: diagnostic-v5-recommendation-closure @ cebd8d6
 
-### Tepelné čerpadlo pre vašu novostavbu
+### Predbežný verdikt
 
-Ďakujem za upresnenie, že máte podlahové kúrenie. V kombinácii s novostavbou a plochou 120 m² je to skvelý základ pre výber optimálneho tepelného čerpadla.
+Pre teba by som predbežne išiel do tepelného čerpadla **vzduch-voda** pre **novostavbu s nízkoteplotným podlahovým kúrením** pri dome cca 120 m². Dáva to zmysel hlavne preto, že podlahovka pracuje s nízkou teplotou vody, čo tepelnému čerpadlu vyhovuje.
+Konkrétny výkon a model by som už riešil v nacenení, nie ďalším dotazníkom.
 
-**Predbežný verdikt:** Pre novostavbu s podlahovým kúrením sa najčastejšie odporúča tepelné čerpadlo typu vzduch-voda. Tento systém je ideálny pre nízko-teplotné vykurovacie systémy, akým je podlahové kúrenie, a zabezpečí vám efektívne vykurovanie.
-
-**Čo potrebujeme ešte vedieť:**
-* **Počet osôb:** Koľko ľudí bude v dome bývať. Toto nám pomôže odhadnúť potrebu teplej úžitkovej vody.
-* **Chladenie:** Zvažujete možnosť chladenia v lete?
-
-Po zodpovedaní týchto otázok budeme vedieť lepšie navrhnúť konkrétne riešenie.
+Koľko osôb bude v dome a chceš riešiť aj chladenie v lete?
 
 ### Turn 4
 
 User: 5 osob, áno plánujem
 Pass: yes
-responseTimeMs: 4321
+responseTimeMs: 3390
 answerMode: recommendation_closure
 serviceType: heat_pump
 serviceIntent: recommendation
@@ -580,12 +573,12 @@ closureGateTriggered: true
 closureReason: question_budget_exhausted
 recommendationOptions: ["Tepelné čerpadlo vzduch-voda pre nízkoteplotné podlahové kúrenie","Tepelné čerpadlo so zásobníkom TÚV podľa počtu osôb","Samostatne navrhnuté chladenie cez stropné chladenie, fancoily alebo klimatizáciu podľa projektu"]
 remainingCriticalUnknowns: ["výkon a konkrétna zostava sa doriešia pri nacenení"]
-validatorsTriggered: inspection_claim_sanitized, hard_verdict_inserted, new_build_closure_docs_question_replaced, new_build_cooling_caveat_repaired, recommendation_closure_repaired
+validatorsTriggered: inspection_claim_sanitized, recommendation_closure_repaired
 retrievalQuery: service router verdict gate service-card-heat-pump tepelne cerpadla tepelné čerpadlá recommendation scenar-novostavba-podlahove-kurenie novostavba podlahove kurenie nizkoteplotne vzduch-voda scenar-kurenie-aj-chladenie chladenie cez tepelne cerpadlo stropne chladenie fancoily podlahove chladenie rosny bod zasobnik TUV tepla voda pocet osob 5 služba tepelné čerpadlá zámer recommendation projekt novostavba plocha 120 m2 vykurovanie podlahové kúrenie počet osôb 5 zásobník TÚV pre 5 osôb rieši teplú vodu TÚV rieši chladenie aké máte tč? novostavbu 120m podlahovku 5 osob, áno plánujem
 enrichedRetrievalQuery: service router verdict gate service-card-heat-pump tepelne cerpadla tepelné čerpadlá recommendation scenar-novostavba-podlahove-kurenie novostavba podlahove kurenie nizkoteplotne vzduch-voda scenar-kurenie-aj-chladenie chladenie cez tepelne cerpadlo stropne chladenie fancoily podlahove chladenie rosny bod zasobnik TUV tepla voda pocet osob 5 služba tepelné čerpadlá zámer recommendation projekt novostavba plocha 120 m2 vykurovanie podlahové kúrenie počet osôb 5 zásobník TÚV pre 5 osôb rieši teplú vodu TÚV rieši chladenie aké máte tč? novostavbu 120m podlahovku 5 osob, áno plánujem
 storedSlots: {"service_type":"heat_pump","service_intent":"recommendation","project_type":"novostavba","area_m2":120,"heating_distribution":"podlahové kúrenie","wants_cooling":true,"occupants":5,"qualification_question_rounds":3,"recommendation_closure_offered":true,"last_direct_topic":"heat_pump_brands","last_brand_model_topic":"heat_pump_brands"}
 newlyExtractedSlots: {}
-flow: diagnostic-v5-recommendation-closure @ 1d93cbe
+flow: diagnostic-v5-recommendation-closure @ cebd8d6
 
 ### Predbežné uzavretie odporúčania
 
@@ -606,7 +599,7 @@ Dáva to zmysel preto, že podlahovka pracuje s nízkou teplotou vody a tepelné
 
 User: chcem klimatizaciu do obyvacky a spalne
 Pass: yes
-responseTimeMs: 2452
+responseTimeMs: 2472
 answerMode: qualification_question
 serviceType: air_conditioning
 serviceIntent: recommendation
@@ -622,23 +615,26 @@ retrievalQuery: service router verdict gate service-card-air-conditioning klimat
 enrichedRetrievalQuery: service router verdict gate service-card-air-conditioning klimatizacie klimatizácie recommendation scenar-kurenie-aj-chladenie chladenie cez tepelne cerpadlo stropne chladenie fancoily podlahove chladenie rosny bod služba klimatizácie zámer recommendation rieši chladenie chcem klimatizaciu do obyvacky a spalne
 storedSlots: {"service_type":"air_conditioning","service_intent":"recommendation","wants_cooling":true,"qualification_question_rounds":0}
 newlyExtractedSlots: {}
-flow: diagnostic-v5-recommendation-closure @ 1d93cbe
+flow: diagnostic-v5-recommendation-closure @ cebd8d6
 
 ### Klimatizácia do obývačky a spálne
 
-Jasné, klimatizácia do obývačky a spálne je bežná požiadavka. Vieme ti s tým pomôcť, od návrhu až po montáž.
+Rozumiem, chceš riešenie na chladenie do dvoch miestností – obývačky a spálne.
 
-**Predbežný verdikt:** Pre tieto dve miestnosti sa najčastejšie rieši buď samostatná klimatizačná jednotka do každej izby, alebo jeden vonkajší modul s dvoma vnútornými jednotkami (tzv. multisplit systém).
+**Predbežný verdikt:** Pre takéto riešenie sa najčastejšie používa buď jedna vonkajšia jednotka s dvoma vnútornými jednotkami (tzv. multisplit systém), alebo dve samostatné jednotky (každá s vlastnou vonkajšou jednotkou). Výber závisí od dispozície domu/bytu, vašich preferencií a možností umiestnenia vonkajších jednotiek.
 
-**Dôvod:** Multisplit systém je často elegantnejšie riešenie, ak nechceš mať na fasáde domu viacero vonkajších jednotiek. Zároveň môže byť aj efektívnejší. Samostatné jednotky zas ponúkajú väčšiu flexibilitu v umiestnení a nezávislé ovládanie.
+**Prečo takýto prístup:** Multisplit systém je často elegantnejšie riešenie, keďže potrebuješ len jednu vonkajšiu jednotku, čo šetrí miesto a môže byť aj estetickejšie. Dve samostatné jednotky zas ponúkajú väčšiu flexibilitu v umiestnení a nezávislé ovládanie.
 
 **Typický rozsah riešenia:**
-* **Samostatné jednotky:** Dve vnútorné nástenné jednotky a jedna vonkajšia jednotka pre každú izbu zvlášť.
-* **Multisplit:** Jedna vonkajšia jednotka a dve vnútorné jednotky (nástenné, kazetové, podstropné – podľa tvojich preferencií a dispozície).
+* **Multisplit:** Jedna vonkajšia jednotka pripojená k dvom vnútorným jednotkám (jedna do obývačky, druhá do spálne).
+* **Samostatné jednotky:** Dve vonkajšie jednotky a dve vnútorné jednotky.
 
-Aby som ti vedel lepšie poradiť, potreboval by som vedieť pár detailov:
-1. Akú približnú plochu má obývačka a akú spálňa.
-2. Ide o novostavbu alebo rekonštrukciu?
+**Čo potrebujeme overiť:**
+Aby som ti vedel presnejšie poradiť, potreboval by som vedieť pár detailov:
+1. Aká je približná výmera obývačky a spálne.
+2. Máte už predstavu, kde by mohli byť umiestnené vnútorné a vonkajšie jednotky?
+
+Na základe týchto informácií ti vieme pripraviť konkrétnu ponuku a návrh.
 
 ## Rekuperácia v novostavbe
 
@@ -646,7 +642,7 @@ Aby som ti vedel lepšie poradiť, potreboval by som vedieť pár detailov:
 
 User: staviam dom a chcem lepsi vzduch bez otvarania okien
 Pass: yes
-responseTimeMs: 3330
+responseTimeMs: 2508
 answerMode: qualification_question
 serviceType: heat_recovery
 serviceIntent: recommendation
@@ -657,25 +653,28 @@ closureGateTriggered: false
 closureReason: n/a
 recommendationOptions: []
 remainingCriticalUnknowns: []
-validatorsTriggered: inspection_claim_sanitized, followup_questions_limited
+validatorsTriggered: inspection_claim_sanitized, overconfident_wording_softened, followup_questions_limited
 retrievalQuery: service router verdict gate service-card-heat-recovery rekuperacia vetranie rekuperácia recommendation služba rekuperácia zámer recommendation objekt rodinný dom staviam dom a chcem lepsi vzduch bez otvarania okien
 enrichedRetrievalQuery: service router verdict gate service-card-heat-recovery rekuperacia vetranie rekuperácia recommendation služba rekuperácia zámer recommendation objekt rodinný dom staviam dom a chcem lepsi vzduch bez otvarania okien
 storedSlots: {"service_type":"heat_recovery","service_intent":"recommendation","property_type":"rodinný dom","qualification_question_rounds":0}
 newlyExtractedSlots: {}
-flow: diagnostic-v5-recommendation-closure @ 1d93cbe
+flow: diagnostic-v5-recommendation-closure @ cebd8d6
 
-### Lepší vzduch v novom dome vďaka rekuperácii
+### Rekuperácia pre váš nový dom
 
-Rozumiem, že pri stavbe nového domu chceš zabezpečiť kvalitné a čerstvé ovzdušie bez nutnosti otvárať okná. V tomto prípade je ideálnym riešením práve **rekuperácia**.
+Rozumiem, že pri stavbe nového domu myslíš na kvalitné vetranie a chceš mať doma čerstvý vzduch bez toho, aby si musel otvárať okná. To je konkrétne to, na čo slúži rekuperácia.
 
-Rekuperácia je moderný systém riadeného vetrania, ktorý zabezpečuje neustály prísun čerstvého vzduchu a zároveň minimalizuje tepelné straty. Vďaka nej sa zbavíš vlhkosti, CO2 a iných nepríjemných pachov, pričom si zachováš teplo v dome.
+**Prečo rekuperácia.**
+Rekuperácia je moderný systém riadeného vetrania, ktorý zabezpečuje stály prísun čerstvého vzduchu a zároveň minimalizuje tepelné straty. Vďaka nej sa zbavíš vlhkosti, CO2 a nepríjemných pachov, pričom si zachováš teplo v dome.
 
-Keďže ide o novostavbu, je najrozumnejšie riešiť **centrálnu rekuperáciu** už v štádiu projektu. To nám umožní optimálne navrhnúť a skryť rozvody vzduchu tak, aby boli nenápadné a funkčné.
+**Čo potrebujeme vedieť ďalej.**
+Keďže ide o novostavbu, je ideálne riešiť centrálnu rekuperáciu už v štádiu projektu, aby sa dali správne navrhnúť a umiestniť rozvody vzduchu.
 
-Aby som ti mohol čo najlepšie poradiť s konkrétnym riešením, potreboval by som vedieť ešte pár detailov:
+Aby som ti mohol lepšie poradiť, potreboval by som vedieť ešte pár detailov:
+* Máš už hotový projekt domu.
+* Ide ti o vetranie celého domu, alebo len vybraných miestností?
 
-* Máš už k dispozícii projektovú dokumentáciu domu.
-* Aká je približná úžitková plocha domu alebo počet miestností?
+Na základe týchto informácií ti vieme navrhnúť optimálne riešenie.
 
 ## NIBE servisná chyba
 
@@ -683,7 +682,7 @@ Aby som ti mohol čo najlepšie poradiť s konkrétnym riešením, potreboval by
 
 User: tepelne cerpadlo NIBE mi hlasi chybu
 Pass: yes
-responseTimeMs: 2623
+responseTimeMs: 2159
 answerMode: service_fault_triage
 serviceType: service
 serviceIntent: service_fault
@@ -699,7 +698,7 @@ retrievalQuery: service router verdict gate service-card-service servis porucha 
 enrichedRetrievalQuery: service router verdict gate service-card-service servis porucha servis zariadení service_fault služba servis zariadení zámer service_fault tepelne cerpadlo NIBE mi hlasi chybu
 storedSlots: {"service_type":"service","service_intent":"service_fault","qualification_question_rounds":0}
 newlyExtractedSlots: {}
-flow: diagnostic-v5-recommendation-closure @ 1d93cbe
+flow: diagnostic-v5-recommendation-closure @ cebd8d6
 
 ### Servisný smer
 
@@ -717,7 +716,7 @@ Ide o existujúce zariadenie s poruchou, pravidelný servis, alebo zvažuješ v�
 
 User: pomozete mi s dotaciou?
 Pass: yes
-responseTimeMs: 3186
+responseTimeMs: 2668
 answerMode: rag_answer
 serviceType: subsidy
 serviceIntent: subsidy
@@ -733,25 +732,25 @@ retrievalQuery: service router verdict gate service-card-subsidy dotacie dotáci
 enrichedRetrievalQuery: service router verdict gate service-card-subsidy dotacie dotácie subsidy služba dotácie zámer subsidy pomozete mi s dotaciou?
 storedSlots: {"service_type":"subsidy","service_intent":"subsidy","qualification_question_rounds":0}
 newlyExtractedSlots: {}
-flow: diagnostic-v5-recommendation-closure @ 1d93cbe
-
-Jasné, s dotáciami ti vieme pomôcť. Naša firma poskytuje asistenciu pri vybavovaní dotácií na obnoviteľné zdroje energie, ako sú napríklad tepelné čerpadlá.
+flow: diagnostic-v5-recommendation-closure @ cebd8d6
 
 ### Pomoc s dotáciami
 
-**Predbežný smer:** Môžeme ti pomôcť s orientáciou v možnostiach dotácií a s procesom ich získania.
+Jasné, s dotáciami ti vieme pomôcť. Naša firma asistuje pri vybavovaní dotácií na moderné technológie, ako sú tepelné čerpadlá či rekuperácia.
 
-**Dôvod:** Máme skúsenosti s podporou projektov obnoviteľných zdrojov energie a vieme ti poradiť, na čo si dať pozor.
+**Čo to znamená v praxi:**
 
-**Typický rozsah:** Zvyčajne ti vieme poradiť s identifikáciou vhodných dotačných programov, s podmienkami ich získania a s dokumentáciou, ktorú budeš potrebovať.
+* Pomôžeme ti zorientovať sa v aktuálnych možnostiach a podmienkach.
+* Poradíme, aké zariadenia sú vhodné pre získanie dotácie.
+* Poskytneme ti podporu počas celého procesu.
 
-**Čo treba overiť:** Podmienky pre získanie dotácií sa často menia, preto je dôležité overiť si aktuálne platné pravidlá pre konkrétny program.
-
-Aby som ti mohol lepšie poradiť, potreboval by som vedieť pár vecí:
+**Čo potrebujeme vedieť na začiatok:**
 
 1. Aké konkrétne zariadenie by si chcel riešiť prostredníctvom dotácie (napr. tepelné čerpadlo, rekuperácia).
 2. Ide o rodinný dom, alebo iný typ objektu.
-3. Ide o novú realizáciu, alebo výmenu existujúceho systému?
+3. Ide o novostavbu, alebo výmenu starého systému?
+
+Podmienky dotácií sa často menia, preto je dôležité mať aktuálne informácie.
 
 ## Priame otazky na znacky, modely a ceny
 
@@ -759,7 +758,7 @@ Aby som ti mohol lepšie poradiť, potreboval by som vedieť pár vecí:
 
 User: potreboval by som vybrat tepelne cerpadlo
 Pass: yes
-responseTimeMs: 3362
+responseTimeMs: 2847
 answerMode: qualification_question
 serviceType: heat_pump
 serviceIntent: recommendation
@@ -775,7 +774,7 @@ retrievalQuery: service router verdict gate service-card-heat-pump tepelne cerpa
 enrichedRetrievalQuery: service router verdict gate service-card-heat-pump tepelne cerpadla tepelné čerpadlá recommendation služba tepelné čerpadlá zámer recommendation potreboval by som vybrat tepelne cerpadlo
 storedSlots: {"service_type":"heat_pump","service_intent":"recommendation","qualification_question_rounds":0}
 newlyExtractedSlots: {}
-flow: diagnostic-v5-recommendation-closure @ 1d93cbe
+flow: diagnostic-v5-recommendation-closure @ cebd8d6
 
 ### Predbežný smer
 
@@ -790,7 +789,7 @@ Aby som ťa zaradil správne, napíš mi:
 
 User: mam starsi dom, radiatory a chcem usetrit
 Pass: yes
-responseTimeMs: 2906
+responseTimeMs: 2627
 answerMode: price_answer
 serviceType: heat_pump
 serviceIntent: price
@@ -801,24 +800,24 @@ closureGateTriggered: false
 closureReason: n/a
 recommendationOptions: []
 remainingCriticalUnknowns: []
-validatorsTriggered: direct_answer_gate_used, latest_direct_question_answered, direct_answer_composed_by_llm, overconfident_wording_softened
+validatorsTriggered: direct_answer_gate_used, latest_direct_question_answered, direct_answer_composed_by_llm, guarantee_claim_sanitized
 retrievalQuery: company-truth pricing-rules cena náklady návratnosť úspora servis ponuka tepelné čerpadlo montáž inštalácia akumulačná nádrž čo je v cene rozsah ponuky
 enrichedRetrievalQuery: company-truth pricing-rules cena náklady návratnosť úspora servis ponuka tepelné čerpadlo montáž inštalácia akumulačná nádrž čo je v cene rozsah ponuky
 storedSlots: {"service_type":"heat_pump","service_intent":"price","project_type":"rekonštrukcia","property_type":"rodinný dom","heating_distribution":"radiátory","qualification_question_rounds":1,"last_direct_topic":"savings_roi_scope","last_price_topic":"savings_roi_scope"}
 newlyExtractedSlots: {"service_type":"heat_pump","service_intent":"price","project_type":"rekonštrukcia","property_type":"rodinný dom","heating_distribution":"radiátory"}
-flow: diagnostic-v5-recommendation-closure @ 1d93cbe
+flow: diagnostic-v5-recommendation-closure @ cebd8d6
 
-Pri staršom dome s radiátormi je dôležité overiť, či súčasné radiátory dokážu efektívne vykurovať priestor s nižšou teplotou vody, ktorú tepelné čerpadlo bežne dodáva. Ak by radiátory neboli dostatočné, bolo by potrebné ich vymeniť alebo doplniť.
+Pri staršom dome s radiátormi je dôležité overiť, či súčasné radiátory dokážu efektívne pracovať s nižšou teplotou vody, ktorú tepelné čerpadlo dodáva. Tým sa maximalizuje úspora.
 
-Presnú úsporu a návratnosť investície bez detailnej analýzy vášho konkrétneho domu a súčasných nákladov nesľubujeme. Záleží na mnohých faktoroch, ako je súčasná spotreba, cena energií, stav zateplenia a výkon zvoleného tepelného čerpadla.
+Bez posúdenia domu, návrhu a aktuálnych podmienok by som negarantoval cenu, dotáciu, úsporu ani návratnosť. Záleží na mnohých faktoroch, vrátane výkonu tepelného čerpadla a jeho správnej regulácie.
 
-Pre realistický odhad by bolo najlepšie absolvovať krátku konzultáciu, kde zistíme vašu súčasnú spotrebu a pripravíme ponuku na mieru. Aký je váš súčasný spôsob vykurovania a aká je približná ročná spotreba energie na vykurovanie?
+Pre realistický odhad by bolo ideálne krátko sa poradiť s našimi odborníkmi. Mohli by ste mi povedať, akým spôsobom teraz kúrite a aká je vaša približná ročná spotreba energie na vykurovanie?
 
 ### Turn 3
 
 User: dom ma asi 120m
 Pass: yes
-responseTimeMs: 3812
+responseTimeMs: 4748
 answerMode: rag_answer
 serviceType: heat_pump
 serviceIntent: price
@@ -829,32 +828,128 @@ closureGateTriggered: false
 closureReason: n/a
 recommendationOptions: []
 remainingCriticalUnknowns: []
-validatorsTriggered: inspection_claim_sanitized, followup_questions_limited
+validatorsTriggered: none
 retrievalQuery: service router verdict gate service-card-heat-pump tepelne cerpadla tepelné čerpadlá price scenar-starsi-dom-radiatory-plyn radiatorovy system vyssia teplota vody služba tepelné čerpadlá zámer price projekt rekonštrukcia objekt rodinný dom plocha 120 m2 vykurovanie radiátory potreboval by som vybrat tepelne cerpadlo mam starsi dom, radiatory a chcem usetrit dom ma asi 120m
 enrichedRetrievalQuery: service router verdict gate service-card-heat-pump tepelne cerpadla tepelné čerpadlá price scenar-starsi-dom-radiatory-plyn radiatorovy system vyssia teplota vody služba tepelné čerpadlá zámer price projekt rekonštrukcia objekt rodinný dom plocha 120 m2 vykurovanie radiátory potreboval by som vybrat tepelne cerpadlo mam starsi dom, radiatory a chcem usetrit dom ma asi 120m
 storedSlots: {"service_type":"heat_pump","service_intent":"price","project_type":"rekonštrukcia","property_type":"rodinný dom","area_m2":120,"heating_distribution":"radiátory","qualification_question_rounds":2,"last_direct_topic":"savings_roi_scope","last_price_topic":"savings_roi_scope"}
 newlyExtractedSlots: {}
-flow: diagnostic-v5-recommendation-closure @ 1d93cbe
+flow: diagnostic-v5-recommendation-closure @ cebd8d6
 
 ### Tepelné čerpadlo pre starší dom s radiátormi
 
-Rozumiem, že máš starší dom s radiátormi a chceš s ním ušetriť. Plocha 120 m² je dobrý základ na výber vhodného tepelného čerpadla.
+Pri staršom dome s radiátormi a plochou 120 m² je predbežne vhodným riešením tepelné čerpadlo vzduch-voda. Dôležité je overiť, či vaše radiátory dokážu efektívne vykurovať pri nižšej teplote vody, ktorú tepelné čerpadlo bežne dodáva. V niektorých prípadoch môže byť potrebné upraviť existujúce radiátory alebo ich časť vymeniť.
 
-**Predbežný smer:**
-Pri staršom dome s radiátormi je kľúčové overiť, či tvoje súčasné radiátory dokážu efektívne vykurovať priestor pri nižšej teplote vody, ktorú tepelné čerpadlo bežne dodáva. Ak by neboli dostatočné, mohla by byť potrebná ich výmena alebo doplnenie. Existujú však aj vysokoteplotné tepelné čerpadlá, ktoré sú špeciálne navrhnuté pre rekonštrukcie a dokážu pracovať s vyššou teplotou vody, čím umožňujú ponechať pôvodné radiátory.
-
-**Čo treba overiť:**
-* **Výkon radiátorov:** Dokážu pri nižšej teplote vody (napr. 45-55 °C) vykúriť dom na požadovanú teplotu.
-* **Súčasný zdroj tepla a spotreba:** Aký je tvoj aktuálny spôsob vykurovania (napr. plyn, elektrina, drevo) a aká je tvoja približná ročná spotreba energie na vykurovanie? Toto nám pomôže lepšie odhadnúť potenciálne úspory.
-
-**Ďalší krok:**
-Aby sme ti mohli čo najpresnejšie poradiť a pripraviť cenovú ponuku, potrebovali by sme vedieť, akým spôsobom sa momentálne vykuruješ a aká je tvoja približná ročná spotreba energie na vykurovanie.
+Aby sme mohli presnejšie určiť cenu a možnosti, potrebujeme vedieť, akým zdrojom tepla teraz kúrite a aká je vaša približná ročná spotreba energie na vykurovanie.
 
 ### Turn 4
 
 User: a znacka?
 Pass: yes
-responseTimeMs: 2450
+responseTimeMs: 2282
+answerMode: brand_model_answer
+serviceType: heat_pump
+serviceIntent: brand_model
+sourcesCount: 3
+fallbackType: n/a
+questionRoundsCount: 2
+closureGateTriggered: false
+closureReason: n/a
+recommendationOptions: []
+remainingCriticalUnknowns: []
+validatorsTriggered: direct_answer_gate_used, latest_direct_question_answered, direct_answer_composed_by_llm
+retrievalQuery: company-truth brands NIBE Vaillant IVT Daikin Mitsubishi tepelné čerpadlá portfólio Geotherm
+enrichedRetrievalQuery: company-truth brands NIBE Vaillant IVT Daikin Mitsubishi tepelné čerpadlá portfólio Geotherm
+storedSlots: {"service_type":"heat_pump","service_intent":"brand_model","project_type":"rekonštrukcia","property_type":"rodinný dom","area_m2":120,"heating_distribution":"radiátory","qualification_question_rounds":2,"last_direct_topic":"heat_pump_brands","last_price_topic":"savings_roi_scope","last_brand_model_topic":"heat_pump_brands"}
+newlyExtractedSlots: {"service_type":"heat_pump","service_intent":"brand_model"}
+flow: diagnostic-v5-recommendation-closure @ cebd8d6
+
+Pri tepelných čerpadlách môžem bezpečne komunikovať značky **NIBE** a **Vaillant**. Značku IVT spomínam opatrne, len ak je potvrdená v aktuálnej ponuke. Značky ako Daikin alebo Mitsubishi pri tepelných čerpadlách nekomunikujeme ako naše portfólio, pokiaľ to nie je explicitne potvrdené. Výber konkrétneho modelu závisí od návrhu pre váš dom, nie len od značky.
+
+Potrebujete ešte poradiť s výberom konkrétneho modelu alebo značky?
+
+### Turn 5
+
+User: cize geotherm robi aj Daikin?
+Pass: yes
+responseTimeMs: 1954
+answerMode: brand_model_answer
+serviceType: heat_pump
+serviceIntent: brand_model
+sourcesCount: 3
+fallbackType: n/a
+questionRoundsCount: 2
+closureGateTriggered: false
+closureReason: n/a
+recommendationOptions: []
+remainingCriticalUnknowns: []
+validatorsTriggered: direct_answer_gate_used, latest_direct_question_answered, direct_answer_composed_by_llm
+retrievalQuery: company-truth brands Daikin tepelné čerpadlá klimatizácie Geotherm portfólio
+enrichedRetrievalQuery: company-truth brands Daikin tepelné čerpadlá klimatizácie Geotherm portfólio
+storedSlots: {"service_type":"heat_pump","service_intent":"brand_model","project_type":"rekonštrukcia","property_type":"rodinný dom","area_m2":120,"heating_distribution":"radiátory","qualification_question_rounds":2,"last_direct_topic":"Daikin","last_price_topic":"savings_roi_scope","last_brand_model_topic":"Daikin"}
+newlyExtractedSlots: {"service_type":"heat_pump","service_intent":"brand_model"}
+flow: diagnostic-v5-recommendation-closure @ cebd8d6
+
+Pri tepelných čerpadlách sa v našej ponuke primárne zameriavame na značky **NIBE** a **Vaillant**. Značku Daikin ako štandardné portfólio tepelných čerpadiel nekomunikujeme, pokiaľ to nie je explicitne potvrdené aktuálnou ponukou.
+
+Potrebujete poradiť s výberom konkrétneho modelu od týchto značiek?
+
+### Turn 6
+
+User: mne povedali ze robia iba NIBE a vaillant
+Pass: yes
+responseTimeMs: 2015
+answerMode: correction_answer
+serviceType: heat_pump
+serviceIntent: complaint_or_correction
+sourcesCount: 3
+fallbackType: n/a
+questionRoundsCount: 2
+closureGateTriggered: false
+closureReason: n/a
+recommendationOptions: []
+remainingCriticalUnknowns: []
+validatorsTriggered: direct_answer_gate_used, latest_direct_question_answered, direct_answer_composed_by_llm, nibe_vaillant_context_followup_repaired
+retrievalQuery: company-truth correction rules brands models obsolete F2040 NIBE Vaillant Daikin Mitsubishi direct answer
+enrichedRetrievalQuery: company-truth correction rules brands models obsolete F2040 NIBE Vaillant Daikin Mitsubishi direct answer
+storedSlots: {"service_type":"heat_pump","service_intent":"complaint_or_correction","project_type":"rekonštrukcia","property_type":"rodinný dom","area_m2":120,"heating_distribution":"radiátory","qualification_question_rounds":2,"last_direct_topic":"brand_correction","last_price_topic":"savings_roi_scope","last_brand_model_topic":"Daikin"}
+newlyExtractedSlots: {"service_type":"heat_pump","service_intent":"complaint_or_correction"}
+flow: diagnostic-v5-recommendation-closure @ cebd8d6
+
+Áno, správne. Pri tepelných čerpadlách sa v našej ponuke primárne zameriavame na značky **NIBE** a **Vaillant**. Ak som predtým spomenul Daikin alebo Mitsubishi v kontexte tepelných čerpadiel, berte to ako chybu. Tieto značky nepredstavujú naše štandardné portfólio pre tepelné čerpadlá, pokiaľ to nie je explicitne potvrdené aktuálnou ponukou.
+
+Riešiš servis existujúceho NIBE, výmenu za Vaillant, alebo nové nacenenie celého riešenia?
+
+### Turn 7
+
+User: ake mate Vaillant?
+Pass: yes
+responseTimeMs: 1939
+answerMode: brand_model_answer
+serviceType: heat_pump
+serviceIntent: brand_model
+sourcesCount: 3
+fallbackType: n/a
+questionRoundsCount: 2
+closureGateTriggered: false
+closureReason: n/a
+recommendationOptions: []
+remainingCriticalUnknowns: []
+validatorsTriggered: direct_answer_gate_used, latest_direct_question_answered, direct_answer_composed_by_llm, overconfident_wording_softened
+retrievalQuery: company-truth product-facts Vaillant aroTHERM plus aroTHERM Split tepelné čerpadlá radiátory Geotherm
+enrichedRetrievalQuery: company-truth product-facts Vaillant aroTHERM plus aroTHERM Split tepelné čerpadlá radiátory Geotherm
+storedSlots: {"service_type":"heat_pump","service_intent":"brand_model","project_type":"rekonštrukcia","property_type":"rodinný dom","area_m2":120,"heating_distribution":"radiátory","qualification_question_rounds":2,"last_direct_topic":"Vaillant","last_price_topic":"savings_roi_scope","last_brand_model_topic":"Vaillant"}
+newlyExtractedSlots: {"service_type":"heat_pump","service_intent":"brand_model"}
+flow: diagnostic-v5-recommendation-closure @ cebd8d6
+
+Áno, Vaillant je jedna zo značiek, s ktorými pracujeme. Konkrétne modely ako aroTHERM plus alebo aroTHERM Split sú riešenia vzduch-voda. Pre váš dom (rekonštrukcia, 120 m², radiátory) by sme museli konkrétne navrhnúť vhodný výkon a model.
+
+Potrebujete poradiť s výberom konkrétneho modelu od Vaillant alebo NIBE, alebo chcete rovno nacenenie?
+
+### Turn 8
+
+User: a split?
+Pass: yes
+responseTimeMs: 1838
 answerMode: brand_model_answer
 serviceType: heat_pump
 serviceIntent: brand_model
@@ -866,24 +961,24 @@ closureReason: n/a
 recommendationOptions: []
 remainingCriticalUnknowns: []
 validatorsTriggered: direct_answer_gate_used, latest_direct_question_answered, direct_answer_composed_by_llm
-retrievalQuery: company-truth brands NIBE Vaillant IVT Daikin Mitsubishi tepelné čerpadlá portfólio Geotherm
-enrichedRetrievalQuery: company-truth brands NIBE Vaillant IVT Daikin Mitsubishi tepelné čerpadlá portfólio Geotherm
-storedSlots: {"service_type":"heat_pump","service_intent":"brand_model","project_type":"rekonštrukcia","property_type":"rodinný dom","area_m2":120,"heating_distribution":"radiátory","qualification_question_rounds":3,"last_direct_topic":"heat_pump_brands","last_price_topic":"savings_roi_scope","last_brand_model_topic":"heat_pump_brands"}
+retrievalQuery: company-truth product-facts Vaillant aroTHERM plus aroTHERM Split tepelné čerpadlá radiátory Geotherm
+enrichedRetrievalQuery: company-truth product-facts Vaillant aroTHERM plus aroTHERM Split tepelné čerpadlá radiátory Geotherm
+storedSlots: {"service_type":"heat_pump","service_intent":"brand_model","project_type":"rekonštrukcia","property_type":"rodinný dom","area_m2":120,"heating_distribution":"radiátory","qualification_question_rounds":3,"last_direct_topic":"Vaillant Split","last_price_topic":"savings_roi_scope","last_brand_model_topic":"Vaillant Split"}
 newlyExtractedSlots: {"service_type":"heat_pump","service_intent":"brand_model"}
-flow: diagnostic-v5-recommendation-closure @ 1d93cbe
+flow: diagnostic-v5-recommendation-closure @ cebd8d6
 
-Pri tepelných čerpadlách môžem bezpečne komunikovať značky **NIBE** a **Vaillant**. Značku IVT spomínam opatrne, len ak je potvrdená v aktuálnej ponuke. Značky ako Daikin alebo Mitsubishi pri tepelných čerpadlách nekomunikujeme ako naše portfólio, pokiaľ to nie je explicitne potvrdené. Výber konkrétneho modelu závisí od detailného návrhu pre váš dom, nie len od značky.
+Áno, Vaillant aroTHERM Split je typ tepelného čerpadla vzduch-voda. Pri použití s radiátormi je dôležité overiť, či tieto radiátory dokážu efektívne vykurovať váš dom pri nižšej výstupnej teplote vody, ktorú tepelné čerpadlo bežne produkuje.
 
-Pre aký spôsob vykurovania ste sa doteraz rozhodovali?
+Pre váš dom (rekonštrukcia, 120 m², radiátory) by sme museli konkrétne navrhnúť vhodný výkon a model. Potrebujete poradiť s výberom konkrétneho modelu od Vaillant alebo NIBE, alebo chcete rovno nacenenie?
 
-### Turn 5
+### Turn 9
 
-User: cize geotherm robi aj Daikin?
+User: F2040 uz sa nevyraba
 Pass: yes
-responseTimeMs: 1902
-answerMode: brand_model_answer
+responseTimeMs: 1586
+answerMode: correction_answer
 serviceType: heat_pump
-serviceIntent: brand_model
+serviceIntent: complaint_or_correction
 sourcesCount: 3
 fallbackType: n/a
 questionRoundsCount: 4
@@ -891,25 +986,25 @@ closureGateTriggered: false
 closureReason: n/a
 recommendationOptions: []
 remainingCriticalUnknowns: []
-validatorsTriggered: direct_answer_gate_used, latest_direct_question_answered, direct_answer_composed_by_llm
-retrievalQuery: company-truth brands Daikin tepelné čerpadlá klimatizácie Geotherm portfólio
-enrichedRetrievalQuery: company-truth brands Daikin tepelné čerpadlá klimatizácie Geotherm portfólio
-storedSlots: {"service_type":"heat_pump","service_intent":"brand_model","project_type":"rekonštrukcia","property_type":"rodinný dom","area_m2":120,"heating_distribution":"radiátory","qualification_question_rounds":4,"last_direct_topic":"Daikin","last_price_topic":"savings_roi_scope","last_brand_model_topic":"Daikin"}
-newlyExtractedSlots: {"service_type":"heat_pump","service_intent":"brand_model"}
-flow: diagnostic-v5-recommendation-closure @ 1d93cbe
+validatorsTriggered: direct_answer_gate_used, latest_direct_question_answered, direct_answer_composed_by_llm, obsolete_f2040_claim_sanitized
+retrievalQuery: company-truth correction rules brands models obsolete F2040 NIBE Vaillant Daikin Mitsubishi direct answer
+enrichedRetrievalQuery: company-truth correction rules brands models obsolete F2040 NIBE Vaillant Daikin Mitsubishi direct answer
+storedSlots: {"service_type":"heat_pump","service_intent":"complaint_or_correction","project_type":"rekonštrukcia","property_type":"rodinný dom","area_m2":120,"heating_distribution":"radiátory","qualification_question_rounds":4,"last_direct_topic":"F2040_obsolete","last_price_topic":"savings_roi_scope","last_brand_model_topic":"Vaillant Split"}
+newlyExtractedSlots: {"service_type":"heat_pump","service_intent":"complaint_or_correction"}
+flow: diagnostic-v5-recommendation-closure @ cebd8d6
 
-Pri tepelných čerpadlách sa primárne zameriavame na značky **NIBE** a **Vaillant**. Značku Daikin ako naše hlavné portfólio tepelných čerpadiel zvyčajne nekomunikujeme, pokiaľ to nie je explicitne potvrdené aktuálnou ponukou alebo firemnými podkladmi. Mitsubishi sa skôr spája s klimatizáciami.
+NIBE F2040 treba pri nových realizáciách brať ako neaktuálny alebo archívny podklad; aktuálny model treba potvrdiť podľa ponuky. Je to starší typ, ktorý sa už nevyrába. Pre nové riešenia sa zameriavame na aktuálne modely od značiek NIBE a Vaillant.
 
-Pre aký spôsob vykurovania ste sa doteraz rozhodovali?
+Aký typ vykurovania preferuješ – vzduch-voda alebo zem-voda?
 
-### Turn 6
+### Turn 10
 
-User: mne povedali ze robia iba NIBE a vaillant
+User: A F2050?
 Pass: yes
-responseTimeMs: 2325
-answerMode: correction_answer
+responseTimeMs: 2053
+answerMode: brand_model_answer
 serviceType: heat_pump
-serviceIntent: complaint_or_correction
+serviceIntent: brand_model
 sourcesCount: 3
 fallbackType: n/a
 questionRoundsCount: 5
@@ -917,25 +1012,25 @@ closureGateTriggered: false
 closureReason: n/a
 recommendationOptions: []
 remainingCriticalUnknowns: []
-validatorsTriggered: direct_answer_gate_used, latest_direct_question_answered, direct_answer_composed_by_llm, unsupported_heat_pump_brand_sanitized
-retrievalQuery: company-truth correction rules brands models obsolete F2040 NIBE Vaillant Daikin Mitsubishi direct answer
-enrichedRetrievalQuery: company-truth correction rules brands models obsolete F2040 NIBE Vaillant Daikin Mitsubishi direct answer
-storedSlots: {"service_type":"heat_pump","service_intent":"complaint_or_correction","project_type":"rekonštrukcia","property_type":"rodinný dom","area_m2":120,"heating_distribution":"radiátory","qualification_question_rounds":5,"last_direct_topic":"brand_correction","last_price_topic":"savings_roi_scope","last_brand_model_topic":"Daikin"}
-newlyExtractedSlots: {"service_type":"heat_pump","service_intent":"complaint_or_correction"}
-flow: diagnostic-v5-recommendation-closure @ 1d93cbe
+validatorsTriggered: direct_answer_gate_used, latest_direct_question_answered, direct_answer_composed_by_llm
+retrievalQuery: company-truth product-facts NIBE F2050 aktuálne modely tepelné čerpadlá portfólio Geotherm
+enrichedRetrievalQuery: company-truth product-facts NIBE F2050 aktuálne modely tepelné čerpadlá portfólio Geotherm
+storedSlots: {"service_type":"heat_pump","service_intent":"brand_model","project_type":"rekonštrukcia","property_type":"rodinný dom","area_m2":120,"heating_distribution":"radiátory","qualification_question_rounds":5,"last_direct_topic":"F2050","last_price_topic":"savings_roi_scope","last_brand_model_topic":"F2050"}
+newlyExtractedSlots: {"service_type":"heat_pump","service_intent":"brand_model"}
+flow: diagnostic-v5-recommendation-closure @ cebd8d6
 
-Áno, správne. Pri tepelných čerpadlách sa primárne zameriavame na značky **NIBE** a **Vaillant**. Ak som predtým spomenul Daikin alebo Mitsubishi v kontexte tepelných čerpadiel, ber to ako chybu.Pri tepelných čerpadlách viem bezpečne komunikovať NIBE a Vaillant; Daikin alebo Mitsubishi treba pri TČ potvrdiť podľa aktuálnej ponuky.
+Model NIBE F2050 nemám potvrdený ako aktuálne odporúčaný model. Pre nové realizácie sa zameriavame na aktuálne modely od značiek NIBE a Vaillant, pričom vhodnosť konkrétneho typu a výkonu vždy navrhujeme individuálne podľa vašej situácie.
 
-Pre aký spôsob vykurovania ste sa doteraz rozhodovali?
+Pre váš dom s rekonštrukciou a radiátormi by sme mali zvážiť tepelné čerpadlo vzduch-voda. Potrebujete poradiť s výberom konkrétneho modelu od NIBE alebo Vaillant, alebo chcete rovno nacenenie?
 
-### Turn 7
+### Turn 11
 
-User: ake mate Vaillant?
+User: ake su ceny vratane instalacie
 Pass: yes
-responseTimeMs: 1905
-answerMode: brand_model_answer
+responseTimeMs: 2274
+answerMode: price_answer
 serviceType: heat_pump
-serviceIntent: brand_model
+serviceIntent: price
 sourcesCount: 3
 fallbackType: n/a
 questionRoundsCount: 6
@@ -944,24 +1039,52 @@ closureReason: n/a
 recommendationOptions: []
 remainingCriticalUnknowns: []
 validatorsTriggered: direct_answer_gate_used, latest_direct_question_answered, direct_answer_composed_by_llm
-retrievalQuery: company-truth product-facts Vaillant aroTHERM plus aroTHERM Split tepelné čerpadlá radiátory Geotherm
-enrichedRetrievalQuery: company-truth product-facts Vaillant aroTHERM plus aroTHERM Split tepelné čerpadlá radiátory Geotherm
-storedSlots: {"service_type":"heat_pump","service_intent":"brand_model","project_type":"rekonštrukcia","property_type":"rodinný dom","area_m2":120,"heating_distribution":"radiátory","qualification_question_rounds":6,"last_direct_topic":"Vaillant","last_price_topic":"savings_roi_scope","last_brand_model_topic":"Vaillant"}
-newlyExtractedSlots: {"service_type":"heat_pump","service_intent":"brand_model"}
-flow: diagnostic-v5-recommendation-closure @ 1d93cbe
+retrievalQuery: company-truth pricing-rules cena náklady návratnosť úspora servis ponuka tepelné čerpadlo montáž inštalácia akumulačná nádrž čo je v cene rozsah ponuky
+enrichedRetrievalQuery: company-truth pricing-rules cena náklady návratnosť úspora servis ponuka tepelné čerpadlo montáž inštalácia akumulačná nádrž čo je v cene rozsah ponuky
+storedSlots: {"service_type":"heat_pump","service_intent":"price","project_type":"rekonštrukcia","property_type":"rodinný dom","area_m2":120,"heating_distribution":"radiátory","qualification_question_rounds":6,"last_direct_topic":"price","last_price_topic":"price","last_brand_model_topic":"F2050"}
+newlyExtractedSlots: {"service_type":"heat_pump","service_intent":"price"}
+flow: diagnostic-v5-recommendation-closure @ cebd8d6
 
-Vaillant ponúka spoľahlivé riešenia, najmä v oblasti vzduch-voda, ako napríklad modely aroTHERM plus a aroTHERM Split. Pre váš dom (rekonštrukcia, 120 m², radiátory) by to bol orientačný výber. Konkrétny model však závisí od detailného návrhu vrátane výkonu, ohrevu TÚV a hydrauliky.
+Cenu tepelného čerpadla vrátane inštalácie bez konkrétnej obhliadky a ponuky nepotvrdím. Cena závisí od mnohých faktorov, ako je výkon čerpadla, značka, typ systému (napr. vzduch-voda), potreba zásobníka na teplú vodu, akumulačnej nádrže, elektropráce, montážny materiál a uvedenie do prevádzky.
 
-Potrebujete ešte upresniť, aký typ ohrevu TÚV preferujete?
+Pre váš dom s rekonštrukciou a radiátormi by sme mali zvážiť vhodný model od značiek NIBE alebo Vaillant. Je pre vás dôležitejšia cena samotného zariadenia, alebo cena kompletnej realizácie na kľúč?
 
-### Turn 8
+### Turn 12
 
-User: a split?
+User: 7tis je asi malo nie?
 Pass: yes
-responseTimeMs: 2288
-answerMode: brand_model_answer
+responseTimeMs: 2348
+answerMode: price_answer
 serviceType: heat_pump
-serviceIntent: brand_model
+serviceIntent: price
+sourcesCount: 3
+fallbackType: n/a
+questionRoundsCount: 7
+closureGateTriggered: false
+closureReason: n/a
+recommendationOptions: []
+remainingCriticalUnknowns: []
+validatorsTriggered: direct_answer_gate_used, latest_direct_question_answered, direct_answer_composed_by_llm, overconfident_wording_softened, vague_price_followup_repaired
+retrievalQuery: company-truth pricing-rules cena náklady návratnosť úspora servis ponuka tepelné čerpadlo montáž inštalácia akumulačná nádrž čo je v cene rozsah ponuky
+enrichedRetrievalQuery: company-truth pricing-rules cena náklady návratnosť úspora servis ponuka tepelné čerpadlo montáž inštalácia akumulačná nádrž čo je v cene rozsah ponuky
+storedSlots: {"service_type":"heat_pump","service_intent":"price","project_type":"rekonštrukcia","property_type":"rodinný dom","area_m2":120,"heating_distribution":"radiátory","hot_water":false,"qualification_question_rounds":7,"last_direct_topic":"low_price_scope","last_price_topic":"low_price_scope","last_brand_model_topic":"F2050"}
+newlyExtractedSlots: {"service_type":"heat_pump","service_intent":"price"}
+flow: diagnostic-v5-recommendation-closure @ cebd8d6
+
+### K cene 7 tisíc
+
+Áno, **7 tisíc môže byť pri kompletnom tepelnom čerpadle podozrivo nízka suma**, najmä ak sa bavíme o staršom dome s radiátormi a výmenou kotla. Pri tvojom kontexte (Pre tvoj prípad (rekonštrukcia, 120 m², radiátory) by som to bral ako orientačný výber, nie finálny model) by som to nebral ako potvrdenú kompletnú cenu.
+
+Treba konkrétne overiť, čo je v tej sume: samotná zostava, montážny materiál, práca, regulácia, TÚV zásobník, akumulačná nádrž, elektropríprava, uvedenie do prevádzky a prípadné úpravy kotolne.
+
+### Turn 13
+
+User: potrebujem akumulacku, ci aj ta je v cene?
+Pass: yes
+responseTimeMs: 2054
+answerMode: price_answer
+serviceType: heat_pump
+serviceIntent: price
 sourcesCount: 3
 fallbackType: n/a
 questionRoundsCount: 7
@@ -970,24 +1093,24 @@ closureReason: n/a
 recommendationOptions: []
 remainingCriticalUnknowns: []
 validatorsTriggered: direct_answer_gate_used, latest_direct_question_answered, direct_answer_composed_by_llm
-retrievalQuery: company-truth product-facts Vaillant aroTHERM plus aroTHERM Split tepelné čerpadlá radiátory Geotherm
-enrichedRetrievalQuery: company-truth product-facts Vaillant aroTHERM plus aroTHERM Split tepelné čerpadlá radiátory Geotherm
-storedSlots: {"service_type":"heat_pump","service_intent":"brand_model","project_type":"rekonštrukcia","property_type":"rodinný dom","area_m2":120,"heating_distribution":"radiátory","qualification_question_rounds":7,"last_direct_topic":"Vaillant Split","last_price_topic":"savings_roi_scope","last_brand_model_topic":"Vaillant Split"}
-newlyExtractedSlots: {"service_type":"heat_pump","service_intent":"brand_model"}
-flow: diagnostic-v5-recommendation-closure @ 1d93cbe
+retrievalQuery: company-truth pricing-rules cena náklady návratnosť úspora servis ponuka tepelné čerpadlo montáž inštalácia akumulačná nádrž čo je v cene rozsah ponuky
+enrichedRetrievalQuery: company-truth pricing-rules cena náklady návratnosť úspora servis ponuka tepelné čerpadlo montáž inštalácia akumulačná nádrž čo je v cene rozsah ponuky
+storedSlots: {"service_type":"heat_pump","service_intent":"price","project_type":"rekonštrukcia","property_type":"rodinný dom","area_m2":120,"heating_distribution":"radiátory","hot_water":false,"qualification_question_rounds":7,"last_direct_topic":"buffer_tank_price_scope","last_price_topic":"buffer_tank_price_scope","last_brand_model_topic":"F2050"}
+newlyExtractedSlots: {"service_type":"heat_pump","service_intent":"price"}
+flow: diagnostic-v5-recommendation-closure @ cebd8d6
 
-Áno, Vaillant aroTHERM Split je splitové tepelné čerpadlo typu vzduch-voda. Pre váš dom s radiátormi je dôležité overiť, či radiátory dokážu vykúriť priestor pri nižšej výstupnej teplote vody, ktorú tepelné čerpadlo bežne dosahuje. V niektorých prípadoch môže byť potrebná úprava alebo výmena radiátorov.
+Neviem potvrdiť, či je akumulačná nádrž v cene, pokiaľ to nie je priamo uvedené v konkrétnej ponuke. Pri vykurovaní radiátormi alebo pri zložitejšej kotolni môže byť akumulačná nádrž potrebná, ale jej zahrnutie do ceny treba overiť v rozsahu ponuky.
 
-Potrebujete ešte upresniť, aký typ ohrevu TÚV preferujete?
+Pri cene 7 tisíc by som obzvlášť overil, či ide iba o samotné zariadenie, alebo o kompletnú realizáciu vrátane montáže, regulácie, zásobníka teplej vody, elektroprác a uvedenia do prevádzky. Je pre vás dôležitejšia cena samotného zariadenia, alebo cena kompletnej realizácie na kľúč?
 
-### Turn 9
+### Turn 14
 
-User: F2040 uz sa nevyraba
+User: z coho?
 Pass: yes
-responseTimeMs: 2309
-answerMode: correction_answer
+responseTimeMs: 2206
+answerMode: price_answer
 serviceType: heat_pump
-serviceIntent: complaint_or_correction
+serviceIntent: price
 sourcesCount: 3
 fallbackType: n/a
 questionRoundsCount: 8
@@ -995,152 +1118,14 @@ closureGateTriggered: false
 closureReason: n/a
 recommendationOptions: []
 remainingCriticalUnknowns: []
-validatorsTriggered: direct_answer_gate_used, latest_direct_question_answered, direct_answer_composed_by_llm, obsolete_f2040_claim_sanitized
-retrievalQuery: company-truth correction rules brands models obsolete F2040 NIBE Vaillant Daikin Mitsubishi direct answer
-enrichedRetrievalQuery: company-truth correction rules brands models obsolete F2040 NIBE Vaillant Daikin Mitsubishi direct answer
-storedSlots: {"service_type":"heat_pump","service_intent":"complaint_or_correction","project_type":"rekonštrukcia","property_type":"rodinný dom","area_m2":120,"heating_distribution":"radiátory","qualification_question_rounds":8,"last_direct_topic":"F2040_obsolete","last_price_topic":"savings_roi_scope","last_brand_model_topic":"Vaillant Split"}
-newlyExtractedSlots: {"service_type":"heat_pump","service_intent":"complaint_or_correction"}
-flow: diagnostic-v5-recommendation-closure @ 1d93cbe
-
-NIBE F2040 treba pri nových realizáciách brať ako neaktuálny alebo archívny podklad; aktuálny model treba potvrdiť podľa ponuky. Mal by som sa zamerať na aktuálne dostupné a vhodné riešenia. Pre váš rodinný dom s rozlohou 120 m² a radiátormi sa budeme orientovať na tepelné čerpadlá typu vzduch-voda od značiek NIBE alebo Vaillant. Konkrétny model a jeho výkon potom určíme na základe detailného návrhu systému.
-
-Potrebujete ešte upresniť, aký typ ohrevu TÚV preferujete?
-
-### Turn 10
-
-User: A F2050?
-Pass: yes
-responseTimeMs: 2293
-answerMode: brand_model_answer
-serviceType: heat_pump
-serviceIntent: brand_model
-sourcesCount: 3
-fallbackType: n/a
-questionRoundsCount: 9
-closureGateTriggered: false
-closureReason: n/a
-recommendationOptions: []
-remainingCriticalUnknowns: []
-validatorsTriggered: direct_answer_gate_used, latest_direct_question_answered, direct_answer_composed_by_llm
-retrievalQuery: company-truth product-facts NIBE F2050 aktuálne modely tepelné čerpadlá portfólio Geotherm
-enrichedRetrievalQuery: company-truth product-facts NIBE F2050 aktuálne modely tepelné čerpadlá portfólio Geotherm
-storedSlots: {"service_type":"heat_pump","service_intent":"brand_model","project_type":"rekonštrukcia","property_type":"rodinný dom","area_m2":120,"heating_distribution":"radiátory","qualification_question_rounds":9,"last_direct_topic":"F2050","last_price_topic":"savings_roi_scope","last_brand_model_topic":"F2050"}
-newlyExtractedSlots: {"service_type":"heat_pump","service_intent":"brand_model"}
-flow: diagnostic-v5-recommendation-closure @ 1d93cbe
-
-Model NIBE F2050 nemám potvrdený ako aktuálne odporúčaný model v našej ponuke. Pre váš dom s radiátormi sa budeme orientovať na osvedčené tepelné čerpadlá typu vzduch-voda od značiek NIBE alebo Vaillant. Konkrétny model a jeho výkon určíme na základe detailného návrhu systému a vašich potrieb.
-
-Potrebujete ešte upresniť, aký typ ohrevu TÚV preferujete?
-
-### Turn 11
-
-User: ake su ceny vratane instalacie
-Pass: yes
-responseTimeMs: 2532
-answerMode: price_answer
-serviceType: heat_pump
-serviceIntent: price
-sourcesCount: 3
-fallbackType: n/a
-questionRoundsCount: 10
-closureGateTriggered: false
-closureReason: n/a
-recommendationOptions: []
-remainingCriticalUnknowns: []
-validatorsTriggered: direct_answer_gate_used, latest_direct_question_answered, direct_answer_composed_by_llm, overconfident_wording_softened, price_scope_repaired
-retrievalQuery: company-truth pricing-rules cena náklady návratnosť úspora servis ponuka tepelné čerpadlo montáž inštalácia akumulačná nádrž čo je v cene rozsah ponuky
-enrichedRetrievalQuery: company-truth pricing-rules cena náklady návratnosť úspora servis ponuka tepelné čerpadlo montáž inštalácia akumulačná nádrž čo je v cene rozsah ponuky
-storedSlots: {"service_type":"heat_pump","service_intent":"price","project_type":"rekonštrukcia","property_type":"rodinný dom","area_m2":120,"heating_distribution":"radiátory","qualification_question_rounds":10,"last_direct_topic":"price","last_price_topic":"price","last_brand_model_topic":"F2050"}
-newlyExtractedSlots: {"service_type":"heat_pump","service_intent":"price"}
-flow: diagnostic-v5-recommendation-closure @ 1d93cbe
-
-### Cena vrátane inštalácie
-
-konkrétnu cenu bez konkrétnej ponuky nepotvrdím. Pri tepelnom čerpadle treba rozlíšiť cenu samotnej zostavy a cenu kompletnej realizácie.
-
-Pri tvojom kontexte (Pre tvoj prípad (rekonštrukcia, 120 m², radiátory) by som to bral ako orientačný výber, nie finálny model) cenu ovplyvňuje výkon, radiátory alebo podlahovka, TÚV zásobník, regulácia, montážny materiál, úpravy kotolne, elektropráce, uvedenie do prevádzky a prípadná akumulačná nádrž.
-
-Ak máš v ruke cenu, najdôležitejšie je porovnať rozsah: čo je zahrnuté, čo je príplatok a čo sa bude riešiť až po obhliadke alebo návrhu.
-
-Ide o nové tepelné čerpadlo pre dom, výmenu starého zdroja alebo servis existujúceho zariadenia?
-
-### Turn 12
-
-User: 7tis je asi malo nie?
-Pass: yes
-responseTimeMs: 2468
-answerMode: price_answer
-serviceType: heat_pump
-serviceIntent: price
-sourcesCount: 3
-fallbackType: n/a
-questionRoundsCount: 11
-closureGateTriggered: false
-closureReason: n/a
-recommendationOptions: []
-remainingCriticalUnknowns: []
-validatorsTriggered: direct_answer_gate_used, latest_direct_question_answered, direct_answer_composed_by_llm, buffer_tank_included_claim_sanitized
-retrievalQuery: company-truth pricing-rules cena náklady návratnosť úspora servis ponuka tepelné čerpadlo montáž inštalácia akumulačná nádrž čo je v cene rozsah ponuky
-enrichedRetrievalQuery: company-truth pricing-rules cena náklady návratnosť úspora servis ponuka tepelné čerpadlo montáž inštalácia akumulačná nádrž čo je v cene rozsah ponuky
-storedSlots: {"service_type":"heat_pump","service_intent":"price","project_type":"rekonštrukcia","property_type":"rodinný dom","area_m2":120,"heating_distribution":"radiátory","hot_water":false,"qualification_question_rounds":11,"last_direct_topic":"low_price_scope","last_price_topic":"low_price_scope","last_brand_model_topic":"F2050"}
-newlyExtractedSlots: {"service_type":"heat_pump","service_intent":"price"}
-flow: diagnostic-v5-recommendation-closure @ 1d93cbe
-
-Áno, 7 tisíc môže byť pri kompletnom tepelnom čerpadle podozrivo nízka suma, najmä ak sa bavíme o staršom dome s radiátormi a výmenou kotla. Pri tvojom kontexte (rekonštrukcia, 120 m², radiátory) by som to bral ako orientačný výber, nie ako potvrdenú kompletnú cenu.
-
-Akumulačná nádrž je v cene iba vtedy, keď je výslovne uvedená v konkrétnej ponuke; bez toho to treba overiť.
-
-Je to ponuka na nové tepelné čerpadlo, alebo ide o výmenu starého zdroja?
-
-### Turn 13
-
-User: potrebujem akumulacku, ci aj ta je v cene?
-Pass: yes
-responseTimeMs: 2340
-answerMode: price_answer
-serviceType: heat_pump
-serviceIntent: price
-sourcesCount: 3
-fallbackType: n/a
-questionRoundsCount: 12
-closureGateTriggered: false
-closureReason: n/a
-recommendationOptions: []
-remainingCriticalUnknowns: []
-validatorsTriggered: direct_answer_gate_used, latest_direct_question_answered, direct_answer_composed_by_llm
-retrievalQuery: company-truth pricing-rules cena náklady návratnosť úspora servis ponuka tepelné čerpadlo montáž inštalácia akumulačná nádrž čo je v cene rozsah ponuky
-enrichedRetrievalQuery: company-truth pricing-rules cena náklady návratnosť úspora servis ponuka tepelné čerpadlo montáž inštalácia akumulačná nádrž čo je v cene rozsah ponuky
-storedSlots: {"service_type":"heat_pump","service_intent":"price","project_type":"rekonštrukcia","property_type":"rodinný dom","area_m2":120,"heating_distribution":"radiátory","hot_water":false,"qualification_question_rounds":12,"last_direct_topic":"buffer_tank_price_scope","last_price_topic":"buffer_tank_price_scope","last_brand_model_topic":"F2050"}
-newlyExtractedSlots: {"service_type":"heat_pump","service_intent":"price"}
-flow: diagnostic-v5-recommendation-closure @ 1d93cbe
-
-Neviem potvrdiť, či je akumulačná nádrž v cene, pokiaľ to nie je priamo uvedené v konkrétnej ponuke. Pri vykurovaní radiátormi alebo pri zložitejšej kotolni môže byť akumulačná nádrž potrebná, ale jej zahrnutie treba overiť v rozsahu ponuky.
-
-Pri cene 7 tisíc by som obzvlášť overil, či ide iba o samotné zariadenie, alebo o kompletnú realizáciu vrátane montáže, regulácie, ohrevu TÚV, akumulačnej nádrže, elektroprác a uvedenia do prevádzky.
-
-### Turn 14
-
-User: z coho?
-Pass: yes
-responseTimeMs: 1971
-answerMode: price_answer
-serviceType: heat_pump
-serviceIntent: price
-sourcesCount: 3
-fallbackType: n/a
-questionRoundsCount: 12
-closureGateTriggered: false
-closureReason: n/a
-recommendationOptions: []
-remainingCriticalUnknowns: []
 validatorsTriggered: direct_answer_gate_used, latest_direct_question_answered, direct_answer_composed_by_llm, overconfident_wording_softened
 retrievalQuery: company-truth pricing-rules cena náklady návratnosť úspora servis ponuka tepelné čerpadlo montáž inštalácia akumulačná nádrž čo je v cene rozsah ponuky
 enrichedRetrievalQuery: company-truth pricing-rules cena náklady návratnosť úspora servis ponuka tepelné čerpadlo montáž inštalácia akumulačná nádrž čo je v cene rozsah ponuky
-storedSlots: {"service_type":"heat_pump","service_intent":"price","project_type":"rekonštrukcia","property_type":"rodinný dom","area_m2":120,"heating_distribution":"radiátory","hot_water":false,"qualification_question_rounds":12,"last_direct_topic":"price_basis","last_price_topic":"price_basis","last_brand_model_topic":"F2050"}
+storedSlots: {"service_type":"heat_pump","service_intent":"price","project_type":"rekonštrukcia","property_type":"rodinný dom","area_m2":120,"heating_distribution":"radiátory","hot_water":false,"qualification_question_rounds":8,"last_direct_topic":"price_basis","last_price_topic":"price_basis","last_brand_model_topic":"F2050"}
 newlyExtractedSlots: {"service_type":"heat_pump","service_intent":"price"}
-flow: diagnostic-v5-recommendation-closure @ 1d93cbe
+flow: diagnostic-v5-recommendation-closure @ cebd8d6
 
-Cena tepelného čerpadla sa skladá z ceny samotného zariadenia a ceny kompletnej realizácie. Kompletná cena môže zahŕňať tepelné čerpadlo, vnútorný modul, reguláciu, montážny materiál, prácu, uvedenie do prevádzky, prípravu TÚV a podľa návrhu aj akumulačnú nádrž. Bez konkrétneho rozpisu ponuky nie je možné určiť, čo všetko je zahrnuté v cene.
+Z čoho konkrétne sa cena skladá, závisí od toho, či sa bavíme o cene samotného zariadenia, alebo o cene kompletnej realizácie na kľúč. Kompletná cena môže zahŕňať tepelné čerpadlo, vnútorný modul, reguláciu, montážny materiál, prácu, uvedenie do prevádzky a prípadne aj akumulačnú nádrž či zásobník na teplú vodu. Bez detailnej ponuky nie je možné konkrétne určiť, čo všetko je v cene zahrnuté.
 
 ## Priama odpoved ostava AI a otaznik sa nerecykluje
 
@@ -1148,7 +1133,7 @@ Cena tepelného čerpadla sa skladá z ceny samotného zariadenia a ceny komplet
 
 User: ahoj, ake TC mate?
 Pass: yes
-responseTimeMs: 2197
+responseTimeMs: 1933
 answerMode: brand_model_answer
 serviceType: heat_pump
 serviceIntent: brand_model
@@ -1164,17 +1149,17 @@ retrievalQuery: company-truth brands NIBE Vaillant IVT Daikin Mitsubishi tepeln�
 enrichedRetrievalQuery: company-truth brands NIBE Vaillant IVT Daikin Mitsubishi tepelné čerpadlá portfólio Geotherm
 storedSlots: {"service_type":"heat_pump","service_intent":"brand_model","qualification_question_rounds":0,"last_direct_topic":"heat_pump_brands","last_brand_model_topic":"heat_pump_brands"}
 newlyExtractedSlots: {"service_type":"heat_pump","service_intent":"brand_model"}
-flow: diagnostic-v5-recommendation-closure @ 1d93cbe
+flow: diagnostic-v5-recommendation-closure @ cebd8d6
 
-Ponúkame tepelné čerpadlá značiek NIBE a Vaillant. IVT spomíname opatrne, nakoľko dostupnosť a vhodnosť konkrétnych modelov je potrebné vždy overiť podľa aktuálnej ponuky a špecifikácií vášho domu.
+Ponúkame tepelné čerpadlá značiek NIBE a Vaillant. IVT spomíname opatrne, nakoľko dostupnosť a vhodnosť konkrétneho modelu treba vždy overiť podľa špecifikácií vášho domu a aktuálnej ponuky.
 
-Aby som vám mohol lepšie poradiť s výberom, potreboval by som vedieť, či ide o novostavbu alebo starší dom a či máte v dome podlahové kúrenie alebo radiátory.
+Aby som vám mohol lepšie poradiť, potreboval by som vedieť, či ide o novostavbu alebo starší dom a či máte v dome podlahové kúrenie alebo radiátory.
 
 ### Turn 2
 
 User: ?
 Pass: yes
-responseTimeMs: 1844
+responseTimeMs: 1740
 answerMode: direct_answer
 serviceType: heat_pump
 serviceIntent: brand_model
@@ -1190,7 +1175,7 @@ retrievalQuery: company-truth direct answer clarification heat_pump_brands tepel
 enrichedRetrievalQuery: company-truth direct answer clarification heat_pump_brands tepelné čerpadlá Geotherm
 storedSlots: {"service_type":"heat_pump","service_intent":"brand_model","qualification_question_rounds":0,"last_direct_topic":"clarification","last_brand_model_topic":"heat_pump_brands"}
 newlyExtractedSlots: {"service_type":"heat_pump","service_intent":"brand_model"}
-flow: diagnostic-v5-recommendation-closure @ 1d93cbe
+flow: diagnostic-v5-recommendation-closure @ cebd8d6
 
 ### Upresnenie
 
@@ -1204,7 +1189,7 @@ Ak chceš, aby som odporučil smer pre teba, napíš mi, či ide o novostavbu al
 
 User: Ahoj, chcem tc
 Pass: yes
-responseTimeMs: 4087
+responseTimeMs: 2336
 answerMode: qualification_question
 serviceType: heat_pump
 serviceIntent: recommendation
@@ -1220,7 +1205,7 @@ retrievalQuery: service router verdict gate service-card-heat-pump tepelne cerpa
 enrichedRetrievalQuery: service router verdict gate service-card-heat-pump tepelne cerpadla tepelné čerpadlá recommendation služba tepelné čerpadlá zámer recommendation Ahoj, chcem tc
 storedSlots: {"service_type":"heat_pump","service_intent":"recommendation","qualification_question_rounds":0}
 newlyExtractedSlots: {}
-flow: diagnostic-v5-recommendation-closure @ 1d93cbe
+flow: diagnostic-v5-recommendation-closure @ cebd8d6
 
 ### Predbežný smer
 
@@ -1235,7 +1220,7 @@ Aby som ťa zaradil správne, napíš mi:
 
 User: Starsi 140m radiatory
 Pass: yes
-responseTimeMs: 3066
+responseTimeMs: 3369
 answerMode: diagnostic_verdict
 serviceType: heat_pump
 serviceIntent: recommendation
@@ -1251,28 +1236,30 @@ retrievalQuery: service router verdict gate service-card-heat-pump tepelne cerpa
 enrichedRetrievalQuery: service router verdict gate service-card-heat-pump tepelne cerpadla tepelné čerpadlá recommendation scenar-starsi-dom-radiatory-plyn radiatorovy system vyssia teplota vody služba tepelné čerpadlá zámer recommendation projekt rekonštrukcia plocha 140 m2 vykurovanie radiátory Ahoj, chcem tc Starsi 140m radiatory
 storedSlots: {"service_type":"heat_pump","service_intent":"recommendation","project_type":"rekonštrukcia","area_m2":140,"heating_distribution":"radiátory","qualification_question_rounds":1}
 newlyExtractedSlots: {}
-flow: diagnostic-v5-recommendation-closure @ 1d93cbe
+flow: diagnostic-v5-recommendation-closure @ cebd8d6
 
 ### Tepelné čerpadlo pre starší dom s radiátormi
 
-Rozumiem, že máš starší dom s rozlohou 140 m² a vykurovanie zabezpečujú radiátory. V takomto prípade je predbežný smer výmena súčasného zdroja tepla za tepelné čerpadlo vzduch-voda.
+Na základe tvojich informácií (starší dom, 140 m², radiátory) je predbežný smer pre teba tepelné čerpadlo typu **vzduch-voda**.
 
-**Dôvod:** Tepelné čerpadlá vzduch-voda sú najčastejšie používaným riešením pri rekonštrukciách starších domov, najmä ak sú prítomné radiátory.
+**Dôvod:** Tepelné čerpadlá vzduch-voda sú univerzálnym riešením, ktoré sa dá použiť aj pri rekonštrukcii starších domov. Pri radiátoroch je však kľúčové overiť, či sú schopné efektívne vykurovať dom pri nižšej teplote vody, ktorú tepelné čerpadlo dodáva.
 
 **Typický rozsah riešenia:**
-* Pri radiátoroch je kľúčové overiť, či dokážu efektívne vykurovať dom pri nižšej teplote vody, ktorú tepelné čerpadlo produkuje.
-* Ak sú radiátory menšie alebo dom potrebuje vyššiu teplotu vody, môže byť potrebné zvážiť ich úpravu alebo výmenu.
-* Dôležité je tiež zistiť, aký zdroj tepla používaš teraz a aká je tvoja ročná spotreba energie.
+* **Výber vhodného tepelného čerpadla:** Zameriame sa na modely, ktoré zvládnu aj vyššie teploty vody, ak to bude potrebné.
+* **Overenie výkonu radiátorov:** Zistíme, či súčasné radiátory majú dostatočný výkon pri nižšej prevádzkovej teplote. V niektorých prípadoch môže byť potrebné vymeniť časť radiátorov za väčšie alebo pridať ďalšie.
+* **Komplexná realizácia:** Zabezpečíme všetko od návrhu až po montáž.
 
-Aby som ti mohol čo najlepšie poradiť, potreboval by som vedieť ešte pár detailov:
-1. Aký zdroj tepla momentálne používaš (napr. plynový kotol, elektrické kúrenie).
-2. Je dom zateplený alebo plánuješ zatepľovanie?
+**Čo potrebujeme vedieť ďalej:**
+1. **Aký je tvoj súčasný zdroj tepla** (napr. plynový kotol, elektrické kúrenie).
+2. **Máš záujem aj o ohrev teplej úžitkovej vody** (TÚV) tepelným čerpadlom?
+
+Po zodpovedaní týchto otázok ti budeme vedieť dať presnejšie odporúčanie a pripraviť návrh riešenia.
 
 ### Turn 3
 
 User: chcem Vaillant ale mam NIBE
 Pass: yes
-responseTimeMs: 2313
+responseTimeMs: 2399
 answerMode: brand_model_answer
 serviceType: heat_pump
 serviceIntent: brand_model
@@ -1286,13 +1273,13 @@ remainingCriticalUnknowns: []
 validatorsTriggered: direct_answer_gate_used, latest_direct_question_answered, direct_answer_composed_by_llm, nibe_vaillant_context_followup_repaired
 retrievalQuery: company-truth product-facts Vaillant aroTHERM plus aroTHERM Split tepelné čerpadlá radiátory Geotherm
 enrichedRetrievalQuery: company-truth product-facts Vaillant aroTHERM plus aroTHERM Split tepelné čerpadlá radiátory Geotherm
-storedSlots: {"service_type":"heat_pump","service_intent":"brand_model","project_type":"rekonštrukcia","area_m2":140,"heating_distribution":"radiátory","qualification_question_rounds":2,"last_direct_topic":"Vaillant","last_brand_model_topic":"Vaillant"}
+storedSlots: {"service_type":"heat_pump","service_intent":"brand_model","project_type":"rekonštrukcia","area_m2":140,"heating_distribution":"radiátory","hot_water":true,"qualification_question_rounds":2,"last_direct_topic":"Vaillant","last_brand_model_topic":"Vaillant"}
 newlyExtractedSlots: {"service_type":"heat_pump","service_intent":"brand_model"}
-flow: diagnostic-v5-recommendation-closure @ 1d93cbe
+flow: diagnostic-v5-recommendation-closure @ cebd8d6
 
-Ak dnes máš NIBE a zvažuješ Vaillant, neber to ako jednoduchú zámenu značky. Najprv treba rozlíšiť, či riešiš servis existujúceho NIBE, výmenu zariadenia alebo nové nacenenie.
+Ak dnes máš **NIBE** a zvažuješ **Vaillant**, nebral by som to ako jednoduchú zámenu značky. Najprv treba rozlíšiť, či riešiš servis existujúceho NIBE, výmenu zariadenia alebo nové nacenenie.
 
-Pre tvoj prípad (rekonštrukcia, 140 m², radiátory) by som to bral ako orientačný výber, nie finálny model. Vaillant je spolu s NIBE bezpečná značka na komunikáciu, ale konkrétny model by som neoznačil za finálny bez návrhu výkonu, TÚV, hydrauliky, montáže, servisu a priestoru v kotolni.
+Pre tvoj prípad (rekonštrukcia, 140 m², radiátory) by som to bral ako orientačný výber, nie finálny model. Pri tepelných čerpadlách je Vaillant spolu s NIBE bezpečná značka na komunikáciu, ale konkrétny model by som neoznačil za finálny bez návrhu výkonu, TÚV, hydrauliky, montáže, servisu a priestoru v kotolni.
 
 Najlepší ďalší krok je konzultácia: preveriť stav existujúceho NIBE, dôvod výmeny a pripraviť porovnanie novej ponuky.
 
@@ -1302,7 +1289,7 @@ Riešiš servis existujúceho NIBE, výmenu za Vaillant, alebo nové nacenenie c
 
 User: daj mi presnu cenu
 Pass: yes
-responseTimeMs: 2604
+responseTimeMs: 2193
 answerMode: price_answer
 serviceType: heat_pump
 serviceIntent: price
@@ -1316,9 +1303,9 @@ remainingCriticalUnknowns: []
 validatorsTriggered: direct_answer_gate_used, latest_direct_question_answered, direct_answer_composed_by_llm, overconfident_wording_softened, sensitive_price_scope_repaired
 retrievalQuery: company-truth pricing-rules cena náklady návratnosť úspora servis ponuka tepelné čerpadlo montáž inštalácia akumulačná nádrž čo je v cene rozsah ponuky
 enrichedRetrievalQuery: company-truth pricing-rules cena náklady návratnosť úspora servis ponuka tepelné čerpadlo montáž inštalácia akumulačná nádrž čo je v cene rozsah ponuky
-storedSlots: {"service_type":"heat_pump","service_intent":"price","project_type":"rekonštrukcia","area_m2":140,"heating_distribution":"radiátory","qualification_question_rounds":3,"last_direct_topic":"price","last_price_topic":"price","last_brand_model_topic":"Vaillant"}
+storedSlots: {"service_type":"heat_pump","service_intent":"price","project_type":"rekonštrukcia","area_m2":140,"heating_distribution":"radiátory","hot_water":true,"qualification_question_rounds":3,"last_direct_topic":"price","last_price_topic":"price","last_brand_model_topic":"Vaillant"}
 newlyExtractedSlots: {"service_type":"heat_pump","service_intent":"price"}
-flow: diagnostic-v5-recommendation-closure @ 1d93cbe
+flow: diagnostic-v5-recommendation-closure @ cebd8d6
 
 Konkrétnu cenu bez údajov o dome a rozsahu prác nebudem hádať.
 
@@ -1328,7 +1315,7 @@ Pri nacenení treba rozlíšiť cenu zariadenia a kompletnej realizácie: výkon
 
 User: opravite to alebo treba montaz?
 Pass: yes
-responseTimeMs: 2450
+responseTimeMs: 1752
 answerMode: direct_answer
 serviceType: heat_pump
 serviceIntent: service_fault
@@ -1339,12 +1326,12 @@ closureGateTriggered: false
 closureReason: n/a
 recommendationOptions: []
 remainingCriticalUnknowns: []
-validatorsTriggered: direct_answer_gate_used, latest_direct_question_answered, direct_answer_composed_by_llm, overconfident_wording_softened, service_fault_data_request_repaired, repair_or_installation_followup_repaired, service_fault_followup_appended
+validatorsTriggered: direct_answer_gate_used, latest_direct_question_answered, direct_answer_composed_by_llm, repair_or_installation_followup_repaired, service_fault_data_request_repaired, service_fault_followup_appended
 retrievalQuery: company-truth servis montaz oprava nove riesenie cena termin Geotherm
 enrichedRetrievalQuery: company-truth servis montaz oprava nove riesenie cena termin Geotherm
-storedSlots: {"service_type":"heat_pump","service_intent":"service_fault","project_type":"rekonštrukcia","area_m2":140,"heating_distribution":"radiátory","qualification_question_rounds":3,"last_direct_topic":"repair_or_installation_followup","last_price_topic":"price","last_brand_model_topic":"Vaillant"}
+storedSlots: {"service_type":"heat_pump","service_intent":"service_fault","project_type":"rekonštrukcia","area_m2":140,"heating_distribution":"radiátory","hot_water":true,"qualification_question_rounds":3,"last_direct_topic":"repair_or_installation_followup","last_price_topic":"price","last_brand_model_topic":"Vaillant"}
 newlyExtractedSlots: {"service_type":"heat_pump","service_intent":"service_fault"}
-flow: diagnostic-v5-recommendation-closure @ 1d93cbe
+flow: diagnostic-v5-recommendation-closure @ cebd8d6
 
 ### Servisný smer
 
@@ -1360,7 +1347,7 @@ Ide o existujúce zariadenie s poruchou, pravidelný servis, alebo zvažuješ v�
 
 User: ahoj
 Pass: yes
-responseTimeMs: 3107
+responseTimeMs: 1269
 answerMode: general_chat
 serviceType: unknown
 serviceIntent: general
@@ -1371,12 +1358,12 @@ closureGateTriggered: false
 closureReason: n/a
 recommendationOptions: []
 remainingCriticalUnknowns: []
-validatorsTriggered: inspection_claim_sanitized, pure_small_talk_compacted
+validatorsTriggered: pure_small_talk_compacted
 retrievalQuery: ahoj
 enrichedRetrievalQuery: ahoj
-storedSlots: {"service_type":"heat_pump","service_intent":"service_fault","project_type":"rekonštrukcia","area_m2":140,"heating_distribution":"radiátory","qualification_question_rounds":3,"last_direct_topic":"repair_or_installation_followup","last_price_topic":"price","last_brand_model_topic":"Vaillant"}
+storedSlots: {"service_type":"heat_pump","service_intent":"service_fault","project_type":"rekonštrukcia","area_m2":140,"heating_distribution":"radiátory","hot_water":true,"qualification_question_rounds":3,"last_direct_topic":"repair_or_installation_followup","last_price_topic":"price","last_brand_model_topic":"Vaillant"}
 newlyExtractedSlots: {}
-flow: diagnostic-v5-recommendation-closure @ 1d93cbe
+flow: diagnostic-v5-recommendation-closure @ cebd8d6
 
 Ahoj, som tu.
 
@@ -1384,7 +1371,7 @@ Ahoj, som tu.
 
 User: cena?
 Pass: yes
-responseTimeMs: 1970
+responseTimeMs: 2340
 answerMode: price_answer
 serviceType: heat_pump
 serviceIntent: price
@@ -1398,12 +1385,12 @@ remainingCriticalUnknowns: []
 validatorsTriggered: direct_answer_gate_used, latest_direct_question_answered, direct_answer_composed_by_llm
 retrievalQuery: company-truth pricing-rules cena náklady návratnosť úspora servis ponuka tepelné čerpadlo montáž inštalácia akumulačná nádrž čo je v cene rozsah ponuky
 enrichedRetrievalQuery: company-truth pricing-rules cena náklady návratnosť úspora servis ponuka tepelné čerpadlo montáž inštalácia akumulačná nádrž čo je v cene rozsah ponuky
-storedSlots: {"service_type":"heat_pump","service_intent":"price","project_type":"rekonštrukcia","area_m2":140,"heating_distribution":"radiátory","qualification_question_rounds":3,"last_direct_topic":"price","last_price_topic":"price","last_brand_model_topic":"Vaillant"}
+storedSlots: {"service_type":"heat_pump","service_intent":"price","project_type":"rekonštrukcia","area_m2":140,"heating_distribution":"radiátory","hot_water":true,"qualification_question_rounds":3,"last_direct_topic":"price","last_price_topic":"price","last_brand_model_topic":"Vaillant"}
 newlyExtractedSlots: {"service_type":"heat_pump","service_intent":"price"}
-flow: diagnostic-v5-recommendation-closure @ 1d93cbe
+flow: diagnostic-v5-recommendation-closure @ cebd8d6
 
-Pri tepelnom čerpadle je dôležité rozlišovať cenu samotného zariadenia a cenu kompletnej realizácie. Cena závisí od výkonu, značky, typu systému, rozsahu montáže, potreby zásobníka teplej vody, akumulačnej nádrže, elektroprác a uvedenia do prevádzky.
+Pri tepelnom čerpadle treba rozlišovať cenu samotného zariadenia a cenu kompletnej realizácie. Cena závisí od výkonu, značky, typu systému, montáže, zásobníka teplej vody, akumulačnej nádrže, elektroprác, dopravy a uvedenia do prevádzky.
 
-Pre váš prípad (rekonštrukcia, 140 m², radiátory) by som cenu orientačne odhadol, ale presnú sumu bez konkrétnej ponuky nebudem uvádzať. Ak máte už nejakú cenovú ponuku, najdôležitejšie je porovnať, čo všetko je v cene zahrnuté.
+Pre tvoj prípad (rekonštrukcia, 140 m², radiátory) by som to bral ako orientačný výber, nie finálny model. Ak máš v ruke cenu, najdôležitejšie je porovnať rozsah: čo je zahrnuté, čo je príplatok a čo sa bude riešiť až po obhliadke alebo návrhu.
 
-Ide o nové tepelné čerpadlo, výmenu starého zdroja, alebo servis existujúceho zariadenia?
+Ide o nové tepelné čerpadlo pre dom, výmenu starého zdroja alebo servis existujúceho zariadenia?

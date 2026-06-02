@@ -3894,6 +3894,16 @@ function companyPracticalDirectAnswer(message: string): DirectAnswerDecision | n
     );
   }
 
+  if (/(navrh|návrh|navrhem|návrhem).*(vytap|vytáp|vykur|kuren|kúren)|(?:vytap|vytáp|vykur|kuren|kúren).*(navrh|návrh|navrhem|návrhem)/.test(text)) {
+    return answerBase(
+      "Návrh vykurovania",
+      "Áno, Geotherm vie pomôcť s návrhom vykurovania, ale bez podkladov by som nesľuboval konkrétny systém. Pri dome sa často porovnáva tepelné čerpadlo, podlahové kúrenie, radiátory, regulácia, teplá voda a následný servis. Na presnejší smer treba aspoň typ objektu, plochu a či ide o novostavbu alebo rekonštrukciu.",
+      "heating_design_followup",
+      "process",
+      "company-truth navrh vykurovania tepelné čerpadlo podlahové kúrenie radiátory servis dotácia Geotherm",
+    );
+  }
+
   if (/^(kontakt|kontakt\?|kontaktovat|kontaktovať)$/.test(text)) {
     return answerBase(
       "Kontakt",
@@ -3931,6 +3941,16 @@ function companyPracticalDirectAnswer(message: string): DirectAnswerDecision | n
       "nibe_vaillant_noise_consumption_followup",
       "brand_model",
       "company-truth NIBE Vaillant hlucnost spotreba servis cena ponuka tepelne cerpadlo Geotherm",
+    );
+  }
+
+  if (text.includes("nibe") && text.includes("vaillant") && /(vs|versus|porov|leps|lepší|recommend|odporuc|odporúč)/.test(text)) {
+    return answerBase(
+      "Vaillant vs. NIBE",
+      "Obe značky viem pri tepelných čerpadlách komunikovať bezpečne. Nevybral by som víťaza iba podľa názvu značky: rozhoduje dom, vykurovací systém, hlučnosť, servis, regulácia, dostupnosť konkrétnej zostavy a výsledná ponuka. Pre novú realizáciu má zmysel porovnať 1-2 aktuálne zostavy od Geotherm a vybrať podľa návrhu.",
+      "nibe_vaillant_comparison",
+      "comparison",
+      "company-truth NIBE Vaillant porovnanie tepelné čerpadlo servis regulácia ponuka Geotherm",
     );
   }
 
@@ -6727,6 +6747,14 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
       directAnswerFallbackUsed = true;
     }
   }
+  if (directDecision.triggered && directDecision.topic === "F2040_obsolete" && directDecision.answer) {
+    const normalized = normalizePolicyText(answer);
+    if (!/(archiv|archivny|historick|neaktual|nie je aktual|obsolete|nevyraba|nevyrába)/.test(normalized)) {
+      recordDiagnostic(answerDiagnostics.validatorsTriggered, "direct_f2040_obsolete_repaired");
+      answer = validateAndRepairAnswer(directDecision.answer, stateForTurn, route, message, answerDiagnostics);
+      directAnswerFallbackUsed = true;
+    }
+  }
   if (
     directDecision.triggered &&
     directDecision.topic === "NIBE" &&
@@ -6801,6 +6829,7 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
       "Daikin",
       "Mitsubishi",
       "contact_details",
+      "contact_short_followup",
       "warranty_service_check",
       "generic_installation_followup",
       "energy_consumption_followup",
@@ -6859,6 +6888,10 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
   if (/(vonkajs|vonkajsi|vonkajsej).*(jednotk)|pod oknom|umiestnenie jednotky/.test(normalizedMessageForHardDirect)) {
     answer = "### Umiestnenie vonkajšej jednotky\n\nPod oknom to nemusí byť automaticky zlé, ale treba to posúdiť opatrne. Rozhoduje hluk v noci, prúdenie vzduchu, kondenzát, odstup od okien a susedov, servisný prístup a miestne možnosti montáže.\n\nBez obhliadky by som to nepotvrdil ako finálne miesto. Pri nacenení by som porovnal tichšie umiestnenie bokom od obytných miestností alebo technické opatrenia proti hluku.";
     recordDiagnostic(answerDiagnostics.validatorsTriggered, "outdoor_unit_placement_answer_hardened");
+  }
+  if (/(montaz|montáž).*(zajtra|hned|hneď).*(neviem|neviem aky|neviem aký|aky system|aký systém)|(?:neviem|neviem aky|neviem aký|aky system|aký systém).*(montaz|montáž).*(zajtra|hned|hneď)/.test(normalizedMessageForHardDirect)) {
+    answer = "### Najprv systém, potom termín\n\nMontáž hneď zajtra by som **bez podkladov a bez potvrdeného systému nesľuboval**. Najprv treba určiť, či ide o tepelné čerpadlo, klimatizáciu, rekuperáciu, podlahové kúrenie alebo inú technológiu; až potom sa dá potvrdiť termín, kapacita a cena.\n\nAk nevieš systém, začal by som krátkou konzultáciou: kúrenie, chladenie, vetranie alebo komplexné riešenie domu?";
+    recordDiagnostic(answerDiagnostics.validatorsTriggered, "contradictory_installation_timing_hardened");
   }
   if (/vaillant.*kot|kot.*vaillant/.test(normalizedMessageForHardDirect)) {
     answer = "### Vaillant kotly\n\nPri otázke na **Vaillant kotly** treba aktuálnu ponuku potvrdiť podľa konkrétneho typu kotolne. Geotherm vie riešiť kotly a výmenu plynového kotla, ale konkrétny model Vaillant kotla by som potvrdil pri nacenení podľa dostupnosti, odvodu spalín, elektroprípravy a rozsahu prác.";
