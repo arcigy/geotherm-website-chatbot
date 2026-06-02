@@ -7285,6 +7285,15 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
         "Doplň mi ešte aktuálny zdroj tepla a približnú plochu domu, ak ju vieš.",
       ].join("\n");
     }
+    if (serviceType === "ceiling_cooling") {
+      return [
+        "### Stropné chladenie",
+        "",
+        "Pri stropnom chladení by som riešil komfortné plošné chladenie cez projektovo navrhnutý systém s reguláciou vlhkosti a rosným bodom. Pri novostavbe a celom dome dáva zmysel porovnať najmä BKT alebo iný stropný systém, prípadne doplnkové fancoily alebo klimatizáciu tam, kde treba rýchlejší výkon.",
+        "",
+        "Najlepší ďalší krok je konzultácia alebo nacenenie podľa projektu, rozsahu miestností a zdroja chladu. Bez návrhu by som nesľuboval, že stropné chladenie automaticky nahradí klimatizáciu v každom dome.",
+      ].join("\n");
+    }
     if (/(cena|stoji|stojí|kolko|koľko|rozpocet|rozpočet)/.test(normalized)) {
       return [
         "### Predbežný smer k cene",
