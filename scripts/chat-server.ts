@@ -4092,6 +4092,16 @@ function companyPracticalDirectAnswer(message: string): DirectAnswerDecision | n
     );
   }
 
+  if (/(najcastejs|najčastejš|casto kladen|často kladen|otazk|otázk|ot zky).*(dotac|dotác|dot cie|podpor|poukaz)|(?:dotac|dotác|dot cie|podpor|poukaz).*(najcastejs|najčastejš|casto kladen|často kladen|otazk|otázk|ot zky)/.test(text)) {
+    return answerBase(
+      "Časté otázky k dotáciám",
+      "Pri dotáciách je bezpečný postup najprv overiť aktuálny program, typ domu, zariadenie a podmienky podpory. Bez overenia by som nesľuboval nárok, výšku dotácie, odpočet z ceny ani kompletné vybavenie. Geotherm vie pomôcť s orientáciou a návrhom vhodného riešenia; ďalší krok je krátka konzultácia a potom nacenenie podľa konkrétneho domu.",
+      "subsidy_faq_scope",
+      "subsidy",
+      "company-truth dotacie casto kladene otazky podmienky podpory overenie konzultacia Geotherm",
+    );
+  }
+
   if (/(podmienky podpory|podmienk.*podpor)/.test(text)) {
     return answerBase(
       "Podmienky podpory",
@@ -5308,9 +5318,9 @@ function companyPracticalDirectAnswer(message: string): DirectAnswerDecision | n
     );
   }
 
-  if (/(rozvod|rozvody).*(vody|voda)|vodoin/.test(text)) {
+  if (/(rozvod|rozvody).*(vody|voda|kanaliz|kanalizacie|kanalizácie)|(?:kanaliz|kanalizacie|kanalizácie).*(rozvod|rozvody)|vodoin/.test(text)) {
     return answerBase(
-      "Rozvody vody",
+      "Rozvody vody a kanalizácie",
       "Áno, v knowledge Geotherm sa spomínajú aj **rozvody vody a kanalizácie** a referencie zdravotechniky v rodinných domoch. Pri konkrétnom dopyte treba potvrdiť rozsah: či ide o nový dom, rekonštrukciu, napojenie technológie, kúpeľne alebo technickú miestnosť. Najpraktickejší ďalší krok je poslať pôdorys alebo fotky a dohodnúť krátku konzultáciu/nacenenie.",
       "water_distribution",
       "process",
@@ -8025,6 +8035,7 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     "solar_collector_tank_scope",
     "subsidy_conditions_scope",
     "subsidy_conditions_direct_scope",
+    "subsidy_faq_scope",
     "plan_obnovy_subsidy_scope",
     "vaillant_anniversary_subsidy_scope",
     "subsidy_general_scope",
