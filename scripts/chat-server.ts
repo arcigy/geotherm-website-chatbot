@@ -2228,6 +2228,13 @@ function pureSmallTalkFallback(message: string): StructuredAnswer {
   return { shortAnswer, details: [], followUpQuestion: null, shouldAskFollowUp: false, safetyNote: null, confidence: "high" };
 }
 
+function smallTalkHardClampAnswer(message: string): string {
+  const raw = String(message || "").toLowerCase();
+  const text = normalizePolicyText(raw);
+  if (raw.includes("ako sa") || text.includes("ako sa")) return "Mám sa dobre, vďaka. Som tu, keď budeš chcieť s niečím pomôcť.";
+  return pureSmallTalkFallback(message).shortAnswer;
+}
+
 function compactPureSmallTalkAnswer(answer: string, message: string): string {
   const fallback = pureSmallTalkFallback(message).shortAnswer;
   const cleaned = answer
@@ -8580,7 +8587,7 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
   }
   answer = softenOverconfidentWording(answer, answerDiagnostics);
   if (shouldHardClampSmallTalk(message) || (!route.needsRetrieval && (isPureSmallTalkMessage(message) || isLooseSmallTalkMessage(message)))) {
-    answer = pureSmallTalkFallback(message).shortAnswer;
+    answer = smallTalkHardClampAnswer(message);
     recordDiagnostic(answerDiagnostics.validatorsTriggered, "pure_small_talk_final_hard_clamped");
   }
   const normalizedFinalAnswer = normalizePolicyText(answer);
@@ -9717,7 +9724,7 @@ export async function startChatServer(options: StartOptions = {}): Promise<Serve
         chatResponse.sources.length === 0 &&
         chatResponse.debug?.llmUsed
       ) {
-        chatResponse.answer = pureSmallTalkFallback(body.message || "").shortAnswer;
+        chatResponse.answer = smallTalkHardClampAnswer(body.message || "");
         chatResponse.debug.validatorsTriggered = [
           ...(chatResponse.debug.validatorsTriggered || []),
           "api_small_talk_hard_clamped",
