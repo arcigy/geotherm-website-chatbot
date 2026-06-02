@@ -6213,7 +6213,7 @@ function directAnswerDecision(message: string, state: QualificationState, route:
       reason: "direct_booking_process",
       answer:
         "### Rezervácia termínu\n\nTermín sa dá dohodnúť podľa typu služby, lokality, rozsahu práce a aktuálnej kapacity. Pri servise pomôže značka/model, popis problému a fotka štítku; pri montáži alebo ponuke stručný rozsah, fotky alebo projekt.\n\nNajpraktickejší ďalší krok je poslať kontakt a základné podklady, aby Geotherm potvrdil reálny termín.",
-      serviceIntent: "process",
+      serviceIntent: "contact",
       retrievalQuery: "company-truth rezervacia termin kapacita servis montaz kontakt Geotherm",
       topic: "booking_process",
     };
