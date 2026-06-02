@@ -1,7 +1,7 @@
 # Geotherm Chatbot Goal Gap Audit
 
 Generated: 2026-06-02
-Live API commit checked: `6924a50`
+Current evidence source: local worktree after the latest audit run. Live API still needs restart/health verification after commit and push.
 
 ## Scope
 
@@ -15,6 +15,7 @@ This audit maps the active user goal to current evidence. It does not mark the g
 | Broad service coverage | `knowledge/broad-surface-audit.md`: `58/58`, max 8000 ms, all LLM yes | Proven for covered broad cases |
 | Live question coverage | `knowledge/live-question-surface-audit.md`: `102/102`, max 8000 ms, all LLM yes | Proven for covered live cases |
 | WordPress REST surface coverage | `knowledge/wordpress-surface-audit.md`: `94/94` from 312 exported WordPress items | Proven for generated sampled cases |
+| Non-heat-pump long flows | `knowledge/non-heat-pump-flow-audit.md`: `27/27` across air conditioning, heat recovery, floor heating, ceiling cooling, service, subsidy, complex solution, water softener and central vacuum flows | Proven for covered non-heat-pump multi-turn flows |
 | Production readiness gates | `knowledge/production-readiness-audit.md`: `17/17`, production gates `6/6`, health PASS | Proven for scripted gates |
 | Diagnostic conversations | `knowledge/diagnostic-conversation-test-report.md`: `44/44` | Proven for scripted conversation flows |
 | API behavior | `knowledge/chat-api-test-report.md`: `7/7` | Proven for API tests |
@@ -31,7 +32,7 @@ This audit maps the active user goal to current evidence. It does not mark the g
 | --- | --- |
 | "Extremely many questions / every possible customer nonsense" | Current audits cover broad, live, and generated WordPress samples, but no finite test proves every possible phrasing. More fuzzing and randomized paraphrase testing would strengthen this. |
 | "No hallucination at all" | Validators and banned-claim checks cover known risks, but zero hallucination cannot be proven globally. Needs continuous adversarial tests and review of new failure transcripts. |
-| "Always asks follow-up when vague, but stops after a few turns" | Diagnostic tests cover key flows, but more multi-service long conversations should be added for non-heat-pump services. |
+| "Always asks follow-up when vague, but stops after a few turns" | Diagnostic and non-heat-pump multi-turn tests cover key flows, but more randomized paraphrases are still needed before calling this globally proven. |
 | "Always routes toward meeting/Geotherm consultation" | Dedicated CTA audit now covers key service handoffs, but global "always" still needs wider paraphrase/fuzz testing and monitoring. |
 | "Work in duplicate, do not change main" | Not satisfied literally because repository instruction requires staying on `main` and pushing final changes. Current work followed the higher-priority repo instruction. |
 | "Full production readiness" | Current production audit is green, but production readiness is not a one-time proof. It needs repeated live monitoring under provider load because occasional Gemini high-demand events were observed during earlier runs. |
@@ -39,5 +40,5 @@ This audit maps the active user goal to current evidence. It does not mark the g
 ## Next Recommended Work
 
 1. Add a paraphrase/fuzz audit for the same 94 WordPress topics with 3-5 wording variants each.
-2. Add long-flow regression tests for air conditioning, rekuperacia, floor heating, ceiling cooling, service, subsidies, and complex solution, not only heat pumps.
-3. Add provider resilience metrics: how often `llmUsed=false` appears under repeated runs, even when fallback repairs answer content.
+2. Add provider resilience metrics: how often `llmUsed=false` or >8000 ms appears under repeated runs, even when a single audit pass is green.
+3. Keep expanding concrete company-truth chunks when new customer transcripts expose missing services, models, price rules or policies.
