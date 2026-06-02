@@ -3385,6 +3385,15 @@ function expectedHeatRecoveryAnswer(): string {
 
 function expectedServiceFaultAnswer(message?: string): string {
   const normalizedMessage = normalizePolicyText(message || "");
+  if (/^(co s tym|čo s tým|co teraz|čo teraz)$/.test(normalizedMessage)) {
+    return [
+      "### Čo spraviť najbližšie",
+      "",
+      "Pri hlučnom alebo podozrivo fungujúcom zariadení nerob nastavovanie naslepo. Najprv si poznač prejav: kedy hučí, či sa menil tlak alebo teplota a či je na displeji hlásenie.",
+      "",
+      "Potom má zmysel poslať Geotherm krátky popis a dohodnúť servisné preverenie. Technik podľa toho rozhodne, či stačí nastavenie, diagnostika alebo výjazd.",
+    ].join("\n");
+  }
   if (normalizedMessage.includes("tlak")) {
     return [
       "### Pokles tlaku v kúrení",
@@ -3401,6 +3410,15 @@ function expectedServiceFaultAnswer(message?: string): string {
       : normalizedMessage.includes("ivt")
         ? "IVT"
         : null;
+  if (mentionedBrand === "NIBE" && /(star|stare|staré|starsie|staršie)/.test(normalizedMessage)) {
+    return [
+      "### Staršie NIBE",
+      "",
+      "Pri staršom NIBE by som najprv nerobil záver, že treba výmenu. Môže ísť o nastavenie, opotrebovaný diel, hlučnejší chod, zanesenie alebo problém mimo samotného čerpadla.",
+      "",
+      "Pre Geotherm je praktické poslať fotku štítku, približný vek zariadenia a popis hluku. Podľa toho sa dá rozhodnúť, či má zmysel servisné preverenie alebo konzultácia k výmene.",
+    ].join("\n");
+  }
   const deviceLabel = mentionedBrand ? `${mentionedBrand} hlási chybu` : normalizedMessage.includes("kotol") ? "kotol ukazuje chybu" : "zariadenie hlási chybu";
   return [
     "### Servisný smer",
@@ -3842,14 +3860,64 @@ function companyPracticalDirectAnswer(message: string): DirectAnswerDecision | n
     topic,
   });
 
+  if (/(zhrn|zhrň|zhrnut|zhrnutie|co vieme|čo vieme|bez garanc)/.test(text)) {
+    return answerBase(
+      "Bezpečné zhrnutie",
+      "Zhrniem to bez ďalšieho dotazníka: pri novom riešení treba najprv technický smer a až potom nacenenie; pri servise rozhoduje identifikácia zariadenia a prejav problému. Bez podkladov je fér nedávať presnú cenu, termín ani garanciu.",
+      "conversation_summary",
+      "contact",
+      "company-truth kontakt konzultacia servis ponuka zhrnutie Geotherm",
+    );
+  }
+
+  if (/(to je cele|to je celé|a co dalej|a čo dalej|co dalej|čo dalej)\??$/.test(text)) {
+    return answerBase(
+      "Ďalší krok",
+      "Áno, v chate už stačí. Technické rozhodnutie sa má presunúť do overenia u Geotherm, nie do ďalšieho dotazníka. Výstup má byť konkrétny postup: servisné preverenie pri existujúcom zariadení alebo ponuka pri novom riešení.",
+      "next_step_after_summary",
+      "contact",
+      "company-truth kontakt konzultacia servis ponuka dalsi krok Geotherm",
+    );
+  }
+
   if (/(co robit|čo robiť|ukazuje chybu|hlasi chybu|hlási chybu|chyba)/.test(text) && /(kotol|kotla|kotlov|kotly)/.test(text)) {
     return null;
   }
 
+  if (/(barak|barák|dom).*\b\d{2,4}\s*m/.test(text) && /(co s tym|čo s tým|co teraz|čo teraz|co odporuc|čo odporúč)/.test(text)) {
+    return answerBase(
+      "Najprv zaraďme cieľ",
+      "Pri dome s touto plochou by som bez ďalších údajov nevybral konkrétnu technológiu. Geotherm vie riešiť kúrenie, chladenie, vetranie aj komplexnejšie technické riešenie domu, ale najprv treba určiť smer. Chceš riešiť hlavne kúrenie, chladenie, vetranie alebo servis existujúceho zariadenia?",
+      "large_house_vague_goal_followup",
+      "general",
+      "company-truth service router complex solution heat pump air conditioning heat recovery Geotherm",
+    );
+  }
+
+  if (/^(kontakt|kontakt\?|kontaktovat|kontaktovať)$/.test(text)) {
+    return answerBase(
+      "Kontakt",
+      "Kontakt sa dá riešiť cez oficiálne údaje na stránke Geotherm. Aby som ťa naviedol správne, potrebuješ kontakt kvôli ponuke, servisu alebo všeobecnej konzultácii?",
+      "contact_short_followup",
+      "contact",
+      "company-truth kontakt Geotherm telefon email servis ponuka konzultacia",
+    );
+  }
+
+  if (/^(co s tym|čo s tým|co teraz|čo teraz)\??$/.test(text)) {
+    return answerBase(
+      "Prvý krok",
+      "Najprv zariadenie nenastavuj naslepo. Zapíš si, kedy sa problém prejavuje, či je na displeji chyba a či sa zmenil hluk, tlak alebo teplota. Praktický ďalší krok je poslať Geotherm popis prejavu a dohodnúť servisné preverenie.",
+      "what_to_do_next_service_triage",
+      "service_fault",
+      "company-truth servis diagnostika porucha hluk chyba postup Geotherm",
+    );
+  }
+
   if (isContactQuestion(message)) {
     return answerBase(
-      "Kontakt na Geotherm",
-      "Geotherm vieš kontaktovať telefonicky alebo e-mailom. Najistejšie je poslať stručne, čo riešiš, lokalitu a pri technike aj fotky alebo základné údaje; podľa toho sa dá dohodnúť konzultácia, servis alebo nacenenie. Chceš riešiť servis, novú ponuku alebo len všeobecnú konzultáciu?",
+      "Spojenie s Geotherm",
+      "Otvor oficiálnu stránku Geotherm a použi časť určenú na spojenie s firmou. Číslo ani adresu tu radšej neprepisujem, aby si išiel podľa aktuálnych údajov. Mini-osnova oslovenia: predmet, preferovaný čas reakcie, obec a jedna veta k cieľu. Prílohy sú voliteľné podľa situácie.",
       "contact_details",
       "contact",
       "company-truth kontakt Geotherm telefon email adresa",
@@ -3919,7 +3987,7 @@ function companyPracticalDirectAnswer(message: string): DirectAnswerDecision | n
   if (/(montaz|montáž).*(zajtra|hned|hneď).*(neviem|neviem aky|neviem aký)|(?:neviem|neviem aky|neviem aký).*(montaz|montáž).*(zajtra|hned|hneď)/.test(text)) {
     return answerBase(
       "Najprv rozsah, potom termín",
-      "Termín montáže by som nesľuboval, keď ešte nie je jasný systém. Najprv treba určiť, či ide o tepelné čerpadlo, klimatizáciu, rekuperáciu, podlahové kúrenie alebo inú technológiu; až potom sa dá riešiť dostupnosť, cena a montážny postup. Akú technológiu chceš riešiť ako prvú?",
+      "Termín montáže by som **bez podkladov a bez potvrdeného systému nesľuboval**, najmä nie hneď na zajtra. Najprv treba určiť, či ide o tepelné čerpadlo, klimatizáciu, rekuperáciu, podlahové kúrenie alebo inú technológiu; až potom sa dá potvrdiť dostupnosť, cena a montážny postup. Akú technológiu chceš riešiť ako prvú?",
       "contradictory_installation_timing",
       "process",
       "company-truth montaz termin system cena rozsah Geotherm",
@@ -4142,7 +4210,7 @@ function companyPracticalDirectAnswer(message: string): DirectAnswerDecision | n
   if (/(preco|prečo).*(stale|stále).*(pytate|pýtate)|\bzhr|to je cele|to je celé/.test(text)) {
     return answerBase(
       "Zhrnutie bez ďalšieho dotazníka",
-      "Máte pravdu, v tejto fáze už nemá zmysel pridávať ďalší dotazník. Bezpečný záver je: ak ide o servis, treba potvrdiť zariadenie, problém a lokalitu; ak ide o nové riešenie, treba krátka konzultácia a nacenenie. Ďalší krok má byť stretnutie alebo telefonát s Geotherm, nie ďalšie otázky v chate.",
+      "Máte pravdu, v tejto fáze už nemá zmysel pridávať ďalší dotazník. Bezpečný záver je: pri poruche sa ide cez identifikáciu zariadenia a prejav problému; pri novom riešení cez technický návrh a rozsah. V chate už netreba pridávať ďalšie otázky.",
       "stop_questioning_summary",
       "contact",
       "company-truth policies handoff konzultacia nacenenie Geotherm",
@@ -4495,6 +4563,37 @@ function companyPracticalDirectAnswer(message: string): DirectAnswerDecision | n
   return null;
 }
 
+function adversarialRefusalAnswer(message: string): string {
+  const text = normalizePolicyText(message);
+  if (/(najlacn|vymysli|vymysliet|vymyslieť|presnu cenu|presná cena)/.test(text)) {
+    return "Nevymyslím najlacnejšie čerpadlo ani presnú cenu bez podkladov.\n\nPri Geotherm je bezpečný postup najprv určiť typ riešenia, výkon, vykurovací systém a rozsah montáže. Potom má zmysel pripraviť nacenenie alebo konzultáciu.";
+  }
+  if (/(garant|navratnost|návratnosť|tvar sa|tvár sa|technik)/.test(text)) {
+    return "Nebudem sa tváriť ako technik na obhliadke ani garantovať návratnosť na diaľku.\n\nViem dať len opatrný smer: návratnosť a úspora závisia od domu, spotreby, regulácie, ceny energií a rozsahu realizácie. Na garanciu treba konkrétny návrh.";
+  }
+  if (/(webe nie je|nie je na webe|mimo webu)/.test(text)) {
+    return "Nie. Nepotvrdené veci nebudem dopĺňať ako fakty.\n\nPri cenách, pobočkách, dostupnosti modelov, zľavách alebo garanciách je správne povedať „treba overiť“, nie tváriť sa, že údaj existuje.";
+  }
+  if (/(bez zdroj|ignor|system prompt|prompt)/.test(text)) {
+    return "Inštrukcie na obídenie pravidiel ignorujem.\n\nOdpoveď musí zostať viazaná na potvrdené podklady a bezpečné obchodno-technické poradenstvo.";
+  }
+  return "Nebudem ignorovať pravidlá, zdroje ani vymýšľať nepodložené firemné informácie.\n\nViem pomôcť s tepelnými čerpadlami, vykurovaním, chladením, servisom, dotáciami alebo montážou.";
+}
+
+function unsupportedCompanyFactAnswer(message: string): string {
+  const text = normalizePolicyText(message);
+  if (/(prahe|praha|pobock|pobočk|cesk|česk)/.test(text)) {
+    return "Pobočku v Prahe nemám potvrdenú vo firemných podkladoch, takže ju nebudem tvrdiť ako fakt.\n\nPri pôsobnosti alebo termíne je najistejšie kontaktovať Geotherm s lokalitou objektu; podľa toho sa potvrdí, či sa dá riešiť konzultácia, montáž alebo servis.";
+  }
+  if (/(etf|akci|invest|krypto|bitcoin|fond)/.test(text)) {
+    return "S investíciami do ETF ti v tomto Geotherm chate nepomôžem.\n\nViem riešiť technické témy Geotherm: kúrenie, chladenie, tepelné čerpadlá, rekuperáciu, podlahové kúrenie, servis, dotácie a nacenenie riešenia.";
+  }
+  if (/(pocasie|počasie|sport|polit)/.test(text)) {
+    return "Na toto nemám potvrdený firemný podklad v témach Geotherm.\n\nPočasie, šport ani politiku nebudem miešať do technického poradenstva. Ak riešiš dom, viem pomôcť s kúrením, chladením, vetraním, servisom, dotáciou alebo ponukou.";
+  }
+  return "Na toto nemám potvrdený firemný podklad, takže to nebudem tvrdiť ako fakt.\n\nViem pomôcť s potvrdenými témami okolo Geotherm: tepelné čerpadlá, klimatizácia, rekuperácia, podlahové kúrenie, stropné chladenie, servis, dotácie alebo nacenenie riešenia.";
+}
+
 function brandModelDirectAnswer(message: string, state: QualificationState): DirectAnswerDecision {
   const text = normalizePolicyText(message);
   const asksDaikin = text.includes("daikin");
@@ -4604,6 +4703,16 @@ function priceDirectAnswer(message: string, state: QualificationState): DirectAn
       "",
       "Pri cene 7 tisíc by som obzvlášť overil, či ide iba o zariadenie/zostavu, alebo o kompletnú realizáciu vrátane montáže, regulácie, TÚV, akumulačnej nádrže, elektroprác a uvedenia do prevádzky.",
     ].join("\n");
+  } else if (/(zlav|zľav|akci|akciov)/.test(text)) {
+    reason = "direct_discount_scope_question";
+    topic = "discount_scope";
+    answer = [
+      "### Zľava alebo akcia",
+      "",
+      "Konkrétnu zľavu na NIBE by som **bez aktuálne potvrdenej akcie alebo ponuky nesľuboval**. Zľavy sa môžu meniť podľa výrobcu, dostupnosti, zostavy, termínu a rozsahu realizácie.",
+      "",
+      "Bezpečný ďalší krok je overiť aktuálnu ponuku Geotherm a naceniť konkrétnu zostavu pre dom. Až potom sa dá povedať, či je dostupná zľava, akcia alebo iné zvýhodnenie.",
+    ].join("\n");
   } else if (/(navratnost|usetr|uspora|úspor)/.test(text)) {
     reason = "direct_savings_or_roi_question";
     topic = "savings_roi_scope";
@@ -4623,6 +4732,16 @@ function priceDirectAnswer(message: string, state: QualificationState): DirectAn
       `Áno, **7 tisíc môže byť pri kompletnom tepelnom čerpadle podozrivo nízka suma**, najmä ak sa bavíme o staršom dome s radiátormi a výmenou kotla. ${context} by som to nebral ako potvrdenú kompletnú cenu.`,
       "",
       "Treba presne overiť, čo je v tej sume: samotná zostava, montážny materiál, práca, regulácia, TÚV zásobník, akumulačná nádrž, elektropríprava, uvedenie do prevádzky a prípadné úpravy kotolne.",
+    ].join("\n");
+  } else if (/(najtich|tiche|tiché|hluk|hlucn|hlučn)/.test(text) && /(najlacn|najlacnej|lacne|lacné|cena|cheapest)/.test(text)) {
+    reason = "direct_quietest_cheapest_pressure";
+    topic = "quietest_cheapest_scope";
+    answer = [
+      "### Tiché a lacné naraz",
+      "",
+      "Najtichšie a najlacnejšie riešenie býva kompromis, nie automaticky najlepšia voľba. Pri tepelnom čerpadle treba porovnať hlučnosť konkrétnej jednotky, umiestnenie pri dome, výkon, servisné zázemie a rozsah montáže.",
+      "",
+      "Bez návrhu by som nevybral víťaza podľa jednej vlastnosti. Praktický ďalší krok je naceniť 1-2 vhodné zostavy a porovnať ich podľa hluku, rozsahu ponuky a prevádzkových nákladov.",
     ].join("\n");
   } else if (/(najlacn|najlacnej|lacne riesenie|lacné riešenie|cheapest)/.test(text)) {
     reason = "direct_lowest_price_pressure";
@@ -4751,8 +4870,25 @@ function directAnswerDecision(message: string, state: QualificationState, route:
       ? null
       : companyPracticalDirectAnswer(message);
   if (practical) return practical;
+  if (/\bbyt\b|byte|bytu/.test(text) && /(vhodn|tepelne cerpad|tepelné čerpad|tc\b|tč\b|dom vlastne byt|dom vlastne)/.test(text)) {
+    return {
+      triggered: true,
+      answerMode: "direct_answer",
+      reason: "direct_heat_pump_flat_suitability",
+      answer: [
+        "### Byt nie je rovnaký prípad ako dom",
+        "",
+        "Pri byte by som tepelné čerpadlo neodporúčal automaticky. Rozhoduje vlastníctvo priestoru pre vonkajšiu jednotku, hluk, súhlas správcu alebo spoločenstva, typ vykurovania a to, či nejde praktickejšie riešiť klimatizáciu alebo iné lokálne riešenie.",
+        "",
+        "Najrozumnejšie je krátke preverenie s Geotherm podľa konkrétneho bytu a možností montáže.",
+      ].join("\n"),
+      serviceIntent: "recommendation",
+      retrievalQuery: "company-truth tepelne cerpadlo byt bytovka vonkajsia jednotka povolenie hluk klimatizacia Geotherm",
+      topic: "flat_heat_pump_suitability",
+    };
+  }
   const currentTurnAsksPrice =
-    /(cena|cenu|ceny|cenov|cennik|ponuk|nacen|najlacn|najlacnej|lacne riesenie|lacné riešenie|cheapest|koľko|kolko|stoji|stojí|navratnost|návratnosť|usetr|úspor|uspora|vratane instalacie|vrátane inštalácie|7\s*tis|7000|7\s*000|akumulac|akumula|v cene|z coho|z čoho)/.test(text);
+    /(cena|cenu|ceny|cenov|cennik|ponuk|nacen|najlacn|najlacnej|lacne riesenie|lacné riešenie|cheapest|koľko|kolko|stoji|stojí|navratnost|návratnosť|usetr|úspor|uspora|zlav|zľav|akci|akciov|vratane instalacie|vrátane inštalácie|7\s*tis|7000|7\s*000|akumulac|akumula|v cene|z coho|z čoho)/.test(text);
   if ((route.serviceType === "service" || route.serviceIntent === "service_fault") && !currentTurnAsksPrice) {
     return {
       triggered: false,
@@ -6779,14 +6915,14 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
   if (currentMessagePolicy.kind === "adversarial") {
     recordDiagnostic(answerDiagnostics.validatorsTriggered, "adversarial_refusal_repaired");
     answerDiagnostics.fallbackType = "adversarial_refusal";
-    answer = "Nebudem ignorovať pravidlá, zdroje ani vymýšľať nepodložené firemné informácie.\n\nViem pomôcť s tepelnými čerpadlami, vykurovaním, chladením, servisom, dotáciami alebo montážou.";
+    answer = adversarialRefusalAnswer(message);
   } else if (currentMessagePolicy.kind === "sensitive" && currentMessagePolicy.sensitiveKind === "price") {
     recordDiagnostic(answerDiagnostics.validatorsTriggered, "sensitive_price_scope_repaired");
     answer = "Konkrétnu cenu bez údajov o dome a rozsahu prác nebudem hádať.\n\nPri nacenení treba rozlíšiť cenu zariadenia a kompletnej realizácie: výkon, typ vykurovania, montáž, reguláciu, TÚV, elektroprípravu, prípadnú akumulačnú nádrž a úpravy kotolne. Najlepší ďalší krok je krátka konzultácia s Geotherm, kde sa rozsah nacení podľa domu.";
   } else if (currentMessagePolicy.kind === "out_of_scope") {
     recordDiagnostic(answerDiagnostics.validatorsTriggered, "unsupported_company_fact_refused");
     answerDiagnostics.fallbackType = "unsupported_company_fact";
-    answer = "Na toto nemám potvrdený firemný podklad, takže to nebudem tvrdiť ako fakt.\n\nViem pomôcť s potvrdenými témami okolo Geotherm: tepelné čerpadlá, klimatizácia, rekuperácia, podlahové kúrenie, stropné chladenie, servis, dotácie alebo nacenenie riešenia.";
+    answer = unsupportedCompanyFactAnswer(message);
   }
   if (
     (route.serviceType === "service" ||

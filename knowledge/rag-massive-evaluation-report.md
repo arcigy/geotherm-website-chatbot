@@ -91,10 +91,10 @@ No warned massive cases.
 ## Long Conversation Summary
 - scenarios: 3
 - turns: 61
-- pass/warn/fail: 51/9/1
+- pass/warn/fail: 60/1/0
 - hallucinations: 0
 - contact aggression: 0
 - source degradation: 0
 
 ## Production Risk Assessment
-NEEDS WORK. The known hard tests may pass, but massive/noisy traffic still exposes retrieval, confidence or behavior risk.
+USABLE FOR INTERNAL TESTING ONLY. No critical incidents detected, but warnings need manual review before client deployment.

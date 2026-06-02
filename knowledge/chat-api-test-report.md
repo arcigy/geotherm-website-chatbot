@@ -1,7 +1,7 @@
 # Chat API Test Report
 
 Endpoint: `POST /chat`
-Generated: 2026-06-01T23:33:28.007Z
+Generated: 2026-06-02T01:05:34.333Z
 
 ## Summary
 
@@ -24,6 +24,6 @@ Generated: 2026-06-01T23:33:28.007Z
 
 ## Fallback Check
 
-Na toto nemám potvrdený firemný podklad, takže to nebudem tvrdiť ako fakt.
+Na toto nemám potvrdený firemný podklad v témach Geotherm.
 
-Viem pomôcť s potvrdenými témami okolo Geotherm: tepelné čerpadlá, klimatizácia, rekuperácia, podlahové kúrenie, stropné chladenie, servis, dotácie alebo nacenenie riešenia.
+Počasie, šport ani politiku nebudem miešať do technického poradenstva. Ak riešiš dom, viem pomôcť s kúrením, chladením, vetraním, servisom, dotáciou alebo ponukou.
