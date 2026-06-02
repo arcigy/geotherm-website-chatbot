@@ -8571,9 +8571,9 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     recordDiagnostic(answerDiagnostics.validatorsTriggered, "followup_questions_limited");
   }
   answer = softenOverconfidentWording(answer, answerDiagnostics);
-  if (!route.needsRetrieval && (isPureSmallTalkMessage(message) || isLooseSmallTalkMessage(message))) {
-    answer = compactPureSmallTalkAnswer(answer, message);
-    recordDiagnostic(answerDiagnostics.validatorsTriggered, "pure_small_talk_final_compacted");
+  if (shouldHardClampSmallTalk(message) || (!route.needsRetrieval && (isPureSmallTalkMessage(message) || isLooseSmallTalkMessage(message)))) {
+    answer = pureSmallTalkFallback(message).shortAnswer;
+    recordDiagnostic(answerDiagnostics.validatorsTriggered, "pure_small_talk_final_hard_clamped");
   }
   const normalizedFinalAnswer = normalizePolicyText(answer);
   const responseConfidenceBase: "high" | "medium" | "low" = currentMessagePolicy.kind === "adversarial" || currentMessagePolicy.kind === "out_of_scope"
