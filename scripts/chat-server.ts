@@ -6861,6 +6861,15 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
       directAnswerFallbackUsed = true;
     }
   }
+  if (directDecision.triggered && directDecision.topic === "price_basis") {
+    const normalized = normalizePolicyText(answer);
+    const hasScope =
+      /cena zariadenia|samotne tepelne cerpadlo|kompletnej realizacie|kompletna realizacia|co presne ponuka obsahuje|co presne obsahuje/.test(normalized);
+    if (!hasScope) {
+      recordDiagnostic(answerDiagnostics.validatorsTriggered, "price_basis_scope_repaired");
+      answer = `${answer.trim()}\n\nInak povedané, treba rozlíšiť **cenu zariadenia** a cenu **kompletnej realizácie**: čo presne ponuka obsahuje, čo je príplatok a čo sa musí naceniť samostatne.`;
+    }
+  }
   if (
     directDecision.triggered &&
     directDecision.answerMode === "price_answer" &&

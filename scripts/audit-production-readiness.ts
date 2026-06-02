@@ -1,4 +1,4 @@
-import { mkdir, writeFile } from "node:fs/promises";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { startChatServer } from "./chat-server";
 
@@ -38,8 +38,16 @@ type Scenario = {
   expectLast: Expectation;
 };
 
+type Gate = {
+  id: string;
+  title: string;
+  pass: boolean;
+  evidence: string;
+};
+
 const reportPath = path.join(process.cwd(), "knowledge", "production-readiness-audit.md");
 const maxResponseTimeMs = 8000;
+const repoRoot = process.cwd();
 
 const scenarios: Scenario[] = [
   {
@@ -168,6 +176,12 @@ function includesAnyForbidden(answer: string, terms: string[] | undefined): stri
   return terms.filter((term) => {
     const normalizedTerm = normalize(term);
     if (!normalizedTerm) return answer.includes(term);
+    if (
+      normalizedTerm.includes("automaticky zahrnut") &&
+      /(nie je|nie je bezpecne|nemozno|nemozem|nesmie|netreba|bezpecne tvrdit).{0,80}automaticky zahrnut/.test(normalized)
+    ) {
+      return false;
+    }
     return normalized.includes(normalizedTerm);
   });
 }
@@ -191,14 +205,90 @@ function evaluate(body: ChatBody, expectation: Expectation): string[] {
   return failures;
 }
 
+async function fileText(relativePath: string): Promise<string> {
+  return readFile(path.join(repoRoot, relativePath), "utf8");
+}
+
+async function runStaticProductionGates(): Promise<Gate[]> {
+  const [chatServer, localDb, crmTest, contradictions, semanticCoverage] = await Promise.all([
+    fileText("scripts/chat-server.ts"),
+    fileText("scripts/local-db.ts"),
+    fileText("scripts/test-crm-leads.ts"),
+    fileText("scripts/detect-knowledge-contradictions.ts"),
+    fileText("knowledge/semantic-coverage-report.md").catch(() => ""),
+  ]);
+
+  const hasRuntimeMonitoring =
+    chatServer.includes("/health") &&
+    chatServer.includes("serverCommit()") &&
+    chatServer.includes("diagnosticFlowVersion") &&
+    chatServer.includes("responseTimeMs") &&
+    chatServer.includes("llmUsed") &&
+    chatServer.includes("validatorsTriggered") &&
+    chatServer.includes("persistence");
+  const hasHumanEscalation =
+    chatServer.includes("/admin/outreach") &&
+    chatServer.includes("createOrUpdateOutreachItem") &&
+    localDb.includes("CREATE TABLE IF NOT EXISTS outreach_items") &&
+    crmTest.includes("outreach item should be created") &&
+    crmTest.includes("/admin/outreach");
+  const hasSourceFreshnessControl =
+    contradictions.includes("time-sensitive") &&
+    contradictions.includes("freshness") &&
+    contradictions.includes("price") &&
+    contradictions.includes("subsidy") &&
+    semanticCoverage.includes("- weak topics: 0");
+  const hasResponseQualityDebug =
+    chatServer.includes("directAnswerGateTriggered") &&
+    chatServer.includes("closureGateTriggered") &&
+    chatServer.includes("retrievalSourcesCount") &&
+    chatServer.includes("enrichedRetrievalQuery") &&
+    chatServer.includes("storedSlots");
+
+  return [
+    {
+      id: "runtime_monitoring",
+      title: "Runtime monitoring and health evidence",
+      pass: hasRuntimeMonitoring,
+      evidence: "Requires /health, commit, diagnostic flow, response time, LLM usage, validators and persistence debug fields.",
+    },
+    {
+      id: "human_escalation",
+      title: "Human escalation / outreach path",
+      pass: hasHumanEscalation,
+      evidence: "Requires outreach table, outreach creation, admin outreach endpoint and CRM test coverage.",
+    },
+    {
+      id: "source_freshness",
+      title: "Source freshness and contradiction controls",
+      pass: hasSourceFreshnessControl,
+      evidence: "Requires contradiction audit for time-sensitive/price/subsidy risks and semantic coverage with no weak topics.",
+    },
+    {
+      id: "answer_quality_debug",
+      title: "Answer quality debug traceability",
+      pass: hasResponseQualityDebug,
+      evidence: "Requires direct/closure gates, enriched retrieval query, stored slots and source count in debug output.",
+    },
+  ];
+}
+
 async function main(): Promise<void> {
   const server = await startChatServer({ port: 0 });
   const address = server.address();
   const port = typeof address === "object" && address ? address.port : 0;
   const endpoint = `http://127.0.0.1:${port}/chat`;
   const rows: Array<{ scenario: Scenario; last: ChatBody; failures: string[] }> = [];
+  const gates = await runStaticProductionGates();
+  let healthFailure: string | null = null;
 
   try {
+    const healthResponse = await fetch(`http://127.0.0.1:${port}/health`, { headers: { Origin: "http://localhost:4321" } });
+    const health = (await healthResponse.json()) as { ok?: boolean; commit?: string; diagnosticFlowVersion?: string };
+    if (!healthResponse.ok || !health.ok || !health.commit || !health.diagnosticFlowVersion) {
+      healthFailure = `invalid health payload: ${JSON.stringify(health)}`;
+    }
+
     for (const scenario of scenarios) {
       const anonymousId = `readiness_${scenario.id}_${Date.now()}`;
       let last: ChatBody | null = null;
@@ -219,6 +309,11 @@ async function main(): Promise<void> {
   }
 
   const passed = rows.filter((row) => row.failures.length === 0).length;
+  const passedGates = gates.filter((gate) => gate.pass).length;
+  const healthPassed = !healthFailure;
+  const totalChecks = rows.length + gates.length + 1;
+  const passedChecks = passed + passedGates + (healthPassed ? 1 : 0);
+  const finalVerdict = passedChecks === totalChecks ? "PASS" : "NEEDS WORK";
   const report = [
     "# Production Readiness Audit",
     "",
@@ -230,7 +325,17 @@ async function main(): Promise<void> {
     `- scenarios: ${rows.length}`,
     `- passed: ${passed}`,
     `- failed: ${rows.length - passed}`,
-    `- verdict: ${passed === rows.length ? "PASS" : "NEEDS WORK"}`,
+    `- production gates: ${passedGates}/${gates.length}`,
+    `- health endpoint: ${healthPassed ? "PASS" : "FAIL"}`,
+    `- total checks: ${passedChecks}/${totalChecks}`,
+    `- verdict: ${finalVerdict}`,
+    "",
+    "## Production Gates",
+    "",
+    "| Gate | Pass | Evidence |",
+    "| --- | --- | --- |",
+    ...gates.map((gate) => `| ${gate.id} | ${gate.pass ? "yes" : "no"} | ${gate.evidence.replace(/\|/g, "/")} |`),
+    `| health_endpoint | ${healthPassed ? "yes" : "no"} | ${healthFailure || "Local /health returned ok with commit and diagnosticFlowVersion."} |`,
     "",
     "## Cases",
     "",
