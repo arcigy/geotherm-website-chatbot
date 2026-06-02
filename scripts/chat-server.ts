@@ -2205,6 +2205,14 @@ function shouldHardClampSmallTalk(message: string): boolean {
     /^(ako sa mas|ako sa mate|ako sa ma|ako sa m)$/.test(text);
 }
 
+function shouldApiClampSmallTalk(message: string): boolean {
+  const raw = String(message || "").toLowerCase();
+  const text = normalizePolicyText(raw);
+  if (text.length > 80) return false;
+  if (/(tč|\btc\b|tepel|cerpad|klimatiz|rekuper|servis|dotac|cena|kontakt|montaz|kuren|chladen|vykurov|kotol|radiator|podlah|nibe|vaillant)/i.test(raw) || /(tc|tepel|cerpad|klimatiz|rekuper|servis|dotac|cena|kontakt|montaz|kuren|chladen|vykurov|kotol|radiator|podlah|nibe|vaillant)/.test(text)) return false;
+  return /(ahoj|cau|čau|hello|hi|hey|dobry den|dobrý deň|zdravim|zdravím|ako sa m)/i.test(raw) || /(ahoj|cau|hello|hi|hey|dobry den|zdravim|ako sa m)/.test(text);
+}
+
 function pureSmallTalkFallback(message: string): StructuredAnswer {
   const text = normalizePolicyText(message);
   const shortAnswer =
@@ -9705,7 +9713,7 @@ export async function startChatServer(options: StartOptions = {}): Promise<Serve
 
       const chatResponse = await createChatResponse(body, knowledgePath);
       if (
-        shouldHardClampSmallTalk(body.message || "") &&
+        shouldApiClampSmallTalk(body.message || "") &&
         chatResponse.sources.length === 0 &&
         chatResponse.debug?.llmUsed
       ) {
