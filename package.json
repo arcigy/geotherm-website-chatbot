@@ -46,6 +46,7 @@
     "audit:small-talk-surface": "tsx scripts/audit-small-talk-surface.ts",
     "audit:hallucination-guardrails": "tsx scripts/audit-hallucination-guardrails.ts",
     "audit:operational-guardrails": "tsx scripts/audit-operational-guardrails.ts",
+    "audit:sales-feedback": "tsx scripts/audit-sales-feedback.ts",
     "preview:embed": "vite dist-embed --host 127.0.0.1 --port 4321",
     "test:embed-ui": "tsx scripts/test-embed-ui.ts",
     "analyze:manual-transcript": "tsx scripts/analyze-debug-transcript.ts",

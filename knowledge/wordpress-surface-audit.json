@@ -14,8 +14,8 @@
       ],
       "url": "http://www.geotherm.sk/pravidelny-servis-tepelneho-cerpadla-preco-sa-oplati-a-preco-ho-neodkladat/"
     },
-    "answer": "### Servisný smer\n\nRozumiem, zariadenie hlási chybu. Pri poruche by som neradil žiadny svojpomocný zásah do zariadenia; najprv treba zistiť presný model, chybový kód a lokalitu, aby sa dalo posúdiť, či ide o servisný zásah a aký postup je bezpečný.\n\nPri zariadeniach montovaných inou firmou treba dostupnosť servisu potvrdiť podľa značky a prípadu.\n\nPošli mi prosím model alebo fotku štítku, chybový kód z displeja a mesto, kde je zariadenie.\n\nIde o existujúce zariadenie s poruchou, pravidelný servis, alebo zvažuješ výmenu za nové riešenie?",
-    "ms": 3005,
+    "answer": "### Servisný smer\n\nRozumiem, zariadenie hlási chybu. Pri poruche by som neradil žiadny svojpomocný zásah do zariadenia; najprv treba zistiť presný model, chybový kód a lokalitu, aby sa dalo posúdiť, či ide o servisný zásah a aký postup je bezpečný.\n\nPri zariadeniach montovaných inou firmou treba dostupnosť servisu potvrdiť podľa značky a prípadu.\n\nPošlite mi prosím model alebo fotku štítku, chybový kód z displeja a mesto, kde je zariadenie.\n\nIde o existujúce zariadenie s poruchou, pravidelný servis, alebo zvažujete výmenu za nové riešenie?",
+    "ms": 2762,
     "llmUsed": true,
     "mode": "service_fault_triage",
     "service": "service",
@@ -35,8 +35,8 @@
       ],
       "url": "http://www.geotherm.sk/tepelne-cerpadlo-komfort-v-dome/"
     },
-    "answer": "### Tepelné čerpadlo pre komfort v dome\n\nTepelné čerpadlo môže byť dobrý základ komfortného vykurovania domu, hlavne ak je správne navrhnuté spolu s vykurovacou sústavou, teplou vodou, reguláciou a servisom. Predbežný smer je často vzduch-voda, ale pri staršom dome s radiátormi treba overiť teplotu vody a výkon radiátorov. Ak chceš riešiť konkrétnu ponuku, najlepší ďalší krok je krátka konzultácia s Geotherm podľa typu domu, plochy a vykurovania.",
-    "ms": 2273,
+    "answer": "### Tepelné čerpadlo pre komfort v dome\n\nTepelné čerpadlo môže byť dobrý základ komfortného vykurovania domu, hlavne ak je správne navrhnuté spolu s vykurovacou sústavou, teplou vodou, reguláciou a servisom. Predbežný smer je často vzduch-voda, ale pri staršom dome s radiátormi treba overiť teplotu vody a výkon radiátorov. Ak chcete riešiť konkrétnu ponuku, najlepší ďalší krok je krátka konzultácia s Geotherm podľa typu domu, plochy a vykurovania.",
+    "ms": 2157,
     "llmUsed": true,
     "mode": "direct_answer",
     "service": "heat_pump",
@@ -57,7 +57,7 @@
       "url": "http://www.geotherm.sk/komfortne-vykurovanie-pre-mladu-rodinu/"
     },
     "answer": "### Komfortné vykurovanie\n\nKomfortné vykurovanie pre rodinný dom sa má riešiť ako celý systém: zdroj tepla, podlahové kúrenie alebo radiátory, regulácia, teplá voda a servis. Predbežne môže dávať zmysel tepelné čerpadlo vzduch-voda, najmä pri novostavbe alebo nízkoteplotnom vykurovaní. Pri konkrétnej rodine a dome by som už smer presunul na konzultáciu a nacenenie podľa plochy, vykurovania a požiadaviek na TÚV.",
-    "ms": 2511,
+    "ms": 2487,
     "llmUsed": true,
     "mode": "direct_answer",
     "service": "heat_pump",
@@ -78,7 +78,7 @@
       "url": "http://www.geotherm.sk/tepelne-cerpadlo-vzduch-voda-rychly-prehlad/"
     },
     "answer": "### Tepelné čerpadlo vzduch-voda\n\nTepelné čerpadlo vzduch-voda je najčastejší smer pri rodinných domoch, lebo nepotrebuje vrt ani plošný kolektor a vie riešiť kúrenie aj teplú vodu. Pri novostavbe s podlahovkou býva veľmi vhodné; pri staršom dome s radiátormi treba overiť výkon radiátorov a potrebnú teplotu vody. Konkrétnu zostavu by som riešil cez konzultáciu a nacenenie.",
-    "ms": 2398,
+    "ms": 2361,
     "llmUsed": true,
     "mode": "direct_answer",
     "service": "heat_pump",
@@ -98,7 +98,7 @@
       "url": "http://www.geotherm.sk/instalacia-podlahoveho-kurenia-bratislava/"
     },
     "answer": "### Podlahové vykurovanie\n\nPodlahové vykurovanie je nízkoteplotný systém, ktorý sa dobre kombinuje s tepelným čerpadlom a správnou reguláciou. Pri nacenení alebo nastavení rozhoduje plocha, skladba podlahy, rozdeľovače, zdroj tepla a to, či ide o novostavbu alebo rekonštrukciu. Praktický ďalší krok je konzultácia alebo nacenenie podľa plochy, projektu a fotiek rozdeľovača.\n\nJasné, ďalší krok je, aby sa vám vedel ozvať technik alebo obchodník a dohodol postup. Pošlite prosím telefón alebo e-mail, prípadne aj meno. Kontakt použijeme iba na spätné ozvanie k tomuto dopytu.",
-    "ms": 2462,
+    "ms": 2115,
     "llmUsed": true,
     "mode": "direct_answer",
     "service": "floor_heating",
@@ -118,8 +118,8 @@
       ],
       "url": "http://www.geotherm.sk/ako-rozmyslat-nad-znackou-cenou-a-dodavatelom-tepelneho-cerpadla/"
     },
-    "answer": "### Výber tepelného čerpadla\n\nPri výbere **tepelného čerpadla** sa môžeme zamerať na značky ako **NIBE a Vaillant**. Pri výbere konkrétneho modelu je dôležité zohľadniť potreby vášho domu, či ide o novostavbu alebo starší dom, a či preferujete radiátory alebo **podlahové kúrenie**. Taktiež je vhodné zvážiť potrebu **rekuperácie** alebo **klimatizácie**. Finálny výber závisí od návrhu systému, ktorý zohľadní požadovaný výkon a ďalšie špecifické požiadavky.",
-    "ms": 2159,
+    "answer": "### Výber tepelného čerpadla\n\nPri výbere **tepelného čerpadla** sa môžeme zamerať na značky **NIBE a Vaillant**. Pri výbere konkrétneho modelu je dôležité zohľadniť potreby vášho domu, ako je typ vykurovania (radiátory, **podlahové kúrenie**) a požiadavky na teplú vodu. Tieto faktory ovplyvnia potrebný výkon a celkové riešenie. Zvážte aj možnosti **rekuperácie** a **klimatizácie** pre optimálne vnútorné prostredie.",
+    "ms": 2311,
     "llmUsed": true,
     "mode": "brand_model_answer",
     "service": "heat_pump",
@@ -140,7 +140,7 @@
       "url": "http://www.geotherm.sk/ako-sa-rozhodnut-pre-spravne-tepelne-cerpadlo-vzduch-voda/"
     },
     "answer": "### Tepelné čerpadlo vzduch-voda\n\nTepelné čerpadlo vzduch-voda je najčastejší smer pri rodinných domoch, lebo nepotrebuje vrt ani plošný kolektor a vie riešiť kúrenie aj teplú vodu. Pri novostavbe s podlahovkou býva veľmi vhodné; pri staršom dome s radiátormi treba overiť výkon radiátorov a potrebnú teplotu vody. Konkrétnu zostavu by som riešil cez konzultáciu a nacenenie.",
-    "ms": 2331,
+    "ms": 2451,
     "llmUsed": true,
     "mode": "direct_answer",
     "service": "heat_pump",
@@ -161,7 +161,7 @@
       "url": "http://www.geotherm.sk/ako-vybrat-a-namontovat-najvhodnejsie-tepelne-cerpadlo/"
     },
     "answer": "### Výber a montáž tepelného čerpadla\n\nNajvhodnejšie tepelné čerpadlo sa nevyberá iba podľa značky, ale podľa domu, vykurovacej sústavy, teplej vody, umiestnenia jednotky a montáže. Predbežne sa pri rodinných domoch často rieši vzduch-voda; pri novostavbe s podlahovkou je to nízkoteplotný systém, pri staršom dome s radiátormi treba overiť potrebnú teplotu vody. Praktický ďalší krok je konzultácia s Geotherm a nacenenie kompletnej zostavy od návrhu po montáž.",
-    "ms": 2296,
+    "ms": 2434,
     "llmUsed": true,
     "mode": "direct_answer",
     "service": "heat_pump",
@@ -182,7 +182,7 @@
       "url": "http://www.geotherm.sk/tepelne-cerpadla/instalacia-tepelneho-cerpadla/"
     },
     "answer": "### Inštalácia tepelného čerpadla\n\nInštalácia tepelného čerpadla má začať návrhom, nie iba výberom jednotky. Treba overiť výkon pre dom, vykurovaciu sústavu, TÚV, umiestnenie vonkajšej jednotky, elektroprípravu, hydrauliku, montáž a uvedenie do prevádzky. Geotherm vie pripraviť kompletný postup od návrhu po realizáciu; konkrétnu zostavu a cenu by som riešil cez konzultáciu a nacenenie.",
-    "ms": 2224,
+    "ms": 6288,
     "llmUsed": true,
     "mode": "direct_answer",
     "service": "heat_pump",
@@ -202,8 +202,8 @@
       ],
       "url": "http://www.geotherm.sk/tepelne-cerpadlo-vybera-odbornik/"
     },
-    "answer": "### Predbežný smer\n\nNajčastejšie sa pri rodinných domoch začína pri tepelnom čerpadle **vzduch-voda**. Ak ide o novostavbu s podlahovým kúrením, býva to veľmi vhodný smer; pri staršom dome s radiátormi treba najprv overiť potrebnú teplotu vody a výkon radiátorov.\n\nAby som ťa zaradil správne, napíš mi:\n1. je to novostavba alebo starší dom.\n2. koľko m2 chceš vykurovať.\n3. máš radiátory alebo podlahové kúrenie?",
-    "ms": 2559,
+    "answer": "### Tepelné čerpadlo vyberá odborník\n\nTepelné čerpadlo je lepšie vyberať ako celý systém, nie iba podľa značky alebo výkonu z katalógu. Odborník musí zohľadniť dom, tepelnú stratu alebo aspoň plochu a stav zateplenia, radiátory alebo podlahovku, teplú vodu, reguláciu a montážne možnosti. Geotherm vie určiť predbežný smer v chate, ale konkrétnu zostavu má zmysel potvrdiť na konzultácii a nacenení.",
+    "ms": 3425,
     "llmUsed": true,
     "mode": "direct_answer",
     "service": "heat_pump",
@@ -224,7 +224,7 @@
       "url": "http://www.geotherm.sk/tepelne-cerpadlo-vzduch-voda-skusenosti/"
     },
     "answer": "### Tepelné čerpadlo vzduch-voda\n\nTepelné čerpadlo vzduch-voda je najčastejší smer pri rodinných domoch, lebo nepotrebuje vrt ani plošný kolektor a vie riešiť kúrenie aj teplú vodu. Pri novostavbe s podlahovkou býva veľmi vhodné; pri staršom dome s radiátormi treba overiť výkon radiátorov a potrebnú teplotu vody. Konkrétnu zostavu by som riešil cez konzultáciu a nacenenie.",
-    "ms": 2035,
+    "ms": 2971,
     "llmUsed": true,
     "mode": "direct_answer",
     "service": "heat_pump",
@@ -246,7 +246,7 @@
       "url": "http://www.geotherm.sk/o-nas/plan-obnovy/"
     },
     "answer": "### Plán obnovy\n\nPri Pláne obnovy by som to nebral ako bežné nacenenie zariadenia. Najprv treba overiť, či konkrétny dom, technológia a aktuálne pravidlá spĺňajú podmienky podpory alebo dotácie. Bez overenia by som nesľuboval nárok, výšku podpory ani odpočet z ceny. Praktický ďalší krok je konzultácia s Geotherm: preveriť podmienky, potom pripraviť vhodný návrh a až následne nacenenie.",
-    "ms": 2494,
+    "ms": 3498,
     "llmUsed": true,
     "mode": "direct_answer",
     "service": "subsidy",
@@ -266,12 +266,12 @@
       ],
       "url": "http://www.geotherm.sk/tepelne-cerpadlo-zivotnost-spolahlivost/"
     },
-    "answer": "### Predbežný smer\n\nNajčastejšie sa pri rodinných domoch začína pri tepelnom čerpadle **vzduch-voda**. Ak ide o novostavbu s podlahovým kúrením, býva to veľmi vhodný smer; pri staršom dome s radiátormi treba najprv overiť potrebnú teplotu vody a výkon radiátorov.\n\nAby som ťa zaradil správne, napíš mi:\n1. je to novostavba alebo starší dom.\n2. koľko m2 chceš vykurovať.\n3. máš radiátory alebo podlahové kúrenie?",
-    "ms": 3131,
+    "answer": "Spoľahlivosť tepelného čerpadla závisí od správneho návrhu, odbornej montáže a pravidelného servisu. Pri kvalitnom zariadení a údržbe môžete očakávať dlhodobú prevádzku.\n\nPre výber vhodnej značky a zostavy pre váš dom by bolo ideálne poznať typ domu (novostavba/rekonštrukcia), jeho plochu a typ vykurovania (radiátory/podlahové kúrenie).",
+    "ms": 2466,
     "llmUsed": true,
-    "mode": "qualification_question",
+    "mode": "direct_answer",
     "service": "heat_pump",
-    "intent": "recommendation",
+    "intent": "process",
     "sources": 3,
     "failures": []
   },
@@ -287,8 +287,8 @@
       ],
       "url": "http://www.geotherm.sk/o-nas/nase-vykurovanie-v-casopisoch/"
     },
-    "answer": "### Referencie a ukážky vykurovania\n\nTému vykurovania v časopisoch by som bral ako referencie alebo ukážky realizácií, často aj pri riešeniach s tepelným čerpadlom, nie ako technický návrh pre konkrétny dom. Môže pomôcť na inšpiráciu, ale vhodné tepelné čerpadlo alebo iný zdroj vykurovania sa vyberá podľa domu, výkonu, teplej vody a rozsahu montáže. Ak chceš reálne nacenenie, najlepší krok je krátka konzultácia podľa typu domu a fotiek alebo projektu.",
-    "ms": 2516,
+    "answer": "### Referencie a ukážky vykurovania\n\nTému vykurovania v časopisoch by som bral ako referencie alebo ukážky realizácií, často aj pri riešeniach s tepelným čerpadlom, nie ako technický návrh pre konkrétny dom. Môže pomôcť na inšpiráciu, ale vhodné tepelné čerpadlo alebo iný zdroj vykurovania sa vyberá podľa domu, výkonu, teplej vody a rozsahu montáže. Ak chcete reálne nacenenie, najlepší krok je krátka konzultácia podľa typu domu a fotiek alebo projektu.",
+    "ms": 4306,
     "llmUsed": true,
     "mode": "direct_answer",
     "service": "heat_pump",
@@ -309,7 +309,7 @@
       "url": "http://www.geotherm.sk/tepelne-cerpadla/drazice-argo/"
     },
     "answer": "### Dražice ARGO\n\nDražice ARGO by som bral ako konkrétnu produktovú tému, ktorú treba overiť podľa aktuálnej ponuky a vhodnosti pre dom. Bez technického návrhu by som nesľuboval konkrétny model ani parametre. Ak cieľom je tepelné čerpadlo alebo ohrev vody, najlepší ďalší krok je konzultácia s Geotherm: typ domu, plocha, vykurovanie, TÚV a požadovaný rozsah montáže.",
-    "ms": 2413,
+    "ms": 2366,
     "llmUsed": true,
     "mode": "direct_answer",
     "service": "heat_pump",
@@ -330,8 +330,8 @@
       ],
       "url": "http://www.geotherm.sk/zelena-podnikom-dotacie-oze/"
     },
-    "answer": "### Dotácie na obnoviteľné zdroje energie\n\nÁno, radi vám pomôžeme s dotáciami na obnoviteľné zdroje energie. V rámci našich služieb môžeme pomôcť s overením podmienok a prípravou ďalšieho postupu.\n\nNaše riešenia, ako napríklad tepelné čerpadlá, rekuperácia, klimatizácia či podlahové kúrenie, môžu byť vhodnými kandidátmi na získanie podpory.\n\nPre konkrétne informácie o vašej situácii a možnostiach podpory odporúčame dohodnúť si krátku konzultáciu.",
-    "ms": 2327,
+    "answer": "### Dotácie na OZE pre podniky\n\nÁno, radi vám pomôžeme s dotáciami na obnoviteľné zdroje energie (OZE) pre váš podnik.Bez posúdenia domu, návrhu a aktuálnych podmienok by som negarantoval cenu, dotáciu, úsporu ani návratnosť.\n\nSpoločnosť Geotherm vám môže pomôcť s overením podmienok a prípravou ďalšieho postupu. Ponúkame konzultácie a návrhy riešení, ktoré môžu zahŕňať napríklad tepelné čerpadlá, rekuperáciu, klimatizáciu či podlahové kúrenie.\n\nNajlepším ďalším krokom je krátka konzultácia alebo priamy kontakt na preverenie vašej žiadosti o dotáciu a nacenenie vhodného riešenia.",
+    "ms": 2381,
     "llmUsed": true,
     "mode": "direct_answer",
     "service": "subsidy",
@@ -355,7 +355,7 @@
       "url": "http://www.geotherm.sk/fotovoltaika/"
     },
     "answer": "### Fotovoltika\n\nPri **fotovoltike** knowledge Geotherm obsahuje podklady a riešenia v súvislosti s technológiami domu. Pri napojení k tepelnému čerpadlu treba potvrdiť konkrétny rozsah: výkon, menič, prepojenie s reguláciou, prípravu elektro, dotáciu, očakávanú cenu/náklady a cieľ využitia energie. Najlepší ďalší krok je konzultácia alebo ponuka podľa domu a existujúcej techniky; servis a údržbu treba riešiť podľa konkrétneho zariadenia.",
-    "ms": 2153,
+    "ms": 2434,
     "llmUsed": true,
     "mode": "direct_answer",
     "service": "unknown",
@@ -376,7 +376,7 @@
       "url": "http://www.geotherm.sk/referencie/komplexne-vykurovanie-vetranie-chladenie/"
     },
     "answer": "### Rekuperácia\n\nRekuperácia rieši riadené vetranie s výmenou vzduchu bez bežného otvárania okien. Pri dome dáva najväčší zmysel navrhnúť centrálnu rekuperáciu spolu s rozvodmi, jednotkou, filtrami, odťahom z kúpeľní/kuchyne a prívodom čerstvého vzduchu do obytných miestností. Pre nacenenie treba vedieť, či ide o novostavbu alebo rekonštrukciu, približnú plochu a či sa má vetrať celý dom.",
-    "ms": 2568,
+    "ms": 2311,
     "llmUsed": true,
     "mode": "direct_answer",
     "service": "heat_recovery",
@@ -399,8 +399,8 @@
       ],
       "url": "http://www.geotherm.sk/solarne-systemy/vaillant/zostavy-tlakove-s-300-l-2000-l-zasobnikom/"
     },
-    "answer": "### Solárne zostavy a zásobníky\n\nPri tlakových solárnych zostavách alebo zásobníkoch nejde o poruchu tlaku v kúrení, ale o zostavu pre ohrev vody alebo solárne riešenie. Treba overiť typ kolektorov, objem zásobníka, napojenie na existujúci zdroj a rozsah montáže. Bez konkrétnej zostavy by som nepotvrdil cenu ani dostupnosť; vhodný ďalší krok je konzultácia a nacenenie podľa objektu.\n\nIde o existujúce zariadenie s poruchou, pravidelný servis, alebo zvažuješ výmenu za nové riešenie?",
-    "ms": 2474,
+    "answer": "### Solárne zostavy a zásobníky\n\nPri tlakových solárnych zostavách alebo zásobníkoch nejde o poruchu tlaku v kúrení, ale o zostavu pre ohrev vody alebo solárne riešenie. Treba overiť typ kolektorov, objem zásobníka, napojenie na existujúci zdroj a rozsah montáže. Bez konkrétnej zostavy by som nepotvrdil cenu ani dostupnosť; vhodný ďalší krok je konzultácia a nacenenie podľa objektu.\n\nIde o existujúce zariadenie s poruchou, pravidelný servis, alebo zvažujete výmenu za nové riešenie?",
+    "ms": 2180,
     "llmUsed": true,
     "mode": "direct_answer",
     "service": "service",
@@ -422,7 +422,7 @@
       "url": "http://www.geotherm.sk/dotacie-obnovitelne-zdroje/dotacia-na-rekonstrukciu-starsieho-rodinneho-domu/"
     },
     "answer": "### Dotácia pri rekonštrukcii\n\nPri rekonštrukcii alebo staršom rodinnom dome treba dotáciu najprv overiť podľa aktuálneho programu, stavu domu a navrhnutej technológie. Bez preverenia by som nesľuboval nárok, výšku podpory, odpočet z ceny ani kompletné vybavenie. Praktický ďalší krok je konzultácia s Geotherm: overiť podmienky, vybrať vhodné riešenie a pripraviť nacenenie.",
-    "ms": 2458,
+    "ms": 1992,
     "llmUsed": true,
     "mode": "direct_answer",
     "service": "subsidy",
@@ -441,8 +441,8 @@
       ],
       "url": "http://www.geotherm.sk/radiatory/dizajnove-radiatory/"
     },
-    "answer": "### Dizajnové radiátory\n\nDizajnové radiátory sú súčasťou vykurovacích systémov, ktoré riešime. Pri ich výbere alebo pri plánovaní novej inštalácie je dôležité zohľadniť niekoľko faktorov.\n\nJe potrebné overiť dostatočný výkon radiátorov vzhľadom na tepelné straty objektu a zvolený teplotný spád. Pri použití tepelného čerpadla je kľúčové, či radiátory dokážu efektívne vykurovať pri nižších prevádzkových teplotách vody. V niektorých prípadoch môže byť potrebná úprava alebo výmena vykurovacích telies.",
-    "ms": 2422,
+    "answer": "### Dizajnové radiátory\n\nDizajnové radiátory sú súčasťou vykurovacích systémov, ktoré riešime v Geotherme. Pri ich výbere alebo plánovaní je dôležité zohľadniť výkon, teplotný spád a typ zdroja tepla.\n\nAk uvažujete o tepelnom čerpadle, je potrebné overiť, či dizajnové radiátory dokážu zabezpečiť dostatočný komfort pri nižšej prevádzkovej teplote vody. V niektorých prípadoch môže byť potrebná úprava vykurovacích telies.",
+    "ms": 2177,
     "llmUsed": true,
     "mode": "direct_answer",
     "service": "heat_pump",
@@ -462,7 +462,7 @@
       "url": "http://www.geotherm.sk/podlahove-vykurovanie-a-chladenie/nastavenie-podlahoveho-vykurovania/"
     },
     "answer": "### Podlahové vykurovanie\n\nPodlahové vykurovanie je nízkoteplotný systém, ktorý sa dobre kombinuje s tepelným čerpadlom a správnou reguláciou. Pri nacenení alebo nastavení rozhoduje plocha, skladba podlahy, rozdeľovače, zdroj tepla a to, či ide o novostavbu alebo rekonštrukciu. Praktický ďalší krok je konzultácia alebo nacenenie podľa plochy, projektu a fotiek rozdeľovača.\n\nJasné, ďalší krok je, aby sa vám vedel ozvať technik alebo obchodník a dohodol postup. Pošlite prosím telefón alebo e-mail, prípadne aj meno. Kontakt použijeme iba na spätné ozvanie k tomuto dopytu.",
-    "ms": 2500,
+    "ms": 2262,
     "llmUsed": true,
     "mode": "direct_answer",
     "service": "floor_heating",
@@ -482,8 +482,8 @@
       ],
       "url": "http://www.geotherm.sk/rekuperacna-jednotka/priklady-instalacie-vetrania-s-rekuperaciou/"
     },
-    "answer": "### Predbežný smer\n\nAk staviaš dom a chceš lepší vzduch bez otvárania okien, predbežne dáva zmysel riešiť **rekuperáciu už v projekte**. Dôvod je, že pri novostavbe sa dajú správne navrhnúť rozvody, technická miestnosť, prívod čerstvého vzduchu aj odťah z kúpeľní a kuchyne.\n\nTypicky by sa riešila centrálna rekuperácia pre celý dom, ale treba overiť dispozíciu a priestor pre jednotku.\n\nMáš už projekt domu a chceš vetrať celý dom alebo len vybrané miestnosti?",
-    "ms": 3109,
+    "answer": "### Rekuperácia a Vetranie\n\nÁno, riešime inštaláciu vetrania s rekuperáciou. Tento systém zabezpečuje výmenu vzduchu v interiéri s minimálnymi tepelnými stratami, čím šetrí energiu a zlepšuje kvalitu vnútorného prostredia.\n\n**Typický rozsah:** Kompletná realizácia od návrhu až po montáž pre novostavby aj rekonštrukcie.\n\n**Ďalšie kroky:** Máte už vypracovaný projekt vetrania. Ide o celý dom alebo len vybrané miestnosti?",
+    "ms": 2067,
     "llmUsed": true,
     "mode": "rag_answer",
     "service": "heat_recovery",
@@ -505,7 +505,7 @@
       "url": "http://www.geotherm.sk/temperovanie-betonoveho-jadra-bkt/"
     },
     "answer": "### Temperovanie betónového jadra BKT\n\nTemperovanie betónového jadra BKT je plošné vykurovanie a chladenie integrované do betónovej konštrukcie. Dáva zmysel najmä pri novostavbách alebo väčších objektoch, kde sa systém navrhne už v projekte. Treba riešiť reguláciu, vlhkosť, zdroj tepla/chladu a skladbu stavby. Praktický ďalší krok je technická konzultácia a nacenenie podľa projektu.",
-    "ms": 2543,
+    "ms": 1896,
     "llmUsed": true,
     "mode": "direct_answer",
     "service": "ceiling_cooling",
@@ -525,7 +525,7 @@
       "url": "http://www.geotherm.sk/podlahove-vykurovanie-a-chladenie/podlahove-kurenie-cena/"
     },
     "answer": "### Podlahové vykurovanie\n\nPodlahové vykurovanie je nízkoteplotný systém, ktorý sa dobre kombinuje s tepelným čerpadlom a správnou reguláciou. Pri nacenení alebo nastavení rozhoduje plocha, skladba podlahy, rozdeľovače, zdroj tepla a to, či ide o novostavbu alebo rekonštrukciu. Praktický ďalší krok je konzultácia alebo nacenenie podľa plochy, projektu a fotiek rozdeľovača.\n\nJasné, ďalší krok je, aby sa vám vedel ozvať technik alebo obchodník a dohodol postup. Pošlite prosím telefón alebo e-mail, prípadne aj meno. Kontakt použijeme iba na spätné ozvanie k tomuto dopytu.",
-    "ms": 2007,
+    "ms": 2374,
     "llmUsed": true,
     "mode": "direct_answer",
     "service": "floor_heating",
@@ -546,7 +546,7 @@
       "url": "http://www.geotherm.sk/cenova-ponuka/cenova-ponuka-instalacie-vykurovania-vetrania-chladenia/"
     },
     "answer": "### Cenová ponuka na technické riešenie\n\nPri cenovej ponuke na vykurovanie, vetranie alebo chladenie sa nedá férovo potvrdiť jedna cena bez rozsahu. Treba rozdeliť, či ide o tepelné čerpadlo, rekuperáciu, klimatizáciu alebo komplexné riešenie s reguláciou a montážou. Najlepší ďalší krok je poslať základné údaje o objekte a dohodnúť konzultáciu, aby Geotherm pripravil konkrétne nacenenie.\n\nJasné, ďalší krok je, aby sa vám vedel ozvať technik alebo obchodník a dohodol postup. Pošlite prosím telefón alebo e-mail, prípadne aj meno. Kontakt použijeme iba na spätné ozvanie k tomuto dopytu.",
-    "ms": 2226,
+    "ms": 2193,
     "llmUsed": true,
     "mode": "direct_answer",
     "service": "complex_solution",
@@ -566,8 +566,8 @@
       ],
       "url": "http://www.geotherm.sk/klimatizacia/klimatizacia-mitsubishi/"
     },
-    "answer": "### Predbežný smer\n\nDo obývačky a spálne by som predbežne porovnal dve riešenia: buď dve samostatné klimatizačné jednotky, alebo multisplit s jednou vonkajšou jednotkou. Dôvod je, že pri dvoch miestnostiach rozhoduje dispozícia, vzdialenosť potrubia, hlučnosť a miesto pre vonkajšiu jednotku.\n\nTypicky treba overiť plochu miestností, orientáciu na slnko a kadiaľ sa dajú viesť rozvody.\n\nKoľko m² má obývačka a spálňa a kde by mohla byť vonkajšia jednotka?",
-    "ms": 2074,
+    "answer": "### Predbežný smer\n\nDo obývačky a spálne by som predbežne porovnal dve riešenia: buď dve samostatné klimatizačné jednotky, alebo multisplit s jednou vonkajšou jednotkou. Dôvod je, že pri dvoch miestnostiach rozhoduje dispozícia, vzdialenosť potrubia, hlučnosť a miesto pre vonkajšiu jednotku.\n\nTypicky treba overiť plochu miestností, orientáciu na slnko a kadiaľ sa dajú vieteť rozvody.\n\nKoľko m2 má obývačka a spálňa a kde by mohla byť vonkajšia jednotka?",
+    "ms": 2178,
     "llmUsed": true,
     "mode": "brand_model_answer",
     "service": "air_conditioning",
@@ -590,7 +590,7 @@
       "url": "http://www.geotherm.sk/zmakcovac-vody/"
     },
     "answer": "### Zmäkčovač a úprava vody\n\nZmäkčovač vody alebo úprava vody sa rieši podľa tvrdosti vody, prietoku, počtu osôb a miesta montáže. Bez rozboru alebo aspoň údajov o tvrdosti by som nevybral konkrétne zariadenie. Ak to má byť súčasť technickej miestnosti, dáva zmysel prebrať to spolu s kúrením, TÚV alebo rozvodmi a následne pripraviť nacenenie.",
-    "ms": 2075,
+    "ms": 2489,
     "llmUsed": true,
     "mode": "direct_answer",
     "service": "unknown",
@@ -611,7 +611,7 @@
       "url": "http://www.geotherm.sk/rekuperacna-jednotka/rekuperacia-filtre/"
     },
     "answer": "### Rekuperácia\n\nRekuperácia rieši riadené vetranie s výmenou vzduchu bez bežného otvárania okien. Pri dome dáva najväčší zmysel navrhnúť centrálnu rekuperáciu spolu s rozvodmi, jednotkou, filtrami, odťahom z kúpeľní/kuchyne a prívodom čerstvého vzduchu do obytných miestností. Pre nacenenie treba vedieť, či ide o novostavbu alebo rekonštrukciu, približnú plochu a či sa má vetrať celý dom.",
-    "ms": 2362,
+    "ms": 2076,
     "llmUsed": true,
     "mode": "direct_answer",
     "service": "heat_recovery",
@@ -632,11 +632,11 @@
       ],
       "url": "http://www.geotherm.sk/kotly/buderus/kondenzacne/logamax-plus-gb192i/"
     },
-    "answer": "### Buderus Logamax\n\nLogamax GB122 by som bral ako Buderus kotlovú tému, nie ako výber tepelného čerpadla. Pri existujúcom zariadení treba overiť presný model, stav kotla a či ide o servis alebo výmenu. Ak cieľom je nové úspornejšie vykurovanie, Geotherm môže pri konzultácii porovnať kotlové riešenie s inou technológiou podľa domu.",
-    "ms": 2005,
+    "answer": "### Buderus Logamax\n\nLogamax GB122 by som bral ako Buderus kotlovú tému, nie ako výber tepelného čerpadla. Pri existujúcom zariadení treba overiť presný model, stav kotla a či ide o servis alebo výmenu. Ak cieľom je nové úspornejšie vykurovanie, Geotherm môže pri konzultácii porovnať kotlové riešenie s inou technológiou podľa domu.\n\nIde o existujúce zariadenie s poruchou, pravidelný servis, alebo zvažujete výmenu za nové riešenie?",
+    "ms": 2144,
     "llmUsed": true,
     "mode": "direct_answer",
-    "service": "heat_pump",
+    "service": "service",
     "intent": "brand_model",
     "sources": 3,
     "failures": []
@@ -656,8 +656,8 @@
       ],
       "url": "http://www.geotherm.sk/o-nas/tzb-informacie/nemrznuca-kvapalina/"
     },
-    "answer": "### Ochranné a údržbové kvapaliny\n\nOchranné, údržbové alebo teplonosné kvapaliny sa riešia pri vykurovacích, chladiacich aj solárnych systémoch podľa typu sústavy, materiálov, objemu vody a požadovanej ochrany. Bez kontroly systému by som neodporúčal konkrétny prípravok ani dávkovanie. Praktický ďalší krok je servisné preverenie alebo konzultácia, kde sa potvrdí stav vody, zariadenia a vhodná údržba.\n\nIde o existujúce zariadenie s poruchou, pravidelný servis, alebo zvažuješ výmenu za nové riešenie?",
-    "ms": 2410,
+    "answer": "### Ochranné a údržbové kvapaliny\n\nOchranné, údržbové alebo teplonosné kvapaliny sa riešia pri vykurovacích, chladiacich aj solárnych systémoch podľa typu sústavy, materiálov, objemu vody a požadovanej ochrany. Bez kontroly systému by som neodporúčal konkrétny prípravok ani dávkovanie. Praktický ďalší krok je servisné preverenie alebo konzultácia, kde sa potvrdí stav vody, zariadenia a vhodná údržba.\n\nIde o existujúce zariadenie s poruchou, pravidelný servis, alebo zvažujete výmenu za nové riešenie?",
+    "ms": 2129,
     "llmUsed": true,
     "mode": "direct_answer",
     "service": "service",
@@ -677,11 +677,11 @@
       ],
       "url": "http://www.geotherm.sk/o-nas/rekuperacia-riadene-vetranie/"
     },
-    "answer": "### Video k rekuperácii\n\nVideo alebo návod k rekuperácii beriem ako pomoc k zariadeniu, ovládaniu, servisu alebo údržbe, nie ako samostatnú cenovú ponuku. Pri rekuperácii rozhoduje konkrétna jednotka, model, filtre, nastavenie a prejav problému. Ak chceš praktický ďalší krok, pošli značku/model jednotky alebo fotku štítku a Geotherm potvrdí vhodný postup.",
-    "ms": 2011,
+    "answer": "### Video k rekuperácii\n\nVideo alebo návod k rekuperácii beriem ako pomoc k zariadeniu, ovládaniu, servisu alebo údržbe, nie ako samostatnú cenovú ponuku. Pri rekuperácii rozhoduje konkrétna jednotka, model, filtre, nastavenie a prejav problému. Ak chcete praktický ďalší krok, pošlite značku/model jednotky alebo fotku štítku a Geotherm potvrdí vhodný postup.\n\nIde o existujúce zariadenie s poruchou, pravidelný servis, alebo zvažujete výmenu za nové riešenie?",
+    "ms": 2293,
     "llmUsed": true,
     "mode": "direct_answer",
-    "service": "heat_recovery",
+    "service": "service",
     "intent": "service_fault",
     "sources": 3,
     "failures": []
@@ -701,8 +701,8 @@
       ],
       "url": "http://www.geotherm.sk/o-nas/tepelne-cerpadla-video-navody/"
     },
-    "answer": "### Video návody k tepelným čerpadlám\n\nVideo návody sú skôr pomoc k ovládaniu, servisu a údržbe zariadenia, nie samostatné riešenie na nacenenie. Pri tepelnom čerpadle treba vždy poznať konkrétny model a prejav problému alebo otázku k nastaveniu. Ak chceš praktickú pomoc, pošli značku/model zariadenia alebo fotku štítku a Geotherm vie potvrdiť ďalší postup.\n\nIde o existujúce zariadenie s poruchou, pravidelný servis, alebo zvažuješ výmenu za nové riešenie?",
-    "ms": 2414,
+    "answer": "### Video návody k tepelným čerpadlám\n\nVideo návody sú skôr pomoc k ovládaniu, servisu a údržbe zariadenia, nie samostatné riešenie na nacenenie. Pri tepelnom čerpadle treba vždy poznať konkrétny model a prejav problému alebo otázku k nastaveniu. Ak chcete praktickú pomoc, pošlite značku/model zariadenia alebo fotku štítku a Geotherm vie potvrdiť ďalší postup.\n\nIde o existujúce zariadenie s poruchou, pravidelný servis, alebo zvažujete výmenu za nové riešenie?",
+    "ms": 5443,
     "llmUsed": true,
     "mode": "direct_answer",
     "service": "service",
@@ -723,7 +723,7 @@
       "url": "http://www.geotherm.sk/rekuperacna-jednotka/vetranie-meranie-co2/"
     },
     "answer": "### Rekuperácia\n\nRekuperácia rieši riadené vetranie s výmenou vzduchu bez bežného otvárania okien. Pri dome dáva najväčší zmysel navrhnúť centrálnu rekuperáciu spolu s rozvodmi, jednotkou, filtrami, odťahom z kúpeľní/kuchyne a prívodom čerstvého vzduchu do obytných miestností. Pre nacenenie treba vedieť, či ide o novostavbu alebo rekonštrukciu, približnú plochu a či sa má vetrať celý dom.",
-    "ms": 2346,
+    "ms": 4151,
     "llmUsed": true,
     "mode": "direct_answer",
     "service": "heat_recovery",
@@ -744,7 +744,7 @@
       "url": "http://www.geotherm.sk/o-nas/tzb-informacie/rekuperacia-entalpickym-vymennikom/"
     },
     "answer": "### Rekuperácia\n\nRekuperácia rieši riadené vetranie s výmenou vzduchu bez bežného otvárania okien. Pri dome dáva najväčší zmysel navrhnúť centrálnu rekuperáciu spolu s rozvodmi, jednotkou, filtrami, odťahom z kúpeľní/kuchyne a prívodom čerstvého vzduchu do obytných miestností. Pre nacenenie treba vedieť, či ide o novostavbu alebo rekonštrukciu, približnú plochu a či sa má vetrať celý dom.",
-    "ms": 2361,
+    "ms": 2764,
     "llmUsed": true,
     "mode": "direct_answer",
     "service": "heat_recovery",
@@ -767,8 +767,8 @@
       ],
       "url": "http://www.geotherm.sk/servis-tepelnych-cerpadiel/"
     },
-    "answer": "### Servisné služby\n\nNaše servisné služby pokrývajú rôzne aspekty starostlivosti o vaše technické zariadenia. Môže ísť o pravidelnú údržbu, diagnostiku prípadných porúch, presné nastavenie alebo posúdenie už existujúcich montáží, ako sú tepelné čerpadlá, systémy rekuperácie, klimatizácie či podlahové kúrenie.\n\nPri riešení porúch potrebujeme detailné informácie o zariadení (značka, model, štítok), popis problému alebo chybový kód a lokalitu.Pri zariadeniach montovaných inou firmou treba servis najprv potvrdiť podľa značky a dostupnosti.\n\nIde o existujúce zariadenie s poruchou, pravidelný servis, alebo zvažuješ výmenu za nové riešenie?",
-    "ms": 2198,
+    "answer": "### Servisný smer\n\nRozumiem, zariadenie hlási chybu. Pri poruche by som neradil žiadny svojpomocný zásah do zariadenia; najprv treba zistiť presný model, chybový kód a lokalitu, aby sa dalo posúdiť, či ide o servisný zásah a aký postup je bezpečný.\n\nPri zariadeniach montovaných inou firmou treba dostupnosť servisu potvrdiť podľa značky a prípadu.\n\nPošlite mi prosím model alebo fotku štítku, chybový kód z displeja a mesto, kde je zariadenie.\n\nIde o existujúce zariadenie s poruchou, pravidelný servis, alebo zvažujete výmenu za nové riešenie?",
+    "ms": 3006,
     "llmUsed": true,
     "mode": "service_fault_triage",
     "service": "service",
@@ -792,7 +792,7 @@
       "url": "http://www.geotherm.sk/referencie/solar/"
     },
     "answer": "### Solárne panely\n\nÁno, v knowledge Geotherm sa spomínajú aj **solárne panely/kolektory** ako súčasť technických riešení domu. Pri konkrétnom dopyte treba potvrdiť, či ide o solárny ohrev vody, podporu vykurovania alebo kombináciu s iným systémom, a potom pripraviť konzultáciu alebo nacenenie.",
-    "ms": 2149,
+    "ms": 2608,
     "llmUsed": true,
     "mode": "direct_answer",
     "service": "unknown",
@@ -813,11 +813,11 @@
       ],
       "url": "http://www.geotherm.sk/kotly/buderus/kondenzacne/logamax-plus-gb122/"
     },
-    "answer": "### Buderus Logamax\n\nLogamax GB122 by som bral ako Buderus kotlovú tému, nie ako výber tepelného čerpadla. Pri existujúcom zariadení treba overiť presný model, stav kotla a či ide o servis alebo výmenu. Ak cieľom je nové úspornejšie vykurovanie, Geotherm môže pri konzultácii porovnať kotlové riešenie s inou technológiou podľa domu.",
-    "ms": 1968,
+    "answer": "### Buderus Logamax\n\nLogamax GB122 by som bral ako Buderus kotlovú tému, nie ako výber tepelného čerpadla. Pri existujúcom zariadení treba overiť presný model, stav kotla a či ide o servis alebo výmenu. Ak cieľom je nové úspornejšie vykurovanie, Geotherm môže pri konzultácii porovnať kotlové riešenie s inou technológiou podľa domu.\n\nIde o existujúce zariadenie s poruchou, pravidelný servis, alebo zvažujete výmenu za nové riešenie?",
+    "ms": 2042,
     "llmUsed": true,
     "mode": "direct_answer",
-    "service": "heat_pump",
+    "service": "service",
     "intent": "brand_model",
     "sources": 3,
     "failures": []
@@ -834,7 +834,7 @@
       "url": "http://www.geotherm.sk/elektricke-podlahove-kurenie/"
     },
     "answer": "### Podlahové vykurovanie\n\nPodlahové vykurovanie je nízkoteplotný systém, ktorý sa dobre kombinuje s tepelným čerpadlom a správnou reguláciou. Pri nacenení alebo nastavení rozhoduje plocha, skladba podlahy, rozdeľovače, zdroj tepla a to, či ide o novostavbu alebo rekonštrukciu. Praktický ďalší krok je konzultácia alebo nacenenie podľa plochy, projektu a fotiek rozdeľovača.\n\nJasné, ďalší krok je, aby sa vám vedel ozvať technik alebo obchodník a dohodol postup. Pošlite prosím telefón alebo e-mail, prípadne aj meno. Kontakt použijeme iba na spätné ozvanie k tomuto dopytu.",
-    "ms": 2444,
+    "ms": 2463,
     "llmUsed": true,
     "mode": "direct_answer",
     "service": "floor_heating",
@@ -855,8 +855,8 @@
       ],
       "url": "http://www.geotherm.sk/dotacie-obnovitelne-zdroje/cerpanie-dotacii/"
     },
-    "answer": "### Pomoc s dotáciou\n\nÁno, s dotáciami vám vieme pomôcť.Bez posúdenia domu, návrhu a aktuálnych podmienok by som negarantoval cenu, dotáciu, úsporu ani návratnosť. Geotherm vám môže pomôcť overiť podmienky a pripraviť ďalší postup spolu s návrhom riešenia, či už ide o tepelné čerpadlo, rekuperáciu, klimatizáciu alebo podlahové kúrenie.\n\nNajlepší ďalší krok je krátka konzultácia alebo kontakt na preverenie dotácie a nacenenia.",
-    "ms": 2049,
+    "answer": "### Pomoc s dotáciou\n\nÁno, s dotáciami vám vieme pomôcť.Bez posúdenia domu, návrhu a aktuálnych podmienok by som negarantoval cenu, dotáciu, úsporu ani návratnosť. Geotherm vám môže pomôcť overiť podmienky a pripraviť ďalší postup spolu s návrhom riešenia.\n\nNajlepší ďalší krok je krátka konzultácia alebo kontakt na preverenie dotácie a nacenenia vášho projektu.",
+    "ms": 2016,
     "llmUsed": true,
     "mode": "direct_answer",
     "service": "subsidy",
@@ -877,8 +877,8 @@
       ],
       "url": "http://www.geotherm.sk/dotacie-obnovitelne-zdroje/casto-kladene-otazky-dotacie/"
     },
-    "answer": "### Časté otázky k dotáciám\n\nPri dotáciách je dôležité overiť si aktuálne programy, typ vášho domu a podmienky podpory. Bez tohto overenia vám nemôžeme sľúbiť konkrétny nárok či výšku dotácie. Geotherm vám môže pomôcť s orientáciou v možnostiach a navrhnúť vhodné riešenie, napríklad s využitím tepelného čerpadla, rekuperácie alebo klimatizácie. Následne vám môžeme vypracovať cenovú ponuku na mieru.",
-    "ms": 2188,
+    "answer": "### Časté otázky k dotáciám\n\nPri dotáciách je dôležité overiť aktuálne programy, typ domu a podmienky podpory.S dotáciou vieme pomôcť alebo asistovať podľa aktuálnych podmienok. Geotherm vám pomôže s orientáciou a návrhom vhodného riešenia, napríklad s výberom tepelného čerpadla, rekuperácie alebo klimatizácie. Ďalším krokom je konzultácia a nacenenie pre váš konkrétny dom.",
+    "ms": 2081,
     "llmUsed": true,
     "mode": "direct_answer",
     "service": "subsidy",
@@ -902,7 +902,7 @@
       "url": "http://www.geotherm.sk/dotacie-obnovitelne-zdroje/slnecne-kolektory-dotacie/"
     },
     "answer": "### Dotácia na solárne kolektory\n\nPri solárnych alebo slnečných kolektoroch treba najprv potvrdiť, či ide o ohrev teplej vody, zásobník a konkrétnu zostavu, a potom overiť aktuálny dotačný program. Bez overenia by som nesľuboval nárok, výšku podpory ani odpočet z ceny. Najpraktickejší ďalší krok je konzultácia s Geotherm a nacenenie zostavy kolektory + zásobník podľa domácnosti.",
-    "ms": 2383,
+    "ms": 2410,
     "llmUsed": true,
     "mode": "direct_answer",
     "service": "subsidy",
@@ -923,8 +923,8 @@
       ],
       "url": "http://www.geotherm.sk/dotacie-obnovitelne-zdroje/tepelne-cerpadla-dotacie/"
     },
-    "answer": "### Dotácie na tepelné čerpadlá\n\nÁno, radi vám pomôžeme s dotáciami na tepelné čerpadlá.Bez posúdenia domu, návrhu a aktuálnych podmienok by som negarantoval cenu, dotáciu, úsporu ani návratnosť.\n\nSpoločnosť Geotherm vám vie pomôcť s overením podmienok pre získanie dotácie a pripraviť návrh riešenia. Najlepším ďalším krokom je krátka konzultácia, počas ktorej preveríme možnosti dotácie a nacenenie vášho projektu.",
-    "ms": 2284,
+    "answer": "### Dotácie na tepelné čerpadlá\n\nRozumieme vášmu záujmu o dotácie. Geotherm vám môže pomôcť pri overovaní podmienok a príprave ďalších krokov.Zohľadnenie dotácie v cene treba potvrdiť podľa konkrétneho prípadu.\n\nOdporúčame krátku konzultáciu alebo priamy kontakt, aby sme mohli preveriť možnosti dotácie a pripraviť pre vás cenovú ponuku na riešenie, ktoré môže zahŕňať napríklad tepelné čerpadlo, rekuperáciu, klimatizáciu alebo podlahové kúrenie.",
+    "ms": 2023,
     "llmUsed": true,
     "mode": "direct_answer",
     "service": "subsidy",
@@ -946,7 +946,7 @@
       "url": "http://www.geotherm.sk/dotacie-obnovitelne-zdroje/dotacie-2015/"
     },
     "answer": "### Podmienky podpory\n\nPodmienky podpory alebo dotácie treba vždy overiť podľa aktuálneho programu a konkrétneho riešenia. Bez preverenia by som nesľuboval nárok, výšku podpory, odpočet z ceny ani kompletné vybavenie. Pri Geotherm je praktický postup najprv konzultácia, potom overenie podmienok a až následne návrh riešenia s nacenením.",
-    "ms": 2501,
+    "ms": 2376,
     "llmUsed": true,
     "mode": "direct_answer",
     "service": "subsidy",
@@ -967,8 +967,8 @@
       ],
       "url": "http://www.geotherm.sk/dotacie-obnovitelne-zdroje/"
     },
-    "answer": "### Dotácie na obnoviteľné zdroje energie\n\nRozumieme vášmu záujmu o dotácie na obnoviteľné zdroje energie. Geotherm vám môže pomôcť s overením podmienok a prípravou ďalšieho postupu.Bez posúdenia domu, návrhu a aktuálnych podmienok by som negarantoval cenu, dotáciu, úsporu ani návratnosť.\n\nNaši odborníci vám vedia poradiť pri výbere vhodného riešenia, ako napríklad tepelné čerpadlo, rekuperácia, klimatizácia alebo podlahové kúrenie, a pomôcť vám s procesom získania podpory.\n\nOdporúčame krátku konzultáciu, počas ktorej preveríme možnosti dotácie a nacenenie vášho projektu.",
-    "ms": 2371,
+    "answer": "### Pomoc s dotáciou\n\nÁno, s dotáciami vám vieme pomôcť.Bez posúdenia domu, návrhu a aktuálnych podmienok by som negarantoval cenu, dotáciu, úsporu ani návratnosť. Geotherm vám môže pomôcť overiť podmienky a navrhnúť ďalší postup.\n\nRadi vám pomôžeme s konzultáciou a nacenením riešenia, ktoré môže zahŕňať napríklad tepelné čerpadlo, rekuperáciu, klimatizáciu alebo podlahové kúrenie.",
+    "ms": 1954,
     "llmUsed": true,
     "mode": "direct_answer",
     "service": "subsidy",
@@ -990,7 +990,7 @@
       "url": "http://www.geotherm.sk/referencie/stenove-vykurovanie-chladenie/"
     },
     "answer": "### Stenové vykurovanie a chladenie\n\nStenové vykurovanie alebo chladenie patrí medzi plošné systémy, kde je dôležitý návrh skladby, regulácie a vlhkosti. Pri kúrení ide o komfortné nízkoteplotné riešenie, pri chladení treba strážiť rosný bod podobne ako pri stropnom chladení. Najlepší ďalší krok je konzultácia alebo nacenenie podľa projektu, miestností a toho, či ide o novostavbu alebo rekonštrukciu.",
-    "ms": 2152,
+    "ms": 2037,
     "llmUsed": true,
     "mode": "direct_answer",
     "service": "heat_pump",
@@ -1010,7 +1010,7 @@
       "url": "http://www.geotherm.sk/referencie/podlahove-vykurovanie-chladenie/"
     },
     "answer": "### Podlahové vykurovanie\n\nPodlahové vykurovanie je nízkoteplotný systém, ktorý sa dobre kombinuje s tepelným čerpadlom a správnou reguláciou. Pri nacenení alebo nastavení rozhoduje plocha, skladba podlahy, rozdeľovače, zdroj tepla a to, či ide o novostavbu alebo rekonštrukciu. Praktický ďalší krok je konzultácia alebo nacenenie podľa plochy, projektu a fotiek rozdeľovača.\n\nJasné, ďalší krok je, aby sa vám vedel ozvať technik alebo obchodník a dohodol postup. Pošlite prosím telefón alebo e-mail, prípadne aj meno. Kontakt použijeme iba na spätné ozvanie k tomuto dopytu.",
-    "ms": 1932,
+    "ms": 2132,
     "llmUsed": true,
     "mode": "direct_answer",
     "service": "floor_heating",
@@ -1032,7 +1032,7 @@
       "url": "http://www.geotherm.sk/referencie/stropne-vykurovanie-chladenie/"
     },
     "answer": "### Stropné chladenie\n\nÁno, stropné chladenie sa dá riešiť ako komfortné plošné chladenie domu. Treba ho navrhnúť odborne, hlavne kvôli regulácii vlhkosti a rosnému bodu; bez návrhu by som nesľuboval, že bude plnohodnotnou náhradou klimatizácie v každom dome. Najlepší ďalší krok je konzultácia alebo nacenenie podľa toho, či ide o novostavbu alebo rekonštrukciu a aký rozsah miestností sa má chladiť.",
-    "ms": 2413,
+    "ms": 2453,
     "llmUsed": true,
     "mode": "direct_answer",
     "service": "ceiling_cooling",
@@ -1053,7 +1053,7 @@
       "url": "http://www.geotherm.sk/referencie/rekuperacia-tepla-vetranie/"
     },
     "answer": "### Rekuperácia\n\nRekuperácia rieši riadené vetranie s výmenou vzduchu bez bežného otvárania okien. Pri dome dáva najväčší zmysel navrhnúť centrálnu rekuperáciu spolu s rozvodmi, jednotkou, filtrami, odťahom z kúpeľní/kuchyne a prívodom čerstvého vzduchu do obytných miestností. Pre nacenenie treba vedieť, či ide o novostavbu alebo rekonštrukciu, približnú plochu a či sa má vetrať celý dom.",
-    "ms": 2346,
+    "ms": 2205,
     "llmUsed": true,
     "mode": "direct_answer",
     "service": "heat_recovery",
@@ -1074,7 +1074,7 @@
       "url": "http://www.geotherm.sk/rekuperacna-jednotka/zehnder/"
     },
     "answer": "### Rekuperácia\n\nRekuperácia rieši riadené vetranie s výmenou vzduchu bez bežného otvárania okien. Pri dome dáva najväčší zmysel navrhnúť centrálnu rekuperáciu spolu s rozvodmi, jednotkou, filtrami, odťahom z kúpeľní/kuchyne a prívodom čerstvého vzduchu do obytných miestností. Pre nacenenie treba vedieť, či ide o novostavbu alebo rekonštrukciu, približnú plochu a či sa má vetrať celý dom.",
-    "ms": 2244,
+    "ms": 1988,
     "llmUsed": true,
     "mode": "direct_answer",
     "service": "heat_recovery",
@@ -1098,7 +1098,7 @@
       "url": "http://www.geotherm.sk/solarne-systemy/vaillant/mss-system/"
     },
     "answer": "### MSS systém\n\nMSS systém by som zaradil medzi solárne riešenia a zásobníkové zostavy, nie ako všeobecné tepelné čerpadlo. Pri takomto dopyte treba potvrdiť, či ide o solárny ohrev vody, kolektory, zásobník alebo kombináciu s vykurovaním. Praktický ďalší krok je konzultácia a nacenenie podľa požadovaného objemu zásobníka, počtu kolektorov a napojenia.",
-    "ms": 2102,
+    "ms": 2160,
     "llmUsed": true,
     "mode": "direct_answer",
     "service": "unknown",
@@ -1119,11 +1119,11 @@
       ],
       "url": "http://www.geotherm.sk/solarne-systemy/vaillant/aurocompact/"
     },
-    "answer": "### Vaillant compact riešenia\n\necoCOMPACT alebo auroCOMPACT by som nebral ako aktuálny výber tepelného čerpadla. Ide o názvy Vaillant compact riešení spájaných skôr s kotlovou alebo zásobníkovou zostavou, preto treba overiť presný model a aktuálnu ponuku. Ak riešiš nové vykurovanie cez Geotherm, bezpečnejšie je porovnať aktuálne riešenie Vaillant alebo NIBE podľa domu a pripraviť nacenenie.",
-    "ms": 2463,
+    "answer": "### Vaillant compact riešenia\n\necoCOMPACT alebo auroCOMPACT by som nebral ako aktuálny výber tepelného čerpadla. Ide o názvy Vaillant compact riešení spájaných skôr s kotlovou alebo zásobníkovou zostavou, preto treba overiť presný model a aktuálnu ponuku. Ak riešite nové vykurovanie cez Geotherm, bezpečnejšie je porovnať aktuálne riešenie Vaillant alebo NIBE podľa domu a pripraviť nacenenie.\n\nIde o existujúce zariadenie s poruchou, pravidelný servis, alebo zvažujete výmenu za nové riešenie?",
+    "ms": 2155,
     "llmUsed": true,
     "mode": "direct_answer",
-    "service": "heat_pump",
+    "service": "service",
     "intent": "brand_model",
     "sources": 3,
     "failures": []
@@ -1143,8 +1143,8 @@
       ],
       "url": "http://www.geotherm.sk/solarne-systemy/vaillant/aurostep-plus-drain-back/"
     },
-    "answer": "### Solárne zostavy a zásobníky\n\nPri tlakových solárnych zostavách alebo zásobníkoch nejde o poruchu tlaku v kúrení, ale o zostavu pre ohrev vody alebo solárne riešenie. Treba overiť typ kolektorov, objem zásobníka, napojenie na existujúci zdroj a rozsah montáže. Bez konkrétnej zostavy by som nepotvrdil cenu ani dostupnosť; vhodný ďalší krok je konzultácia a nacenenie podľa objektu.\n\nIde o existujúce zariadenie s poruchou, pravidelný servis, alebo zvažuješ výmenu za nové riešenie?",
-    "ms": 2320,
+    "answer": "### Solárne zostavy a zásobníky\n\nPri tlakových solárnych zostavách alebo zásobníkoch nejde o poruchu tlaku v kúrení, ale o zostavu pre ohrev vody alebo solárne riešenie. Treba overiť typ kolektorov, objem zásobníka, napojenie na existujúci zdroj a rozsah montáže. Bez konkrétnej zostavy by som nepotvrdil cenu ani dostupnosť; vhodný ďalší krok je konzultácia a nacenenie podľa objektu.\n\nIde o existujúce zariadenie s poruchou, pravidelný servis, alebo zvažujete výmenu za nové riešenie?",
+    "ms": 2414,
     "llmUsed": true,
     "mode": "direct_answer",
     "service": "heat_pump",
@@ -1165,11 +1165,11 @@
       ],
       "url": "http://www.geotherm.sk/kotly/buderus/elektricke/logamax-e213-22-60kw/"
     },
-    "answer": "### Buderus Logamax\n\nLogamax GB122 by som bral ako Buderus kotlovú tému, nie ako výber tepelného čerpadla. Pri existujúcom zariadení treba overiť presný model, stav kotla a či ide o servis alebo výmenu. Ak cieľom je nové úspornejšie vykurovanie, Geotherm môže pri konzultácii porovnať kotlové riešenie s inou technológiou podľa domu.",
-    "ms": 2108,
+    "answer": "### Buderus Logamax\n\nLogamax GB122 by som bral ako Buderus kotlovú tému, nie ako výber tepelného čerpadla. Pri existujúcom zariadení treba overiť presný model, stav kotla a či ide o servis alebo výmenu. Ak cieľom je nové úspornejšie vykurovanie, Geotherm môže pri konzultácii porovnať kotlové riešenie s inou technológiou podľa domu.\n\nIde o existujúce zariadenie s poruchou, pravidelný servis, alebo zvažujete výmenu za nové riešenie?",
+    "ms": 1922,
     "llmUsed": true,
     "mode": "direct_answer",
-    "service": "heat_pump",
+    "service": "service",
     "intent": "brand_model",
     "sources": 3,
     "failures": []
@@ -1187,11 +1187,11 @@
       ],
       "url": "http://www.geotherm.sk/kotly/buderus/elektricke/logamax-e213-4-18kw/"
     },
-    "answer": "### Buderus Logamax\n\nLogamax GB122 by som bral ako Buderus kotlovú tému, nie ako výber tepelného čerpadla. Pri existujúcom zariadení treba overiť presný model, stav kotla a či ide o servis alebo výmenu. Ak cieľom je nové úspornejšie vykurovanie, Geotherm môže pri konzultácii porovnať kotlové riešenie s inou technológiou podľa domu.",
-    "ms": 2126,
+    "answer": "### Buderus Logamax\n\nLogamax GB122 by som bral ako Buderus kotlovú tému, nie ako výber tepelného čerpadla. Pri existujúcom zariadení treba overiť presný model, stav kotla a či ide o servis alebo výmenu. Ak cieľom je nové úspornejšie vykurovanie, Geotherm môže pri konzultácii porovnať kotlové riešenie s inou technológiou podľa domu.\n\nIde o existujúce zariadenie s poruchou, pravidelný servis, alebo zvažujete výmenu za nové riešenie?",
+    "ms": 2655,
     "llmUsed": true,
     "mode": "direct_answer",
-    "service": "heat_pump",
+    "service": "service",
     "intent": "brand_model",
     "sources": 3,
     "failures": []
@@ -1209,11 +1209,11 @@
       ],
       "url": "http://www.geotherm.sk/kotly/buderus/elektricke/"
     },
-    "answer": "### Kotly\n\nÁno, Geotherm sa zaoberá aj riešeniami pre **kotly**, vrátane výmeny plynových kotlov. Rozsah prác závisí od konkrétnej situácie vo vašej kotolni, ako je napojenie, odvod spalín a elektropríprava. Pri jednoduchej výmene môže byť realizácia rýchlejšia, pri zložitejšej kotolni je potrebné individuálne plánovanie. Odporúčame krátku konzultáciu alebo zaslanie fotografií kotolne pre nacenenie.\n\nIde o existujúce zariadenie s poruchou, pravidelný servis, alebo zvažuješ výmenu za nové riešenie?",
-    "ms": 2188,
+    "answer": "### Kotly\n\nÁno, Geotherm sa zaoberá aj riešeniami pre **kotly**, vrátane výmeny plynových kotlov. Rozsah prác závisí od konkrétnej situácie vo vašej kotolni, ako je napojenie, odvod spalín a elektropríprava. V prípade jednoduchej výmeny môže byť realizácia rýchlejšia, pri zložitejšej kotolni budeme potrebovať individuálny plán. Odporúčame krátku konzultáciu alebo zaslanie fotografií kotolne pre presnejšie nacenenie.\n\nIde o existujúce zariadenie s poruchou, pravidelný servis, alebo zvažujete výmenu za nové riešenie?",
+    "ms": 2611,
     "llmUsed": true,
     "mode": "direct_answer",
-    "service": "complex_solution",
+    "service": "service",
     "intent": "process",
     "sources": 3,
     "failures": []
@@ -1231,11 +1231,11 @@
       ],
       "url": "http://www.geotherm.sk/kotly/vaillant/elektricke/eloblock-ve-6-28/"
     },
-    "answer": "### Vaillant eloBLOCK\n\neloBLOCK VE by som bral ako Vaillant elektrokotol alebo kotlovú tému, nie ako tepelné čerpadlo. Pri otázke na tento rad treba overiť, či ide o existujúce zariadenie, výmenu alebo nový zdroj tepla. Ak cieľom je úspora prevádzky, Geotherm môže porovnať elektrokotol s vhodnejším riešením vykurovania, napríklad tepelným čerpadlom podľa domu.",
-    "ms": 2107,
+    "answer": "### Vaillant eloBLOCK\n\neloBLOCK VE by som bral ako Vaillant elektrokotol alebo kotlovú tému, nie ako tepelné čerpadlo. Pri otázke na tento rad treba overiť, či ide o existujúce zariadenie, výmenu alebo nový zdroj tepla. Ak cieľom je úspora prevádzky, Geotherm môže porovnať elektrokotol s vhodnejším riešením vykurovania, napríklad tepelným čerpadlom podľa domu.\n\nIde o existujúce zariadenie s poruchou, pravidelný servis, alebo zvažujete výmenu za nové riešenie?",
+    "ms": 4372,
     "llmUsed": true,
     "mode": "direct_answer",
-    "service": "heat_pump",
+    "service": "service",
     "intent": "brand_model",
     "sources": 3,
     "failures": []
@@ -1253,11 +1253,11 @@
       ],
       "url": "http://www.geotherm.sk/kotly/vaillant/kondenzacne/aurocompact-vsc-d/"
     },
-    "answer": "### Vaillant compact riešenia\n\necoCOMPACT alebo auroCOMPACT by som nebral ako aktuálny výber tepelného čerpadla. Ide o názvy Vaillant compact riešení spájaných skôr s kotlovou alebo zásobníkovou zostavou, preto treba overiť presný model a aktuálnu ponuku. Ak riešiš nové vykurovanie cez Geotherm, bezpečnejšie je porovnať aktuálne riešenie Vaillant alebo NIBE podľa domu a pripraviť nacenenie.",
-    "ms": 1996,
+    "answer": "### Vaillant compact riešenia\n\necoCOMPACT alebo auroCOMPACT by som nebral ako aktuálny výber tepelného čerpadla. Ide o názvy Vaillant compact riešení spájaných skôr s kotlovou alebo zásobníkovou zostavou, preto treba overiť presný model a aktuálnu ponuku. Ak riešite nové vykurovanie cez Geotherm, bezpečnejšie je porovnať aktuálne riešenie Vaillant alebo NIBE podľa domu a pripraviť nacenenie.\n\nIde o existujúce zariadenie s poruchou, pravidelný servis, alebo zvažujete výmenu za nové riešenie?",
+    "ms": 2441,
     "llmUsed": true,
     "mode": "direct_answer",
-    "service": "heat_pump",
+    "service": "service",
     "intent": "brand_model",
     "sources": 3,
     "failures": []
@@ -1275,11 +1275,11 @@
       ],
       "url": "http://www.geotherm.sk/kotly/vaillant/kondenzacne/ecocompact-vsc/"
     },
-    "answer": "### Vaillant compact riešenia\n\necoCOMPACT alebo auroCOMPACT by som nebral ako aktuálny výber tepelného čerpadla. Ide o názvy Vaillant compact riešení spájaných skôr s kotlovou alebo zásobníkovou zostavou, preto treba overiť presný model a aktuálnu ponuku. Ak riešiš nové vykurovanie cez Geotherm, bezpečnejšie je porovnať aktuálne riešenie Vaillant alebo NIBE podľa domu a pripraviť nacenenie.",
-    "ms": 2206,
+    "answer": "### Vaillant compact riešenia\n\necoCOMPACT alebo auroCOMPACT by som nebral ako aktuálny výber tepelného čerpadla. Ide o názvy Vaillant compact riešení spájaných skôr s kotlovou alebo zásobníkovou zostavou, preto treba overiť presný model a aktuálnu ponuku. Ak riešite nové vykurovanie cez Geotherm, bezpečnejšie je porovnať aktuálne riešenie Vaillant alebo NIBE podľa domu a pripraviť nacenenie.\n\nIde o existujúce zariadenie s poruchou, pravidelný servis, alebo zvažujete výmenu za nové riešenie?",
+    "ms": 2142,
     "llmUsed": true,
     "mode": "direct_answer",
-    "service": "heat_pump",
+    "service": "service",
     "intent": "brand_model",
     "sources": 3,
     "failures": []
@@ -1297,11 +1297,11 @@
       ],
       "url": "http://www.geotherm.sk/kotly/vaillant/kondenzacne/ecotec-pro-vu-vuw/"
     },
-    "answer": "### Vaillant ecoTEC\n\necoTEC plus VU alebo VCW by som bral ako Vaillant kotlovú tému, nie ako výber tepelného čerpadla. Pri takomto označení treba overiť presný model, či ide o existujúci kotol, výmenu alebo nové riešenie. Ak cieľom je úspora vykurovania, Geotherm môže porovnať servis/náhradu kotla s novším riešením, napríklad tepelným čerpadlom podľa domu.",
-    "ms": 2363,
+    "answer": "### Vaillant ecoTEC\n\necoTEC plus VU alebo VCW by som bral ako Vaillant kotlovú tému, nie ako výber tepelného čerpadla. Pri takomto označení treba overiť presný model, či ide o existujúci kotol, výmenu alebo nové riešenie. Ak cieľom je úspora vykurovania, Geotherm môže porovnať servis/náhradu kotla s novším riešením, napríklad tepelným čerpadlom podľa domu.\n\nIde o existujúce zariadenie s poruchou, pravidelný servis, alebo zvažujete výmenu za nové riešenie?",
+    "ms": 3881,
     "llmUsed": true,
     "mode": "direct_answer",
-    "service": "heat_pump",
+    "service": "service",
     "intent": "brand_model",
     "sources": 3,
     "failures": []
@@ -1319,11 +1319,11 @@
       ],
       "url": "http://www.geotherm.sk/kotly/vaillant/kondenzacne/ecotec-plus-vu-vuw/"
     },
-    "answer": "### Vaillant ecoTEC\n\necoTEC plus VU alebo VCW by som bral ako Vaillant kotlovú tému, nie ako výber tepelného čerpadla. Pri takomto označení treba overiť presný model, či ide o existujúci kotol, výmenu alebo nové riešenie. Ak cieľom je úspora vykurovania, Geotherm môže porovnať servis/náhradu kotla s novším riešením, napríklad tepelným čerpadlom podľa domu.",
-    "ms": 2107,
+    "answer": "### Vaillant ecoTEC\n\necoTEC plus VU alebo VCW by som bral ako Vaillant kotlovú tému, nie ako výber tepelného čerpadla. Pri takomto označení treba overiť presný model, či ide o existujúci kotol, výmenu alebo nové riešenie. Ak cieľom je úspora vykurovania, Geotherm môže porovnať servis/náhradu kotla s novším riešením, napríklad tepelným čerpadlom podľa domu.\n\nIde o existujúce zariadenie s poruchou, pravidelný servis, alebo zvažujete výmenu za nové riešenie?",
+    "ms": 2251,
     "llmUsed": true,
     "mode": "direct_answer",
-    "service": "heat_pump",
+    "service": "service",
     "intent": "brand_model",
     "sources": 3,
     "failures": []
@@ -1341,11 +1341,11 @@
       ],
       "url": "http://www.geotherm.sk/kotly/vaillant/kondenzacne/ecotec-exclusive/"
     },
-    "answer": "### Vaillant ecoTEC\n\necoTEC plus VU alebo VCW by som bral ako Vaillant kotlovú tému, nie ako výber tepelného čerpadla. Pri takomto označení treba overiť presný model, či ide o existujúci kotol, výmenu alebo nové riešenie. Ak cieľom je úspora vykurovania, Geotherm môže porovnať servis/náhradu kotla s novším riešením, napríklad tepelným čerpadlom podľa domu.",
-    "ms": 2364,
+    "answer": "### Vaillant ecoTEC\n\necoTEC plus VU alebo VCW by som bral ako Vaillant kotlovú tému, nie ako výber tepelného čerpadla. Pri takomto označení treba overiť presný model, či ide o existujúci kotol, výmenu alebo nové riešenie. Ak cieľom je úspora vykurovania, Geotherm môže porovnať servis/náhradu kotla s novším riešením, napríklad tepelným čerpadlom podľa domu.\n\nIde o existujúce zariadenie s poruchou, pravidelný servis, alebo zvažujete výmenu za nové riešenie?",
+    "ms": 2440,
     "llmUsed": true,
     "mode": "direct_answer",
-    "service": "heat_pump",
+    "service": "service",
     "intent": "brand_model",
     "sources": 3,
     "failures": []
@@ -1364,7 +1364,7 @@
       "url": "http://www.geotherm.sk/potery/anhydritove/"
     },
     "answer": "### Potery\n\nPri poteroch treba rozlíšiť cementový a anhydritový poter, podklad, hrúbku, plochu a to, či ide aj o podlahové kúrenie. Bez týchto údajov by som nepotvrdil konkrétnu cenu ani vhodný typ. Praktický ďalší krok je poslať plochu, typ stavby a skladbu podlahy; Geotherm potom vie potvrdiť, či je téma v rozsahu ponuky a pripraviť nacenenie.",
-    "ms": 2471,
+    "ms": 3011,
     "llmUsed": true,
     "mode": "direct_answer",
     "service": "unknown",
@@ -1386,7 +1386,7 @@
       "url": "http://www.geotherm.sk/potery/cementove/"
     },
     "answer": "### Potery\n\nPri poteroch treba rozlíšiť cementový a anhydritový poter, podklad, hrúbku, plochu a to, či ide aj o podlahové kúrenie. Bez týchto údajov by som nepotvrdil konkrétnu cenu ani vhodný typ. Praktický ďalší krok je poslať plochu, typ stavby a skladbu podlahy; Geotherm potom vie potvrdiť, či je téma v rozsahu ponuky a pripraviť nacenenie.",
-    "ms": 2133,
+    "ms": 2738,
     "llmUsed": true,
     "mode": "direct_answer",
     "service": "unknown",
@@ -1408,7 +1408,7 @@
       "url": "http://www.geotherm.sk/potery/"
     },
     "answer": "### Potery\n\nPri poteroch treba rozlíšiť cementový a anhydritový poter, podklad, hrúbku, plochu a to, či ide aj o podlahové kúrenie. Bez týchto údajov by som nepotvrdil konkrétnu cenu ani vhodný typ. Praktický ďalší krok je poslať plochu, typ stavby a skladbu podlahy; Geotherm potom vie potvrdiť, či je téma v rozsahu ponuky a pripraviť nacenenie.",
-    "ms": 1944,
+    "ms": 2245,
     "llmUsed": true,
     "mode": "direct_answer",
     "service": "floor_heating",
@@ -1430,8 +1430,8 @@
       ],
       "url": "http://www.geotherm.sk/ochranne-a-udrzbove-kvapaliny-fernox/"
     },
-    "answer": "### Ochranné a údržbové kvapaliny\n\nOchranné, údržbové alebo teplonosné kvapaliny sa riešia pri vykurovacích, chladiacich aj solárnych systémoch podľa typu sústavy, materiálov, objemu vody a požadovanej ochrany. Bez kontroly systému by som neodporúčal konkrétny prípravok ani dávkovanie. Praktický ďalší krok je servisné preverenie alebo konzultácia, kde sa potvrdí stav vody, zariadenia a vhodná údržba.\n\nIde o existujúce zariadenie s poruchou, pravidelný servis, alebo zvažuješ výmenu za nové riešenie?",
-    "ms": 1958,
+    "answer": "### Ochranné a údržbové kvapaliny\n\nOchranné, údržbové alebo teplonosné kvapaliny sa riešia pri vykurovacích, chladiacich aj solárnych systémoch podľa typu sústavy, materiálov, objemu vody a požadovanej ochrany. Bez kontroly systému by som neodporúčal konkrétny prípravok ani dávkovanie. Praktický ďalší krok je servisné preverenie alebo konzultácia, kde sa potvrdí stav vody, zariadenia a vhodná údržba.\n\nIde o existujúce zariadenie s poruchou, pravidelný servis, alebo zvažujete výmenu za nové riešenie?",
+    "ms": 2345,
     "llmUsed": true,
     "mode": "direct_answer",
     "service": "service",
@@ -1453,8 +1453,8 @@
       ],
       "url": "http://www.geotherm.sk/teplonosne-kvapaliny-agrimex/"
     },
-    "answer": "### Ochranné a údržbové kvapaliny\n\nOchranné, údržbové alebo teplonosné kvapaliny sa riešia pri vykurovacích, chladiacich aj solárnych systémoch podľa typu sústavy, materiálov, objemu vody a požadovanej ochrany. Bez kontroly systému by som neodporúčal konkrétny prípravok ani dávkovanie. Praktický ďalší krok je servisné preverenie alebo konzultácia, kde sa potvrdí stav vody, zariadenia a vhodná údržba.\n\nIde o existujúce zariadenie s poruchou, pravidelný servis, alebo zvažuješ výmenu za nové riešenie?",
-    "ms": 2380,
+    "answer": "### Ochranné a údržbové kvapaliny\n\nOchranné, údržbové alebo teplonosné kvapaliny sa riešia pri vykurovacích, chladiacich aj solárnych systémoch podľa typu sústavy, materiálov, objemu vody a požadovanej ochrany. Bez kontroly systému by som neodporúčal konkrétny prípravok ani dávkovanie. Praktický ďalší krok je servisné preverenie alebo konzultácia, kde sa potvrdí stav vody, zariadenia a vhodná údržba.\n\nIde o existujúce zariadenie s poruchou, pravidelný servis, alebo zvažujete výmenu za nové riešenie?",
+    "ms": 2310,
     "llmUsed": true,
     "mode": "direct_answer",
     "service": "service",
@@ -1477,7 +1477,7 @@
       "url": "http://www.geotherm.sk/zahradny-nezamrzny-ventil/"
     },
     "answer": "### Záhradný nezámrzný ventil\n\nZáhradný nezámrzný ventil patrí skôr do zdravotechniky a rozvodov vody než do vykurovania. Pri konkrétnej realizácii treba potvrdiť miesto napojenia, prívod vody, uloženie potrubia, prístup na montáž a či ide o novostavbu alebo doplnenie do existujúceho domu. Praktický ďalší krok je poslať fotku alebo pôdorys miesta a Geotherm potvrdí nacenenie.",
-    "ms": 1987,
+    "ms": 2319,
     "llmUsed": true,
     "mode": "direct_answer",
     "service": "unknown",
@@ -1500,7 +1500,7 @@
       "url": "http://www.geotherm.sk/zmakcovac-vody/katexova-uprava-vody/"
     },
     "answer": "### Zmäkčovač a úprava vody\n\nZmäkčovač vody alebo úprava vody sa rieši podľa tvrdosti vody, prietoku, počtu osôb a miesta montáže. Bez rozboru alebo aspoň údajov o tvrdosti by som nevybral konkrétne zariadenie. Ak to má byť súčasť technickej miestnosti, dáva zmysel prebrať to spolu s kúrením, TÚV alebo rozvodmi a následne pripraviť nacenenie.",
-    "ms": 2507,
+    "ms": 2321,
     "llmUsed": true,
     "mode": "direct_answer",
     "service": "unknown",
@@ -1522,7 +1522,7 @@
       "url": "http://www.geotherm.sk/wc-geberit/"
     },
     "answer": "### WC a Geberit\n\nPri WC alebo Geberit by som rozsah potvrdil podľa konkrétnej práce. Ak ide o technické rozvody, montáž podomietkového modulu, napojenie vody alebo kanalizácie, Geotherm má v knowledge zdravotechniku a rozvody vody/kanalizácie. Pri samostatnej kúpeľňovej rekonštrukcii treba preveriť rozsah, fotky miesta a nacenenie.",
-    "ms": 2816,
+    "ms": 2137,
     "llmUsed": true,
     "mode": "direct_answer",
     "service": "unknown",
@@ -1541,8 +1541,8 @@
       ],
       "url": "http://www.geotherm.sk/centralne-vysavace/"
     },
-    "answer": "### Centrálny vysávač\n\nCentrálny vysávač je spomenutý ako súčasť technických riešení domu. Pre konkrétnu ponuku potrebujeme vedieť, či ide o novostavbu, prípravu rozvodov, doplnenie do existujúceho domu alebo servis.\n\nNajlepším ďalším krokom je poslať nám pôdorys alebo popis domu. Následne vám potvrdíme, či a ako je možné riešenie naceniť.",
-    "ms": 1992,
+    "answer": "### Centrálny vysávač\n\nCentrálny vysávač je spomínaný ako súčasť technických riešení domu. Pre konkrétnu ponuku potrebujeme vedieť, či ide o novostavbu, prípravu rozvodov, doplnenie do existujúceho domu alebo servis.\n\nNajpraktickejším ďalším krokom je zaslanie pôdorysu alebo popisu domu. Následne vám potvrdíme, či a ako je možné riešenie naceniť.",
+    "ms": 2247,
     "llmUsed": true,
     "mode": "direct_answer",
     "service": "unknown",
@@ -1565,7 +1565,7 @@
       "url": "http://www.geotherm.sk/rozvody-kanalizacie/"
     },
     "answer": "### Rozvody vody a kanalizácie\n\nÁno, v knowledge Geotherm sa spomínajú aj **rozvody vody a kanalizácie** a referencie zdravotechniky v rodinných domoch. Pri konkrétnom dopyte treba potvrdiť rozsah: či ide o nový dom, rekonštrukciu, napojenie technológie, kúpeľne alebo technickú miestnosť. Najpraktickejší ďalší krok je poslať pôdorys alebo fotky a dohodnúť krátku konzultáciu/nacenenie.",
-    "ms": 2165,
+    "ms": 2318,
     "llmUsed": true,
     "mode": "direct_answer",
     "service": "unknown",
@@ -1585,8 +1585,8 @@
       ],
       "url": "http://www.geotherm.sk/klimatizacia/gree/"
     },
-    "answer": "### Klimatizácia GREE\n\nGREE by som bral ako klimatizačnú tému, nie ako potvrdené portfólio tepelných čerpadiel voda/voda alebo vzduch/voda. Pri klimatizácii treba overiť miestnosti, výkon, umiestnenie vnútornej a vonkajšej jednotky, hlučnosť a servis. Ak chceš nové chladenie, ďalší krok je konzultácia a nacenenie podľa miestností.",
-    "ms": 2010,
+    "answer": "### Klimatizácia GREE\n\nGREE by som bral ako klimatizačnú tému, nie ako potvrdené portfólio tepelných čerpadiel voda/voda alebo vzduch/voda. Pri klimatizácii treba overiť miestnosti, výkon, umiestnenie vnútornej a vonkajšej jednotky, hlučnosť a servis. Ak chcete nové chladenie, ďalší krok je konzultácia a nacenenie podľa miestností.",
+    "ms": 2439,
     "llmUsed": true,
     "mode": "direct_answer",
     "service": "air_conditioning",
@@ -1606,8 +1606,8 @@
       ],
       "url": "http://www.geotherm.sk/klimatizacia/toshiba/"
     },
-    "answer": "### Klimatizácia TOSHIBA\n\nÁno, môžeme poradiť a realizovať klimatizácie značky TOSHIBA. Zameriavame sa na kompletné riešenia od návrhu až po montáž.\n\n**Predbežný smer:** Navrhneme a nainštalujeme klimatizačné jednotky TOSHIBA podľa vašich potrieb.\n\n**Dôvod:** TOSHIBA je renomovaný výrobca klimatizačných systémov.\n\n**Typický rozsah:** Zabezpečenie chladenia pre jednotlivé miestnosti alebo celé objekty, vrátane návrhu vhodného typu jednotky (napr. nástenná, multisplit).\n\n**Potrebujeme vedieť:**\n* Koľko miestností chcete klimatizovať a aká je ich približná plocha.\n* Ide o byt alebo rodinný dom?\n\nRadi vám pripravíme nezáväznú cenovú ponuku.",
-    "ms": 2562,
+    "answer": "### Predbežný smer\n\nDo obývačky a spálne by som predbežne porovnal dve riešenia: buď dve samostatné klimatizačné jednotky, alebo multisplit s jednou vonkajšou jednotkou. Dôvod je, že pri dvoch miestnostiach rozhoduje dispozícia, vzdialenosť potrubia, hlučnosť a miesto pre vonkajšiu jednotku.\n\nTypicky treba overiť plochu miestností, orientáciu na slnko a kadiaľ sa dajú vieteť rozvody.\n\nKoľko m2 má obývačka a spálňa a kde by mohla byť vonkajšia jednotka?",
+    "ms": 2361,
     "llmUsed": true,
     "mode": "rag_answer",
     "service": "air_conditioning",
@@ -1627,8 +1627,8 @@
       ],
       "url": "http://www.geotherm.sk/klimatizacia/"
     },
-    "answer": "### Predbežný smer\n\nDo obývačky a spálne by som predbežne porovnal dve riešenia: buď dve samostatné klimatizačné jednotky, alebo multisplit s jednou vonkajšou jednotkou. Dôvod je, že pri dvoch miestnostiach rozhoduje dispozícia, vzdialenosť potrubia, hlučnosť a miesto pre vonkajšiu jednotku.\n\nTypicky treba overiť plochu miestností, orientáciu na slnko a kadiaľ sa dajú viesť rozvody.\n\nKoľko m² má obývačka a spálňa a kde by mohla byť vonkajšia jednotka?",
-    "ms": 2961,
+    "answer": "### Klimatizácia - Odporúčanie\n\nÁno, poskytujeme komplexné riešenia pre klimatizáciu, od návrhu až po montáž.\n\n**Predbežný smer:** Pre chladenie priestorov odporúčame klimatizačné jednotky.\n\n**Dôvod:** Klimatizácie sú efektívnym riešením pre aktívne chladenie interiérov, najmä v porovnaní s pasívnymi systémami ako stropné chladenie, ktoré vyžaduje špecifické podmienky budovy (zateplenie, nové okná) a nie je vhodné pre rekonštrukcie bez úprav.\n\n**Typický rozsah:** Zvyčajne sa jedná o nástenné splitové jednotky, prípadne multisplit systémy pre viacero miestností, v závislosti od dispozície a počtu chladených priestorov.\n\n**Potrebujeme vedieť:**\n* Koľko miestností by ste chceli klimatizovať a aká je ich približná plocha.\n* Jedná sa o rodinný dom alebo byt?\n\nRadi vám pomôžeme s výberom vhodného riešenia.",
+    "ms": 2963,
     "llmUsed": true,
     "mode": "qualification_question",
     "service": "air_conditioning",
@@ -1649,7 +1649,7 @@
       "url": "http://www.geotherm.sk/rekuperacna-jednotka/nibe/"
     },
     "answer": "### Rekuperácia\n\nRekuperácia rieši riadené vetranie s výmenou vzduchu bez bežného otvárania okien. Pri dome dáva najväčší zmysel navrhnúť centrálnu rekuperáciu spolu s rozvodmi, jednotkou, filtrami, odťahom z kúpeľní/kuchyne a prívodom čerstvého vzduchu do obytných miestností. Pre nacenenie treba vedieť, či ide o novostavbu alebo rekonštrukciu, približnú plochu a či sa má vetrať celý dom.",
-    "ms": 2354,
+    "ms": 1912,
     "llmUsed": true,
     "mode": "direct_answer",
     "service": "heat_recovery",
@@ -1670,7 +1670,7 @@
       "url": "http://www.geotherm.sk/rekuperacna-jednotka/vaillant/"
     },
     "answer": "### Rekuperácia\n\nRekuperácia rieši riadené vetranie s výmenou vzduchu bez bežného otvárania okien. Pri dome dáva najväčší zmysel navrhnúť centrálnu rekuperáciu spolu s rozvodmi, jednotkou, filtrami, odťahom z kúpeľní/kuchyne a prívodom čerstvého vzduchu do obytných miestností. Pre nacenenie treba vedieť, či ide o novostavbu alebo rekonštrukciu, približnú plochu a či sa má vetrať celý dom.",
-    "ms": 2359,
+    "ms": 2066,
     "llmUsed": true,
     "mode": "direct_answer",
     "service": "heat_recovery",
@@ -1691,7 +1691,7 @@
       "url": "http://www.geotherm.sk/rekuperacna-jednotka/"
     },
     "answer": "### Rekuperácia\n\nRekuperácia rieši riadené vetranie s výmenou vzduchu bez bežného otvárania okien. Pri dome dáva najväčší zmysel navrhnúť centrálnu rekuperáciu spolu s rozvodmi, jednotkou, filtrami, odťahom z kúpeľní/kuchyne a prívodom čerstvého vzduchu do obytných miestností. Pre nacenenie treba vedieť, či ide o novostavbu alebo rekonštrukciu, približnú plochu a či sa má vetrať celý dom.",
-    "ms": 2309,
+    "ms": 2205,
     "llmUsed": true,
     "mode": "direct_answer",
     "service": "heat_recovery",
@@ -1715,7 +1715,7 @@
       "url": "http://www.geotherm.sk/solarne-systemy/vaillant/"
     },
     "answer": "### Solárne panely\n\nÁno, v knowledge Geotherm sa spomínajú aj **solárne panely/kolektory** ako súčasť technických riešení domu. Pri konkrétnom dopyte treba potvrdiť, či ide o solárny ohrev vody, podporu vykurovania alebo kombináciu s iným systémom, a potom pripraviť konzultáciu alebo nacenenie.",
-    "ms": 2136,
+    "ms": 2212,
     "llmUsed": true,
     "mode": "direct_answer",
     "service": "heat_pump",
@@ -1735,7 +1735,7 @@
       "url": "http://www.geotherm.sk/oventrop/"
     },
     "answer": "### Podlahové vykurovanie\n\nPodlahové vykurovanie je nízkoteplotný systém, ktorý sa dobre kombinuje s tepelným čerpadlom a správnou reguláciou. Pri nacenení alebo nastavení rozhoduje plocha, skladba podlahy, rozdeľovače, zdroj tepla a to, či ide o novostavbu alebo rekonštrukciu. Praktický ďalší krok je konzultácia alebo nacenenie podľa plochy, projektu a fotiek rozdeľovača.\n\nJasné, ďalší krok je, aby sa vám vedel ozvať technik alebo obchodník a dohodol postup. Pošlite prosím telefón alebo e-mail, prípadne aj meno. Kontakt použijeme iba na spätné ozvanie k tomuto dopytu.",
-    "ms": 2281,
+    "ms": 2325,
     "llmUsed": true,
     "mode": "direct_answer",
     "service": "floor_heating",
@@ -1755,7 +1755,7 @@
       "url": "http://www.geotherm.sk/podlahove-vykurovanie-a-chladenie/podlahove-kurenie/"
     },
     "answer": "### Podlahové vykurovanie\n\nPodlahové vykurovanie je nízkoteplotný systém, ktorý sa dobre kombinuje s tepelným čerpadlom a správnou reguláciou. Pri nacenení alebo nastavení rozhoduje plocha, skladba podlahy, rozdeľovače, zdroj tepla a to, či ide o novostavbu alebo rekonštrukciu. Praktický ďalší krok je konzultácia alebo nacenenie podľa plochy, projektu a fotiek rozdeľovača.\n\nJasné, ďalší krok je, aby sa vám vedel ozvať technik alebo obchodník a dohodol postup. Pošlite prosím telefón alebo e-mail, prípadne aj meno. Kontakt použijeme iba na spätné ozvanie k tomuto dopytu.",
-    "ms": 2204,
+    "ms": 2337,
     "llmUsed": true,
     "mode": "direct_answer",
     "service": "floor_heating",
@@ -1777,7 +1777,7 @@
       "url": "http://www.geotherm.sk/stropne-vykurovanie-a-chladenie/"
     },
     "answer": "### Stropné chladenie\n\nÁno, stropné chladenie sa dá riešiť ako komfortné plošné chladenie domu. Treba ho navrhnúť odborne, hlavne kvôli regulácii vlhkosti a rosnému bodu; bez návrhu by som nesľuboval, že bude plnohodnotnou náhradou klimatizácie v každom dome. Najlepší ďalší krok je konzultácia alebo nacenenie podľa toho, či ide o novostavbu alebo rekonštrukciu a aký rozsah miestností sa má chladiť.",
-    "ms": 1898,
+    "ms": 2483,
     "llmUsed": true,
     "mode": "direct_answer",
     "service": "ceiling_cooling",
@@ -1799,7 +1799,7 @@
       "url": "http://www.geotherm.sk/stenove-vykurovanie-a-chladenie-rehau/"
     },
     "answer": "### Stenové vykurovanie a chladenie\n\nStenové vykurovanie alebo chladenie patrí medzi plošné systémy, kde je dôležitý návrh skladby, regulácie a vlhkosti. Pri kúrení ide o komfortné nízkoteplotné riešenie, pri chladení treba strážiť rosný bod podobne ako pri stropnom chladení. Najlepší ďalší krok je konzultácia alebo nacenenie podľa projektu, miestností a toho, či ide o novostavbu alebo rekonštrukciu.",
-    "ms": 1935,
+    "ms": 1934,
     "llmUsed": true,
     "mode": "direct_answer",
     "service": "heat_pump",
@@ -1818,8 +1818,8 @@
       ],
       "url": "http://www.geotherm.sk/radiatory/"
     },
-    "answer": "### Radiátory a vykurovacie systémy\n\nRadiátory sú súčasťou vykurovacích systémov, ktoré riešime v rámci našich projektov. Pri plánovaní nových alebo pri rekonštrukcii existujúcich systémov je dôležité zohľadniť výkon radiátorov, teplotný spád, typ zdroja tepla a stav rozvodov.\n\nAk uvažujete o tepelnom čerpadle, je kľúčové overiť, či vaše súčasné radiátory dokážu efektívne vykurovať priestory pri nižšej prevádzkovej teplote vody, alebo či bude potrebná ich úprava či výmena.",
-    "ms": 2454,
+    "answer": "### Radiátory a vykurovacie systémy\n\nRadiátory sú súčasťou vykurovacích systémov, ktoré riešime v rámci našich projektov. Pri plánovaní nového systému alebo pri rekonštrukcii je dôležité zohľadniť výkon radiátorov, teplotný spád, typ zdroja tepla a stav existujúcich rozvodov.\n\nAk uvažujete o tepelnom čerpadle, je kľúčové overiť, či vaše súčasné radiátory dokážu efektívne vykurovať priestor pri nižšej prevádzkovej teplote vody, alebo či bude potrebné ich úprava či výmena.",
+    "ms": 2371,
     "llmUsed": true,
     "mode": "direct_answer",
     "service": "heat_pump",
@@ -1843,7 +1843,7 @@
       "url": "http://www.geotherm.sk/solarne-systemy/"
     },
     "answer": "### Solárne panely\n\nÁno, v knowledge Geotherm sa spomínajú aj **solárne panely/kolektory** ako súčasť technických riešení domu. Pri konkrétnom dopyte treba potvrdiť, či ide o solárny ohrev vody, podporu vykurovania alebo kombináciu s iným systémom, a potom pripraviť konzultáciu alebo nacenenie.",
-    "ms": 2583,
+    "ms": 2154,
     "llmUsed": true,
     "mode": "direct_answer",
     "service": "unknown",
@@ -1865,7 +1865,7 @@
       "url": "http://www.geotherm.sk/vyrocna-zlava-na-tepelne-cerpadla-vaillant-2026/"
     },
     "answer": "### Výročná dotácia\n\nVýročnú dotáciu alebo podporu pri Vaillant tepelných čerpadlách treba komunikovať opatrne: aktuálne podmienky, dostupnosť akcie a započítanie do ponuky sa musia overiť pri konkrétnej zostave. Bez potvrdenia nesľubujem nárok ani presnú zľavu. Najlepší ďalší krok je konzultácia s Geotherm, kde sa overia podmienky podpory a pripraví aktuálne nacenenie.",
-    "ms": 2143,
+    "ms": 2303,
     "llmUsed": true,
     "mode": "direct_answer",
     "service": "subsidy",
@@ -1886,8 +1886,8 @@
       ],
       "url": "http://www.geotherm.sk/dotacie-na-oze-bez-obav-ako-fungujeme-my-v-geotherm-slovakia/"
     },
-    "answer": "### Dotácie na OZE s GEOTHERM Slovakia\n\nÁno, radi vám pomôžeme s dotáciami na obnoviteľné zdroje energie. V GEOTHERM Slovakia vám môžeme pomôcť overiť podmienky pre získanie dotácie a pripraviť návrh riešenia na mieru.\n\nMedzi naše riešenia patria napríklad moderné **tepelné čerpadlá**, systémy **rekuperácie** či efektívne **podlahové kúrenie**.\n\nNajlepší ďalší krok je krátka konzultácia, kde preveríme vaše možnosti a možnosti financovania.",
-    "ms": 2006,
+    "answer": "### Dotácie na OZE s GEOTHERM Slovakia\n\nÁno, radi vám pomôžeme s dotáciami na obnoviteľné zdroje energie. V GEOTHERM Slovakia vám môžeme pomôcť overiť podmienky pre získanie dotácie a pripraviť návrh riešenia na mieru.\n\nMedzi naše riešenia patria napríklad moderné **tepelné čerpadlá**, systémy **rekuperácie** či efektívne **podlahové kúrenie**.\n\nPre konkrétne informácie o vašej situácii a možnostiach podpory odporúčame krátku konzultáciu.",
+    "ms": 2373,
     "llmUsed": true,
     "mode": "direct_answer",
     "service": "subsidy",
@@ -1906,8 +1906,8 @@
       ],
       "url": "http://www.geotherm.sk/preco-si-vybrat-tepelne-cerpadlo/"
     },
-    "answer": "### Tepelné čerpadlá pre radiátory\n\nÁno, tepelné čerpadlá sú efektívnym riešením aj pre radiátorové vykurovanie. Geotherm sa zameriava na návrh, dodávku, montáž a servis tepelných čerpadiel značiek NIBE a Vaillant. Pri výbere konkrétneho modelu zohľadňujeme vaše potreby, ako je výkon, ohrev vody, prípadné chladenie a technické možnosti vašej nehnuteľnosti. Odporúčame krátku konzultáciu alebo vypracovanie cenovej ponuky na mieru.",
-    "ms": 2528,
+    "answer": "### Tepelné čerpadlá pre radiátory\n\nÁno, tepelné čerpadlá sú efektívnym riešením aj pre radiátory. Geotherm sa zameriava na návrh, dodávku, montáž a servis tepelných čerpadiel značiek NIBE a Vaillant. Pri výbere konkrétneho typu a modelu zohľadňujeme vaše potreby, ako je výkon, teplá voda, prípadné chladenie a technické možnosti vášho domu. Radi vám pomôžeme s konzultáciou alebo nacenením vhodného riešenia.",
+    "ms": 2163,
     "llmUsed": true,
     "mode": "direct_answer",
     "service": "heat_pump",
@@ -1931,7 +1931,7 @@
       "url": "http://www.geotherm.sk/solarna-a-veterna-energia-po-prvykrat-predbehli-uhlie/"
     },
     "answer": "### Solárne panely\n\nÁno, v knowledge Geotherm sa spomínajú aj **solárne panely/kolektory** ako súčasť technických riešení domu. Pri konkrétnom dopyte treba potvrdiť, či ide o solárny ohrev vody, podporu vykurovania alebo kombináciu s iným systémom, a potom pripraviť konzultáciu alebo nacenenie.",
-    "ms": 2256,
+    "ms": 2255,
     "llmUsed": true,
     "mode": "direct_answer",
     "service": "unknown",
@@ -1952,8 +1952,8 @@
       ],
       "url": "http://www.geotherm.sk/dotacie-pre-domacnosti-sa-minuli/"
     },
-    "answer": "### Dotácie a vaše možnosti\n\nRozumieme vášmu záujmu o dotácie. Aj keď sa aktuálne prostriedky môžu minúť, radi vám pomôžeme preskúmať vaše možnosti. Geotherm vám môže pomôcť overiť podmienky pre získanie podpory a pripraviť návrh riešenia, ktoré bude pre vás optimálne.\n\nNavrhujeme krátku konzultáciu, počas ktorej preveríme možnosti dotácií a naceníme vaše ideálne riešenie, či už ide o tepelné čerpadlo, rekuperáciu, klimatizáciu alebo podlahové kúrenie.",
-    "ms": 2338,
+    "answer": "### Dotácie na bývanie\n\nRozumieme vášmu záujmu o dotácie. V súčasnosti sa ich dostupnosť môže meniť.\n\nGeotherm vám môže pomôcť s overením aktuálnych podmienok a možností financovania pre vaše riešenie. Môžeme vám navrhnúť optimálne riešenie pre vašu domácnosť, či už ide o tepelné čerpadlo, rekuperáciu, klimatizáciu alebo podlahové kúrenie.\n\nOdporúčame krátku konzultáciu, kde preveríme vaše možnosti a pripravíme návrh.",
+    "ms": 1976,
     "llmUsed": true,
     "mode": "direct_answer",
     "service": "subsidy",
@@ -1974,8 +1974,8 @@
       ],
       "url": "http://www.geotherm.sk/mimoriadna-dotacia-na-tepelne-cerpadla/"
     },
-    "answer": "### Pomoc s dotáciou\n\nÁno, s dotáciami vám môžeme pomôcť.Bez posúdenia domu, návrhu a aktuálnych podmienok by som negarantoval cenu, dotáciu, úsporu ani návratnosť. Geotherm vám vie pomôcť overiť podmienky a navrhnúť ďalší postup.\n\nRadi vám pomôžeme s konzultáciou a nacenením vhodného riešenia, ktoré môže zahŕňať tepelné čerpadlo, rekuperáciu, klimatizáciu alebo podlahové kúrenie.",
-    "ms": 2270,
+    "answer": "### Pomoc s dotáciou na tepelné čerpadlá\n\nÁno, radi vám pomôžeme s informáciami ohľadom dotácií na tepelné čerpadlá.Bez posúdenia domu, návrhu a aktuálnych podmienok by som negarantoval cenu, dotáciu, úsporu ani návratnosť.\n\nSpoločnosť Geotherm vám môže pomôcť overiť aktuálne podmienky pre získanie dotácie a pripraviť návrh riešenia, ktoré môže zahŕňať napríklad tepelné čerpadlo, rekuperáciu, klimatizáciu alebo podlahové kúrenie.\n\nOdporúčame krátku konzultáciu, počas ktorej preveríme možnosti dotácie a nacenenie vášho projektu.",
+    "ms": 2291,
     "llmUsed": true,
     "mode": "direct_answer",
     "service": "subsidy",
@@ -1999,7 +1999,7 @@
       "url": "http://www.geotherm.sk/fotovoltaika-a-tepelne-cerpadlo/"
     },
     "answer": "### Fotovoltaika a tepelné čerpadlo\n\nFotovoltaika a tepelné čerpadlo môžu dávať zmysel ako spoločný systém, ale netreba sľubovať automatickú úsporu bez návrhu. Rozhodujú panely, menič, spotreba domu, riadenie prebytkov, výkon tepelného čerpadla a prípadný zásobník. Najlepší ďalší krok je konzultácia alebo nacenenie celej zostavy, aby sa potvrdilo, čo má pokryť fotovoltaika a čo tepelné čerpadlo.",
-    "ms": 2391,
+    "ms": 2535,
     "llmUsed": true,
     "mode": "direct_answer",
     "service": "heat_pump",
@@ -2019,7 +2019,7 @@
       "url": "http://www.geotherm.sk/podlahove-vykurovanie-v-rimskych-budovach/"
     },
     "answer": "### Podlahové vykurovanie\n\nPodlahové vykurovanie je nízkoteplotný systém, ktorý sa dobre kombinuje s tepelným čerpadlom a správnou reguláciou. Pri nacenení alebo nastavení rozhoduje plocha, skladba podlahy, rozdeľovače, zdroj tepla a to, či ide o novostavbu alebo rekonštrukciu. Praktický ďalší krok je konzultácia alebo nacenenie podľa plochy, projektu a fotiek rozdeľovača.\n\nJasné, ďalší krok je, aby sa vám vedel ozvať technik alebo obchodník a dohodol postup. Pošlite prosím telefón alebo e-mail, prípadne aj meno. Kontakt použijeme iba na spätné ozvanie k tomuto dopytu.",
-    "ms": 2216,
+    "ms": 2399,
     "llmUsed": true,
     "mode": "direct_answer",
     "service": "floor_heating",
@@ -2042,8 +2042,8 @@
       ],
       "url": "http://www.geotherm.sk/tepelne-cerpadlo-servis/"
     },
-    "answer": "### Servisný smer\n\nRozumiem, zariadenie hlási chybu. Pri poruche by som neradil žiadny svojpomocný zásah do zariadenia; najprv treba zistiť presný model, chybový kód a lokalitu, aby sa dalo posúdiť, či ide o servisný zásah a aký postup je bezpečný.\n\nPri zariadeniach montovaných inou firmou treba dostupnosť servisu potvrdiť podľa značky a prípadu.\n\nPošli mi prosím model alebo fotku štítku, chybový kód z displeja a mesto, kde je zariadenie.\n\nIde o existujúce zariadenie s poruchou, pravidelný servis, alebo zvažuješ výmenu za nové riešenie?",
-    "ms": 2306,
+    "answer": "### Servisný smer\n\nRozumiem, zariadenie hlási chybu. Pri poruche by som neradil žiadny svojpomocný zásah do zariadenia; najprv treba zistiť presný model, chybový kód a lokalitu, aby sa dalo posúdiť, či ide o servisný zásah a aký postup je bezpečný.\n\nPri zariadeniach montovaných inou firmou treba dostupnosť servisu potvrdiť podľa značky a prípadu.\n\nPošlite mi prosím model alebo fotku štítku, chybový kód z displeja a mesto, kde je zariadenie.\n\nIde o existujúce zariadenie s poruchou, pravidelný servis, alebo zvažujete výmenu za nové riešenie?",
+    "ms": 2150,
     "llmUsed": true,
     "mode": "service_fault_triage",
     "service": "service",
