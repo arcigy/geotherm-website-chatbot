@@ -3944,9 +3944,9 @@ function buildCrmOutcome(input: {
     /(kontakt|zavol|telefon|email|e mail|objedn|termin|prist|prísť|vyjazd|urgent|havar|kedy)/.test(normalizedLeadMessage);
   const explicitContactIntent = ["inspection", "quote", "callback"].includes(leadIntent) || serviceContactRequest;
   const shouldAskContact = !hasContact && (explicitContactIntent || (input.closureTriggered && score >= 75));
-  const requestedFields = shouldAskContact ? ["phone_or_email", "name"] : [];
+  const requestedFields = shouldAskContact ? ["name", "phone", "email"] : [];
   const nextQuestion = shouldAskContact
-    ? "Jasné, ďalší krok je, aby sa vám vedel ozvať technik alebo obchodník a dohodol postup. Pošlite prosím telefón alebo e-mail, prípadne aj meno. Kontakt použijeme iba na spätné ozvanie k tomuto dopytu."
+    ? "Jasné, ďalší krok je, aby sa vám vedel ozvať technik alebo obchodník a dohodol postup. Pošlite prosím meno, telefón a e-mail. Kontakt použijeme iba na spätné ozvanie k tomuto dopytu."
     : null;
   const nextAction = statusNextAction(status, contact);
   let answer = input.answer;
@@ -4304,7 +4304,7 @@ function companyPracticalDirectAnswer(message: string): DirectAnswerDecision | n
   if (/(chcem|potrebujem|dohodnut|dohodnúť|dat|dať|dajme|dame|dáme|riesit|riešiť).*(stretn|meeting|konzult|termin|termín)|(?:stretn|meeting|konzult).*(geotherm|technik|obchodnik|ponuk|nacen)/.test(text)) {
     return answerBase(
       "Dohodnutie konzultácie",
-      "Áno, v tomto bode už dáva zmysel dohodnúť krátku konzultáciu alebo stretnutie s Geotherm a pripraviť nacenenie podľa rozsahu. Pošli ideálne telefón alebo e-mail, lokalitu a stručne čo riešiš; pri tepelnom čerpadle pomôžu aj fotky kotolne alebo základné údaje o dome.",
+      "Áno, v tomto bode už dáva zmysel dohodnúť krátku konzultáciu alebo stretnutie s Geotherm a pripraviť nacenenie podľa rozsahu. Pošlite prosím meno, telefón a e-mail, lokalitu a stručne čo riešite; pri tepelnom čerpadle pomôžu aj fotky kotolne alebo základné údaje o dome.",
       "meeting_consultation_handoff",
       "contact",
       "company-truth kontakt konzultacia stretnutie nacenenie Geotherm telefon email",
@@ -6494,7 +6494,7 @@ function directAnswerDecision(message: string, state: QualificationState, route:
       answerMode: "handoff_cta",
       reason: "direct_large_object_quote_contact_request",
       answer:
-        "### Kontakt pre individuálne nacenenie\n\nPri takomto veľkom objekte by už ďalšie odhady v chate neboli fér. Najlepší ďalší krok je posunúť dopyt obchodníkovi alebo technikovi Geotherm na individuálne nacenenie.\n\nPošlite prosím meno, telefón alebo e-mail, lokalitu a stručne rozsah objektu. Kontakt použijeme na spätné ozvanie k tomuto dopytu.",
+        "### Kontakt pre individuálne nacenenie\n\nPri takomto veľkom objekte by už ďalšie odhady v chate neboli fér. Najlepší ďalší krok je posunúť dopyt obchodníkovi alebo technikovi Geotherm na individuálne nacenenie.\n\nPošlite prosím meno, telefón a e-mail, lokalitu a stručne rozsah objektu. Kontakt použijeme na spätné ozvanie k tomuto dopytu.",
       serviceIntent: "contact",
       retrievalQuery: "company-truth velky objekt nad 300 m2 kontakt obchodnik individualne nacenenie Geotherm",
       topic: "large_object_quote_contact_request",
@@ -6509,7 +6509,7 @@ function directAnswerDecision(message: string, state: QualificationState, route:
       answerMode: "price_answer",
       reason: "direct_large_object_no_price_guess",
       answer:
-        "### Veľký objekt - individuálne nacenenie\n\nPri objekte nad 300 m² by som orientačnú cenu tepelného čerpadla s montážou neodhadoval. Bežné cenové rozpätia pre rodinné domy môžu byť pri takejto ploche zavádzajúce, lebo rozhoduje tepelná strata, počet okruhov, zdroj tepla, TÚV, hydraulika, regulácia a prípadné kaskádové riešenie.\n\nNajlepší ďalší krok je individuálny projekt a konzultácia s Geotherm. Pošlite prosím meno, telefón alebo e-mail, lokalitu a základné podklady; obchodník pripraví ďalší postup a nacenenie.",
+        "### Veľký objekt - individuálne nacenenie\n\nPri objekte nad 300 m² by som orientačnú cenu tepelného čerpadla s montážou neodhadoval. Bežné cenové rozpätia pre rodinné domy môžu byť pri takejto ploche zavádzajúce, lebo rozhoduje tepelná strata, počet okruhov, zdroj tepla, TÚV, hydraulika, regulácia a prípadné kaskádové riešenie.\n\nNajlepší ďalší krok je individuálny projekt a konzultácia s Geotherm. Pošlite prosím meno, telefón a e-mail, lokalitu a základné podklady; obchodník pripraví ďalší postup a nacenenie.",
       serviceIntent: "contact",
       retrievalQuery: "company-truth pricing-rules velky objekt nad 300 m2 individualne nacenenie kontakt Geotherm",
       topic: "large_object_no_price_guess",
@@ -6523,7 +6523,7 @@ function directAnswerDecision(message: string, state: QualificationState, route:
       answerMode: "handoff_cta",
       reason: "direct_quote_inspection_contact_request",
       answer:
-        "### Cenová ponuka a obhliadka\n\nÁno, toto už je dopyt na nacenenie alebo obhliadku. Termín ani cenu v chate nepotvrdzujem, ale viem pripraviť podklady pre obchodníka.\n\nPošlite prosím meno, telefón alebo e-mail, lokalitu a stručne čo chcete riešiť. Obchodník Geotherm sa potom ozve a potvrdí ďalší postup alebo možný termín.",
+        "### Cenová ponuka a obhliadka\n\nÁno, toto už je dopyt na nacenenie alebo obhliadku. Termín ani cenu v chate nepotvrdzujem, ale viem pripraviť podklady pre obchodníka.\n\nPošlite prosím meno, telefón a e-mail, lokalitu a stručne čo chcete riešiť. Obchodník Geotherm sa potom ozve a potvrdí ďalší postup alebo možný termín.",
       serviceIntent: "quote",
       retrievalQuery: "company-truth cenova ponuka obhliadka kontakt obchodnik termin nacenenie Geotherm",
       topic: "quote_inspection_contact_request",
@@ -6652,7 +6652,7 @@ function directAnswerDecision(message: string, state: QualificationState, route:
       answerMode: "direct_answer",
       reason: "direct_appointment_time_needs_confirmation",
       answer:
-        "### Termín treba potvrdiť\n\nNavrhnutý čas beriem iba ako preferenciu, nie ako potvrdený termín. Chatbot nemá prístup do kalendára technikov ani obchodníkov, preto obhliadku alebo servisný výjazd neviem potvrdiť.\n\nNajlepší ďalší krok je poslať meno, telefón alebo e-mail, lokalitu a stručný rozsah. Obchodník alebo technik Geotherm potom potvrdí reálny možný termín.",
+        "### Termín treba potvrdiť\n\nNavrhnutý čas beriem iba ako preferenciu, nie ako potvrdený termín. Chatbot nemá prístup do kalendára technikov ani obchodníkov, preto obhliadku alebo servisný výjazd neviem potvrdiť.\n\nNajlepší ďalší krok je poslať meno, telefón a e-mail, lokalitu a stručný rozsah. Obchodník alebo technik Geotherm potom potvrdí reálny možný termín.",
       serviceIntent: "contact",
       retrievalQuery: "company-truth termin obhliadka kapacita kontakt obchodnik technik Geotherm",
       topic: "appointment_time_confirmation_guard",
@@ -7041,8 +7041,8 @@ function directAnswerDecision(message: string, state: QualificationState, route:
       answerMode: "service_fault_triage",
       reason: "direct_service_fault_context_followup",
       answer: wantsTechnician
-        ? "### Servisný zásah\n\nRozumiem, v tomto bode už netreba ďalší technický dotazník. Pri servise je dôležité nerobiť svojpomocný zásah; Geotherm potrebuje hlavne lokalitu, kontakt a ak vieš, aj značku/model alebo fotku štítku. Pošli mesto a telefón alebo e-mail, aby sa dal preveriť servisný postup."
-        : "### Servisný smer\n\nBeriem to ako pokračovanie servisného problému. Ak poznáš značku alebo kód, pomáha to, ale pri staršom zariadení stačí aj fotka štítku a krátky popis prejavu. Pri cudzích montážach treba dostupnosť servisu potvrdiť podľa značky a prípadu. Ďalší krok je doplniť lokalitu a kontakt.",
+        ? "### Servisný zásah\n\nRozumiem, v tomto bode už netreba ďalší technický dotazník. Pri servise je dôležité nerobiť svojpomocný zásah; Geotherm potrebuje hlavne lokalitu, kontakt a ak viete, aj značku/model alebo fotku štítku. Pošlite mesto a telefón alebo e-mail, aby sa dal preveriť servisný postup."
+        : "### Servisný smer\n\nBeriem to ako pokračovanie servisného problému. Ak poznáte značku alebo kód, pomáha to, ale pri staršom zariadení stačí aj fotka štítku a krátky popis prejavu. Pri cudzích montážach treba dostupnosť servisu potvrdiť podľa značky a prípadu. Ďalší krok je doplniť lokalitu a kontakt.",
       serviceIntent: wantsTechnician ? "contact" : "service_fault",
       retrievalQuery: "company-truth servis porucha znacka model chybovy kod lokalita kontakt technik Geotherm",
       topic: "service_fault_context_followup",
@@ -7130,7 +7130,7 @@ function directAnswerDecision(message: string, state: QualificationState, route:
       answerMode: "price_answer",
       reason: "direct_large_object_no_price_guess",
       answer:
-        "### Veľký objekt - individuálne nacenenie\n\nPri objekte nad 300 m² by som orientačnú cenu tepelného čerpadla s montážou neodhadoval. Bežné cenové rozpätia pre rodinné domy môžu byť pri takejto ploche zavádzajúce, lebo rozhoduje tepelná strata, počet okruhov, zdroj tepla, TÚV, hydraulika, regulácia a prípadné kaskádové riešenie.\n\nNajlepší ďalší krok je individuálny projekt a konzultácia s Geotherm. Pošlite prosím meno, telefón alebo e-mail, lokalitu a základné podklady; obchodník pripraví ďalší postup a nacenenie.",
+        "### Veľký objekt - individuálne nacenenie\n\nPri objekte nad 300 m² by som orientačnú cenu tepelného čerpadla s montážou neodhadoval. Bežné cenové rozpätia pre rodinné domy môžu byť pri takejto ploche zavádzajúce, lebo rozhoduje tepelná strata, počet okruhov, zdroj tepla, TÚV, hydraulika, regulácia a prípadné kaskádové riešenie.\n\nNajlepší ďalší krok je individuálny projekt a konzultácia s Geotherm. Pošlite prosím meno, telefón a e-mail, lokalitu a základné podklady; obchodník pripraví ďalší postup a nacenenie.",
       serviceIntent: "contact",
       retrievalQuery: "company-truth pricing-rules velky objekt nad 300 m2 individualne nacenenie kontakt Geotherm",
       topic: "large_object_no_price_guess",

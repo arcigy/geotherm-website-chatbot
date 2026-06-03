@@ -137,7 +137,9 @@ async function main(): Promise<void> {
     allTurns.push({ scenario: "missing_contact", message: "chcem obhliadku", response: missing });
     assert(missing.leadCapture.shouldAsk === true, "missing contact should ask for contact");
     assert(missing.lead.status === "missing_contact", `missing contact status mismatch: ${missing.lead.status}`);
-    assert((missing.leadCapture.requestedFields || []).includes("phone_or_email"), "missing contact should request phone/email");
+    assert((missing.leadCapture.requestedFields || []).includes("name"), "missing contact should request name");
+    assert((missing.leadCapture.requestedFields || []).includes("phone"), "missing contact should request phone");
+    assert((missing.leadCapture.requestedFields || []).includes("email"), "missing contact should request email");
 
     const quoteTurns = await runFlow(
       endpoint,
