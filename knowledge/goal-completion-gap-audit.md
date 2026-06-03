@@ -1,7 +1,7 @@
 # Geotherm Chatbot Goal Gap Audit
 
-Generated: 2026-06-03T14:50:20.649Z
-Audit base commit: 85228b3
+Generated: 2026-06-03T15:06:29.858Z
+Audit base commit: 8f47af3
 
 ## Evidence Gates
 

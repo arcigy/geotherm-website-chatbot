@@ -4213,6 +4213,16 @@ function companyPracticalDirectAnswer(message: string): DirectAnswerDecision | n
     );
   }
 
+  if (/(slovnik|slovník|pojmov|pojmy).*(vykurov|kuren|kúren)|(?:vykurov|kuren|kúren).*(slovnik|slovník|pojmov|pojmy)/.test(text)) {
+    return answerBase(
+      "Pojmy vo vykurovaní",
+      "Vykurovacie pojmy viem vysvetliť prakticky podľa toho, čo riešite: zdroj tepla, radiátory alebo podlahové kúrenie, reguláciu, teplú vodu, servis alebo úsporu nákladov. Samotný slovník je skôr orientačný; pri reálnom rozhodovaní je dôležitejšie navrhnúť celý systém pre konkrétny dom. Najlepší ďalší krok je krátka konzultácia alebo nacenenie podľa cieľa a typu objektu.",
+      "heating_terms_scope",
+      "process",
+      "company-truth vykurovanie slovnik pojmov regulacia radiator podlahove kurenie tepelne cerpadlo Geotherm",
+    );
+  }
+
   if (/energetick\w* tried|tepelnotechnick\w* vlastnost|\ba0\b|nizkoenergeticky|nízkoenergetický/.test(text)) {
     return answerBase(
       "Energetická trieda A0 a nízkoenergetický dom",
@@ -8306,6 +8316,8 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     ) {
       route.serviceType = "complex_solution";
     }
+    if (directDecision.topic && directDecision.topic === "heating_terms_scope") route.serviceType = "complex_solution";
+    if (directDecision.topic && /^(preventive_service_scope|annual_maintenance_scope)$/.test(directDecision.topic)) route.serviceType = "service";
     if (directDecision.topic && directDecision.topic === "system_fluids_scope") route.serviceType = "service";
     if (directDecision.topic && /^(gas_certification|boiler_certificate_scope)$/.test(directDecision.topic)) route.serviceType = "service";
     if (directDecision.serviceIntent === "service_fault") route.serviceType = "service";

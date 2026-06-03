@@ -202,6 +202,13 @@ function validate(testCase: Case, body: Awaited<ReturnType<typeof createChatResp
   ) {
     failures.push("preventive service was treated as a fault triage");
   }
+  if (
+    testCase.topic === "service" &&
+    /(pravideln|preventiv|udrzb|prehliad|neodklad|oplat)/.test(normalize(testCase.question)) &&
+    (String(debug.serviceType || "") === "heat_pump" || String(debug.serviceIntent || "") === "service_fault")
+  ) {
+    failures.push("preventive service misrouted");
+  }
   if (/strucne k otazke|co z toho chces upresnit|prepac teraz neviem|pagetitle|sectionheading|manual:\/\//.test(answer)) failures.push("weak fallback or raw source leaked");
   if (/bezplatna obhliadka|nezavazna obhliadka|garantujeme dotaciu|kompletne vybavime dotaciu|servisujeme cudzie montaze/.test(answer)) failures.push("unconfirmed company claim");
   return failures;
