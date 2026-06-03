@@ -128,6 +128,13 @@ function validate(testCase: Case, body: Awaited<ReturnType<typeof createChatResp
   if ((body.responseTimeMs || 0) > maxMs) failures.push(`responseTimeMs>${maxMs}: ${body.responseTimeMs}`);
   if (sources < 1) failures.push("sources<1");
   if (!testCase.expected.some((term) => answer.includes(normalize(term)))) failures.push(`missing expected topic term: ${testCase.expected.join("/")}`);
+  if (
+    testCase.topic === "service" &&
+    /(pravideln|preventiv|udrzb|prehliad|neodklad|oplat)/.test(normalize(testCase.question)) &&
+    /(hlasi chybu|chybovy kod|pri poruche|zariadenie hlasi|konkretnu poruchu)/.test(answer)
+  ) {
+    failures.push("preventive service was treated as a fault triage");
+  }
   if (/strucne k otazke|co z toho chces upresnit|prepac teraz neviem|pagetitle|sectionheading|manual:\/\//.test(answer)) failures.push("weak fallback or raw source leaked");
   if (/bezplatna obhliadka|nezavazna obhliadka|garantujeme dotaciu|kompletne vybavime dotaciu|servisujeme cudzie montaze/.test(answer)) failures.push("unconfirmed company claim");
   return failures;

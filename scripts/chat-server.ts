@@ -2821,6 +2821,7 @@ function isPracticalCompanyQuestionThatSkipsServiceFaultTemplate(message: string
     /servis.*mont|mont.*servis/.test(text) ||
     /(preco|prečo).*(stale|stále).*(pytate|pýtate)|\bzhr|to je cele|to je celé/.test(text) ||
     /\bdot.*servis|(?:servis).*\bdot/.test(text) ||
+    /(pravideln|preventiv|udrzb|údržb|prehliad|kontrol|neodklad|oplat).*(servis|tepel|cerpad|čerpad)|(?:servis|tepel|cerpad|čerpad).*(pravideln|preventiv|udrzb|údržb|prehliad|kontrol|neodklad|oplat)/.test(text) ||
     (!/(oplat|ma zmysel|cena|servis|dotac|montaz|porucha|problem|huci|hluci)/.test(text) &&
       (/^(som|sme)\s+v\s+[a-z-]{3,}(?:\s+[a-z-]{3,})?$/.test(text) || /^(som|sme)\s+(pri|z|zo)\s+[a-z-]{3,}(?:\s+[a-z-]{3,})?$/.test(text))) ||
     (!/(kotol|kotla|kotlov|kotly)/.test(text) && /(robite|robíte).*(servis|montaz|montáž)|(?:servis|montaz|montáž).*(robite|robíte)/.test(text))
@@ -4656,13 +4657,14 @@ function companyPracticalDirectAnswer(message: string): DirectAnswerDecision | n
     );
   }
 
-  if (/\bgree\b/.test(text)) {
+  if (/\b(gree|toshiba|mitsubishi)\b/.test(text)) {
+    const brand = text.includes("toshiba") ? "Toshiba" : text.includes("mitsubishi") ? "Mitsubishi" : "GREE";
     return answerBase(
-      "Klimatizácia GREE",
-      "GREE by som bral ako klimatizačnú tému, nie ako potvrdené portfólio tepelných čerpadiel voda/voda alebo vzduch/voda. Pri klimatizácii treba overiť miestnosti, výkon, umiestnenie vnútornej a vonkajšej jednotky, hlučnosť a servis. Ak chceš nové chladenie, ďalší krok je konzultácia a nacenenie podľa miestností.",
-      "gree_air_conditioning_scope",
+      `Klimatizácia ${brand}`,
+      `${brand} by som bral ako klimatizačnú tému, nie ako potvrdené portfólio tepelných čerpadiel voda/voda alebo vzduch/voda. Pri klimatizácii treba overiť miestnosti, výkon, umiestnenie vnútornej a vonkajšej jednotky, hlučnosť a servis. Praktický ďalší krok je konzultácia a nacenenie podľa miestností a montážnych možností.`,
+      "air_conditioning_brand_scope",
       "brand_model",
-      "service-card-air-conditioning klimatizacia GREE chladenie vonkajsia jednotka servis Geotherm",
+      `service-card-air-conditioning klimatizacia ${brand} chladenie vonkajsia jednotka servis Geotherm`,
     );
   }
 
@@ -4856,6 +4858,16 @@ function companyPracticalDirectAnswer(message: string): DirectAnswerDecision | n
       "warranty_service_check",
       "service_fault",
       "company-truth servis zaruka pravidelna udrzba podmienky zaruky Geotherm",
+    );
+  }
+
+  if (/(pravideln|preventiv|udrzb|údržb|prehliad|kontrol|neodklad|oplat).*(servis|tepel|cerpad|čerpad)|(?:servis|tepel|cerpad|čerpad).*(pravideln|preventiv|udrzb|údržb|prehliad|kontrol|neodklad|oplat)/.test(text)) {
+    return answerBase(
+      "Pravidelný servis",
+      "Pravidelný servis alebo preventívna prehliadka má zmysel hlavne preto, aby sa zariadenie skontrolovalo skôr, než sa prejaví porucha. Pri tepelnom čerpadle sa overuje stav zariadenia, nastavenie, prevádzka, čistota a podmienky záruky. Neberiem to ako poruchu, kým nepíšete konkrétny problém.\n\nPraktický ďalší krok je konzultácia alebo servisné preverenie podľa značky, modelu, lokality a toho, či ide o zariadenie od Geotherm.",
+      "preventive_service_scope",
+      "process",
+      "company-truth pravidelny servis preventivna udrzba tepelne cerpadlo zaruka Geotherm",
     );
   }
 
@@ -6066,6 +6078,8 @@ function directAnswerDecision(message: string, state: QualificationState, route:
       "buderus_brand_scope",
       "buderus_logamax_boiler_scope",
       "third_party_service",
+      "preventive_service_scope",
+      "air_conditioning_brand_scope",
     ].includes(priorityPractical.topic || "")
   ) {
     return priorityPractical;
@@ -8956,6 +8970,7 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
       "device_label_photo",
       "possible_settings_issue",
       "service_wait_time",
+      "preventive_service_scope",
       "diy_repair",
       "no_email",
       "needed_inputs",
@@ -8977,6 +8992,7 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
       "emergency_service_scope",
       "post_warranty_service_scope",
       "pressure_drop_service_scope",
+      "preventive_service_scope",
       "regular_service_booking",
       "generic_service_scope",
       "booking_lead_time",
@@ -9028,6 +9044,7 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
       "buderus_brand_scope",
       "buderus_logamax_boiler_scope",
       "gree_air_conditioning_scope",
+      "air_conditioning_brand_scope",
       "air_conditioning_general_scope",
       "solar_collector_tank_scope",
       "subsidy_conditions_scope",
