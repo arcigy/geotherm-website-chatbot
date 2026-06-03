@@ -2529,6 +2529,18 @@ function normalizeServiceIntent(value: unknown, fallback: ServiceIntent): Servic
   return serviceIntents.includes(value as ServiceIntent) ? (value as ServiceIntent) : fallback;
 }
 
+function isProductOrServiceContext(serviceType: ServiceType): boolean {
+  return serviceType !== "unknown" && serviceType !== "company";
+}
+
+function hasNoiseTerm(text: string): boolean {
+  return /\b(?:najtich\w*|tiche|tichy|ticha|ticho|tichu|hluk|hlucn\w*|hlucnost|huci|hucat|hucanie|hucny|hucne)\b|hlučn|hlučnosť|hučí|hučať|hučanie|tiché|tichý/.test(text);
+}
+
+function mentionsHeatPumpTerm(text: string): boolean {
+  return /(?:tepel|cerpad|čerpad|\btc\b|\btč\b)/.test(text);
+}
+
 function serviceLabel(serviceType: ServiceType): string {
   switch (serviceType) {
     case "heat_pump":
@@ -6608,7 +6620,7 @@ function priceDirectAnswer(message: string, state: QualificationState): DirectAn
       "",
       "Pri akumulačnej nádrži platí: nie je automaticky súčasťou rozsahu; rozhoduje konkrétna ponuka.",
     ].join("\n");
-  } else if (/(najtich|tiche|tiché|hluk|hlucn|hlučn)/.test(text) && /(najlacn|najlacnej|lacne|lacné|cena|cheapest)/.test(text)) {
+  } else if (hasNoiseTerm(text) && /(najlacn|najlacnej|lacne|lacné|cena|cheapest)/.test(text)) {
     reason = "direct_quietest_cheapest_pressure";
     topic = "quietest_cheapest_scope";
     answer = [
@@ -6778,6 +6790,18 @@ function directAnswerDecision(message: string, state: QualificationState, route:
       topic: "adversarial_price_guarantee_guard",
     };
   }
+  if (/(garant|garantujete|zaruc|zaruč).*(navratnost|návratnosť)|(?:navratnost|návratnosť).*(garant|garantujete|zaruc|zaruč)/.test(text)) {
+    return {
+      triggered: true,
+      answerMode: "price_answer",
+      reason: "direct_roi_guarantee_question",
+      answer:
+        "### Návratnosť tepelného čerpadla\n\nNávratnosť do piatich rokov by som **negarantoval** bez výpočtu pre konkrétny dom a konkrétnu ponuku. Závisí od dnešnej spotreby, cien energií, zateplenia, radiátorov alebo podlahovky, regulácie, servisu a výslednej ceny realizácie.\n\nPraktický ďalší krok je konzultácia a nacenenie, kde sa porovnajú dnešné náklady s navrhnutým riešením.",
+      serviceIntent: "price",
+      retrievalQuery: "company-truth navratnost uspora tepelne cerpadlo garantovanie cena ponuka Geotherm",
+      topic: "savings_roi_scope",
+    };
+  }
   if (/(garant|zaruc|zaruč).*(dotac|dotác|prispev|príspev|podpor)|(?:dotac|dotác|prispev|príspev|podpor).*(garant|zaruc|zaruč)/.test(text)) {
     return {
       triggered: true,
@@ -6893,7 +6917,7 @@ function directAnswerDecision(message: string, state: QualificationState, route:
       topic: "preventive_service_scope",
     };
   }
-  if (/(tich|hlučn|hlucn|hluk|huci|hučí|hucat|hučať).*(tepel|cerpad|čerpad|\btc\b|\btč\b)|(?:tepel|cerpad|čerpad|\btc\b|\btč\b).*(tich|hlučn|hlucn|hluk|huci|hučí|hucat|hučať)/.test(text)) {
+  if (hasNoiseTerm(text) && mentionsHeatPumpTerm(text)) {
     return {
       triggered: true,
       answerMode: "direct_answer",
@@ -6915,6 +6939,36 @@ function directAnswerDecision(message: string, state: QualificationState, route:
       serviceIntent: "service_fault",
       retrievalQuery: "service-card-service hluk huci kotolna servis model stitok chybovy kod lokalita Geotherm",
       topic: "service_noise_triage",
+    };
+  }
+  if (
+    /(plan obnovy|plán obnovy|dotac|dotác|prispev|príspev|podpor|poukaz)/.test(text) &&
+    /(porad|odporuc|odporúč|nacen|ponuk|cenu|co by ste|čo by ste)/.test(text)
+  ) {
+    return {
+      triggered: true,
+      answerMode: "subsidy_answer",
+      reason: "direct_plan_obnovy_subsidy_quote_scope",
+      answer:
+        "### Plán obnovy a dotácia\n\nPri Pláne obnovy by som najprv overil, či váš dom a plánované riešenie spĺňajú aktuálne podmienky podpory. Dotáciu ani jej výšku bez overenia nesľubujem, ale dá sa pripraviť technický smer a nacenenie tak, aby bolo jasné, čo môže byť oprávnené.\n\nPraktický ďalší krok je konzultácia: preveriť typ domu, plánovanú technológiu, dostupné podklady a až potom pripraviť ponuku alebo ďalší postup k podpore.",
+      serviceIntent: "subsidy",
+      retrievalQuery: "company-truth plan obnovy dotacia podpora podmienky overit nacenenie Geotherm",
+      topic: "plan_obnovy_subsidy_scope",
+    };
+  }
+  if (
+    /(fotovolt|fotovoltaik|panel).*(tepelne cerpad|tepelné čerpad|cerpad|čerpad|\btc\b|\btč\b)|(?:tepelne cerpad|tepelné čerpad|cerpad|čerpad|\btc\b|\btč\b).*(fotovolt|fotovoltaik|panel)/.test(text) &&
+    /(porad|odporuc|odporúč|nacen|ponuk|cenu|co by ste|čo by ste)/.test(text)
+  ) {
+    return {
+      triggered: true,
+      answerMode: "handoff_cta",
+      reason: "direct_photovoltaics_heat_pump_quote_scope",
+      answer:
+        "### Fotovoltaika a tepelné čerpadlo\n\nPri kombinácii fotovoltaiky a tepelného čerpadla by som riešil celý systém naraz: fotovoltaické panely, menič, spotrebu domu, výkon tepelného čerpadla, TÚV, reguláciu a spôsob využitia elektriny. Bez návrhu by som nesľuboval konkrétnu úsporu ani cenu.\n\nNajlepší ďalší krok je konzultácia a nacenenie zostavy, aby bolo jasné, čo majú pokryť panely a ako bude tepelné čerpadlo pracovať s domom.",
+      serviceIntent: "quote",
+      retrievalQuery: "company-truth fotovoltaika panely tepelne cerpadlo nacenenie ponuka Geotherm",
+      topic: "photovoltaics_heat_pump_scope",
     };
   }
   if (isPureSmallTalkMessage(message)) {
@@ -7879,6 +7933,14 @@ function answerHasNewBuildPortfolioClosure(answer: string): boolean {
   const hasHandoff = /(konzult|stretn|nacen|nacenenie|cenova ponuka|cenovu ponuku)/.test(normalized);
   const asksForDocs = /(posli|dopl[nn]|potrebujem|potrebujeme|mas|máš).*(projekt|energeticky certifikat|tepelna strata|tepelnu stratu)/.test(normalized);
   return answerHasRecommendationClosure(answer) && hasPortfolioOption && hasHandoff && !asksForDocs;
+}
+
+function answerHasExistingRadiatorPortfolioClosure(answer: string): boolean {
+  const normalized = normalizePolicyText(answer);
+  const hasPortfolioOption = /(s2125|arotherm|aro therm|nibe|vaillant)/.test(normalized);
+  const hasRadiatorContext = normalized.includes("radiator");
+  const hasHandoff = /(konzult|stretn|nacen|nacenenie|cenova ponuka|cenovu ponuku)/.test(normalized);
+  return answerHasRecommendationClosure(answer) && hasPortfolioOption && hasRadiatorContext && hasHandoff;
 }
 
 function answerHasRequiredVerdict(answer: string, state: QualificationState): boolean {
@@ -8973,13 +9035,22 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     null,
     2,
   );
-  let routerLlm = await callLlmText({
-    systemPrompt: routerSystemPrompt,
-    prompt: routerInput,
-    maxOutputTokens: 240,
-    timeoutMs: Math.min(Number.parseInt(process.env.LLM_ROUTER_TIMEOUT_MS || "1200", 10), 1200),
-    responseMimeType: "application/json",
-  });
+  const preRouterPolicy = classifyAnswerPolicy(message, "unknown");
+  let routerLlm =
+    preRouterPolicy.kind === "adversarial"
+      ? {
+          provider: "gemini" as const,
+          model: "deterministic",
+          content: "",
+          error: "deterministic_policy_skip",
+        }
+      : await callLlmText({
+          systemPrompt: routerSystemPrompt,
+          prompt: routerInput,
+          maxOutputTokens: 240,
+          timeoutMs: Math.min(Number.parseInt(process.env.LLM_ROUTER_TIMEOUT_MS || "1200", 10), 1200),
+          responseMimeType: "application/json",
+        });
   const deterministicRoute = inferServiceRoute(message, previousState, previousMessages);
   const route = parseRouterResponse(routerLlm.content);
   const routerFallbackText = normalizePolicyText(message);
@@ -9023,6 +9094,10 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
       /^[A-ZÁÄČĎÉÍĽĹŇÓÔŔŠŤÚÝŽ][\p{L}\s-]{2,},\s*/u.test(message.trim()));
   const previousServiceType = normalizeServiceType(previousState.service_type, "unknown");
   const previousServiceIntent = normalizeServiceIntent(previousState.service_intent, "general");
+  const contextualQuoteFollowup =
+    previousServiceType !== "unknown" &&
+    isProductOrServiceContext(previousServiceType) &&
+    /(chcem|potrebujem|prosim|prosím|ano|áno|jasne).*(nacen|ponuk|cenu)|^(chcem\s+)?(?:to\s+)?nacenit$|^chcem ponuku$|^chcem nacenenie$/.test(routerFallbackText);
   const preservePreviousProductContext =
     previousServiceType !== "unknown" &&
     deterministicRoute.serviceType !== "unknown" &&
@@ -9086,6 +9161,18 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     if (deterministicRoute.serviceType !== "unknown") route.serviceType = deterministicRoute.serviceType;
     else if (route.serviceType === "service" && previousServiceType !== "service" && previousServiceType !== "unknown") route.serviceType = previousServiceType;
     if (deterministicRoute.serviceIntent !== "general") route.serviceIntent = deterministicRoute.serviceIntent;
+  }
+  if (contextualQuoteFollowup) {
+    route.serviceType = previousServiceType;
+    route.serviceIntent = "quote";
+    route.needsRetrieval = true;
+    route.retrievalQuery = `${serviceSearchKeyword(previousServiceType)} cenova ponuka nacenenie ${message}`;
+    route.directAnswer = null;
+    stateForTurn = {
+      ...stateForTurn,
+      service_type: previousServiceType,
+      service_intent: "quote",
+    };
   }
   if (
     explicitServiceSwitch &&
@@ -9272,6 +9359,14 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
       )
     ) {
       route.serviceType = "company";
+    }
+    if (
+      directDecision.topic &&
+      /^(quote_contact_request|quote_inspection_contact_request)$/.test(directDecision.topic) &&
+      previousServiceType !== "unknown" &&
+      isProductOrServiceContext(previousServiceType)
+    ) {
+      route.serviceType = previousServiceType;
     }
     if (directDecision.topic && /^(preventive_service_scope|annual_maintenance_scope)$/.test(directDecision.topic)) route.serviceType = "service";
     if (directDecision.topic && directDecision.topic === "system_fluids_scope") route.serviceType = "service";
@@ -9649,28 +9744,37 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
   const routerDirectAnswer = route.directAnswer ? cleanAnswerText(route.directAnswer) : "";
   let directAnswerComposedByLlm = false;
   let directAnswerFallbackUsed = false;
-  let composerLlm = await callLlmText({
-    systemPrompt: activeComposerSystemPrompt,
-    prompt: activeComposerInput,
-    maxOutputTokens: useFastOutOfScopeComposer ? 180 : useCompactDirectComposer ? 300 : useFastQualificationComposer ? 420 : directDecision.triggered ? 520 : 1200,
-    timeoutMs: useCompactDirectComposer
-      ? Math.min(Math.max(Number.parseInt(process.env.LLM_FAST_REQUEST_TIMEOUT_MS || "2500", 10), 1800), 2500)
-      : useFastOutOfScopeComposer
-        ? Math.min(Math.max(Number.parseInt(process.env.LLM_FAST_REQUEST_TIMEOUT_MS || "1600", 10), 1000), 1600)
-        : useFastQualificationComposer
-          ? Math.min(Math.max(Number.parseInt(process.env.LLM_FAST_REQUEST_TIMEOUT_MS || "3200", 10), 2400), 3200)
-      : directDecision.triggered
-      ? Math.min(Math.max(Number.parseInt(process.env.LLM_FAST_REQUEST_TIMEOUT_MS || "3500", 10), 3000), 3500)
-      : route.needsRetrieval
-      ? Math.min(Math.max(Number.parseInt(process.env.LLM_ANSWER_TIMEOUT_MS || "5000", 10), 3500), 5000)
-      : Math.min(Number.parseInt(process.env.LLM_FAST_REQUEST_TIMEOUT_MS || "3500", 10), 3500),
-    responseMimeType: "text/plain",
-    modelOverride:
-      directDecision.triggered || pureSmallTalkTurn || useFastQualificationComposer
-        ? process.env.GEMINI_FAST_FALLBACK_MODEL || "gemini-2.5-flash-lite"
-        : undefined,
-  });
-  if ((useFastQualificationComposer || useCompactDirectComposer) && (composerLlm.error || !composerLlm.content)) {
+  const skipComposerLlm = false;
+  let composerLlm = skipComposerLlm
+    ? {
+        used: false,
+        provider: "gemini" as const,
+        model: "deterministic",
+        content: adversarialRefusalAnswer(message),
+        error: "deterministic_policy_skip",
+      }
+    : await callLlmText({
+        systemPrompt: activeComposerSystemPrompt,
+        prompt: activeComposerInput,
+        maxOutputTokens: useFastOutOfScopeComposer ? 180 : useCompactDirectComposer ? 300 : useFastQualificationComposer ? 420 : directDecision.triggered ? 520 : 1200,
+        timeoutMs: useCompactDirectComposer
+          ? Math.min(Math.max(Number.parseInt(process.env.LLM_FAST_REQUEST_TIMEOUT_MS || "2500", 10), 1800), 2500)
+          : useFastOutOfScopeComposer
+            ? Math.min(Math.max(Number.parseInt(process.env.LLM_FAST_REQUEST_TIMEOUT_MS || "1600", 10), 1000), 1600)
+            : useFastQualificationComposer
+              ? Math.min(Math.max(Number.parseInt(process.env.LLM_FAST_REQUEST_TIMEOUT_MS || "3200", 10), 2400), 3200)
+          : directDecision.triggered
+          ? Math.min(Math.max(Number.parseInt(process.env.LLM_FAST_REQUEST_TIMEOUT_MS || "3500", 10), 3000), 3500)
+          : route.needsRetrieval
+          ? Math.min(Math.max(Number.parseInt(process.env.LLM_ANSWER_TIMEOUT_MS || "5000", 10), 3500), 5000)
+          : Math.min(Number.parseInt(process.env.LLM_FAST_REQUEST_TIMEOUT_MS || "3500", 10), 3500),
+        responseMimeType: "text/plain",
+        modelOverride:
+          directDecision.triggered || pureSmallTalkTurn || useFastQualificationComposer
+            ? process.env.GEMINI_FAST_FALLBACK_MODEL || "gemini-2.5-flash-lite"
+            : undefined,
+      });
+  if (!skipComposerLlm && (useFastQualificationComposer || useCompactDirectComposer) && (composerLlm.error || !composerLlm.content)) {
     const retryLlm = await callLlmText({
       systemPrompt: activeComposerSystemPrompt,
       prompt: activeComposerInput,
@@ -9680,7 +9784,7 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     });
     if (!retryLlm.error && retryLlm.content) composerLlm = retryLlm;
   }
-  if (directDecision.triggered && (composerLlm.error || !composerLlm.content)) {
+  if (!skipComposerLlm && directDecision.triggered && (composerLlm.error || !composerLlm.content)) {
     const directRetryLlm = await callLlmText({
       systemPrompt: activeComposerSystemPrompt,
       prompt: activeComposerInput,
@@ -10076,6 +10180,16 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
       directAnswerFallbackUsed = true;
     }
   }
+  if (
+    stateForTurn.area_m2 &&
+    stateForTurn.area_m2 > 300 &&
+    /(10\s?000|15\s?000|18\s?000|f2120|s2125|arotherm)/.test(normalizePolicyText(answer))
+  ) {
+    recordDiagnostic(answerDiagnostics.validatorsTriggered, "large_object_price_or_model_guess_repaired");
+    answer =
+      "### Veľký objekt - individuálne nacenenie\n\nPri objekte nad 300 m² by som cenu ani konkrétny model tepelného čerpadla v chate neodhadoval. Bežné rozpätia pre rodinné domy sú pri takejto ploche zavádzajúce, lebo rozhoduje tepelná strata, počet okruhov, TÚV, hydraulika, regulácia a prípadné kaskádové riešenie.\n\nNajlepší ďalší krok je individuálna konzultácia a nacenenie s Geotherm. Pošlite prosím meno, telefón, e-mail, lokalitu a stručný rozsah objektu; obchodník potom pripraví ďalší postup.";
+    directAnswerFallbackUsed = true;
+  }
   if (directDecision.triggered && directDecision.topic === "heating_curve_regulation_scope" && directDecision.answer) {
     const normalized = normalizePolicyText(answer);
     if (!normalized.includes("vykurov") || !normalized.includes("regul") || !normalized.includes("energi") || !normalized.includes("krivk")) {
@@ -10104,6 +10218,14 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     const normalized = normalizePolicyText(answer);
     if (!/(cena|ponuk)/.test(normalized) || !/(kontakt|telefon|email|e mail)/.test(normalized) || !answer.includes("\n\n")) {
       recordDiagnostic(answerDiagnostics.validatorsTriggered, "quote_contact_request_repaired");
+      answer = directDecision.answer;
+      directAnswerFallbackUsed = true;
+    }
+  }
+  if (directDecision.triggered && directDecision.topic === "plan_obnovy_subsidy_scope" && directDecision.answer) {
+    const normalized = normalizePolicyText(answer);
+    if (!/dot/.test(normalized) || !/podpor/.test(normalized) || !/over/.test(normalized)) {
+      recordDiagnostic(answerDiagnostics.validatorsTriggered, "plan_obnovy_required_terms_repaired");
       answer = directDecision.answer;
       directAnswerFallbackUsed = true;
     }
@@ -10477,7 +10599,9 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     !/(vonkajs|vonkajsi|vonkajsej|pod oknom|kontakt|ako vas|kde vas|servis.*montaz|montaz.*servis|dotac.*servis|servis.*dotac|zhrn|zhrň|to je cele|to je celé)/.test(
       normalizePolicyText(message),
     ) &&
-    ((isNewBuildFloorHeating(stateForTurn) && !answerHasNewBuildPortfolioClosure(answer)) || !answerHasRecommendationClosure(answer))
+    ((isNewBuildFloorHeating(stateForTurn) && !answerHasNewBuildPortfolioClosure(answer)) ||
+      (isExistingRadiatorHeatPump(stateForTurn) && !answerHasExistingRadiatorPortfolioClosure(answer)) ||
+      !answerHasRecommendationClosure(answer))
   ) {
     recordDiagnostic(answerDiagnostics.validatorsTriggered, "recommendation_closure_repaired");
     answer = validateAndRepairAnswer(expectedRecommendationClosureAnswer(stateForTurn, closureDecision), stateForTurn, route, message, answerDiagnostics);
@@ -10505,6 +10629,14 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     )
   ) {
     answer = `${answer.trim()}\n\nPri akumulačnej nádrži platí: nie je automaticky súčasťou rozsahu; rozhoduje konkrétna ponuka.`;
+  }
+  if (
+    directDecision.triggered &&
+    directDecision.topic === "buffer_tank_price_scope" &&
+    /automaticky zahrnut/.test(normalizePolicyText(answer))
+  ) {
+    recordDiagnostic(answerDiagnostics.validatorsTriggered, "buffer_tank_forbidden_phrase_repaired");
+    answer = priceDirectAnswer(message, stateForTurn).answer || answer;
   }
   if (directDecision.triggered && directDecision.topic === "weekends" && !/potvr/.test(normalizePolicyText(answer))) {
     answer = `${answer.trim()}\n\nVíkendový termín alebo výjazd treba vždy potvrdiť podľa typu prípadu, lokality a aktuálnej kapacity.`;
@@ -10712,7 +10844,7 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
       serviceIntent: route.serviceIntent,
     },
   });
-  const llmAnswerUsed = Boolean(composerLlm.content && !composerLlm.error);
+  const llmAnswerUsed = !skipComposerLlm && Boolean(composerLlm.content && !composerLlm.error);
   insertEvent({
     siteId: site.id,
     sessionId: session.id,
