@@ -28,8 +28,21 @@ type CaseResult = {
 const casesPath = path.join(process.cwd(), "knowledge", "advisor-tone-test-cases.json");
 const reportPath = path.join(process.cwd(), "knowledge", "llm-chat-quality-report.md");
 
+function repairMojibake(value: string): string {
+  if (!/[ÄĂĹÂ]/.test(value)) return value;
+  const replacements: Array<[RegExp, string]> = [
+    [/Ăˇ/g, "á"], [/Ă¤/g, "ä"], [/ÄŤ/g, "č"], [/ÄŹ/g, "ď"], [/Ă©/g, "é"], [/Ă­/g, "í"],
+    [/Äľ/g, "ľ"], [/Äş/g, "ĺ"], [/Ĺ/g, "ň"], [/Ăł/g, "ó"], [/Ă´/g, "ô"], [/Ĺ•/g, "ŕ"],
+    [/Ĺˇ/g, "š"], [/ĹĄ/g, "ť"], [/Ăş/g, "ú"], [/Ă˝/g, "ý"], [/Ĺľ/g, "ž"],
+    [/Ă/g, "Á"], [/Ă„/g, "Ä"], [/ÄŚ/g, "Č"], [/ÄŽ/g, "Ď"], [/Ă‰/g, "É"], [/Ă“/g, "Ó"],
+    [/Ă”/g, "Ô"], [/Ĺ /g, "Š"], [/Ĺ¤/g, "Ť"], [/Ăš/g, "Ú"], [/Ăť/g, "Ý"], [/Ĺ˝/g, "Ž"],
+    [/Â²/g, "²"], [/Â°C/g, "°C"], [/â‚¬/g, "€"], [/â€“/g, "-"], [/â€”/g, "-"], [/â€ž/g, "„"], [/â€ś/g, "“"],
+  ];
+  return replacements.reduce((current, [pattern, replacement]) => current.replace(pattern, replacement), value);
+}
+
 function norm(value: string): string {
-  return value
+  return repairMojibake(value)
     .toLowerCase()
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")

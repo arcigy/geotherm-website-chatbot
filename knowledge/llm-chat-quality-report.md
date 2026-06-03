@@ -1,11 +1,11 @@
 # LLM Chat Quality Report
 
-Generated: 2026-05-08T14:33:48.712Z
+Generated: 2026-06-03T19:52:40.262Z
 
 ## Summary
 
 - provider: gemini
-- model: gemini-flash-lite-latest
+- model: gemini-2.5-flash-lite
 - real LLM enabled: yes
 - LLM preflight: PASS
 - total single-turn tests: 60
@@ -29,51 +29,45 @@ None.
 
 ### Step 1
 
-intent=quote confidence=high lead=no score=40
+intent=quote confidence=high lead=no score=25
 
-**Krátka odpoveď:** Cena tepelného čerpadla závisí od viacerých faktorov, ako sú tepelné straty objektu a zvolené riešenie.
+### Cena a ponuka
 
-- Pre konkrétnu cenovú ponuku potrebujeme poznať viac informácií o vašom objekte.
-- Môžeme vám pripraviť odborný návrh systému a cenovú ponuku.
-- Aktuálne máme v ponuke akcie na tepelné čerpadlá Vaillant a NIBE.
+Ak chcete cenovú ponuku, ďalší krok je pripraviť podklady pre obchodníka Geotherm. V chate nepotvrdzujem konkrétnu cenu ani termín, ale viem dopyt zhrnúť a posunúť na nacenenie.
 
-**Aby som poradil lepšie:** Pre aký objekt to riešite - rodinný dom, byt alebo firemný priestor?
-
-**Zdroje:**
-- [Výročná dotácia na tepelné čerpadlá Vaillant 2026](http://www.geotherm.sk/vyrocna-zlava-na-tepelne-cerpadla-vaillant-2026/)
-- [Tepelné čerpadlo NIBE, výhodná cena](http://www.geotherm.sk/tepelne-cerpadlo-nibe-vyhodna-cena/)
+Pošlite prosím meno, telefón a e-mail, lokalitu a stručne čo chcete riešiť. Kontakt použijeme iba na spätné ozvanie k tejto ponuke.
 ### Step 2
 
-intent=subsidy confidence=high lead=no score=65
+intent=quote confidence=high lead=no score=30
 
-**Krátka odpoveď:** Dotácie na tepelné čerpadlá sú dostupné, ale ich získanie závisí od konkrétnych podmienok programu a vašej oprávnenosti.
+### Predbežný návrh tepelného čerpadla
 
-- Podmienky podpory sa líšia v závislosti od aktuálnych dotačných programov.
-- Je potrebné overiť, či vaše plánované riešenie spĺňa kritériá pre získanie dotácie.
-- Dôležité je tiež zabezpečiť inštaláciu oprávneným zhotoviteľom.
+Pre váš rodinný dom s rozlohou 160 m² v Žiline je predbežne vhodným riešením tepelné čerpadlo typu vzduch-voda. Tento typ je efektívny najmä pri nízkoteplotných vykurovacích systémoch, ako je podlahové kúrenie, ktoré býva bežné v novostavbách.
 
-**Aby som poradil lepšie:** Riešite dotáciu k novému tepelnému čerpadlu, alebo už máte vybrané konkrétne riešenie?
+**Dôvod:** Tepelné čerpadlá vzduch-voda sú univerzálne a vhodné pre väčšinu rodinných domov, pričom ich inštalácia je menej náročná ako pri iných typoch.
 
-**Zdroje:**
-- [Súťaž o LEGO stavebnicu – Moderný rodinný dom](http://www.geotherm.sk/sutaz-o-lego-stavebnicu-moderny-rodinny-dom/)
-- [Dotácie Zelená domácnostiam podmienky podpory pre rodinné domy](http://www.geotherm.sk/dotacie-zelena-domacnostiam-podmienky-podpory-pre-rodinne-domy/)
+**Typický rozsah:** Pre váš dom by sa mohlo jednať o tepelné čerpadlo s výkonom 7-12 kW.
+
+**Ďalšie kroky:**
+* Aký typ vykurovania máte v dome (podlahové kúrenie alebo radiátory).
+* Máte záujem aj o ohrev teplej úžitkovej vody pomocou tepelného čerpadla?
 ### Step 3
 
-intent=unknown confidence=high lead=no score=70
+intent=quote confidence=high lead=no score=30
 
-**Krátka odpoveď:** Vykurovanie je dobré riešiť ako celý systém, nie iba ako kúpu zariadenia. Pri dome bez plynu sa prirodzene ponúkajú riešenia okolo tepelného čerpadla a správneho návrhu vykurovania.
+### Predbežný návrh tepelného čerpadla
 
-**Aby som poradil lepšie:** Ak chcete, môžeme to posunúť technikovi/odborníkovi, aby sa pozrel na váš konkrétny prípad. Chcete, aby vás niekto kontaktoval?
+Pre váš rodinný dom s rozlohou 160 m² v Žiline, ktorý momentálne využíva plynový kotol, je predbežne vhodným riešením tepelné čerpadlo vzduch-voda. Tento typ je efektívny pre existujúce domy a dokáže pracovať s rôznymi typmi vykurovacích systémov, vrátane radiátorov.
 
-**Zdroje:**
-- [Plynové a elektrické kotly](http://www.geotherm.sk/kotly/)
-- [Kondenzačný kotol BUDERUS Logamax plus GB192i](http://www.geotherm.sk/kotly/buderus/kondenzacne/logamax-plus-gb192i/)
+Pre presnejšie určenie vhodného typu a výkonu tepelného čerpadla, ako aj pre vypracovanie cenovej ponuky, by bolo potrebné overiť si typ vášho súčasného vykurovacieho systému (či ide o radiátory alebo podlahové kúrenie) a jeho dimenzovanie.
+
+Radi by ste si dohodli nezáväznú konzultáciu s naším technikom, kde preberieme vaše špecifické potreby a možnosti?
 ### Step 4
 
-intent=contact confidence=medium lead=yes score=90
+intent=contact confidence=high lead=yes score=70
 
-### Mám to, ďakujem
+### Kontakt mám poznačený
 
-Odovzdám dopyt technikovi alebo obchodníkovi a priložím aj kontext z tejto konverzácie.
+Ďakujem, kontakt som si poznačil. Kolega sa vám ozve, aby s vami dohodol ďalší postup.
 
-**Zhrnutie pre tím:** Zákazník rieši tému "contact". Projekt: cenová ponuka, Objekt: dom, Plocha: 160 m2, Lokalita: Žiliny, Termín: 1-3 mesiace, Aktuálne kúrenie: tepelné čerpadlo Z textu: Chcem cenovú ponuku na tepelné čerpadlo. Je to rodinný dom, asi 160 m2, som zo Žiliny. Riešime to v najbližších 1 až 3 mesiacoch, teraz máme plynový kotol. Áno, nech ma kontaktuje odborník. Volám sa Peter, email peter@example.com, tel 0903123456.
+Pre istotu: evidujem, že riešime tepelné čerpadlá.
