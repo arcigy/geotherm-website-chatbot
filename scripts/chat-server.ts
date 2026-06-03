@@ -3873,6 +3873,14 @@ function buildLeadSummary(input: {
   return facts.join(" ");
 }
 
+function buildOutreachSuggestedAction(nextAction: string | null, summary: string): string {
+  const action = nextAction || "Kontaktovať zákazníka a upresniť dopyt.";
+  const compactSummary = summary.replace(/\s+/g, " ").trim();
+  if (!compactSummary) return action;
+  const digest = compactSummary.length > 420 ? `${compactSummary.slice(0, 420).replace(/\s+\S*$/, "").trim()}...` : compactSummary;
+  return `${action} Výcuc: ${digest}`;
+}
+
 function shouldPersistLead(input: { score: number; contact: CrmContact; leadIntent: CrmLeadIntent; closureTriggered: boolean }): boolean {
   return Boolean(input.contact.phone || input.contact.email || input.score >= 30 || input.closureTriggered || ["inspection", "quote", "callback", "service_fault"].includes(input.leadIntent));
 }
@@ -3955,10 +3963,10 @@ function buildCrmOutcome(input: {
   }
 
   const persistLead = shouldPersistLead({ score, contact, leadIntent, closureTriggered: input.closureTriggered });
+  const leadSummary = persistLead ? buildLeadSummary({ state: nextState, route: input.route, contact, leadIntent, status }) : "";
   let leadRecord: LeadRecord | null = null;
   let outreachRecord: OutreachRecord | null = null;
   if (persistLead) {
-    const summary = buildLeadSummary({ state: nextState, route: input.route, contact, leadIntent, status });
     leadRecord = upsertLead({
       conversationId: input.conversationId,
       siteId: input.siteId,
@@ -3986,8 +3994,8 @@ function buildCrmOutcome(input: {
       nextAction,
       source: input.currentUrl || input.referrer || "chat",
       tags: [input.route.serviceType, leadIntent, temperature].filter((value) => value && value !== "unknown"),
-      summary,
-      notes: summary,
+      summary: leadSummary,
+      notes: leadSummary,
       consentToContact: hasContact && ["inspection", "quote", "callback", "service_fault"].includes(leadIntent),
       contactRequestedByUser: hasNewContact && ["inspection", "quote", "callback", "service_fault"].includes(leadIntent) ? true : null,
       marketingConsent: false,
@@ -3999,7 +4007,7 @@ function buildCrmOutcome(input: {
           { role: "user", content: input.message },
           { role: "assistant", content: answer },
         ],
-        summary,
+        summary: leadSummary,
         storedSlots: nextState,
         leadIntent,
         status,
@@ -4028,7 +4036,7 @@ function buildCrmOutcome(input: {
       siteId: input.siteId,
       priority,
       reason,
-      suggestedAction: nextAction || (hasContact ? "Kontaktovať zákazníka." : "Vypýtať kontakt v chate."),
+      suggestedAction: buildOutreachSuggestedAction(nextAction || (hasContact ? "Kontaktovať zákazníka." : "Vypýtať kontakt v chate."), leadSummary),
       dueAt: priority === "high" ? new Date(Date.now() + 60 * 60 * 1000).toISOString() : null,
     });
   }

@@ -176,6 +176,8 @@ async function main(): Promise<void> {
       const item = outreach.items.find((value) => typeof value === "object" && value && (value as Record<string, unknown>).lead_id === dalibor.lead.id) as Record<string, unknown> | undefined;
       assert(Boolean(item), "admin outreach should include Dalibor lead");
       assert(textIncludes(item?.suggested_action, "obhliad") || textIncludes(item?.suggested_action, "Zavola"), "outreach should tell sales the next action");
+      assert(textIncludes(item?.suggested_action, "Výcuc"), "outreach should include a lead digest for sales");
+      assert(textIncludes(item?.suggested_action, "Dalibor") || textIncludes(item?.suggested_action, "radi"), "outreach digest should include concrete conversation facts");
     }
   } finally {
     await new Promise<void>((resolve, reject) => server.close((error) => (error ? reject(error) : resolve())));
