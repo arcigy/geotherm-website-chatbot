@@ -4201,6 +4201,16 @@ function companyPracticalDirectAnswer(message: string): DirectAnswerDecision | n
     );
   }
 
+  if (/(vypredaj|výpredaj|akciov|akcia|zlava|zľava).*(tepelne cerpad|tepelné čerpad|cerpad|čerpad)|(?:tepelne cerpad|tepelné čerpad|cerpad|čerpad).*(vypredaj|výpredaj|akciov|akcia|zlava|zľava)/.test(text)) {
+    return answerBase(
+      "Tepelné čerpadlá vo výpredaji",
+      "Výpredaj alebo akciu na tepelné čerpadlo by som komunikoval opatrne: dostupnosť, cena a vhodnosť konkrétnej zostavy sa musia overiť v aktuálnej ponuke Geotherm. Lacnejšie zariadenie nemusí byť najlepšie, ak nesedí výkon, montáž, TÚV, regulácia alebo servis. Praktický ďalší krok je konzultácia a nacenenie aktuálne dostupnej zostavy pre konkrétny dom.",
+      "heat_pump_sale_scope",
+      "price",
+      "company-truth tepelne cerpadla vypredaj akcia zlava aktualna ponuka cena Geotherm",
+    );
+  }
+
   if (/show\s*point|showpoint|(?:umiestnen|umiestnenie).*(hluc|hluč|velkost|veľkosť)|(?:velkost|veľkosť).*(tepelneho cerpadla|tepelného čerpadla)/.test(text)) {
     return answerBase(
       "Umiestnenie, hlučnosť a veľkosť tepelného čerpadla",
@@ -4208,6 +4218,26 @@ function companyPracticalDirectAnswer(message: string): DirectAnswerDecision | n
       "heat_pump_showpoint_scope",
       "process",
       "company-truth Vaillant showPOINT umiestnenie hlucnost velkost tepelne cerpadlo vonkajsia jednotka Geotherm",
+    );
+  }
+
+  if (/(priklad|príklad|instalac|inštalác).*(vetran|rekuper)|(?:vetran|rekuper).*(priklad|príklad|instalac|inštalác)/.test(text)) {
+    return answerBase(
+      "Inštalácia vetrania s rekuperáciou",
+      "Áno, Geotherm rieši vetranie s rekuperáciou ako návrh rozvodov, jednotky, filtrov, prívodu čerstvého vzduchu a odťahu z miestností. Pri novostavbe je najlepší postup riešiť rekuperáciu už v projekte; pri rekonštrukcii treba preveriť trasy rozvodov a priestor pre jednotku. Praktický ďalší krok je konzultácia alebo nacenenie podľa domu a rozsahu miestností.",
+      "heat_recovery_installation_examples_scope",
+      "recommendation",
+      "service-card-heat-recovery rekuperacia vetranie instalacia priklady rozvody projekt Geotherm",
+    );
+  }
+
+  if (/(ocenen|certifik).*(geotherm|o nas|firma|referenc)|(?:geotherm|o nas|firma|referenc).*(ocenen|certifik)|^(?:.*)?ocenenia a certifikaty|(?:.*)?ocenenia a certifikáty/.test(text)) {
+    return answerBase(
+      "Ocenenia a certifikáty Geotherm",
+      "Ocenenia a certifikáty beriem ako firemnú referenciu Geotherm, nie ako položku na nacenenie. Pomáhajú ukázať skúsenosti, realizácie, odborné zázemie a dôveryhodnosť firmy. Ak zákazník rieši vlastný dom alebo servis, praktický ďalší krok je konzultácia alebo nacenenie konkrétneho riešenia podľa technológie.",
+      "company_awards_certificates_scope",
+      "general",
+      "company-truth Geotherm ocenenia certifikaty realizacie referencie odbornost",
     );
   }
 
@@ -4258,6 +4288,16 @@ function companyPracticalDirectAnswer(message: string): DirectAnswerDecision | n
       "heat_pump_arostor_scope",
       "brand_model",
       "company-truth Vaillant aroSTOR ohrev TUV tepla voda tepelne cerpadlo Geotherm",
+    );
+  }
+
+  if (/(ohrev|ohriev).*(tuv|túv|tepl|vody)|(?:tuv|túv|tepl[áa] voda|teplej vody).*(ohrev|ohriev)/.test(text)) {
+    return answerBase(
+      "Ohrev TÚV",
+      "Ohrev TÚV, teda teplej úžitkovej vody, treba riešiť podľa počtu osôb, spotreby vody, priestoru pre zásobník a toho, či má byť napojený na tepelné čerpadlo alebo iný zdroj. Bez návrhu by som nepotvrdil konkrétny objem zásobníka ani cenu. Praktický ďalší krok je konzultácia alebo nacenenie zostavy pre domácnosť.",
+      "hot_water_heating_scope",
+      "process",
+      "company-truth ohrev TUV tepla voda zasobnik tepelne cerpadlo Geotherm",
     );
   }
 
@@ -5047,10 +5087,10 @@ function companyPracticalDirectAnswer(message: string): DirectAnswerDecision | n
     );
   }
 
-  if (/(zostavy tlakove|tlakove zostavy|tlakové zostavy|tlakove.*zasobnik|tlakové.*zásobník|zasobnik.*kolektor|zásobník.*kolektor|aurostep|drain back|slnecne kolektor|slnečné kolektor)/.test(text)) {
+  if (/(zostavy tlakove|tlakove zostavy|tlakové zostavy|tlakove.*zasobnik|tlakové.*zásobník|solarn\w*.*ohrev.*vod|solárn\w*.*ohrev.*vod|ohrev.*vod.*solarn|ohrev.*vod.*solárn|zasobnik.*kolektor|zásobník.*kolektor|aurostep|drain back|slnecne kolektor|slnečné kolektor)/.test(text)) {
     return answerBase(
       "Solárne zostavy a zásobníky",
-      "Pri tlakových solárnych zostavách alebo zásobníkoch nejde o poruchu tlaku v kúrení, ale o zostavu pre ohrev vody alebo solárne riešenie. Treba overiť typ kolektorov, objem zásobníka, napojenie na existujúci zdroj a rozsah montáže. Bez konkrétnej zostavy by som nepotvrdil cenu ani dostupnosť; vhodný ďalší krok je konzultácia a nacenenie podľa objektu.",
+      "Pri solárnom ohreve vody so zásobníkom ide o solárne kolektory, zásobník a napojenie na existujúci zdroj alebo technickú miestnosť. Treba overiť typ kolektorov, objem zásobníka, počet osôb, spotrebu vody a rozsah montáže. Bez konkrétnej zostavy by som nepotvrdil cenu ani dostupnosť; vhodný ďalší krok je konzultácia a nacenenie podľa objektu.",
       "solar_collector_tank_scope",
       "process",
       "company-truth solarne kolektory tlakove zostavy zasobnik ohrev vody Geotherm",
@@ -5796,7 +5836,7 @@ function companyPracticalDirectAnswer(message: string): DirectAnswerDecision | n
   if (/(fotovolt|fotovoltaik)/.test(text)) {
     return answerBase(
       "Fotovoltika",
-      "Pri **fotovoltike** knowledge Geotherm obsahuje podklady a riešenia v súvislosti s technológiami domu. Pri napojení k tepelnému čerpadlu treba potvrdiť konkrétny rozsah: výkon, menič, prepojenie s reguláciou, prípravu elektro, dotáciu, očakávanú cenu/náklady a cieľ využitia energie. Najlepší ďalší krok je konzultácia alebo ponuka podľa domu a existujúcej techniky; servis a údržbu treba riešiť podľa konkrétneho zariadenia.",
+      "Pri **fotovoltike** knowledge Geotherm obsahuje podklady a riešenia v súvislosti s technológiami domu. Pri napojení k tepelnému čerpadlu treba potvrdiť konkrétny rozsah: fotovoltaické panely, výkon, menič, prepojenie s reguláciou, prípravu elektro, dotáciu, očakávanú cenu/náklady a cieľ využitia energie. Najlepší ďalší krok je konzultácia alebo ponuka podľa domu a existujúcej techniky; servis a údržbu treba riešiť podľa konkrétneho zariadenia.",
       "photovoltaics",
       "process",
       "company-truth fotovoltaika tepelne cerpadlo regulacia dotacia cena servis Geotherm",
@@ -6214,7 +6254,17 @@ function priceDirectAnswer(message: string, state: QualificationState): DirectAn
   let reason = "direct_price_question";
   let topic = "price";
 
-  if (/(akumulac|akumula|v cene)/.test(text)) {
+  if (/(fotovolt|fotovoltaik|panel).*(tepelne cerpad|tepelné čerpad|cerpad|čerpad|\btc\b|\btč\b)|(?:tepelne cerpad|tepelné čerpad|cerpad|čerpad|\btc\b|\btč\b).*(fotovolt|fotovoltaik|panel)/.test(text)) {
+    reason = "direct_photovoltaics_heat_pump_price_scope";
+    topic = "photovoltaics_heat_pump_price_scope";
+    answer = [
+      "### Fotovoltaika a tepelné čerpadlo - cena",
+      "",
+      "Cenu kombinácie fotovoltaiky a tepelného čerpadla by som bez konkrétnej ponuky nepotvrdil. Pri fotovoltaike rozhodujú najmä panely, menič, strecha, výkon a spotreba domu; pri tepelnom čerpadle výkon, vykurovanie, TÚV, regulácia, montáž a uvedenie do prevádzky.",
+      "",
+      "Najlepší ďalší krok je konzultácia alebo nacenenie celej zostavy, aby bolo jasné, čo majú pokryť fotovoltaické panely a čo tepelné čerpadlo.",
+    ].join("\n");
+  } else if (/(akumulac|akumula|v cene)/.test(text)) {
     reason = "direct_buffer_tank_price_scope_question";
     topic = "buffer_tank_price_scope";
     answer = [
@@ -6480,6 +6530,11 @@ function directAnswerDecision(message: string, state: QualificationState, route:
     };
   }
   const priorityPractical = companyPracticalDirectAnswer(message);
+  const priceBeforeProductOverview =
+    /(orientac|orientač|cena|cenu|ceny|nacen|ponuk|stoji|stojí|kolko|koľko|s montaz|s montáž|vratane montaz|vrátane montáž|instalac|inštalác)/.test(text) &&
+    !/(dotac|dotác|poukaz|prispev|príspev|podpor)/.test(text) &&
+    /(tepelne cerpad|tepelné čerpad|cerpad|čerpad|\btc\b|\btč\b|vzduch voda|zemne|zemné|zem voda)/.test(text);
+  if (priceBeforeProductOverview) return priceDirectAnswer(message, state);
   const boilerDirectWouldOverwriteDiagnostic =
     priorityPractical &&
     ["boilers", "vaillant_boilers"].includes(priorityPractical.topic || "") &&
@@ -6523,6 +6578,7 @@ function directAnswerDecision(message: string, state: QualificationState, route:
       "products_overview_scope",
       "about_geotherm_scope",
       "showroom_scope",
+      "company_awards_certificates_scope",
       "large_building_complex_solution_scope",
       "austria_heating_reference_scope",
       "energy_class_a0_scope",
@@ -9337,6 +9393,14 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
       directAnswerFallbackUsed = true;
     }
   }
+  if (directDecision.triggered && directDecision.topic === "photovoltaics_heat_pump_price_scope" && directDecision.answer) {
+    const normalized = normalizePolicyText(answer);
+    if (!normalized.includes("fotovolt") || !normalized.includes("panel") || !normalized.includes("tepel")) {
+      recordDiagnostic(answerDiagnostics.validatorsTriggered, "photovoltaics_heat_pump_price_repaired");
+      answer = validateAndRepairAnswer(directDecision.answer, stateForTurn, route, message, answerDiagnostics);
+      directAnswerFallbackUsed = true;
+    }
+  }
   if ((directDecision.triggered && directDecision.topic === "household_energy_savings_scope" && directDecision.answer) || /oznac\w* spotreb|označ\w* spotreb|spotreb\w* a az a|spotreb\w* a až a/.test(normalizePolicyText(message))) {
     const normalized = normalizePolicyText(answer);
     if (!/(spotreb|energi|usporn)/.test(normalized)) {
@@ -9653,7 +9717,7 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
       (topic === "heat_pump_video_guides_scope" && !/(servis|udrz|model|zariaden)/.test(normalized)) ||
       (topic === "heat_recovery_video_scope" && !/(rekuper|vetr|servis|udrz|model|zariaden)/.test(normalized)) ||
       (topic === "mss_solar_system_scope" && !/(solar|solarn|kolektor|zasobnik)/.test(normalized)) ||
-      (topic === "photovoltaics_heat_pump_scope" && !/(fotovolt|panel)/.test(normalized)) ||
+      (["photovoltaics", "photovoltaics_heat_pump_scope"].includes(topic) && (!normalized.includes("fotovolt") || !normalized.includes("panel") || !normalized.includes("tepel"))) ||
       (["whatsapp", "insurance", "gas_certification", "docs_after_install"].includes(topic) && /^ano\b/.test(normalized));
     if (needsDraft) {
       recordDiagnostic(answerDiagnostics.validatorsTriggered, "company_practical_guardrail_repaired");
@@ -9673,6 +9737,13 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
   ) {
     answer = "### Najprv systém, potom termín\n\nMontáž hneď zajtra by som **bez podkladov a bez potvrdeného systému nesľuboval**. Najprv treba určiť, či ide o tepelné čerpadlo, klimatizáciu, rekuperáciu, podlahové kúrenie alebo inú technológiu; až potom sa dá potvrdiť termín, kapacita a cena.\n\nAk nevieš systém, začal by som krátkou konzultáciou: kúrenie, chladenie, vetranie alebo komplexné riešenie domu?";
     recordDiagnostic(answerDiagnostics.validatorsTriggered, "contradictory_installation_timing_hardened");
+  }
+  if (/(solarn|solárn).*(ohrev|voda|zasobnik|zásobnik)|(?:ohrev|voda|zasobnik|zásobnik).*(solarn|solárn)/.test(normalizedMessageForHardDirect)) {
+    const normalized = normalizePolicyText(answer);
+    if (!normalized.includes("solar") || !normalized.includes("kolektor")) {
+      answer = "### Solárny ohrev vody so zásobníkom\n\nÁno, solárny ohrev vody so zásobníkom treba riešiť ako zostavu: solárne kolektory, zásobník, napojenie na technickú miestnosť a prípadnú spoluprácu s existujúcim zdrojom. Bez návrhu by som nepotvrdil konkrétny objem ani cenu.\n\nNajlepší ďalší krok je konzultácia alebo nacenenie podľa počtu osôb, spotreby teplej vody a priestoru pre zásobník.";
+      recordDiagnostic(answerDiagnostics.validatorsTriggered, "solar_collector_tank_answer_hardened");
+    }
   }
   if (/vaillant.*kot|kot.*vaillant/.test(normalizedMessageForHardDirect)) {
     answer = "### Vaillant kotly\n\nPri otázke na **Vaillant kotly** treba aktuálnu ponuku potvrdiť podľa konkrétneho typu kotolne. Geotherm vie riešiť kotly a výmenu plynového kotla, ale konkrétny model Vaillant kotla by som potvrdil pri nacenení podľa dostupnosti, odvodu spalín, elektroprípravy a rozsahu prác.";
