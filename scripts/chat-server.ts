@@ -4097,7 +4097,7 @@ function projectContextLine(state: QualificationState): string {
 
 function isBoilerOnlyQuestion(text: string): boolean {
   return (
-    /\b(kotol|kotla|kotle|kotlov|kotly|kondenza|plynovy|plynove|elektricky|elektricke)\b/.test(text) &&
+    /\b(kotol|kotla|kotle|kotlov|kotly|kondenzac\w*|plynovy|plynove|elektricky|elektricke)\b/.test(text) &&
     !/(tepelne cerpad|cerpadl|\btc\b|nahrad|usporn|radiator|podlah|tepelneho cerpadla|certifik|opravnen)/.test(text)
   );
 }
@@ -4142,6 +4142,76 @@ function companyPracticalDirectAnswer(message: string): DirectAnswerDecision | n
       "services_overview",
       "general",
       "company-truth sluzby Geotherm tepelne cerpadla klimatizacie rekuperacia podlahove kurenie stropne chladenie servis dotacie",
+    );
+  }
+
+  if (/\bprodukty\b|ake produkty|aké produkty/.test(text)) {
+    return answerBase(
+      "Produkty a riešenia",
+      "Produkty Geotherm by som nebral ako jeden katalógový zoznam, ale ako technické riešenia pre dom alebo objekt. Patria sem najmä tepelné čerpadlá, klimatizácie, rekuperácia, podlahové kúrenie, stropné chladenie, kotly, radiátory, rozvody vody, fotovoltika alebo solárne riešenia podľa potvrdeného rozsahu. Ak chcete praktický výber, najprv treba určiť cieľ: kúrenie, chladenie, vetranie, servis alebo kompletné riešenie.",
+      "products_overview_scope",
+      "general",
+      "company-truth produkty Geotherm tepelne cerpadla klimatizacie rekuperacia podlahove kurenie stropne chladenie kotly",
+    );
+  }
+
+  if (/^mate informacie k teme o nas\??$|^o nas\??$|^o nás\??$|(?:informacie|informácie).*(geotherm|o nas|o nás)/.test(text)) {
+    return answerBase(
+      "O Geotherm",
+      "Geotherm komunikujem ako firmu zameranú na technické riešenia budov: návrh, montáž a servis vykurovania, chladenia, vetrania/rekuperácie, tepelných čerpadiel, podlahového kúrenia, stropného chladenia a súvisiacich technológií podľa potvrdeného rozsahu. Ak chcete pokračovať prakticky, najlepšie je povedať, či riešite ponuku, servis, konzultáciu alebo konkrétnu technológiu.",
+      "about_geotherm_scope",
+      "general",
+      "company-truth o nas Geotherm firma technicke riesenia navrh montaz servis vykurovanie chladenie vetranie",
+    );
+  }
+
+  if (/showroom|predvadzac|predvádz|navstev|návštev/.test(text) && /geotherm|showroom/.test(text)) {
+    return answerBase(
+      "Showroom Geotherm",
+      "Showroom beriem ako firemné miesto na konzultáciu a predstavenie technických riešení, nie ako automatické potvrdenie termínu návštevy. Ak chcete riešiť výber zariadenia, ponuku alebo obhliadku, najlepší ďalší krok je poslať kontakt a stručne čo riešite; Geotherm potom potvrdí vhodný postup alebo termín.",
+      "showroom_scope",
+      "contact",
+      "company-truth showroom Geotherm konzultacia produkty technicke riesenia kontakt termin",
+    );
+  }
+
+  if (/\btzb\b|technicke zariadenia budov|technické zariadenia budov/.test(text)) {
+    return answerBase(
+      "TZB informácie",
+      "TZB beriem ako technické zariadenia budov, nie iba jednu produktovú kategóriu. Pri Geotherm to typicky súvisí s vykurovaním, chladením, vetraním alebo rekuperáciou, tepelnými čerpadlami, podlahovým kúrením, stropným chladením, kotlami, rozvodmi a servisom. Praktický ďalší krok je určiť, či chcete riešiť nový návrh, rekonštrukciu, servis alebo cenovú ponuku.",
+      "tzb_information_scope",
+      "process",
+      "company-truth TZB technicke zariadenia budov Geotherm vykurovanie vetranie chladenie servis",
+    );
+  }
+
+  if (/velke stavby|veľké stavby|polyfunkcne|polyfunkčné|vacsi objekt|väčší objekt/.test(text)) {
+    return answerBase(
+      "Väčšie a polyfunkčné objekty",
+      "Pri väčších alebo polyfunkčných objektoch by som neodhadoval cenu ani konkrétnu zostavu v chate. Ide skôr o individuálny technický návrh, kde sa spolu rieši vykurovanie, chladenie, vetranie alebo rekuperácia, regulácia, prípadne servis a prevádzkové náklady. Praktický ďalší krok je konzultácia a nacenenie podľa objektu a rozsahu.",
+      "large_building_complex_solution_scope",
+      "process",
+      "company-truth velke stavby polyfunkcne budovy vykurovanie chladenie vetranie komplexne riesenie Geotherm",
+    );
+  }
+
+  if (/rakusku|rakúsku|rakusko|rakúsko/.test(text) && /(geotherm|vykurov|kuren|kúren|realizac|referenc)/.test(text)) {
+    return answerBase(
+      "Vykurovanie aj v Rakúsku",
+      "Tému vykurovania v Rakúsku by som bral ako firemnú referenciu alebo informáciu o realizáciách Geotherm, nie ako automatický výber konkrétneho systému. Pri podobnom dopyte treba potvrdiť lokalitu, rozsah prác, vykurovanie, prípadné chladenie alebo vetranie a až potom pripraviť konzultáciu alebo nacenenie.",
+      "austria_heating_reference_scope",
+      "process",
+      "company-truth Rakusko vykurovanie realizacia Geotherm referencia technicke riesenie",
+    );
+  }
+
+  if (/energeticka trieda|energetická trieda|\ba0\b|nizkoenergeticky|nízkoenergetický/.test(text)) {
+    return answerBase(
+      "Energetická trieda A0 a nízkoenergetický dom",
+      "Energetická trieda A0 alebo nízkoenergetický dom súvisí s celkovou spotrebou energie, vykurovaním, teplou vodou, vetraním a použitými technológiami. Pri Geotherm to typicky smeruje k návrhu úsporného vykurovania, napríklad tepelného čerpadla, rekuperácie alebo kombinácie viacerých systémov. Konkrétne riešenie treba naceniť podľa domu a požadovaného komfortu.",
+      "energy_class_a0_scope",
+      "process",
+      "company-truth energeticka trieda A0 nizkoenergeticky dom vykurovanie rekuperacia tepelne cerpadlo Geotherm",
     );
   }
 
@@ -4668,6 +4738,16 @@ function companyPracticalDirectAnswer(message: string): DirectAnswerDecision | n
     );
   }
 
+  if (/(tepelne cerpad|tepelné čerpad|cerpad|čerpad).*\bsplit\b|\bsplit\b.*(tepelne cerpad|tepelné čerpad|cerpad|čerpad)/.test(text)) {
+    return answerBase(
+      "Split tepelné čerpadlo",
+      "Pri slovách split a tepelné čerpadlo nejde o klimatizáciu, ale o delené riešenie tepelného čerpadla s vonkajšou a vnútornou časťou. Vhodnosť splitu treba porovnať s monoblokom podľa domu, kotolne, rozvodov, hlučnosti, servisu a montážnych možností. Konkrétnu zostavu by som potvrdil až pri konzultácii a nacenení.",
+      "heat_pump_split_scope",
+      "brand_model",
+      "service-card-heat-pump split tepelne cerpadlo vzduch-voda vnutorna vonkajsia jednotka Geotherm",
+    );
+  }
+
   if (
     /^(klimatizacia|klimatizácia|klimatizacie|klimatizácie)\??$|(?:klimatizacia|klimatizácia|klimatizacie|klimatizácie).*(robite|robíte|viete|porad|nacen|naceň|cena|montaz|montáž)/.test(text) ||
     (!/(strop|podlah|tepelne cerpad|cerpadl|kuren|vykurov|vetran|rekuper)/.test(text) && /(?:chcem|potrebujem|riesim|hľadám|hladam).*(chladen|klimu|klimatiz)|chladenie do domu|chladit dom|chladiť dom/.test(text))
@@ -4698,6 +4778,16 @@ function companyPracticalDirectAnswer(message: string): DirectAnswerDecision | n
       "ivt_nordic_inverter_scope",
       "brand_model",
       "company-truth IVT Nordic Inverter vzduch tepelne cerpadlo servis NIBE Vaillant Geotherm",
+    );
+  }
+
+  if (/\bivt\b/.test(text) && /(tepelne cerpad|tepelné čerpad|cerpad|čerpad)/.test(text)) {
+    return answerBase(
+      "IVT tepelné čerpadlá",
+      "IVT by som pri tepelných čerpadlách komunikoval opatrne: v podkladoch sa spomína, ale aktuálnu montážnu ponuku alebo dostupnosť treba potvrdiť. Pre nové riešenia sú bezpečne komunikované hlavne značky NIBE a Vaillant. Pri existujúcom IVT je najlepší ďalší krok overiť konkrétny model a servisnú dostupnosť.",
+      "ivt_heat_pump_scope",
+      "brand_model",
+      "company-truth IVT tepelne cerpadla aktualna dostupnost NIBE Vaillant Geotherm",
     );
   }
 
@@ -5351,6 +5441,16 @@ function companyPracticalDirectAnswer(message: string): DirectAnswerDecision | n
       "business_customers",
       "process",
       "company-truth prakticke FAQ firmy komercne objekty technicke riesenia Geotherm potvrdit",
+    );
+  }
+
+  if (/(referenc|realizac|ukazk|ukážk).*(vykurov|kuren|kúren).*(vetran|rekuper).*(chladen)|(?:vykurov|kuren|kúren).*(vetran|rekuper).*(chladen).*(referenc|realizac|ukazk|ukážk)/.test(text)) {
+    return answerBase(
+      "Referencia vykurovania, vetrania a chladenia",
+      "Toto by som bral ako referenciu komplexného technického riešenia, nie ako výber jednej technológie. Pri takomto objekte sa spolu rieši vykurovanie, vetranie alebo rekuperácia, chladenie, regulácia a následný servis. Referencia je dobrá na predstavu rozsahu; ak chcete podobné riešenie, ďalší krok je konzultácia a nacenenie podľa objektu.",
+      "complex_reference_heating_ventilation_cooling_scope",
+      "process",
+      "company-truth referencia vykurovanie vetranie chladenie komplexne riesenie Geotherm",
     );
   }
 
@@ -6053,8 +6153,14 @@ function directAnswerDecision(message: string, state: QualificationState, route:
     };
   }
   const priorityPractical = companyPracticalDirectAnswer(message);
+  const boilerDirectWouldOverwriteDiagnostic =
+    priorityPractical &&
+    ["boilers", "vaillant_boilers"].includes(priorityPractical.topic || "") &&
+    (hasExistingDiagnosticContext || hasActiveHeatPump || state.service_intent === "subsidy" || route.serviceIntent === "subsidy") &&
+    !/(ake|aké|robite|robíte|mate|máte|znack|značk|servis|oprav|kondenzac|kondenzač|elektrick|vaillant|buderus)/.test(text);
   if (
     priorityPractical &&
+    !boilerDirectWouldOverwriteDiagnostic &&
     [
       "plan_obnovy_subsidy_scope",
       "subsidy_conditions_direct_scope",
@@ -6064,6 +6170,7 @@ function directAnswerDecision(message: string, state: QualificationState, route:
       "heat_pump_installation_scope",
       "heat_pump_selection_installation_scope",
       "heat_pump_air_water_overview_scope",
+      "heat_pump_split_scope",
       "heat_pump_video_guides_scope",
       "mss_solar_system_scope",
       "photovoltaics_heat_pump_scope",
@@ -6077,8 +6184,20 @@ function directAnswerDecision(message: string, state: QualificationState, route:
       "vaillant_eloblock_boiler_scope",
       "buderus_brand_scope",
       "buderus_logamax_boiler_scope",
+      "boilers",
+      "vaillant_boilers",
+      "ivt_heat_pump_scope",
+      "tzb_information_scope",
+      "products_overview_scope",
+      "about_geotherm_scope",
+      "showroom_scope",
+      "large_building_complex_solution_scope",
+      "austria_heating_reference_scope",
+      "energy_class_a0_scope",
+      "complex_reference_heating_ventilation_cooling_scope",
       "third_party_service",
       "preventive_service_scope",
+      "air_conditioning_general_scope",
       "air_conditioning_brand_scope",
     ].includes(priorityPractical.topic || "")
   ) {
@@ -7018,7 +7137,7 @@ function sanitizeAnswerForDiagnosticRules(
       sentence.includes("f2040") &&
       /(odporuc|vhodn|ponuk|aktualn|najleps)/.test(sentence) &&
       !/(archiv|histor|nevyrab|neponuk|nemal|neodporuc|nahrad|treba potvrdit)/.test(sentence),
-    "NIBE F2040 treba pri nových realizáciách brať ako neaktuálny alebo archívny podklad; aktuálny model treba potvrdiť podľa ponuky.",
+    "Tepelné čerpadlo NIBE F2040 treba pri nových realizáciách brať ako neaktuálny alebo archívny podklad; aktuálny model treba potvrdiť podľa ponuky.",
   );
   next = applySanitizerRule(
     next,
@@ -8927,6 +9046,15 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     ]);
     const forceDraftTopics = new Set([
       "vaillant_boilers",
+      "boilers",
+      "tzb_information_scope",
+      "products_overview_scope",
+      "about_geotherm_scope",
+      "showroom_scope",
+      "large_building_complex_solution_scope",
+      "austria_heating_reference_scope",
+      "energy_class_a0_scope",
+      "complex_reference_heating_ventilation_cooling_scope",
       "gas_leak_safety_scope",
       "Daikin",
       "Mitsubishi",
@@ -9010,6 +9138,7 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
       "heat_pump_installation_scope",
       "heat_pump_selection_installation_scope",
       "heat_pump_air_water_overview_scope",
+      "heat_pump_split_scope",
       "existing_radiator_heat_pump_standalone",
       "water_shutdown_scope",
       "water_distribution",
@@ -9037,6 +9166,7 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
       "screeds_scope",
       "system_fluids_scope",
       "ivt_nordic_inverter_scope",
+      "ivt_heat_pump_scope",
       "drazice_argo_scope",
       "vaillant_compact_boiler_scope",
       "vaillant_ecotec_boiler_scope",

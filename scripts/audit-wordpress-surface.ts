@@ -35,8 +35,9 @@ const exportPath = path.join(process.cwd(), "knowledge", "wordpress-export.json"
 const reportPath = path.join(process.cwd(), "knowledge", "wordpress-surface-audit.md");
 const jsonReportPath = path.join(process.cwd(), "knowledge", "wordpress-surface-audit.json");
 const maxMs = Number.parseInt(process.env.WORDPRESS_SURFACE_MAX_MS || "8000", 10);
-const maxCases = Number.parseInt(process.env.WORDPRESS_SURFACE_LIMIT || "140", 10);
-const maxPerTopic = Number.parseInt(process.env.WORDPRESS_SURFACE_PER_TOPIC || "12", 10);
+const maxCases = Number.parseInt(process.env.WORDPRESS_SURFACE_LIMIT || "220", 10);
+const maxPerTopic = Number.parseInt(process.env.WORDPRESS_SURFACE_PER_TOPIC || "30", 10);
+const concurrency = Math.max(1, Number.parseInt(process.env.WORDPRESS_SURFACE_CONCURRENCY || "4", 10));
 
 function normalize(value: string): string {
   return value
@@ -63,8 +64,27 @@ function classify(item: WordpressItem): { topic: string; expected: string[]; que
   const primary = normalize(`${title} ${item.slug || ""} ${url}`);
   const body = normalize((item.cleanText || "").slice(0, 600));
   const text = `${primary} ${body}`;
-  if (!title || /(cookie|cookies|opt out|ochrana osobnych udajov|zasady|prava dotknutej|tiraz|dakujeme|formular|test\b|author|volne pracovne|pracovne miesto|referent|technik|koordinator|obchodny zastupca|e shop|aktuality|sutaz|korona|odborne clanky)/.test(primary)) {
+  const ask = (prefix: string) => `${prefix}: ${title}?`;
+  if (!title || /(cookie|cookies|opt out|ochrana osobnych udajov|zasady|prava dotknutej|tiraz|dakujeme|formular|test\b|author|volne pracovne|pracovne miesto|referent|technik|koordinator|obchodny zastupca|e shop|aktuality|sutaz|korona|odborne clanky|podcast|architektur|precitajte si clanok|casopis|coneco|veltrh|vystavy a prezentacie|odborne skolenie|skolenie nasich kolegov|mysli na buducnost|our culture|vymena odbornych poznatkov|spolupracujeme v programe|hladame noveho kolegu)/.test(primary)) {
     return null;
+  }
+  if (/ponuka zdarma/.test(primary)) {
+    return { topic: "quote", expected: ["ponuk", "cen"], question: ask("Mate informacie k teme") };
+  }
+  if (/pitnej vody|rautitan|rehau rautitan/.test(primary)) {
+    return { topic: "water", expected: ["vod", "rozvod"], question: ask("Robite alebo viete vysvetlit temu") };
+  }
+  if (/velke stavby|polyfunkcne budovy|referencia vykurovania a vetrania|vykurovania a vetrania|vykurovania vetrania a chladenia/.test(primary)) {
+    return { topic: "company_reference", expected: ["vykurov", "vetr", "chladen", "refer"], question: ask("Mate informacie k teme") };
+  }
+  if (/navrh vykurov|cenova ponuka vykurov|vykurovanie odborny navrh|odborny navrh vykurovania/.test(primary)) {
+    return { topic: "heating", expected: ["kuren", "vykurov", "navrh"], question: ask("Viete poradit k teme") };
+  }
+  if (/era lacneho plynu|lacny plyn|lacneho plynu/.test(primary)) {
+    return { topic: "heating", expected: ["plyn", "tepel", "vykurov"], question: ask("Viete poradit k teme") };
+  }
+  if (/energeticka trieda|nizkoenergeticky|vykurovacia krivka|ekviterm/.test(primary)) {
+    return { topic: "heating", expected: ["vykurov", "energet", "regul"], question: ask("Viete poradit k teme") };
   }
   if (/nordic inverter/.test(primary)) return { topic: "heat_pump", expected: ["ivt", "vzduch", "inverter"], question: `Viete poradiť k téme: ${title}?` };
   if (/aurocompact/.test(primary)) return { topic: "boilers", expected: ["kot", "vaillant", "compact"], question: `Robíte alebo viete poradiť k téme: ${title}?` };
@@ -82,7 +102,7 @@ function classify(item: WordpressItem): { topic: string; expected: string[]; que
   if (/zmakcovac|uprava vody|katex|rozvody vody|kanalizac|zahradny nezamrzny ventil|teplonosne kvapaliny|nemrznuca kvapalina|ochranne a udrzbove kvapaliny|fernox|agrimex/.test(primary)) return { topic: "water", expected: ["vod", "kvapalin", "ventil", "kanal"], question: `Robíte alebo viete vysvetliť tému: ${title}?` };
   if (/servis|udrzb|pravidelny servis|video navod/.test(primary)) return { topic: "service", expected: ["servis", "navod", "udrz", "video", "tepel"], question: `Viete poradiť k téme: ${title}?` };
   if (/kotol|kotly|kondenzac|buderus|logamax|plynov|ecotec|eloblock/.test(primary)) return { topic: "boilers", expected: ["kot", "buderus", "vaillant"], question: `Robíte alebo viete poradiť k téme: ${title}?` };
-  if (/tepelne cerpad|nibe|vaillant|arotherm|geotherm|f2120|s2125|f2040|drazice|argo|vzduch voda|zem voda|voda voda|cerpadl|ivt|stiebel eltron|ohrev tuv/.test(primary)) {
+  if (/tepelne cerpad|nibe|vaillant|arotherm|f2120|s2125|f2040|drazice|argo|vzduch voda|zem voda|voda voda|cerpadl|ivt|stiebel eltron|ohrev tuv/.test(primary)) {
     return { topic: "heat_pump", expected: ["tepel", "cerpad"], question: `Viete poradiť k téme: ${title}?` };
   }
   if (/vykurov|kuren|kotoln|tzb|navrh|rekonstrukcia vykurovania|uspiet na kureni/.test(primary)) return { topic: "heating", expected: ["kuren", "vykurov"], question: `Viete poradiť k téme: ${title}?` };
@@ -91,18 +111,43 @@ function classify(item: WordpressItem): { topic: string; expected: string[]; que
   return null;
 }
 
-function buildCases(items: WordpressItem[]): Case[] {
+type BuildResult = {
+  cases: Case[];
+  classified: number;
+  skippedUnclassified: number;
+  skippedDuplicate: number;
+  skippedTopicCap: number;
+  skippedCaseLimit: number;
+  topicCounts: Map<string, number>;
+};
+
+function buildCases(items: WordpressItem[]): BuildResult {
   const topicCounts = new Map<string, number>();
   const seen = new Set<string>();
   const cases: Case[] = [];
+  let classified = 0;
+  let skippedUnclassified = 0;
+  let skippedDuplicate = 0;
+  let skippedTopicCap = 0;
+  let skippedCaseLimit = 0;
   for (const item of items) {
     const classification = classify(item);
-    if (!classification) continue;
+    if (!classification) {
+      skippedUnclassified += 1;
+      continue;
+    }
+    classified += 1;
     const title = repairMojibake(item.title || "").replace(/\s+/g, " ").trim();
     const key = normalize(`${classification.topic} ${title}`);
-    if (seen.has(key)) continue;
+    if (seen.has(key)) {
+      skippedDuplicate += 1;
+      continue;
+    }
     const count = topicCounts.get(classification.topic) || 0;
-    if (count >= maxPerTopic) continue;
+    if (count >= maxPerTopic) {
+      skippedTopicCap += 1;
+      continue;
+    }
     seen.add(key);
     topicCounts.set(classification.topic, count + 1);
     cases.push({
@@ -113,9 +158,12 @@ function buildCases(items: WordpressItem[]): Case[] {
       expected: classification.expected,
       url: item.url || "",
     });
-    if (cases.length >= maxCases) break;
+    if (cases.length >= maxCases) {
+      skippedCaseLimit = Math.max(0, items.length - cases.length - skippedUnclassified - skippedDuplicate - skippedTopicCap);
+      break;
+    }
   }
-  return cases;
+  return { cases, classified, skippedUnclassified, skippedDuplicate, skippedTopicCap, skippedCaseLimit, topicCounts };
 }
 
 function validate(testCase: Case, body: Awaited<ReturnType<typeof createChatResponse>>): string[] {
@@ -167,16 +215,22 @@ function mdTable(rows: Row[]): string {
 async function main(): Promise<void> {
   const raw = JSON.parse(await readFile(exportPath, "utf8")) as WordpressItem[];
   const items = Array.isArray(raw) ? raw : [];
-  const cases = buildCases(items);
-  const rows: Row[] = [];
-  for (const testCase of cases) {
+  const build = buildCases(items);
+  const cases = build.cases;
+  const rows: Row[] = new Array(cases.length);
+  let cursor = 0;
+  async function runNext(): Promise<void> {
+    const index = cursor;
+    cursor += 1;
+    if (index >= cases.length) return;
+    const testCase = cases[index];
     const body = await createChatResponse({
       siteId: "geotherm",
       anonymousId: `wp_surface_${testCase.id}_${Date.now()}_${Math.random().toString(36).slice(2)}`,
       currentUrl: testCase.url || "http://localhost/wordpress-surface",
       message: testCase.question,
     });
-    rows.push({
+    rows[index] = {
       testCase,
       answer: body.answer,
       ms: body.responseTimeMs || 0,
@@ -186,8 +240,10 @@ async function main(): Promise<void> {
       intent: body.debug?.serviceIntent || "n/a",
       sources: body.debug?.retrievalSourcesCount ?? body.sources.length,
       failures: validate(testCase, body),
-    });
+    };
+    await runNext();
   }
+  await Promise.all(Array.from({ length: Math.min(concurrency, cases.length) }, () => runNext()));
   const passed = rows.filter((row) => row.failures.length === 0).length;
   const topicSummary = [...new Set(rows.map((row) => row.testCase.topic))]
     .sort()
@@ -209,6 +265,18 @@ async function main(): Promise<void> {
     `- passed: ${passed}`,
     `- failed: ${rows.length - passed}`,
     `- verdict: ${passed === rows.length ? "PASS" : "NEEDS WORK"}`,
+    "",
+    "## Coverage Summary",
+    "",
+    `- export items: ${items.length}`,
+    `- classified items: ${build.classified}`,
+    `- generated cases: ${rows.length}`,
+    `- skipped unclassified/admin/editorial: ${build.skippedUnclassified}`,
+    `- skipped duplicates: ${build.skippedDuplicate}`,
+    `- skipped by per-topic cap: ${build.skippedTopicCap}`,
+    `- skipped by case limit: ${build.skippedCaseLimit}`,
+    `- max cases: ${maxCases}`,
+    `- max per topic: ${maxPerTopic}`,
     "",
     "## Topic Summary",
     "",
