@@ -6260,6 +6260,24 @@ function directAnswerDecision(message: string, state: QualificationState, route:
       topic: "appointment_time_confirmation_guard",
     };
   }
+  if (
+    activeService === "service" &&
+    (state.service_intent === "service_fault" || route.serviceIntent === "service_fault") &&
+    state.location &&
+    !/(telefon|email|@|\+?\d{7,}|kontakt|servis|poruch|chyba|kod|kód)/.test(text) &&
+    text.length > 2 &&
+    text.length <= 40
+  ) {
+    return {
+      triggered: true,
+      answerMode: "service_fault_triage",
+      reason: "direct_service_fault_location_followup",
+      answer: `### Servisný smer\n\nLokalitu **${state.location}** beriem ako doplnenie servisného dopytu, nie ako novú tému. Pri poruche treba ešte potvrdiť kontakt a servisný postup podľa zariadenia, značky/modelu, chybového kódu a dostupnosti technika.\n\nPošlite prosím telefón alebo e-mail, aby sa servis Geotherm vedel ozvať a preveriť ďalší postup.`,
+      serviceIntent: "service_fault",
+      retrievalQuery: "service-card-service servis porucha lokalita kontakt technik Geotherm",
+      topic: "service_fault_location_followup",
+    };
+  }
   if ((state.service_type === "subsidy" || state.service_intent === "subsidy") && /(chcem|potrebujem|pomoc|pomoct|pomôcť|prever|over|riesit|riešiť)/.test(text)) {
     return {
       triggered: true,

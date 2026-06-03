@@ -41,6 +41,7 @@ const maxMs = Number.parseInt(process.env.PARAPHRASE_SURFACE_MAX_MS || "8000", 1
 const maxBaseCases = Number.parseInt(process.env.PARAPHRASE_SURFACE_BASE_LIMIT || "94", 10);
 const variantsPerCase = Number.parseInt(process.env.PARAPHRASE_SURFACE_VARIANTS || "3", 10);
 const maxPerTopic = Number.parseInt(process.env.PARAPHRASE_SURFACE_PER_TOPIC || "12", 10);
+const concurrency = Math.max(1, Number.parseInt(process.env.PARAPHRASE_SURFACE_CONCURRENCY || "4", 10));
 
 function normalize(value: string): string {
   return value
@@ -67,7 +68,14 @@ function classify(item: WordpressItem): { topic: string; expected: string[] } | 
   const primary = normalize(`${title} ${item.slug || ""} ${url}`);
   const body = normalize((item.cleanText || "").slice(0, 700));
   const text = `${primary} ${body}`;
-  if (!title || /(cookie|cookies|opt out|ochrana osobnych udajov|zasady|prava dotknutej|tiraz|dakujeme|formular|test\b|author|volne pracovne|pracovne miesto|referent|technik|koordinator|obchodny zastupca|e shop|aktuality|sutaz|korona|odborne clanky)/.test(primary)) return null;
+  if (!title || /(cookie|cookies|opt out|ochrana osobnych udajov|zasady|prava dotknutej|tiraz|dakujeme|formular|test\b|author|volne pracovne|pracovne miesto|referent|technik|koordinator|obchodny zastupca|e shop|aktuality|sutaz|korona|odborne clanky|podcast|architektur|precitajte si clanok|casopis|coneco|veltrh|vystavy a prezentacie|odborne skolenie|skolenie nasich kolegov|mysli na buducnost|our culture|vymena odbornych poznatkov|spolupracujeme v programe|hladame noveho kolegu)/.test(primary)) return null;
+  if (/ponuka zdarma/.test(primary)) return { topic: "quote", expected: ["ponuk", "cen"] };
+  if (/pitnej vody|rautitan|rehau rautitan/.test(primary)) return { topic: "water", expected: ["vod", "rozvod"] };
+  if (/velke stavby|polyfunkcne budovy|referencia vykurovania a vetrania|vykurovania a vetrania|vykurovania vetrania a chladenia/.test(primary)) return { topic: "company_reference", expected: ["vykurov", "vetr", "chladen", "refer"] };
+  if (/navrh vykurov|cenova ponuka vykurov|vykurovanie odborny navrh|odborny navrh vykurovania/.test(primary)) return { topic: "heating", expected: ["kuren", "vykurov", "navrh"] };
+  if (/era lacneho plynu|lacny plyn|lacneho plynu/.test(primary)) return { topic: "heating", expected: ["plyn", "tepel", "vykurov"] };
+  if (/energeticka trieda|nizkoenergeticky|vykurovacia krivka|ekviterm/.test(primary)) return { topic: "heating", expected: ["vykurov", "energet", "regul"] };
+  if (/plosne kolektory|plošne kolektory|plošné kolektory/.test(primary)) return { topic: "heat_pump", expected: ["kolektor", "tepel", "zem"] };
   if (/nordic inverter/.test(primary)) return { topic: "heat_pump", expected: ["ivt", "vzduch", "inverter", "tepel"] };
   if (/aurocompact|ecocompact|ecotec|eloblock|buderus|logamax|kotol|kotly|kondenzac|plynov/.test(primary)) return { topic: "boilers", expected: ["kot", "vaillant", "buderus", "vykurov"] };
   if (/klimatiz|mitsubishi|toshiba|\bgree\b/.test(primary)) return { topic: "air_conditioning", expected: ["klimatiz", "chladen", "vzduch"] };
@@ -82,7 +90,7 @@ function classify(item: WordpressItem): { topic: string; expected: string[] } | 
   if (/potery|anhydrit|cementove|cementovy/.test(primary)) return { topic: "screeds", expected: ["poter", "anhydrit", "cement", "podlah"] };
   if (/zmakcovac|uprava vody|katex|rozvody vody|kanalizac|zahradny nezamrzny ventil|teplonosne kvapaliny|nemrznuca kvapalina|ochranne a udrzbove kvapaliny|fernox|agrimex/.test(primary)) return { topic: "water", expected: ["vod", "kvapalin", "ventil", "kanal", "rozvod"] };
   if (/servis|udrzb|pravidelny servis|video navod/.test(primary)) return { topic: "service", expected: ["servis", "udrz", "model", "zariaden"] };
-  if (/tepelne cerpad|nibe|vaillant|arotherm|geotherm|f2120|s2125|f2040|drazice|argo|vzduch voda|zem voda|voda voda|cerpadl|ivt|stiebel eltron|ohrev tuv/.test(primary)) return { topic: "heat_pump", expected: ["tepel", "cerpad", "vykurov"] };
+  if (/tepelne cerpad|nibe|vaillant|arotherm|f2120|s2125|f2040|drazice|argo|vzduch voda|zem voda|voda voda|cerpadl|ivt|stiebel eltron|ohrev tuv/.test(primary)) return { topic: "heat_pump", expected: ["tepel", "cerpad", "vykurov"] };
   if (/vykurov|kuren|kotoln|tzb|navrh|rekonstrukcia vykurovania|uspiet na kureni/.test(primary)) return { topic: "heating", expected: ["kuren", "vykurov", "riesenie"] };
   if (/referenc|realizac|showroom|vystav|geotherm slovakia|casopis|velke stavby|komplexne|ocenenia|certifikat/.test(primary)) return { topic: "company_reference", expected: ["geotherm", "realiz", "refer", "certifik"] };
   if (/tepelne|vykurov|kuren|servis|dotac|rekuper|vetran|klimatiz|chladen|cerpadl/.test(text)) return { topic: "company_reference", expected: ["geotherm", "ries", "sluz"] };
@@ -183,15 +191,20 @@ async function main(): Promise<void> {
   const items = Array.isArray(raw) ? raw : [];
   const baseCases = buildBaseCases(items);
   const cases = buildParaphraseCases(baseCases);
-  const rows: Row[] = [];
-  for (const testCase of cases) {
+  const rows: Row[] = new Array(cases.length);
+  let cursor = 0;
+  async function runNext(): Promise<void> {
+    const index = cursor;
+    cursor += 1;
+    if (index >= cases.length) return;
+    const testCase = cases[index];
     const body = await createChatResponse({
       siteId: "geotherm",
       anonymousId: `paraphrase_${testCase.id}_${testCase.variant}_${Date.now()}_${Math.random().toString(36).slice(2)}`,
       currentUrl: testCase.url || "http://localhost/paraphrase-surface",
       message: testCase.question,
     });
-    rows.push({
+    rows[index] = {
       testCase,
       answer: body.answer,
       ms: body.responseTimeMs || 0,
@@ -201,8 +214,10 @@ async function main(): Promise<void> {
       intent: body.debug?.serviceIntent || "n/a",
       sources: body.debug?.retrievalSourcesCount ?? body.sources.length,
       failures: validate(testCase, body),
-    });
+    };
+    await runNext();
   }
+  await Promise.all(Array.from({ length: Math.min(concurrency, cases.length) }, () => runNext()));
 
   const passed = rows.filter((row) => row.failures.length === 0).length;
   const topicSummary = [...new Set(rows.map((row) => row.testCase.topic))]

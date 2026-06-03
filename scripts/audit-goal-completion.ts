@@ -104,7 +104,7 @@ const gates: EvidenceGate[] = [
   {
     id: "sales_feedback",
     report: "knowledge/sales-feedback-audit.md",
-    proof: /Turns:\s*9[\s\S]*Passed:\s*9[\s\S]*Failed:\s*0[\s\S]*Verdict:\s*PASS/i,
+    proof: /Turns:\s*\d+[\s\S]*Failed:\s*0[\s\S]*Verdict:\s*PASS/i,
     summary: "Salesperson feedback: vykanie, appointments, large objects, contact capture.",
   },
   {

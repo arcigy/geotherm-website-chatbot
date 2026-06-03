@@ -91,6 +91,35 @@ const scenarios: Scenario[] = [
       },
     ],
   },
+  {
+    id: "past_or_impossible_appointment_not_confirmed",
+    messages: [
+      "chcem cenovu ponuku a obhliadku",
+      "pockaj a mozeme sa stretnut dnes o 8:00 rano?",
+      "a co vcera mozeme aj vcera?",
+      "Ruzindolska 16 trnava, ale 8:00 uz bolo",
+      "10:00",
+    ],
+    expectations: [
+      { anyOf: ["kontakt", "telefon", "e-mail", "email"], intent: "quote" },
+      {
+        anyOf: ["nepotvrdzujem", "treba potvrdit", "treba potvrdiť", "kontakt"],
+        forbidden: ["mozeme sa stretnut", "potvrdzujem", "dnes o 8", "tesim sa na stretnutie"],
+      },
+      {
+        anyOf: ["nepotvrdzujem", "treba potvrdit", "treba potvrdiť", "kontakt"],
+        forbidden: ["stale plati", "dnesna obhliadka o 8", "potvrdzujem", "mozeme aj vcera"],
+      },
+      {
+        anyOf: ["nepotvrdzujem", "treba potvrdit", "treba potvrdiť", "kontakt"],
+        forbidden: ["potvrdzujem adresu", "mozeme sa dohodnut", "kedy by sa"],
+      },
+      {
+        anyOf: ["nepotvrdzujem", "treba potvrdit", "treba potvrdiť", "kontakt"],
+        forbidden: ["potvrdzujem", "dnes o 10", "tesim sa na stretnutie"],
+      },
+    ],
+  },
 ];
 
 function normalize(value: string): string {
