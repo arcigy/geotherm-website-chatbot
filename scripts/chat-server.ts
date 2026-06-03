@@ -1134,6 +1134,8 @@ function enforceVykanie(value: string): string {
     .replace(/Chceš/g, "Chcete")
     .replace(/vieš/g, "viete")
     .replace(/Vieš/g, "Viete")
+    .replace(/nevieš/g, "neviete")
+    .replace(/Nevieš/g, "Neviete")
     .replace(/píšeš/g, "píšete")
     .replace(/Píšeš/g, "Píšete")
     .replace(/pises/g, "píšete")
@@ -1168,6 +1170,10 @@ function enforceVykanie(value: string): string {
     .replace(/\bvieš\b/g, "viete")
     .replace(/\bVies\b/g, "Viete")
     .replace(/\bvies\b/g, "viete")
+    .replace(/\bNevieš\b/g, "Neviete")
+    .replace(/\bnevieš\b/g, "neviete")
+    .replace(/\bNevies\b/g, "Neviete")
+    .replace(/\bnevies\b/g, "neviete")
     .replace(/\bRiešiš\b/g, "Riešite")
     .replace(/\briešiš\b/g, "riešite")
     .replace(/\bRiesis\b/g, "Riešite")
@@ -1194,8 +1200,12 @@ function enforceVykanie(value: string): string {
     .replace(/\bpridaj\b/g, "pridajte")
     .replace(/\bDoplň\b/g, "Doplňte")
     .replace(/\bdoplň\b/g, "doplňte")
+    .replace(/\bDoplňte mi\b/g, "Doplňte prosím")
+    .replace(/\bdoplňte mi\b/g, "doplňte prosím")
     .replace(/\bDopln\b/g, "Doplňte")
     .replace(/\bdopln\b/g, "doplňte")
+    .replace(/\bDoplňte mi\b/g, "Doplňte prosím")
+    .replace(/\bdoplňte mi\b/g, "doplňte prosím")
     .replace(/\bKúriš\b/g, "Kúrite")
     .replace(/\bkúriš\b/g, "kúrite")
     .replace(/\bStaviaš\b/g, "Staviate")
@@ -2556,6 +2566,121 @@ function serviceLabel(serviceType: ServiceType): string {
     default:
       return "nejasná služba";
   }
+}
+
+function quoteHandoffTopicSentence(message: string, state: QualificationState, route: Pick<ServiceRoute, "serviceType" | "serviceIntent">): string {
+  const text = normalizePolicyText([message, state.service_type || "", state.service_intent || "", route.serviceType, route.serviceIntent].join(" "));
+  const service = normalizeServiceType(state.service_type || route.serviceType, "unknown");
+  if (/(video|navod|návod|navody|návody)/.test(text) && /(tepelne cerpad|tepelné čerpad|cerpad|čerpad|rekuper|zariaden|model)/.test(text)) {
+    return "Dopyt sa týka návodov k zariadeniam, takže konzultácia má riešiť konkrétny model, zariadenie, servis alebo údržbu.";
+  }
+  if (/(drazic|dražic|argo)/.test(text)) {
+    return "Dopyt sa týka riešenia Dražice ARGO v oblasti tepelného čerpadla alebo vykurovania, takže treba potvrdiť aktuálnu dostupnosť, vhodnosť a montáž.";
+  }
+  if (/(plan obnovy|plán obnovy|dotac|dotác|poukaz|prispev|príspev|podpor)/.test(text)) {
+    return "Dopyt sa týka dotácie alebo podpory, takže treba preveriť vhodné riešenie, podmienky programu a nadväzujúce nacenenie.";
+  }
+  if (/(rekuper|vetran|vzduchotechn)/.test(text) || (/\bvzduch\b/.test(text) && !/(tepelne cerpad|tepelné čerpad|cerpad|čerpad|vzduch voda|vzduch-voda)/.test(text))) {
+    return "Dopyt sa týka rekuperácie, vetrania alebo vzduchu v budove, takže nacenenie má riešiť jednotku, rozvody, dispozíciu a technickú miestnosť.";
+  }
+  if (/(mss|aurostep|drain back|drain-back|nemrznuca.*solar|nemrznúca.*solár|solar|solarn|solár|panel|kolektor|zasobnik|zásobnik)/.test(text)) {
+    return "Dopyt sa týka solárneho systému, solárnych kolektorov alebo zásobníka, takže treba naceniť zostavu, objem zásobníka a napojenie.";
+  }
+  if (/(aurocompact|ecocompact|eco compact|ecotec|eco tec|\bvsc\b|elektricke|elektrické)/.test(text)) {
+    return "Dopyt sa týka kotla, Vaillant/Buderus alebo vykurovania, takže nacenenie má riešiť typ zdroja, výkon, reguláciu a montáž.";
+  }
+  if (/(bkt|betonove jadro|betónové jadro|temperovanie)/.test(text)) {
+    return "Dopyt sa týka temperovania betónového jadra, stropného alebo stenového chladenia a regulácie, takže nacenenie má riešiť plochy, zdroj chladu a rosný bod.";
+  }
+  if (/(velke stavby|veľké stavby|polyfunkc|referenc)/.test(text)) {
+    return "Dopyt sa týka väčšej stavby alebo referencie, takže nacenenie má riešiť technické riešenia vykurovania, vetrania alebo chladenia podľa objektu.";
+  }
+  if (/(ocenen|certifikat|certifikát|certifikaty|certifikáty)/.test(text)) {
+    return "Dopyt sa týka Geotherm, ocenení, certifikátov alebo referencií, takže odpoveď má potvrdiť firemné zázemie a až potom riešiť konkrétnu realizáciu.";
+  }
+  if (/(tzb|navrh vykurov|návrh vykurov|vykurovania|vykurovanie|kurenie|kúrenie|kureni|návrh a cenová ponuka)/.test(text)) {
+    return "Dopyt sa týka návrhu vykurovania alebo technického riešenia budovy, takže nacenenie má riešiť zdroj tepla, rozvody, reguláciu a rozsah prác.";
+  }
+  if (service === "radiators" || /(radiator|radiátor|radiatory|radiátory)/.test(text)) {
+    return "Dopyt sa týka radiátorov alebo vykurovacích telies, takže nacenenie má riešiť typ telies, teplotný spád, rozvody a zdroj tepla.";
+  }
+  if (service === "heat_pump" || /(tepelne cerpad|tepelné čerpad|cerpad|čerpad|\btc\b|\btč\b)/.test(text)) {
+    return "Dopyt sa týka tepelného čerpadla a vykurovania, takže nacenenie má riešiť typ systému, výkon, montáž, TÚV, reguláciu a rozsah kotolne.";
+  }
+  if (service === "floor_heating" || /podlahov|podlahove kurenie|podlahové kúrenie/.test(text)) {
+    return "Dopyt sa týka podlahového kúrenia, takže nacenenie má riešiť plochu, skladbu podlahy, okruhy, rozdeľovač a napojenie na zdroj tepla.";
+  }
+  if (service === "solar_photovoltaic" || /(fotovolt|solar|solarn|solár|panel|kolektor|zasobnik|zásobnik)/.test(text)) {
+    return "Dopyt sa týka fotovoltaiky alebo solárneho riešenia, takže nacenenie má riešiť panely alebo kolektory, výkon, strechu, zásobník a napojenie.";
+  }
+  if (service === "heat_recovery" || /(rekuper|vetran|vzduchotechn)/.test(text) || (/\bvzduch\b/.test(text) && !/(tepelne cerpad|tepelné čerpad|cerpad|čerpad|vzduch voda|vzduch-voda)/.test(text))) {
+    return "Dopyt sa týka rekuperácie a vetrania, takže nacenenie má riešiť jednotku, rozvody vzduchu, dispozíciu a technickú miestnosť.";
+  }
+  if (service === "air_conditioning" || /(klimatiz|klima|chladen)/.test(text)) {
+    return "Dopyt sa týka klimatizácie alebo chladenia, takže nacenenie má riešiť počet miestností, výkon, vonkajšiu jednotku a montáž.";
+  }
+  if (service === "water" || /(rozvod.*vod|uprava vody|úprava vody|zmakcovac|zmäkčovač|kanaliz)/.test(text)) {
+    return "Dopyt sa týka vody alebo rozvodov, takže nacenenie má riešiť rozsah prác, pripojenia, materiál a stav existujúcich rozvodov.";
+  }
+  if (service === "screeds" || /poter/.test(text)) {
+    return "Dopyt sa týka poterov, takže nacenenie má riešiť plochu, typ poteru, hrúbku, podklad a väzbu na podlahové kúrenie.";
+  }
+  if (service === "central_vacuum" || /(centraln.*vysav|vysavac|vysávač)/.test(text)) {
+    return "Dopyt sa týka centrálneho vysávača, takže nacenenie má riešiť trasu rozvodov, počet zásuviek, jednotku a dispozíciu.";
+  }
+  if (service === "sanitary" || /(geberit|zdravotechn|sanit|\bwc\b)/.test(text)) {
+    return "Dopyt sa týka zdravotechniky alebo sanity, takže nacenenie má riešiť rozsah rozvodov, napojenia, WC alebo sanitárne prvky.";
+  }
+  if (service === "boilers" || /(kotol|kotly|plynov)/.test(text)) {
+    return "Dopyt sa týka kotla alebo kotolne, takže nacenenie má riešiť typ zdroja, odvod spalín, reguláciu, montáž a potrebné podklady.";
+  }
+  if (service === "ceiling_cooling" || /(stropn|stenn|rosny bod|rosný bod)/.test(text)) {
+    return "Dopyt sa týka stropného alebo stenového chladenia, takže nacenenie má riešiť plochy, reguláciu vlhkosti, rosný bod a zdroj chladu.";
+  }
+  if (service === "service" || /(servis|poruch|udrzb|údržb|chybovy|chybový)/.test(text)) {
+    return "Dopyt sa týka servisu alebo údržby, takže treba preveriť zariadenie, značku/model, prejav problému, lokalitu a dostupnosť technika.";
+  }
+  return "Dopyt treba naceniť podľa konkrétnej služby, rozsahu prác, lokality a dostupných podkladov.";
+}
+
+function quoteTopicRepairSentence(message: string, answer: string): string | null {
+  const text = normalizePolicyText(message);
+  const normalizedAnswer = normalizePolicyText(answer);
+  const missing = (pattern: RegExp): boolean => !pattern.test(normalizedAnswer);
+  if (/(drazic|dražic|argo)/.test(text) && missing(/tepel|cerpad|vykurov/)) {
+    return "Pri Dražice ARGO to beriem ako tému tepelného čerpadla alebo vykurovania, takže nacenenie má riešiť vhodnosť zdroja tepla, montáž a aktuálnu ponuku.";
+  }
+  if (/(plan obnovy|plán obnovy|dotac|dotác|poukaz|prispev|príspev|podpor)/.test(text) && missing(/dot|podpor|over|podmien/)) {
+    return "Pri Pláne obnovy alebo dotáciách treba preveriť podporu, podmienky programu, oprávnenosť a nadväzujúce nacenenie riešenia.";
+  }
+  if ((/(rekuper|vetran|vzduchotechn)/.test(text) || (/\bvzduch\b/.test(text) && !/(tepelne cerpad|tepelné čerpad|cerpad|čerpad|vzduch voda|vzduch-voda)/.test(text))) && missing(/rekuper|vetr|vzduch/)) {
+    return "Téma sa týka rekuperácie, vetrania alebo vzduchu v budove, preto má ponuka riešiť jednotku, rozvody, dispozíciu a technickú miestnosť.";
+  }
+  if (/(mss|aurostep|drain back|drain-back|nemrznuca.*solar|nemrznúca.*solár|solar|solarn|solár|panel|kolektor|zasobnik|zásobnik)/.test(text) && missing(/solar|fotovolt|panel|kolektor|zasobnik|zásobnik/)) {
+    return "Téma sa týka solárneho systému, solárnych kolektorov alebo zásobníka, preto má nacenenie riešiť zostavu, objem zásobníka a napojenie.";
+  }
+  if (/(aurocompact|ecocompact|eco compact|ecotec|eco tec|\bvsc\b|elektricke|elektrické)/.test(text) && missing(/kot|vaillant|buderus|vykurov/)) {
+    return "Tému beriem ako kotol, Vaillant/Buderus alebo vykurovanie, preto má nacenenie riešiť typ zdroja, výkon, reguláciu a montáž.";
+  }
+  if (/(navrh vykurov|návrh vykurov|vykurovania|vykurovanie|kurenie|kúrenie|tzb)/.test(text) && missing(/kuren|vykurov|navrh|návrh|riesenie|riešenie/)) {
+    return "Téma je návrh vykurovania alebo technické riešenie budovy, preto má ponuka riešiť zdroj tepla, rozvody, reguláciu a rozsah prác.";
+  }
+  if (/(velke stavby|veľké stavby|polyfunkc)/.test(text) && missing(/vykurov|vetr|chladen|refer/)) {
+    return "Pri veľkých stavbách a polyfunkčných budovách ide najmä o referencie a technické riešenia vykurovania, vetrania alebo chladenia podľa objektu.";
+  }
+  if (/(ocenen|certifikat|certifikát|certifikaty|certifikáty)/.test(text) && missing(/geotherm|realiz|refer|certifik/)) {
+    return "Téma sa týka Geotherm, realizácií, referencií, ocenení alebo certifikátov, preto ju netreba zamieňať za výber konkrétneho zariadenia.";
+  }
+  if (/(radiator|radiátor|radiatory|radiátory)/.test(text) && missing(/radi|vykurov|teplot/)) {
+    return "Pri radiátoroch treba riešiť vykurovacie telesá, teplotný spád, rozvody a zdroj tepla.";
+  }
+  if (/(bkt|betonove jadro|betónové jadro|temperovanie)/.test(text) && missing(/chladen|strop|sten|regul/)) {
+    return "Temperovanie betónového jadra BKT súvisí so stropným alebo stenovým chladením a reguláciou, preto treba riešiť aj vlhkosť a rosný bod.";
+  }
+  if (/(video|navod|návod|navody|návody)/.test(text) && missing(/servis|udrz|údrž|model|zariaden/)) {
+    return "Pri video návodoch ide skôr o konkrétny model, zariadenie, servis alebo údržbu, nie o samostatný výber technológie.";
+  }
+  return null;
 }
 
 function serviceSearchKeyword(serviceType: ServiceType): string {
@@ -4401,7 +4526,7 @@ function companyPracticalDirectAnswer(message: string): DirectAnswerDecision | n
   if (/(chcem|potrebujem|dohodnut|dohodnúť|dat|dať|dajme|dame|dáme|riesit|riešiť).*(stretn|meeting|konzult|termin|termín)|(?:stretn|meeting|konzult).*(geotherm|technik|obchodnik|ponuk|nacen)/.test(text)) {
     return answerBase(
       "Dohodnutie konzultácie",
-      "Áno, v tomto bode už dáva zmysel dohodnúť krátku konzultáciu alebo stretnutie s Geotherm a pripraviť nacenenie podľa rozsahu. Pošlite prosím meno, telefón a e-mail, lokalitu a stručne čo riešite; pri tepelnom čerpadle pomôžu aj fotky kotolne alebo základné údaje o dome.",
+      "Áno, v tomto bode už dáva zmysel dohodnúť krátku konzultáciu alebo stretnutie s Geotherm a pripraviť nacenenie podľa rozsahu. Pri tepelnom čerpadle pomôžu aj fotky kotolne alebo základné údaje o dome. Pošlite prosím meno, telefón a e-mail, lokalitu a stručný rozsah dopytu.",
       "meeting_consultation_handoff",
       "contact",
       "company-truth kontakt konzultacia stretnutie nacenenie Geotherm telefon email",
@@ -4488,10 +4613,10 @@ function companyPracticalDirectAnswer(message: string): DirectAnswerDecision | n
     );
   }
 
-  if (/(flexotherm|flexo therm|arocollect|aro collect)/.test(text)) {
+  if (/(flexotherm|flexo therm|flexocompact|flexo compact|arocollect|aro collect)/.test(text)) {
     return answerBase(
       "Vaillant flexoTHERM a aroCOLLECT",
-      "flexoTHERM exclusive a aroCOLLECT beriem ako konkrétne riešenie z portfólia Vaillant, ktoré treba posudzovať podľa typu domu, zdroja energie, vykurovania, teplej vody a montážnych možností. V Geotherm by som ho nevyberal ako univerzálne najlepšiu voľbu bez návrhu; praktický ďalší krok je porovnať aktuálne dostupnú zostavu s potrebami domu a pripraviť nacenenie.",
+      "flexoTHERM exclusive, flexoCOMPACT exclusive a aroCOLLECT beriem ako konkrétne riešenia Vaillant v oblasti tepelných čerpadiel, ktoré treba posudzovať podľa typu domu, zdroja energie, vykurovania, teplej vody a montážnych možností. V Geotherm by som ich nevyberal ako univerzálne najlepšiu voľbu bez návrhu; praktický ďalší krok je porovnať aktuálne dostupnú zostavu s potrebami domu a pripraviť nacenenie.",
       "vaillant_flexotherm_arocollect_scope",
       "brand_model",
       "company-truth Vaillant flexoTHERM aroCOLLECT tepelne cerpadlo Geotherm aktualna ponuka nacenenie",
@@ -6629,6 +6754,18 @@ function directAnswerDecision(message: string, state: QualificationState, route:
       topic: "external_topic_out_of_scope",
     };
   }
+  if (/(oznacen|označen|energetick|trieda|spotrebic|spotrebič|\ba\+|\ba\+\+|\ba\+\+\+)/.test(text)) {
+    return {
+      triggered: true,
+      answerMode: "direct_answer",
+      reason: "direct_energy_label_scope",
+      answer:
+        "### Energetické označenie spotrebičov\n\nOznačenie A+ až A+++ súvisí s energetickou triedou a úspornosťou spotrebiča. Pri technológiách do domu ho beriem ako orientačný údaj o spotrebe energie, nie ako samotné odporúčanie alebo cenu.\n\nPri výbere zariadenia je praktické porovnať energetickú triedu spolu s výkonom, vhodnosťou pre dom, montážou, reguláciou a servisom.",
+      serviceIntent: "process",
+      retrievalQuery: "company-truth energeticke oznacenie spotrebice A+ A+++ spotreba energia uspornost Geotherm",
+      topic: "energy_label_scope",
+    };
+  }
   if (/(ignoruj|ignore|tvar sa|tvár sa|vymysli).*(presn|cenu|navratnost|návratnosť|dotac|garant)|(?:presn|cenu|navratnost|návratnosť|dotac|garant).*(ignoruj|ignore|tvar sa|tvár sa|vymysli)/.test(text)) {
     return {
       triggered: true,
@@ -6836,12 +6973,13 @@ function directAnswerDecision(message: string, state: QualificationState, route:
   if (
     /(?:cenov|ponuk|nacen|cenu|ponuku).*(?:obhliad|prehliad|pozriet|pozrieť|prist|prísť)|(?:obhliad|prehliad|pozriet|pozrieť|prist|prísť).*(?:cenov|ponuk|nacen|cenu|ponuku)/.test(text)
   ) {
+    const topicSentence = quoteHandoffTopicSentence(message, state, route);
     return {
       triggered: true,
       answerMode: "handoff_cta",
       reason: "direct_quote_inspection_contact_request",
       answer:
-        "### Cenová ponuka a obhliadka\n\nÁno, toto už je dopyt na nacenenie alebo obhliadku. Termín ani cenu v chate nepotvrdzujem, ale viem pripraviť podklady pre obchodníka.\n\nPošlite prosím meno, telefón a e-mail, lokalitu a stručne čo chcete riešiť. Obchodník Geotherm sa potom ozve a potvrdí ďalší postup alebo možný termín.",
+        `### Cenová ponuka a obhliadka\n\nÁno, toto už je dopyt na nacenenie alebo obhliadku. ${topicSentence} Termín ani cenu v chate nepotvrdzujem, ale viem pripraviť podklady pre obchodníka.\n\nPošlite prosím meno, telefón a e-mail, lokalitu a stručný rozsah. Obchodník Geotherm sa potom ozve a potvrdí ďalší postup alebo možný termín.`,
       serviceIntent: "quote",
       retrievalQuery: "company-truth cenova ponuka obhliadka kontakt obchodnik termin nacenenie Geotherm",
       topic: "quote_inspection_contact_request",
@@ -6852,12 +6990,13 @@ function directAnswerDecision(message: string, state: QualificationState, route:
     (/(chcem|potrebujem|prosim|prosím).*(cenov.*ponuk|ponuk|nacen|ponuku)|(?:cenov.*ponuk|ponuk|nacen|ponuku).*(ako|pokrac|pokrač|dalej|ďalej)/.test(text) ||
       /(?:chcem|potrebujem).*(?:aby ste ma kontakt|ozval|ozvali|poslat ponuk|poslať ponuk)/.test(text))
   ) {
+    const topicSentence = quoteHandoffTopicSentence(message, state, route);
     return {
       triggered: true,
       answerMode: "handoff_cta",
       reason: "direct_quote_contact_request",
       answer:
-        "### Cena a ponuka\n\nAk chcete cenovú ponuku, ďalší krok je pripraviť podklady pre obchodníka Geotherm. V chate nepotvrdzujem presnú cenu ani termín, ale viem dopyt zhrnúť a posunúť na nacenenie.\n\nPošlite prosím meno, telefón a e-mail, lokalitu a stručne čo chcete riešiť. Kontakt použijeme iba na spätné ozvanie k tejto ponuke.",
+        `### Cena a ponuka\n\nAk chcete cenovú ponuku, ďalší krok je pripraviť podklady pre obchodníka Geotherm. ${topicSentence} V chate nepotvrdzujem presnú cenu ani termín, ale viem dopyt zhrnúť a posunúť na nacenenie.\n\nPošlite prosím meno, telefón a e-mail, lokalitu a stručný rozsah. Kontakt použijeme iba na spätné ozvanie k tejto ponuke.`,
       serviceIntent: "quote",
       retrievalQuery: "company-truth cenova ponuka cena kontakt obchodnik nacenenie Geotherm",
       topic: "quote_contact_request",
@@ -8152,6 +8291,16 @@ function rankRetrievalResultsForState(results: RetrievalResult[], state: Qualifi
   return boosted.sort((left, right) => right.score - left.score).map((item) => item.result);
 }
 
+function isInvalidExtractedLocation(location: string, userMessage: string): boolean {
+  const normalizedLocation = normalizePolicyText(location);
+  const normalizedMessage = normalizePolicyText(userMessage);
+  if (!normalizedLocation) return true;
+  if (/^(ahoj|dobry den|dobrý deň|dobry|cau|čau|raz dva tri|test|sds|asdf|prosim|prosím)$/.test(normalizedLocation)) return true;
+  if (/^ahoj\b/.test(normalizedMessage) && normalizedLocation === "ahoj") return true;
+  if (/^(ahoj\s+)?(raz dva tri|test|sds|asdf|123)\b/.test(normalizedMessage)) return true;
+  return false;
+}
+
 async function extractQualificationUpdate(input: {
   userMessage: string;
   assistantAnswer: string;
@@ -8195,7 +8344,7 @@ async function extractQualificationUpdate(input: {
     const area = parsed.area_m2;
     if (typeof area === "number" && Number.isFinite(area)) update.area_m2 = area;
     const location = readString("location");
-    if (location) update.location = location;
+    if (location && !isInvalidExtractedLocation(location, input.userMessage)) update.location = location;
     const timeline = readString("timeline");
     if (timeline) update.timeline = timeline;
     const currentHeating = readString("current_heating");
@@ -10221,6 +10370,19 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
   }
   const normalizedMessageForHardDirect = normalizePolicyText(message);
   const rawMessageForHardDirect = message.toLowerCase();
+  const quoteLikeHandoffAnswer =
+    route.serviceIntent === "quote" ||
+    route.serviceIntent === "inspection" ||
+    route.serviceIntent === "contact" ||
+    directDecision.answerMode === "handoff_cta" ||
+    /(cenov|ponuk|nacen|poradit|poradiť)/.test(normalizedMessageForHardDirect);
+  if (quoteLikeHandoffAnswer) {
+    const repairSentence = quoteTopicRepairSentence(message, answer);
+    if (repairSentence) {
+      recordDiagnostic(answerDiagnostics.validatorsTriggered, "quote_topic_context_appended");
+      answer = `${answer.trim()}\n\n${repairSentence}`;
+    }
+  }
   if (/(vonkajs|vonkajsi|vonkajsej).*(jednotk)|pod oknom|umiestnenie jednotky/.test(normalizedMessageForHardDirect)) {
     answer = "### Hlučnosť a umiestnenie vonkajšej jednotky\n\nPri dome s tepelným čerpadlom umiestnenie pod oknom nemusí byť automaticky zlé, ale treba ho posúdiť opatrne. Rozhoduje hluk v noci, prúdenie vzduchu, kondenzát, odstup od okien a susedov, servisný prístup a miestne možnosti montáže.\n\nBez obhliadky by som to nepotvrdil ako finálne miesto. Pri nacenení tepelného čerpadla by som porovnal tichšie umiestnenie bokom od obytných miestností alebo technické opatrenia proti hluku.";
     recordDiagnostic(answerDiagnostics.validatorsTriggered, "outdoor_unit_placement_answer_hardened");
@@ -10505,6 +10667,11 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     }
   }
   answer = crmOutcome.answer;
+  const postCrmQuoteRepair = quoteTopicRepairSentence(message, answer);
+  if (postCrmQuoteRepair && (route.serviceIntent === "quote" || route.serviceIntent === "inspection" || route.serviceIntent === "contact" || /(cenov|ponuk|nacen|poradit|poradiť)/.test(normalizePolicyText(message)))) {
+    recordDiagnostic(answerDiagnostics.validatorsTriggered, "post_crm_quote_topic_context_appended");
+    answer = `${answer.trim()}\n\n${postCrmQuoteRepair}`;
+  }
   if (/(mozno neskor|možno neskôr|neskor|neskôr|teraz nie|zatial nie|zatiaľ nie)/.test(normalizePolicyText(message))) {
     answer = "Rozumiem, nechajme to zatiaľ otvorené. Keď sa k tomu vrátite, stačí nadviazať tým, či chcete riešiť servis, nacenenie alebo výber nového riešenia.";
     crmOutcome.leadCapture = { shouldAsk: false, nextQuestion: null, reason: null, requestedFields: [] };
