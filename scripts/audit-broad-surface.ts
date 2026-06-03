@@ -95,6 +95,7 @@ const cases: Case[] = [
   { id: "boiler_revision", message: "Robite revizie kotlov?", mustContain: ["potvr", "kot"], mustNotContain: ["ano"], minSources: 1 },
   { id: "heating_reconstruction", message: "Robite aj prerabky kurenia v starych domoch?", mustContain: ["kuren"], minSources: 1 },
   { id: "heating_terms", message: "Vykurovanie slovnik pojmov", mustContain: ["vykurov", "poj"], minSources: 1, expectedServiceType: "complex_solution", expectedServiceIntent: "process" },
+  { id: "heating_curve_regulation", message: "Vykurovacia krivka ekvitermicka regulacia", mustContain: ["vykurov", "regul", "energi"], minSources: 1, expectedServiceType: "complex_solution", expectedServiceIntent: "process" },
   { id: "bathroom_core", message: "Robite aj bytove jadra?", mustContain: ["potvr"], mustNotContain: ["ano"], minSources: 1 },
   { id: "chimney_work", message: "Robite aj kominarske prace?", mustContain: ["potvr"], mustNotContain: ["ano"], minSources: 1 },
   { id: "boiler_electrical", message: "Robite aj elektroinstalaciu ku kotlom?", mustContain: ["elektr"], minSources: 1 },

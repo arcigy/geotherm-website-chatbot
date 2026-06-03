@@ -4223,6 +4223,16 @@ function companyPracticalDirectAnswer(message: string): DirectAnswerDecision | n
     );
   }
 
+  if (/(vykurovac|vykurovacia|ekviterm|krivk).*(krivk|regulac|regulácia|ekviterm)|(?:regulac|regulácia|ekviterm).*(vykurovac|vykurovacia|krivk)/.test(text)) {
+    return answerBase(
+      "Vykurovacia krivka a regulácia",
+      "Vykurovacia krivka je nastavenie regulácie, ktoré určuje teplotu vykurovacej vody podľa vonkajšej teploty. Pri dobrom nastavení vie zlepšiť komfort a znížiť zbytočnú spotrebu energie, najmä pri tepelnom čerpadle, podlahovke alebo radiátoroch. Ak je doma chladno, prekuruje sa alebo kolíše teplota, praktický ďalší krok je konzultácia alebo servisné preverenie nastavenia systému.",
+      "heating_curve_regulation_scope",
+      "process",
+      "company-truth vykurovacia krivka ekvitermicka regulacia vykurovanie energia tepelne cerpadlo radiator podlahove kurenie Geotherm",
+    );
+  }
+
   if (/energetick\w* tried|tepelnotechnick\w* vlastnost|\ba0\b|nizkoenergeticky|nízkoenergetický/.test(text)) {
     return answerBase(
       "Energetická trieda A0 a nízkoenergetický dom",
@@ -8347,6 +8357,7 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
       route.serviceType = "complex_solution";
     }
     if (directDecision.topic && directDecision.topic === "heating_terms_scope") route.serviceType = "complex_solution";
+    if (directDecision.topic && directDecision.topic === "heating_curve_regulation_scope") route.serviceType = "complex_solution";
     if (directDecision.topic && /^(preventive_service_scope|annual_maintenance_scope)$/.test(directDecision.topic)) route.serviceType = "service";
     if (directDecision.topic && directDecision.topic === "system_fluids_scope") route.serviceType = "service";
     if (directDecision.topic && /^(gas_certification|boiler_certificate_scope)$/.test(directDecision.topic)) route.serviceType = "service";
@@ -9086,6 +9097,14 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     const normalized = normalizePolicyText(answer);
     if (!normalized.includes("nad 300") || !/(nevyberal|nevybral|kontakt|konzult|individual)/.test(normalized)) {
       recordDiagnostic(answerDiagnostics.validatorsTriggered, "large_object_model_guardrail_repaired");
+      answer = validateAndRepairAnswer(directDecision.answer, stateForTurn, route, message, answerDiagnostics);
+      directAnswerFallbackUsed = true;
+    }
+  }
+  if (directDecision.triggered && directDecision.topic === "heating_curve_regulation_scope" && directDecision.answer) {
+    const normalized = normalizePolicyText(answer);
+    if (!normalized.includes("vykurov") || !normalized.includes("regul") || !normalized.includes("energi") || !normalized.includes("krivk")) {
+      recordDiagnostic(answerDiagnostics.validatorsTriggered, "heating_curve_scope_repaired");
       answer = validateAndRepairAnswer(directDecision.answer, stateForTurn, route, message, answerDiagnostics);
       directAnswerFallbackUsed = true;
     }
