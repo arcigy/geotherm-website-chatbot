@@ -192,6 +192,9 @@ function validate(testCase: Case, body: Awaited<ReturnType<typeof createChatResp
   if (testCase.topic === "water" && /(rautitan|rozvod|pitnej vody)/.test(normalizedQuestion) && service === "heat_pump") {
     failures.push("water distribution misrouted as heat_pump");
   }
+  if (testCase.topic === "water" && /(kvapalin|fernox|agrimex|nemrznuca)/.test(normalizedQuestion) && String(debug.serviceIntent || "") === "service_fault") {
+    failures.push("system fluids misrouted as service_fault");
+  }
   if (
     testCase.topic === "service" &&
     /(pravideln|preventiv|udrzb|prehliad|neodklad|oplat)/.test(normalize(testCase.question)) &&

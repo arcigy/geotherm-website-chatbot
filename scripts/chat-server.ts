@@ -4675,12 +4675,12 @@ function companyPracticalDirectAnswer(message: string): DirectAnswerDecision | n
     );
   }
 
-  if (/(fernox|ochranne.*kvapalin|ochranné.*kvapalin|udrzbove.*kvapalin|údržbové.*kvapalin|nemrznuca kvapalina|nemrznúca kvapalina|teplonosne kvapaliny|teplonosné kvapaliny)/.test(text)) {
+  if (/(fernox|agrimex|kolekton|ochranne.*kvapalin|ochranné.*kvapalin|udrzbove.*kvapalin|údržbové.*kvapalin|nemrznuca kvapalina|nemrznúca kvapalina|teplonosn\w*.*kvapalin)/.test(text)) {
     return answerBase(
       "Ochranné a údržbové kvapaliny",
       "Ochranné, údržbové alebo teplonosné kvapaliny sa riešia pri vykurovacích, chladiacich aj solárnych systémoch podľa typu sústavy, materiálov, objemu vody a požadovanej ochrany. Bez kontroly systému by som neodporúčal konkrétny prípravok ani dávkovanie. Praktický ďalší krok je servisné preverenie alebo konzultácia, kde sa potvrdí stav vody, zariadenia a vhodná údržba.",
       "system_fluids_scope",
-      "service_fault",
+      "process",
       "company-truth ochranne udrzbove kvapaliny Fernox voda vykurovaci solarny system servis Geotherm",
     );
   }
@@ -8306,6 +8306,7 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     ) {
       route.serviceType = "complex_solution";
     }
+    if (directDecision.topic && directDecision.topic === "system_fluids_scope") route.serviceType = "service";
     if (directDecision.topic && /^(gas_certification|boiler_certificate_scope)$/.test(directDecision.topic)) route.serviceType = "service";
     if (directDecision.serviceIntent === "service_fault") route.serviceType = "service";
     stateForTurn = {

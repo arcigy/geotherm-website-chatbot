@@ -57,6 +57,7 @@ const cases: Case[] = [
   { id: "vaillant_boilers", message: "Aké Vaillant kotly máte?", mustContain: ["Vaillant", "kot"], minSources: 1 },
   { id: "water_distribution", message: "Robíte aj rozvody vody?", mustContain: ["vod"], minSources: 1, expectedServiceType: "complex_solution" },
   { id: "water_treatment", message: "Čo je Katexová úprava vody?", mustContain: ["vody"], minSources: 1 },
+  { id: "system_fluids", message: "Nemrznuca kvapalina do kurenia a solarneho systemu", mustContain: ["kvapalin", "syst"], minSources: 1, expectedServiceType: "service", expectedServiceIntent: "process" },
   { id: "wc_geberit", message: "Robíte WC Geberit?", mustContain: ["Geberit"], minSources: 1 },
   { id: "screeds", message: "Robíte aj potery?", mustContain: ["poter"], minSources: 1 },
   { id: "solar_panels", message: "Robíte solárne panely?", mustContain: ["solár"], minSources: 1, expectedServiceType: "complex_solution" },
