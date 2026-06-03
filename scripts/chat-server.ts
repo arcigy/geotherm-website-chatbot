@@ -3315,7 +3315,7 @@ function deterministicQualificationUpdate(message: string, route?: Pick<ServiceR
   else if (/elektrin|elektrokotol|elektricky kotol/.test(normalized)) update.current_heating = "elektrina";
   else if (/(?:mam|mame|kurim|kurime|vykurujem|aktualne|teraz).*(?:tepelne cerpadlo|cerpadlom)|cerpadlom/.test(normalized)) update.current_heating = "tepelné čerpadlo";
 
-  const locationMatch = normalized.match(/\b(?:som z|sme z|dom je v|dom mam v|byvam v|lokalita)\s+([a-z]+(?:\s+[a-z]+){0,2})/);
+  const locationMatch = normalized.match(/\b(?:som z|som zo|som v|som vo|sme z|sme zo|sme v|sme vo|dom je v|dom je vo|dom mam v|dom mam vo|byvam v|byvam vo|lokalita)\s+([a-z]+(?:\s+[a-z]+){0,2})/);
   if (locationMatch) update.location = locationMatch[1].trim();
   if (/urgent|co najskor|este dnes|hned/.test(normalized)) update.timeline = "urgent";
   else if (/1\s*-?\s*3|do troch mesiacov|do 3 mesiacov/.test(normalized)) update.timeline = "1-3 mesiace";
@@ -3773,7 +3773,10 @@ function extractCrmLocation(message: string, contact: CrmContact): string | unde
     .replace(contact.phone || "\u0000", " ")
     .replace(crmPhonePatternGlobal, " ");
   const match = withoutContact.match(/\b(?:som|sme|byvam|bývam|dom je|zariadenie je)\s+(?:z|zo|v|vo)\s+([\p{Lu}][\p{L}'-]+(?:\s+[\p{Lu}][\p{L}'-]+){0,2})/u);
-  return match?.[1]?.trim();
+  if (match?.[1]) return match[1].trim();
+  const normalized = normalizePolicyText(withoutContact);
+  const normalizedMatch = normalized.match(/\b(?:som|sme|byvam|dom je|zariadenie je)\s+(?:z|zo|v|vo)\s+([a-z]+(?:\s+[a-z]+){0,2})/);
+  return normalizedMatch?.[1]?.trim();
 }
 
 function detectCrmLeadIntent(message: string, route: Pick<ServiceRoute, "serviceType" | "serviceIntent">): CrmLeadIntent {
@@ -5500,7 +5503,7 @@ function companyPracticalDirectAnswer(message: string): DirectAnswerDecision | n
   if (!/(kotol|kotla|kotlov|kotly)/.test(text) && /(robite|robíte).*(servis|montaz|montáž)|(?:servis|montaz|montáž).*(robite|robíte)/.test(text)) {
     return answerBase(
       "Servis aj montáž",
-      "Geotherm komunikuje návrh, montáž aj následný servis vlastných riešení. Pri cudzích montážach treba servis potvrdiť podľa značky a problému. Ak riešiš nové riešenie, ide sa cez návrh a nacenenie; ak poruchu, najprv pomôže značka, model alebo fotka štítku a lokalita.",
+      "Geotherm komunikuje návrh, montáž, následný servis aj údržbu vlastných riešení. Pri cudzích montážach treba servis potvrdiť podľa značky a problému. Ak riešite nové riešenie, ide sa cez návrh a nacenenie; ak poruchu alebo pravidelnú údržbu, najprv pomôže značka, model alebo fotka štítku a lokalita.",
       "service_and_installation",
       "service_fault",
       "company-truth service montaz servis vlastne realizacie cudzie montaze potvrdit Geotherm",
@@ -6975,6 +6978,30 @@ function directAnswerDecision(message: string, state: QualificationState, route:
       serviceIntent: "contact",
       retrievalQuery: "company-truth kontakt pocas realizacie zodpovedna osoba Geotherm",
       topic: "realization_contact",
+    };
+  }
+  if (/(pravideln|preventiv|udrzb|údržb|prehliad|kontrol).*(zariaden|servis|tepel|cerpad|čerpad)|(?:zariaden|servis|tepel|cerpad|čerpad).*(pravideln|preventiv|udrzb|údržb|prehliad|kontrol)/.test(text)) {
+    return {
+      triggered: true,
+      answerMode: "service_fault_triage",
+      reason: "direct_regular_maintenance_scope",
+      answer:
+        "### Pravidelná údržba\n\nPravidelnú údržbu by som bral ako servisný dopyt, nie ako poruchu. Pri tepelnom čerpadle alebo inom zariadení treba potvrdiť značku, model, lokalitu a či ide iba o preventívnu prehliadku alebo už aj konkrétny problém.\n\nNajlepší ďalší krok je poslať značku/model alebo fotku štítku, lokalitu a kontakt; Geotherm potom potvrdí vhodný rozsah údržby alebo servisnej prehliadky.",
+      serviceIntent: "service_fault",
+      retrievalQuery: "company-truth pravidelna udrzba servis prehliadka znacka model lokalita Geotherm",
+      topic: "regular_maintenance_scope",
+    };
+  }
+  if (/(huci|hučí|hluk|hlucnost|hlučnosť|hlucne|hlučné|tiche|tiché|najtich)/.test(text) && /(cerpad|čerpad|tc\b|tč\b|nibe|vaillant|okn|sused|vonkaj|jednotk|dom)/.test(text)) {
+    return {
+      triggered: true,
+      answerMode: "direct_answer",
+      reason: "direct_noise_scope",
+      answer:
+        "### Hlučnosť tepelného čerpadla\n\nHlučnosť sa nedá posúdiť iba podľa značky. Rozhoduje konkrétny model, výkon, režim prevádzky, umiestnenie vonkajšej jednotky, vzdialenosť od okien a susedov, podstavec a kvalita montáže.\n\nPri návrhu má zmysel porovnať tichšie umiestnenie a konkrétnu zostavu. Kde by mala byť vonkajšia jednotka umiestnená voči obytným miestnostiam alebo susedom?",
+      serviceIntent: "process",
+      retrievalQuery: "company-truth hlucnost tepelne cerpadlo vonkajsia jednotka umiestnenie susedia Geotherm",
+      topic: "heat_pump_noise_scope",
     };
   }
   const genericRecommendationFollowup = /^(co|čo)\s+odpor(u|ú)[cč]ate\??$/.test(text) || /^(ake|aké)\s+riesenie\??$/.test(text);

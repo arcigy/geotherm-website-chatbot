@@ -213,7 +213,7 @@ function isPureGeneralChatMessage(message: string): boolean {
 
 function pureGeneralChatShortAnswer(message: string): string {
   const text = normalizeUserText(message);
-  if (text.includes("ako sa mas") || text.includes("ako sa mate") || text === "ako sa ma" || text === "ako sa m") return "Mám sa dobre, vďaka. Som tu, keď budeš chcieť s niečím pomôcť.";
+  if (text.includes("ako sa mas") || text.includes("ako sa mate") || text === "ako sa ma" || text === "ako sa m") return "Mám sa dobre, ďakujem. Som tu, keď budete potrebovať pomôcť.";
   if (text.includes("dakujem") || text.includes("vdaka")) return "Rado sa stalo.";
   if (text === "ok" || text === "super") return "Jasné.";
   if (text.includes("kto si") || text.includes("co si zac")) return "Som Geotherm chatbot a pomáham s orientáciou v technických riešeniach domu.";
@@ -344,7 +344,8 @@ function userPayload(input: LlmComposeInput): string {
         rules: {
           noRagNeeded: true,
           noSourcesNeeded: true,
-          useTykanie: true,
+          useTykanie: false,
+          useVykanie: true,
           noHVACAbbreviation: true,
           pureSocialMessage: isPureGeneralChatMessage(input.message),
           noFollowUpQuestionForPureSocialMessage: isPureGeneralChatMessage(input.message),
