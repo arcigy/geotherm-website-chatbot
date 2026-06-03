@@ -8045,8 +8045,15 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
   });
   const deterministicRoute = inferServiceRoute(message, previousState, previousMessages);
   const route = parseRouterResponse(routerLlm.content);
+  const routerFallbackText = normalizePolicyText(message);
   route.serviceType = route.serviceType === "unknown" ? deterministicRoute.serviceType : route.serviceType;
   route.serviceIntent = route.serviceIntent === "general" ? deterministicRoute.serviceIntent : route.serviceIntent;
+  if (
+    deterministicRoute.serviceType === "heat_pump" &&
+    /(tepelne cerpad|tepelné čerpad|cerpadl|čerpadl|\btc\b|tč\b|vzduch voda|zem voda|voda voda)/.test(routerFallbackText)
+  ) {
+    route.serviceType = "heat_pump";
+  }
   if (deterministicRoute.serviceIntent === "service_fault") {
     route.serviceType = "service";
     route.serviceIntent = "service_fault";
@@ -8057,7 +8064,6 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     service_type: route.serviceType !== "unknown" ? route.serviceType : undefined,
     service_intent: route.serviceIntent !== "general" ? route.serviceIntent : undefined,
   });
-  const routerFallbackText = normalizePolicyText(message);
   const currentMessagePolicy = classifyAnswerPolicy(message, "unknown");
   const explicitOutOfScopeTopicSwitch =
     currentMessagePolicy.kind === "out_of_scope" ||
@@ -8272,6 +8278,9 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     if (directDecision.topic && /(boiler|ecotec|eloblock|logamax|buderus|compact)/.test(directDecision.topic)) route.serviceType = "service";
     if (directDecision.topic && /heat_recovery/.test(directDecision.topic)) route.serviceType = "heat_recovery";
     if (directDecision.topic && /ceiling_cooling|bkt/.test(directDecision.topic)) route.serviceType = "ceiling_cooling";
+    if (!directDecision.topic?.includes("heat_recovery") && /(tepelne cerpad|tepelné čerpad|cerpadl|čerpadl|\btc\b|tč\b|vzduch voda|zem voda|voda voda)/.test(routerFallbackText)) {
+      route.serviceType = "heat_pump";
+    }
     if (directDecision.serviceIntent === "service_fault") route.serviceType = "service";
     stateForTurn = {
       ...stateForTurn,

@@ -19,6 +19,24 @@ type Row = {
 const questionsPath = path.join(process.cwd(), "knowledge", "live-question-list.json");
 const reportPath = path.join(process.cwd(), "knowledge", "live-question-surface-audit.md");
 const maxMs = 8000;
+const globalForbidden = [
+  "urcite prideme",
+  "urcite ano",
+  "garantujeme",
+  "garantujem",
+  "bezplatna obhliadka",
+  "nezavazna obhliadka",
+  "zadarmo",
+  "zdarma",
+  "24 7",
+  "nonstop servis",
+  "kompletne vybavime dotaciu",
+  "odpocitame dotaciu z ceny",
+  "servisujeme vsetky cudzie montaze",
+  "servisujeme cudzie montaze",
+  "mame poistenie zodpovednosti",
+  "mame certifikaciu",
+];
 
 function repairMojibake(value: string): string {
   if (!/[ĂÄĹÅ]/.test(value)) return value;
@@ -51,6 +69,31 @@ function isCompanyQuestion(question: string): boolean {
   return !/^(ahoj|cau|ako sa mas|dakujem|ok)$/i.test(normalize(question));
 }
 
+function countQuestionMarks(value: string): number {
+  return (value.match(/\?/g) || []).length;
+}
+
+function tykanieHits(value: string): string[] {
+  const text = normalize(value);
+  const terms = ["mas", "tvoj", "tvoja", "tvoje", "teba", "tebou", "chces", "vies", "riesis", "posli", "napis"];
+  return terms.filter((term) => new RegExp(`(^|\\s)${term}(\\s|$)`).test(text));
+}
+
+function forbiddenHits(value: string): string[] {
+  const text = normalize(value);
+  return globalForbidden.filter((term) => {
+    const normalizedTerm = normalize(term);
+    if (!text.includes(normalizedTerm)) return false;
+    if (
+      (normalizedTerm === "24 7" || normalizedTerm.includes("nonstop")) &&
+      /(nesluboval|nepotvrdzujem|nemam potvrdeny|nemame potvrdeny|bez potvrdeneho|treba potvrdit|dostupnost treba potvrdit).{0,100}(24 7|nonstop)/.test(text)
+    ) {
+      return false;
+    }
+    return true;
+  });
+}
+
 function validate(question: string, body: Awaited<ReturnType<typeof createChatResponse>>): string[] {
   const failures: string[] = [];
   const debug = body.debug || {};
@@ -62,6 +105,11 @@ function validate(question: string, body: Awaited<ReturnType<typeof createChatRe
   if (/pageTitle|sectionHeading|snippet|manual:\/\/|http:\/\/www\.geotherm\.sk/.test(body.answer)) failures.push("raw source leakage");
   if (isCompanyQuestion(question) && sources < 1) failures.push("company/service answer without sources");
   if (isCompanyQuestion(question) && debug.answerMode === "general_chat") failures.push("company question routed as general_chat");
+  const tykanie = tykanieHits(body.answer);
+  if (tykanie.length) failures.push(`tykanie: ${tykanie.join("/")}`);
+  const forbidden = forbiddenHits(body.answer);
+  if (forbidden.length) failures.push(`forbidden claim: ${[...new Set(forbidden)].join("/")}`);
+  if (countQuestionMarks(body.answer) > 2) failures.push(`too many follow-up questions: ${countQuestionMarks(body.answer)}`);
   return failures;
 }
 

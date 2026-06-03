@@ -37,8 +37,13 @@ const maxMs = 8000;
 const scenarios: Scenario[] = [
   {
     id: "neutral_microphone_test",
-    messages: ["Ahoj raz dva tri"],
+    messages: ["Ahoj raz dva tri", "sds"],
     expectations: [
+      {
+        anyOf: ["test vstupu", "mikrofon", "mikrofón"],
+        forbidden: ["servis tepel", "servisn", "dotac", "kolo", "porucha"],
+        maxSources: 0,
+      },
       {
         anyOf: ["test vstupu", "mikrofon", "mikrofón"],
         forbidden: ["servis tepel", "servisn", "dotac", "kolo", "porucha"],
@@ -55,7 +60,7 @@ const scenarios: Scenario[] = [
       "chcem vediet cenu s montazou",
     ],
     expectations: [
-      { anyOf: ["cena", "montaz", "montáž"], forbidden: ["580"] },
+      { anyOf: ["cena", "montaz", "montáž"], forbidden: ["580"], service: "heat_pump", intent: "price" },
       {
         mustContain: ["nad 300"],
         anyOf: ["kontakt", "konzult", "individual"],
@@ -76,7 +81,7 @@ const scenarios: Scenario[] = [
     id: "appointment_time_not_confirmed",
     messages: ["chcem cenovu ponuku a obhliadku", "dnes medzi 15-16:00", "Ruzindolska 16 trnava, ale 8:00 uz bolo", "10:00"],
     expectations: [
-      { anyOf: ["kontakt", "telefon", "e-mail", "email"], intent: "quote" },
+      { mustContain: ["meno"], anyOf: ["kontakt", "telefon", "e-mail", "email"], intent: "quote" },
       {
         anyOf: ["nepotvrdzujem", "treba potvrdit", "treba potvrdiť", "kontakt"],
         forbidden: ["kolo 6", "2017", "zelena domacnostiam", "potvrdzujem", "mozeme sa stretnut"],
@@ -101,7 +106,7 @@ const scenarios: Scenario[] = [
       "10:00",
     ],
     expectations: [
-      { anyOf: ["kontakt", "telefon", "e-mail", "email"], intent: "quote" },
+      { mustContain: ["meno"], anyOf: ["kontakt", "telefon", "e-mail", "email"], intent: "quote" },
       {
         anyOf: ["nepotvrdzujem", "treba potvrdit", "treba potvrdiť", "kontakt"],
         forbidden: ["mozeme sa stretnut", "potvrdzujem", "dnes o 8", "tesim sa na stretnutie"],
