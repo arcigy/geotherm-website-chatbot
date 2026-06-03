@@ -1132,6 +1132,10 @@ function enforceVykanie(value: string): string {
     .replace(/Preferuješ/g, "Preferujete")
     .replace(/kúriš/g, "kúrite")
     .replace(/Kúriš/g, "Kúrite")
+    .replace(/staviaš/g, "staviate")
+    .replace(/Staviaš/g, "Staviate")
+    .replace(/stavias/g, "staviate")
+    .replace(/Stavias/g, "Staviate")
     .replace(/pošli/g, "pošlite")
     .replace(/Pošli/g, "Pošlite")
     .replace(/napíš(?!te)/g, "napíšte")
@@ -1178,6 +1182,10 @@ function enforceVykanie(value: string): string {
     .replace(/\bdopln\b/g, "doplňte")
     .replace(/\bKúriš\b/g, "Kúrite")
     .replace(/\bkúriš\b/g, "kúrite")
+    .replace(/\bStaviaš\b/g, "Staviate")
+    .replace(/\bstaviaš\b/g, "staviate")
+    .replace(/\bStavias\b/g, "Staviate")
+    .replace(/\bstavias\b/g, "staviate")
     .replace(/\bTvoja\b/g, "Vaša")
     .replace(/\btvoja\b/g, "vaša")
     .replace(/\bTvoje\b/g, "Vaše")
@@ -4123,6 +4131,36 @@ function companyPracticalDirectAnswer(message: string): DirectAnswerDecision | n
     topic,
   });
 
+  if (/show\s*point|showpoint|(?:umiestnen|umiestnenie).*(hluc|hluč|velkost|veľkosť)|(?:velkost|veľkosť).*(tepelneho cerpadla|tepelného čerpadla)/.test(text)) {
+    return answerBase(
+      "Umiestnenie, hlučnosť a veľkosť tepelného čerpadla",
+      "Toto beriem ako poradenskú tému k tepelnému čerpadlu, nie ako servisnú poruchu. Pri návrhu treba riešiť umiestnenie vonkajšej jednotky, hlučnosť voči obytným miestnostiam a susedom, odstupy, prúdenie vzduchu, kondenzát, servisný prístup a miesto v technickej miestnosti. Praktický ďalší krok je konzultácia a nacenenie podľa domu a montážnych možností.",
+      "heat_pump_showpoint_scope",
+      "process",
+      "company-truth Vaillant showPOINT umiestnenie hlucnost velkost tepelne cerpadlo vonkajsia jednotka Geotherm",
+    );
+  }
+
+  if (/(ventilac|ventilač)(?:ne|né)?(?:\??)?$|(?:ventilac|ventilač).*(cerpad|čerpad|nibe|tepel)|(?:cerpad|čerpad|nibe|tepel).*(ventilac|ventilač)/.test(text)) {
+    return answerBase(
+      "Ventilačné tepelné čerpadlo",
+      "Ventilačné tepelné čerpadlo by som komunikoval opatrne ako prepojenie vykurovania, teplej vody a vetrania/rekuperácie podľa konkrétneho systému. Nie je to univerzálna náhrada za bežné tepelné čerpadlo vzduch-voda pre každý dom; dostupnosť a vhodnosť konkrétneho modelu treba potvrdiť v aktuálnej ponuke. Praktický ďalší krok je konzultácia a nacenenie podľa domu, vetrania, TÚV a požadovaného komfortu.",
+      "ventilation_heat_pump_scope",
+      "recommendation",
+      "company-truth ventilacne tepelne cerpadlo NIBE rekuperacia vetranie TUV Geotherm",
+    );
+  }
+
+  if (/(skolen|školen|zavod|závod).*(vaillant)|vaillant.*(skolen|školen|zavod|závod)/.test(text)) {
+    return answerBase(
+      "Školenie Vaillant",
+      "Školenie odborníkov v závode Vaillant beriem ako firemnú referenciu a dôkaz technického zázemia, nie ako servisnú poruchu. Pri tepelných čerpadlách Vaillant je dôležité, že návrh a montáž robí vyškolený tím; konkrétnu zostavu, cenu a dostupnosť treba riešiť cez konzultáciu a nacenenie pre konkrétny dom.",
+      "heat_pump_vaillant_training_scope",
+      "process",
+      "company-truth Vaillant skolenie zavod tepelne cerpadla odbornici Geotherm",
+    );
+  }
+
   if (/(chcem|potrebujem|dohodnut|dohodnúť|dat|dať|dajme|dame|dáme|riesit|riešiť).*(stretn|meeting|konzult|termin|termín)|(?:stretn|meeting|konzult).*(geotherm|technik|obchodnik|ponuk|nacen)/.test(text)) {
     return answerBase(
       "Dohodnutie konzultácie",
@@ -4932,7 +4970,7 @@ function companyPracticalDirectAnswer(message: string): DirectAnswerDecision | n
   if (/\bnibe+\b/.test(text) && /(hluc|hluč|tich|hluk)/.test(text)) {
     return answerBase(
       "Hlučnosť NIBE",
-      "Pri NIBE sa hlučnosť nedá hodnotiť jedným číslom pre všetky modely. Záleží od konkrétnej jednotky, výkonu, režimu, umiestnenia pri dome, podstavca a nočného režimu. Pri výbere by som porovnal aktuálnu zostavu podľa technického listu a montážnych možností, nie iba podľa značky.\n\nKde by mala byť vonkajšia jednotka umiestnená voči obytným miestnostiam alebo susedom?",
+      "Pri tepelnom čerpadle NIBE sa hlučnosť nedá hodnotiť jedným číslom pre všetky modely. Záleží od konkrétnej jednotky, výkonu, režimu, umiestnenia pri dome, podstavca a nočného režimu. Pri výbere by som porovnal aktuálnu zostavu podľa technického listu a montážnych možností, nie iba podľa značky.\n\nKde by mala byť vonkajšia jednotka umiestnená voči obytným miestnostiam alebo susedom?",
       "nibe_noise_scope",
       "brand_model",
       "company-truth NIBE hlučnosť tepelné čerpadlo model umiestnenie technický list Geotherm",
@@ -5638,10 +5676,10 @@ function companyPracticalDirectAnswer(message: string): DirectAnswerDecision | n
   if (/(platb|faktur|z\s*loh|zaloh|záloh|zaloha|záloha|splátk|splatk)/.test(text)) {
     return answerBase(
       "Platba",
-      "Podľa interného FAQ je potvrdené, že Geotherm **berie zálohy** a **platba na faktúru je možná**. Presný režim platby, výška zálohy a splatnosť sa majú potvrdiť pri konkrétnej ponuke.",
+      "Pri tepelnom čerpadle alebo inej realizácii podľa interného FAQ platí, že Geotherm **berie zálohy** a **platba na faktúru je možná**. Presný režim platby, výška zálohy, splatnosť a prípadné splátky treba potvrdiť pri konkrétnej ponuke.",
       "payment",
       "price",
-      "company-truth prakticke FAQ platba zaloha faktura Geotherm",
+      "company-truth prakticke FAQ platba zaloha faktura splatky tepelne cerpadlo Geotherm",
     );
   }
 
@@ -5858,6 +5896,7 @@ function brandModelDirectAnswer(message: string, state: QualificationState): Dir
   const asksSplit = /\bsplit\b/.test(text);
   const asksF2040 = text.includes("f2040");
   const asksF2050 = text.includes("f2050");
+  const asksF1155 = text.includes("f1155");
 
   if (asksF2040) {
     return {
@@ -5891,6 +5930,24 @@ function brandModelDirectAnswer(message: string, state: QualificationState): Dir
         "Model **F2050** nemám potvrdený ako aktuálne komunikovaný model v firemnej pravde Geotherm, takže mu nebudem vymýšľať parametre ani ho odporúčať ako istú ponuku.",
         "",
         "Bezpečný postup je držať sa typového riešenia: pre váš starší dom s radiátormi predbežne **vzduch-voda systém vhodný pre radiátory** a konkrétny aktuálny model vybrať až po návrhu. Z portfólia firmy viem pri tepelných čerpadlách bezpečne komunikovať najmä **NIBE a Vaillant**, ale aktuálnu dostupnosť konkrétneho modelu treba potvrdiť.",
+      ].join("\n"),
+    };
+  }
+
+  if (asksF1155) {
+    return {
+      triggered: true,
+      answerMode: "brand_model_answer",
+      reason: "direct_nibe_f1155_question",
+      serviceIntent: "brand_model",
+      topic: "F1155_ground_source_model",
+      retrievalQuery: "company-truth product-facts NIBE F1155 zem-voda tepelné čerpadlo aktuálna dostupnosť Geotherm",
+      answer: [
+        "### NIBE F1155",
+        "",
+        "**NIBE F1155 beriem ako model tepelného čerpadla NIBE, typicky pri zemnom riešení zem-voda.** Neoznačil by som ho však za finálny výber bez návrhu a potvrdenia aktuálnej dostupnosti.",
+        "",
+        "Pri zem-voda riešení treba preveriť najmä výkon pre dom, vrt alebo kolektor, TÚV, vykurovaciu sústavu, priestor v technickej miestnosti a cenu realizácie. Praktický ďalší krok je konzultácia a nacenenie aktuálnej zostavy podľa objektu.",
       ].join("\n"),
     };
   }
@@ -5993,9 +6050,9 @@ function priceDirectAnswer(message: string, state: QualificationState): DirectAn
     answer = [
       "### Zľava alebo akcia",
       "",
-      "Konkrétnu zľavu na NIBE by som **bez aktuálne potvrdenej akcie alebo ponuky nesľuboval**. Zľavy sa môžu meniť podľa výrobcu, dostupnosti, zostavy, termínu a rozsahu realizácie.",
+      "Konkrétnu zľavu alebo akciu na **tepelné čerpadlo NIBE alebo Vaillant** by som **bez aktuálne potvrdenej akcie alebo ponuky nesľuboval**. Zľavy sa môžu meniť podľa výrobcu, dostupnosti, zostavy, termínu a rozsahu realizácie.",
       "",
-      "Bezpečný ďalší krok je overiť aktuálnu ponuku Geotherm a naceniť konkrétnu zostavu pre dom. Až potom sa dá povedať, či je dostupná zľava, akcia alebo iné zvýhodnenie.",
+      "Bezpečný ďalší krok je overiť aktuálnu ponuku Geotherm a naceniť konkrétnu zostavu tepelného čerpadla pre dom. Až potom sa dá povedať, či je dostupná zľava, akcia alebo iné zvýhodnenie.",
     ].join("\n");
   } else if (/(navratnost|usetr|uspora|úspor)/.test(text)) {
     reason = "direct_savings_or_roi_question";
@@ -8335,7 +8392,7 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     if (directDecision.serviceIntent === "service_fault") route.serviceType = "service";
     if (
       directDecision.topic &&
-      /^(F2040_obsolete|F2050|NIBE|Vaillant|heat_pump_brands|nibe_vaillant_comparison|nibe_noise_scope|ivt_nordic_inverter_scope|existing_radiator_heat_pump_standalone)$/.test(
+      /^(F2040_obsolete|F2050|F1155_ground_source_model|NIBE|Vaillant|heat_pump_brands|nibe_vaillant_comparison|nibe_noise_scope|ivt_nordic_inverter_scope|existing_radiator_heat_pump_standalone|ventilation_heat_pump_scope)$/.test(
         directDecision.topic,
       ) ||
       directDecision.topic?.startsWith("heat_pump_")
@@ -9343,7 +9400,7 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
   const normalizedMessageForHardDirect = normalizePolicyText(message);
   const rawMessageForHardDirect = message.toLowerCase();
   if (/(vonkajs|vonkajsi|vonkajsej).*(jednotk)|pod oknom|umiestnenie jednotky/.test(normalizedMessageForHardDirect)) {
-    answer = "### Umiestnenie vonkajšej jednotky\n\nPod oknom to nemusí byť automaticky zlé, ale treba to posúdiť opatrne. Rozhoduje hluk v noci, prúdenie vzduchu, kondenzát, odstup od okien a susedov, servisný prístup a miestne možnosti montáže.\n\nBez obhliadky by som to nepotvrdil ako finálne miesto. Pri nacenení by som porovnal tichšie umiestnenie bokom od obytných miestností alebo technické opatrenia proti hluku.";
+    answer = "### Umiestnenie vonkajšej jednotky tepelného čerpadla\n\nPri tepelnom čerpadle umiestnenie pod oknom nemusí byť automaticky zlé, ale treba ho posúdiť opatrne. Rozhoduje hluk v noci, prúdenie vzduchu, kondenzát, odstup od okien a susedov, servisný prístup a miestne možnosti montáže.\n\nBez obhliadky by som to nepotvrdil ako finálne miesto. Pri nacenení tepelného čerpadla by som porovnal tichšie umiestnenie bokom od obytných miestností alebo technické opatrenia proti hluku.";
     recordDiagnostic(answerDiagnostics.validatorsTriggered, "outdoor_unit_placement_answer_hardened");
   }
   if (

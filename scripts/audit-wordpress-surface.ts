@@ -35,8 +35,8 @@ const exportPath = path.join(process.cwd(), "knowledge", "wordpress-export.json"
 const reportPath = path.join(process.cwd(), "knowledge", "wordpress-surface-audit.md");
 const jsonReportPath = path.join(process.cwd(), "knowledge", "wordpress-surface-audit.json");
 const maxMs = Number.parseInt(process.env.WORDPRESS_SURFACE_MAX_MS || "8000", 10);
-const maxCases = Number.parseInt(process.env.WORDPRESS_SURFACE_LIMIT || "220", 10);
-const maxPerTopic = Number.parseInt(process.env.WORDPRESS_SURFACE_PER_TOPIC || "30", 10);
+const maxCases = Number.parseInt(process.env.WORDPRESS_SURFACE_LIMIT || "300", 10);
+const maxPerTopic = Number.parseInt(process.env.WORDPRESS_SURFACE_PER_TOPIC || "100", 10);
 const concurrency = Math.max(1, Number.parseInt(process.env.WORDPRESS_SURFACE_CONCURRENCY || "4", 10));
 
 function normalize(value: string): string {
