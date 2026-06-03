@@ -65,6 +65,9 @@ function classify(item: WordpressItem): { topic: string; expected: string[]; que
   const body = normalize((item.cleanText || "").slice(0, 600));
   const text = `${primary} ${body}`;
   const ask = (prefix: string) => `${prefix}: ${title}?`;
+  if (/plosne kolektor|zemne kolektor|zemny kolektor/.test(primary)) {
+    return { topic: "heat_pump", expected: ["kolektor", "tepel", "cerpad"], question: ask("Viete poradit k teme") };
+  }
   if (/e shop/.test(primary)) {
     return { topic: "quote", expected: ["produkt", "ponuk", "geotherm"], question: ask("Mate informacie k teme") };
   }

@@ -4131,6 +4131,76 @@ function companyPracticalDirectAnswer(message: string): DirectAnswerDecision | n
     topic,
   });
 
+  if (/plosn.*kolektor|plošn.*kolektor|zemn.*kolektor|zem.*kolektor/.test(text) && !/(solar|solarn|solár|slnec|slneč|dotac|dotác)/.test(text)) {
+    return answerBase(
+      "Plošné kolektory",
+      "Plošné kolektory by som pri Geotherm zaradil ako zemný zdroj pre riešenie tepelného čerpadla zem-voda, nie ako solárne kolektory na ohrev vody. Vhodnosť závisí najmä od veľkosti pozemku, pôdy, výkonu domu a návrhu celého systému. Praktický ďalší krok je konzultácia alebo nacenenie, kde sa porovná plošný kolektor, vrt a prípadne vzduch-voda.",
+      "heat_pump_ground_collector_scope",
+      "process",
+      "company-truth plosne kolektory zemny kolektor zem-voda tepelne cerpadlo Geotherm riesenie sluzba",
+    );
+  }
+
+  if (/stiebel\s*eltron/.test(text)) {
+    return answerBase(
+      "Stiebel Eltron",
+      "Stiebel Eltron je značka spojená s tepelnými čerpadlami a ohrievačmi, ale ako aktuálne bezpečne komunikované portfólio Geotherm by som bez potvrdenia držal hlavne NIBE a Vaillant. Pri Stiebel Eltron by som preto neuvádzal konkrétne modely, parametre ani cenu naslepo; treba overiť, či ide o aktuálnu ponuku, referenciu alebo iba článok. Praktický ďalší krok je konzultácia a nacenenie potvrdenej zostavy.",
+      "heat_pump_stiebel_eltron_scope",
+      "brand_model",
+      "company-truth Stiebel Eltron tepelne cerpadlo ohrievac Geotherm aktualna ponuka overit",
+    );
+  }
+
+  if (/\bf1345\b/.test(text)) {
+    return answerBase(
+      "NIBE F1345",
+      "NIBE F1345 by som bral ako model zo skupiny zem-voda pre väčšie výkony alebo náročnejšie objekty, nie ako univerzálne odporúčanie pre každý rodinný dom. Pri konkrétnej realizácii treba overiť aktuálnu dostupnosť, výkon, zdroj zemného tepla, hydrauliku, TÚV, montáž a servis. Praktický ďalší krok je konzultácia a nacenenie potvrdenej zostavy Geotherm.",
+      "heat_pump_nibe_f1345_scope",
+      "brand_model",
+      "company-truth NIBE F1345 tepelne cerpadlo zem-voda vykon Geotherm aktualna ponuka overit",
+    );
+  }
+
+  if (/\bf1245\b/.test(text)) {
+    return answerBase(
+      "NIBE F1245",
+      "NIBE F1245 by som bral ako model zo skupiny zem-voda, nie ako univerzálne odporúčanie bez návrhu. Pri konkrétnej realizácii treba overiť aktuálnu dostupnosť, výkon, zemný zdroj, TÚV, hydrauliku, montáž a servis. Geotherm má zmysel zapojiť cez konzultáciu a nacenenie potvrdenej zostavy, nie cez hádanie modelu v chate.",
+      "heat_pump_nibe_f1245_scope",
+      "brand_model",
+      "company-truth NIBE F1245 tepelne cerpadlo zem-voda vykon Geotherm aktualna ponuka overit",
+    );
+  }
+
+  if (/(tepelne cerpad|tepelné čerpad|cerpad|čerpad).*(\beu\b|europsk|európsk|svet|svete)|(\beu\b|europsk|európsk|svet|svete).*(tepelne cerpad|tepelné čerpad|cerpad|čerpad)/.test(text)) {
+    return answerBase(
+      "Tepelné čerpadlá v EÚ a vo svete",
+      "Tému tepelných čerpadiel v EÚ a vo svete by som bral ako širší kontext trhu, nie ako výber konkrétneho zariadenia pre zákazníka. Pre Geotherm je praktický záver stále návrh riešenia podľa domu: typ objektu, plocha, radiátory alebo podlahovka, TÚV, chladenie, montáž a servis. Ak zákazník rieši vlastný dom, ďalší krok je konzultácia a nacenenie vhodnej zostavy.",
+      "heat_pump_market_context_scope",
+      "process",
+      "company-truth tepelne cerpadla EU svet trh Geotherm navrh riesenia konzultacia",
+    );
+  }
+
+  if (/(vyroba|výroba|rozsirena vyroba|rozšírená výroba).*(tepelne cerpad|tepelné čerpad|cerpad|čerpad|slovensk|slovensku)|(?:slovensk|slovensku).*(vyroba|výroba).*(tepelne cerpad|tepelné čerpad|cerpad|čerpad)/.test(text)) {
+    return answerBase(
+      "Výroba tepelných čerpadiel",
+      "Informácie o výrobe tepelných čerpadiel na Slovensku beriem ako trhový a firemný kontext, nie ako samostatnú ponuku konkrétneho zariadenia. Pre zákazníka je podstatné, aké riešenie Geotherm navrhne, namontuje a servisuje pre konkrétny dom. Praktický ďalší krok je konzultácia alebo nacenenie podľa objektu, vykurovania, TÚV a požadovaného komfortu.",
+      "heat_pump_production_context_scope",
+      "process",
+      "company-truth vyroba tepelnych cerpadiel Slovensko Geotherm riesenie sluzba navrh montaz",
+    );
+  }
+
+  if (/(historia|história).*(tepelne cerpad|tepelné čerpad|cerpad|čerpad)|(?:tepelne cerpad|tepelné čerpad|cerpad|čerpad).*(historia|história)/.test(text)) {
+    return answerBase(
+      "História tepelných čerpadiel",
+      "História tepelných čerpadiel je skôr informačný kontext. Pre zákazníka Geotherm je dôležitejšie dnešné riešenie: správny návrh, vhodný typ tepelného čerpadla, montáž, regulácia a servis podľa domu. Ak chcete riešiť vlastný objekt, praktický ďalší krok je konzultácia a nacenenie konkrétneho riešenia.",
+      "heat_pump_history_context_scope",
+      "process",
+      "company-truth historia tepelnych cerpadiel Geotherm riesenie sluzba navrh montaz servis",
+    );
+  }
+
   if (/show\s*point|showpoint|(?:umiestnen|umiestnenie).*(hluc|hluč|velkost|veľkosť)|(?:velkost|veľkosť).*(tepelneho cerpadla|tepelného čerpadla)/.test(text)) {
     return answerBase(
       "Umiestnenie, hlučnosť a veľkosť tepelného čerpadla",
@@ -4148,6 +4218,16 @@ function companyPracticalDirectAnswer(message: string): DirectAnswerDecision | n
       "ventilation_heat_pump_scope",
       "recommendation",
       "company-truth ventilacne tepelne cerpadlo NIBE rekuperacia vetranie TUV Geotherm",
+    );
+  }
+
+  if (/(tepelne cerpad|tepelné čerpad|cerpad|čerpad).*(vzduch vzduch)|(?:vzduch vzduch).*(tepelne cerpad|tepelné čerpad|cerpad|čerpad)/.test(text)) {
+    return answerBase(
+      "Tepelné čerpadlo vzduch-vzduch",
+      "Tepelné čerpadlo vzduch-vzduch by som vysvetlil ako riešenie bližšie ku klimatizácii alebo lokálnemu vykurovaniu/chladeniu vzduchom, nie ako klasické tepelné čerpadlo vzduch-voda pre vodné podlahové kúrenie alebo radiátory. Pri Geotherm treba aktuálny rozsah potvrdiť podľa toho, či zákazník rieši kúrenie, chladenie alebo klimatizáciu. Praktický ďalší krok je konzultácia a nacenenie vhodného riešenia.",
+      "heat_pump_air_air_scope",
+      "process",
+      "company-truth tepelne cerpadlo vzduch-vzduch klimatizacia kurenie chladenie Geotherm",
     );
   }
 
@@ -4174,7 +4254,7 @@ function companyPracticalDirectAnswer(message: string): DirectAnswerDecision | n
   if (/arostor|aro\s*stor/.test(text)) {
     return answerBase(
       "Vaillant aroSTOR",
-      "aroSTOR by som zaradil ako Vaillant riešenie súvisiace s ohrevom teplej vody, nie ako univerzálne tepelné čerpadlo na vykurovanie domu. Bez aktuálneho návrhu by som mu nevymýšľal parametre ani cenu. Treba potvrdiť dostupnosť, vhodnosť pre počet osôb, objem TÚV, priestor, napojenie a prípadnú kombináciu s vykurovaním. Praktický ďalší krok je konzultácia a nacenenie podľa domácnosti.",
+      "aroSTOR by som zaradil ako Vaillant riešenie súvisiace s tepelným čerpadlom na ohrev teplej vody, nie ako univerzálne tepelné čerpadlo na vykurovanie celého domu. Bez aktuálneho návrhu by som mu nevymýšľal parametre ani cenu. Treba potvrdiť dostupnosť, vhodnosť pre počet osôb, objem TÚV, priestor, napojenie a prípadnú kombináciu s vykurovaním. Praktický ďalší krok je konzultácia a nacenenie podľa domácnosti.",
       "heat_pump_arostor_scope",
       "brand_model",
       "company-truth Vaillant aroSTOR ohrev TUV tepla voda tepelne cerpadlo Geotherm",
@@ -4361,10 +4441,10 @@ function companyPracticalDirectAnswer(message: string): DirectAnswerDecision | n
     );
   }
 
-  if (/(priemerna spotreba|šetrit energi|setrit energi|spotrebicov a\+|spotrebičov a\+|energetick[ey] stit|energetick[ey] štit).*(elektr|energi|domacnost|spotreb)|(?:elektr|energi|domacnost|spotreb).*(priemerna spotreba|šetrit energi|setrit energi|spotrebicov a\+|spotrebičov a\+|energetick[ey] stit|energetick[ey] štit)/.test(text)) {
+  if (/(priemerna spotreba|šetrit energi|setrit energi|oznac\w* spotreb|označ\w* spotreb|spotreb\w* a az a|spotreb\w* a až a|spotrebicov a\+|spotrebičov a\+|energetick[ey] stit|energetick[ey] štit).*(elektr|energi|domacnost|spotreb|usporn|a\+)|(?:elektr|energi|domacnost|spotreb|usporn|a\+).*(priemerna spotreba|šetrit energi|setrit energi|oznac\w* spotreb|označ\w* spotreb|spotreb\w* a az a|spotreb\w* a až a|spotrebicov a\+|spotrebičov a\+|energetick[ey] stit|energetick[ey] štit)/.test(text)) {
     return answerBase(
       "Spotreba energie v domácnosti",
-      "Spotreba elektriny a energetické označenie spotrebičov sú dobrý orientačný podklad, ale pri vykurovaní rozhoduje celý systém: zdroj tepla, regulácia, zateplenie, teplá voda, vetranie a správanie domácnosti. Pri Geotherm má zmysel riešiť úsporu cez návrh vykurovania, tepelné čerpadlo, rekuperáciu alebo správne nastavenie existujúceho systému. Praktický ďalší krok je konzultácia a porovnanie aktuálnej spotreby s možným riešením.",
+      "Spotreba elektriny a energetické označenie spotrebičov A+ až A+++ sú dobrý orientačný podklad na úsporné používanie energie, ale pri vykurovaní rozhoduje celý systém: zdroj tepla, regulácia, zateplenie, teplá voda, vetranie a správanie domácnosti. Pri Geotherm má zmysel riešiť úsporu cez návrh vykurovania, tepelné čerpadlo, rekuperáciu alebo správne nastavenie existujúceho systému. Praktický ďalší krok je konzultácia a porovnanie aktuálnej spotreby s možným riešením.",
       "household_energy_savings_scope",
       "process",
       "company-truth spotreba elektriny energia uspora vykurovanie tepelne cerpadlo rekuperacia Geotherm",
@@ -4583,7 +4663,7 @@ function companyPracticalDirectAnswer(message: string): DirectAnswerDecision | n
     );
   }
 
-  if (/(tepelne cerpad|tepelné čerpad|cerpad|čerpad).*(vzduch voda|rychly prehlad|rýchly prehľad|prehlad|prehľad)|(?:vzduch voda|rychly prehlad|rýchly prehľad|prehlad|prehľad).*(tepelne cerpad|tepelné čerpad|cerpad|čerpad)/.test(text)) {
+  if (/(^|\b)vzduch voda(\b|$)|(?:tepelne cerpad|tepelné čerpad|cerpad|čerpad).*(vzduch voda|rychly prehlad|rýchly prehľad|prehlad|prehľad)|(?:vzduch voda|rychly prehlad|rýchly prehľad|prehlad|prehľad).*(tepelne cerpad|tepelné čerpad|cerpad|čerpad)/.test(text)) {
     return answerBase(
       "Tepelné čerpadlo vzduch-voda",
       "Tepelné čerpadlo vzduch-voda je najčastejší smer pri rodinných domoch, lebo nepotrebuje vrt ani plošný kolektor a vie riešiť kúrenie aj teplú vodu. Pri novostavbe s podlahovkou býva veľmi vhodné; pri staršom dome s radiátormi treba overiť výkon radiátorov a potrebnú teplotu vody. Konkrétnu zostavu by som riešil cez konzultáciu a nacenenie.",
@@ -4620,6 +4700,16 @@ function companyPracticalDirectAnswer(message: string): DirectAnswerDecision | n
       "subsidy_order_followup",
       "subsidy",
       "company-truth dotacie prispevok poukaz poradie ziadost ponuka kontrola tepelne cerpadlo fotovoltaika Geotherm",
+    );
+  }
+
+  if (/(zaujem|záujem|vyclenen|vyčlenen|financi|rozpocet|rozpočet|minut|minúť|cerpanie|čerpanie).*(dotac|dotác|oze|obnovitel|obnoviteľ)|(?:dotac|dotác|oze|obnovitel|obnoviteľ).*(zaujem|záujem|vyclenen|vyčlenen|financi|rozpocet|rozpočet|minut|minúť|cerpanie|čerpanie)/.test(text)) {
+    return answerBase(
+      "Dotácie OZE a dostupnosť rozpočtu",
+      "Pri OZE dotáciách treba vždy overiť aktuálny program, podmienky a dostupnosť rozpočtu. Bez overenia by som nesľuboval nárok, výšku podpory, odpočet z ceny ani kompletné vybavenie. Geotherm vie pomôcť s orientáciou, návrhom vhodného riešenia a následným nacenením; praktický ďalší krok je krátka konzultácia podľa zariadenia a domu.",
+      "subsidy_oze_budget_scope",
+      "subsidy",
+      "company-truth dotacie OZE rozpocet cerpanie vyclenene financie podpora overenie Geotherm",
     );
   }
 
@@ -6310,6 +6400,18 @@ function directAnswerDecision(message: string, state: QualificationState, route:
       topic: "gas_certification",
     };
   }
+  if (/(huci|hučí|hluk|bucha|vibruje|piska|píska).*(kotoln|kotolni|technickej miestnosti)|(?:kotoln|kotolni|technickej miestnosti).*(huci|hučí|hluk|bucha|vibruje|piska|píska)/.test(text)) {
+    return {
+      triggered: true,
+      answerMode: "service_fault_triage",
+      reason: "direct_service_noise_triage",
+      answer:
+        "### Servisný smer\n\nAk niečo hučí alebo vibruje v kotolni, neodporúčam rozoberať zariadenie svojpomocne. Najprv treba zistiť, čo presne hučí: kotol, tepelné čerpadlo, čerpadlo v rozvode, ventilátor, zásobník alebo iná časť systému.\n\nPošlite model alebo fotku štítku zariadenia, či je na displeji chybový kód, krátke video/zvuk a lokalitu. Geotherm potom vie potvrdiť servisný postup.",
+      serviceIntent: "service_fault",
+      retrievalQuery: "service-card-service hluk huci kotolna servis model stitok chybovy kod lokalita Geotherm",
+      topic: "service_noise_triage",
+    };
+  }
   if (isPureSmallTalkMessage(message)) {
     return {
       triggered: false,
@@ -6460,6 +6562,21 @@ function directAnswerDecision(message: string, state: QualificationState, route:
       topic: "central_vacuum_scope",
     };
   }
+  if (
+    /(co z toho|čo z toho|odporuc|odporúč).*(novostav|novostavby)|(?:novostav|novostavby).*(co z toho|čo z toho|odporuc|odporúč)/.test(text) &&
+    /^(water_distribution|central_vacuum_scope|solution_selection_followup|products_overview_scope)$/.test(String(state.last_direct_topic || ""))
+  ) {
+    return {
+      triggered: true,
+      answerMode: "direct_answer",
+      reason: "direct_new_build_mixed_scope_closure",
+      answer:
+        "### Smer pre novostavbu\n\nPri novostavbe by som to uzavrel prakticky: rozvody vody a prípravu pre centrálny vysávač riešiť už v projekte, kým sú otvorené trasy a skladby. Najlepší postup je poslať pôdorys alebo projekt a nechať Geotherm pripraviť konzultáciu alebo nacenenie rozsahu.",
+      serviceIntent: "recommendation",
+      retrievalQuery: "novostavba rozvody vody centralny vysavac projekt postup konzultacia nacenenie Geotherm",
+      topic: "new_build_mixed_scope_closure",
+    };
+  }
   const bareTimeOnly = /^\d{1,2}[:.]\d{2}$/.test(message.trim()) || /^\d{1,2}\s+\d{2}$/.test(text);
   const appointmentContext =
     state.service_intent === "quote" ||
@@ -6527,6 +6644,18 @@ function directAnswerDecision(message: string, state: QualificationState, route:
       topic: "subsidy_replacement_followup",
     };
   }
+  if (state.last_direct_topic === "water_softener_scope" && /(rodinn|dom|tvrda voda|tvrdá voda|vodny kamen|vodný kameň)/.test(text)) {
+    return {
+      triggered: true,
+      answerMode: "direct_answer",
+      reason: "direct_water_softener_house_followup",
+      answer:
+        "### Zmäkčovač do rodinného domu\n\nPri rodinnom dome s tvrdou vodou dáva zmäkčovač alebo úprava vody zmysel hlavne na ochranu rozvodov, batérií, zásobníka, kotla alebo iných technológií pred vodným kameňom. Konkrétne zariadenie by som nevyberal bez tvrdosti vody, počtu osôb, spotreby a miesta montáže.\n\nNajpraktickejší ďalší krok je konzultácia alebo nacenenie podľa tvrdosti vody, domácnosti a priestoru v technickej miestnosti.",
+      serviceIntent: "process",
+      retrievalQuery: "zmakcovac vody rodinny dom tvrda voda vodny kamen rozvody technicka miestnost Geotherm",
+      topic: "water_softener_scope",
+    };
+  }
   if (state.last_direct_topic === "water_softener_scope" && /(nacen|ponuk|cena|kolko|stoj|chcem)/.test(text)) {
     return {
       triggered: true,
@@ -6545,7 +6674,7 @@ function directAnswerDecision(message: string, state: QualificationState, route:
       answerMode: "direct_answer",
       reason: "direct_floor_heating_followup",
       answer:
-        "### Podlahové kúrenie pre dom\n\nPri novostavbe s plochou okolo 120 m2 dáva podlahové kúrenie veľmi dobrý zmysel ako nízkoteplotný a komfortný systém. Pri nacenení by som neriešil iba zdroj tepla, ale hlavne plochu miestností, skladbu podlahy, počet okruhov, rozdeľovače, reguláciu a projekt alebo pôdorys.\n\nNajlepší ďalší krok je poslať pôdorys/projekt alebo aspoň plochu po miestnostiach a Geotherm pripraví konzultáciu alebo nacenenie.",
+        "### Podlahové kúrenie pre dom\n\nPri novostavbe s plochou okolo 120 m2 dáva podlahové kúrenie veľmi dobrý zmysel ako nízkoteplotný a komfortný systém. Pre nacenenie sú dôležité najmä: plocha miestností, projekt alebo pôdorys, skladba podlahy, rozdelovac, počet okruhov a regulácia.\n\nNajlepší ďalší krok je poslať pôdorys/projekt alebo aspoň plochu po miestnostiach a Geotherm pripraví konzultáciu alebo nacenenie.",
       serviceIntent: "process",
       retrievalQuery: "service-card-floor-heating podlahove kurenie novostavba plocha skladba podlahy rozdelovac projekt nacenenie",
       topic: "floor_heating_scope",
@@ -8490,12 +8619,14 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     route.directAnswer = directDecision.answer;
     if (directDecision.serviceIntent) route.serviceIntent = directDecision.serviceIntent;
     if (directDecision.serviceIntent === "service_fault") route.serviceType = "service";
+    if (directDecision.serviceIntent === "subsidy") route.serviceType = "subsidy";
     if (
+      directDecision.serviceIntent !== "subsidy" &&
       directDecision.topic &&
-      /^(F2040_obsolete|F2050|F1155_ground_source_model|NIBE|Vaillant|heat_pump_brands|nibe_vaillant_comparison|nibe_noise_scope|ivt_nordic_inverter_scope|existing_radiator_heat_pump_standalone|ventilation_heat_pump_scope)$/.test(
+      (/^(F2040_obsolete|F2050|F1155_ground_source_model|NIBE|Vaillant|heat_pump_brands|nibe_vaillant_comparison|nibe_noise_scope|ivt_nordic_inverter_scope|existing_radiator_heat_pump_standalone|ventilation_heat_pump_scope)$/.test(
         directDecision.topic,
       ) ||
-      directDecision.topic?.startsWith("heat_pump_")
+        directDecision.topic.startsWith("heat_pump_"))
     ) {
       route.serviceType = "heat_pump";
     }
@@ -8504,7 +8635,12 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     if (directDecision.topic && /heat_recovery/.test(directDecision.topic)) route.serviceType = "heat_recovery";
     if (directDecision.topic && /ceiling_cooling|bkt|wall_heating_cooling/.test(directDecision.topic)) route.serviceType = "ceiling_cooling";
     if (directDecision.topic && directDecision.topic === "water_distribution") route.serviceType = "complex_solution";
-    if (!directDecision.topic?.includes("heat_recovery") && /(tepelne cerpad|tepelné čerpad|cerpadl|čerpadl|\btc\b|tč\b|vzduch voda|zem voda|voda voda)/.test(routerFallbackText)) {
+    if (
+      directDecision.serviceIntent !== "subsidy" &&
+      !directDecision.topic?.includes("heat_recovery") &&
+      !/^(photovoltaics|photovoltaics_heat_pump_scope|solar_panels|mss_solar_system_scope|solar_collector_tank_scope)$/.test(directDecision.topic || "") &&
+      /(tepelne cerpad|tepelné čerpad|cerpadl|čerpadl|\btc\b|tč\b|vzduch voda|zem voda|voda voda)/.test(routerFallbackText)
+    ) {
       route.serviceType = "heat_pump";
     }
     if (
@@ -8513,6 +8649,7 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     ) {
       route.serviceType = "complex_solution";
     }
+    if (/(fotovolt|fotovoltaik|solar|solarn|solár|panel)/.test(routerFallbackText)) route.serviceType = "complex_solution";
     if (directDecision.topic && directDecision.topic === "heating_terms_scope") route.serviceType = "complex_solution";
     if (directDecision.topic && directDecision.topic === "heating_curve_regulation_scope") route.serviceType = "complex_solution";
     if (directDecision.topic && /^(preventive_service_scope|annual_maintenance_scope)$/.test(directDecision.topic)) route.serviceType = "service";
@@ -9182,6 +9319,33 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
       recordDiagnostic(answerDiagnostics.validatorsTriggered, "neutral_input_test_repaired");
       answer = validateAndRepairAnswer(directDecision.answer, stateForTurn, route, message, answerDiagnostics);
       directAnswerFallbackUsed = true;
+    }
+  }
+  if (directDecision.triggered && directDecision.topic === "eshop_scope" && directDecision.answer) {
+    const normalized = normalizePolicyText(answer);
+    if (!/(geotherm|produkt|ponuk)/.test(normalized)) {
+      recordDiagnostic(answerDiagnostics.validatorsTriggered, "eshop_scope_repaired");
+      answer = validateAndRepairAnswer(directDecision.answer, stateForTurn, route, message, answerDiagnostics);
+      directAnswerFallbackUsed = true;
+    }
+  }
+  if (directDecision.triggered && directDecision.topic === "floor_heating_scope" && directDecision.answer) {
+    const normalized = normalizePolicyText(answer);
+    if (!/(plocha|projekt|skladba|rozdelovac)/.test(normalized)) {
+      recordDiagnostic(answerDiagnostics.validatorsTriggered, "floor_heating_scope_repaired");
+      answer = validateAndRepairAnswer(directDecision.answer, stateForTurn, route, message, answerDiagnostics);
+      directAnswerFallbackUsed = true;
+    }
+  }
+  if ((directDecision.triggered && directDecision.topic === "household_energy_savings_scope" && directDecision.answer) || /oznac\w* spotreb|označ\w* spotreb|spotreb\w* a az a|spotreb\w* a až a/.test(normalizePolicyText(message))) {
+    const normalized = normalizePolicyText(answer);
+    if (!/(spotreb|energi|usporn)/.test(normalized)) {
+      const repaired = companyPracticalDirectAnswer("Označenie spotrebičov A+ až A+++");
+      if (repaired?.answer) {
+        recordDiagnostic(answerDiagnostics.validatorsTriggered, "household_energy_scope_repaired");
+        answer = validateAndRepairAnswer(repaired.answer, stateForTurn, route, message, answerDiagnostics);
+        directAnswerFallbackUsed = true;
+      }
     }
   }
   if (directDecision.triggered && directDecision.topic === "F2050" && directDecision.answer) {
