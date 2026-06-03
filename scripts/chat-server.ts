@@ -5685,6 +5685,16 @@ function companyPracticalDirectAnswer(message: string): DirectAnswerDecision | n
     );
   }
 
+  if (/(certifik|potvrden|doklad|podklad).*\bkotl\w*|\bkotl\w*.*(certifik|potvrden|doklad|podklad)/.test(text)) {
+    return answerBase(
+      "Doklady ku kotlu",
+      "Pri potvrdení, certifikáte alebo odovzdávacích dokladoch ku kotlu treba najprv potvrdiť, o aký kotol a aký doklad ide. Geotherm vie riešiť kotly a plynové zariadenia, ale konkrétny revízny alebo odovzdávací podklad by som nesľuboval bez overenia konkrétnej práce.",
+      "boiler_certificate_scope",
+      "process",
+      "company-truth prakticke FAQ kotol plynove zariadenia certifikacia revizne odovzdavacie podklady Geotherm",
+    );
+  }
+
   if ((/(fot|foto|fotiek|fotky)/.test(text) || raw.includes("fot")) && /(nacen|ponuk|cena|cenov)/.test(text)) {
     return answerBase(
       "Nacenenie podľa fotiek",
@@ -8295,6 +8305,7 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     ) {
       route.serviceType = "complex_solution";
     }
+    if (directDecision.topic && /^(gas_certification|boiler_certificate_scope)$/.test(directDecision.topic)) route.serviceType = "service";
     if (directDecision.serviceIntent === "service_fault") route.serviceType = "service";
     stateForTurn = {
       ...stateForTurn,
@@ -8593,6 +8604,7 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     "pre_realization_requirements",
     "realization_contact",
     "heating_references_scope",
+    "small_jobs",
     "no_more_questionnaire_handoff",
   ]);
   const useCompactDirectComposer = directDecision.triggered && compactDirectComposerTopics.has(directDecision.topic ?? "");
@@ -9078,6 +9090,7 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
       "warranty_work",
       "gas_revision",
       "boiler_revision",
+      "boiler_certificate_scope",
       "bathroom_core",
       "chimney_work",
       "business_customers",
@@ -9125,6 +9138,7 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
       "warranty_work",
       "gas_revision",
       "boiler_revision",
+      "boiler_certificate_scope",
       "business_customers",
       "apartment_buildings",
       "small_jobs",
@@ -9247,7 +9261,7 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
       (confirmTopics.has(topic) && !normalized.includes("potvr")) ||
       (topic === "quote_inputs" && !normalized.includes("plocha")) ||
       (topic === "vaillant_boilers" && !(normalized.includes("vaillant") && normalized.includes("kot"))) ||
-      (["boilers", "existing_boiler_service", "boiler_revision", "boiler_brands"].includes(topic) && !normalized.includes("kot")) ||
+      (["boilers", "existing_boiler_service", "boiler_revision", "boiler_certificate_scope", "boiler_brands"].includes(topic) && !normalized.includes("kot")) ||
       (topic === "gas_revision" && !normalized.includes("plyn")) ||
       (topic === "water_distribution" && !(normalized.includes("vod") && normalized.includes("rozvod"))) ||
       (topic === "customer_bought_boiler" && !(normalized.includes("potvr") && normalized.includes("kot"))) ||
