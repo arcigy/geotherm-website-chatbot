@@ -83,7 +83,7 @@ function classify(item: WordpressItem): { topic: string; expected: string[]; que
   if (/era lacneho plynu|lacny plyn|lacneho plynu/.test(primary)) {
     return { topic: "heating", expected: ["plyn", "tepel", "vykurov"], question: ask("Viete poradit k teme") };
   }
-  if (/energeticka trieda|nizkoenergeticky|vykurovacia krivka|ekviterm/.test(primary)) {
+  if (/energeticka trieda|energeticke tried|tepelnotechnicke vlastnosti|nizkoenergeticky|vykurovacia krivka|ekviterm/.test(primary)) {
     return { topic: "heating", expected: ["vykurov", "energet", "regul"], question: ask("Viete poradit k teme") };
   }
   if (/nordic inverter/.test(primary)) return { topic: "heat_pump", expected: ["ivt", "vzduch", "inverter"], question: `Viete poradiť k téme: ${title}?` };
@@ -185,6 +185,9 @@ function validate(testCase: Case, body: Awaited<ReturnType<typeof createChatResp
     (service === "heat_pump" || service === "service")
   ) {
     failures.push(`solar_photovoltaic misrouted as ${service}`);
+  }
+  if (testCase.topic === "ceiling_cooling" && /sten/.test(normalizedQuestion) && service === "heat_pump") {
+    failures.push("wall heating/cooling misrouted as heat_pump");
   }
   if (
     testCase.topic === "service" &&

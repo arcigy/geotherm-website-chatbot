@@ -4213,7 +4213,7 @@ function companyPracticalDirectAnswer(message: string): DirectAnswerDecision | n
     );
   }
 
-  if (/energeticka trieda|energetická trieda|\ba0\b|nizkoenergeticky|nízkoenergetický/.test(text)) {
+  if (/energetick\w* tried|tepelnotechnick\w* vlastnost|\ba0\b|nizkoenergeticky|nízkoenergetický/.test(text)) {
     return answerBase(
       "Energetická trieda A0 a nízkoenergetický dom",
       "Energetická trieda A0 alebo nízkoenergetický dom súvisí s celkovou spotrebou energie, vykurovaním, teplou vodou, vetraním a použitými technológiami. Pri Geotherm to typicky smeruje k návrhu úsporného vykurovania, napríklad tepelného čerpadla, rekuperácie alebo kombinácie viacerých systémov. Konkrétne riešenie treba naceniť podľa domu a požadovaného komfortu.",
@@ -8295,7 +8295,7 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     if (directDecision.topic && /^(subsidy_|plan_obnovy_|vaillant_anniversary_subsidy_scope|solar_collector_subsidy_scope)/.test(directDecision.topic)) route.serviceType = "subsidy";
     if (directDecision.topic && /(boiler|ecotec|eloblock|logamax|buderus|compact)/.test(directDecision.topic)) route.serviceType = "service";
     if (directDecision.topic && /heat_recovery/.test(directDecision.topic)) route.serviceType = "heat_recovery";
-    if (directDecision.topic && /ceiling_cooling|bkt/.test(directDecision.topic)) route.serviceType = "ceiling_cooling";
+    if (directDecision.topic && /ceiling_cooling|bkt|wall_heating_cooling/.test(directDecision.topic)) route.serviceType = "ceiling_cooling";
     if (!directDecision.topic?.includes("heat_recovery") && /(tepelne cerpad|tepelné čerpad|cerpadl|čerpadl|\btc\b|tč\b|vzduch voda|zem voda|voda voda)/.test(routerFallbackText)) {
       route.serviceType = "heat_pump";
     }

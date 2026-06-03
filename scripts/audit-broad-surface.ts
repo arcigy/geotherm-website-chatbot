@@ -51,6 +51,7 @@ const cases: Case[] = [
   { id: "heat_recovery", message: "Robíte rekuperáciu?", mustContain: ["rekuper"], minSources: 1 },
   { id: "floor_heating", message: "Robíte aj podlahové kúrenie?", mustContain: ["podlah"], minSources: 1 },
   { id: "ceiling_cooling", message: "Viete spraviť stropné chladenie?", mustContain: ["strop", "chladen"], minSources: 1 },
+  { id: "wall_heating_cooling", message: "Robite stenove vykurovanie a chladenie?", mustContain: ["sten", "chladen"], minSources: 1, expectedServiceType: "ceiling_cooling" },
   { id: "radiators", message: "Robíte aj radiátory?", mustContain: ["radiátor"], minSources: 1 },
   { id: "boilers", message: "Robíte aj montáž nových kotlov?", mustContain: ["kotl"], minSources: 1 },
   { id: "vaillant_boilers", message: "Aké Vaillant kotly máte?", mustContain: ["Vaillant", "kot"], minSources: 1 },
