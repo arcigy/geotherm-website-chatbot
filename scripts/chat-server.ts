@@ -1110,6 +1110,8 @@ function enforceVykanie(value: string): string {
     .replace(/keď budeš/g, "keď budete")
     .replace(/Ak máš/g, "Ak máte")
     .replace(/ak máš/g, "ak máte")
+    .replace(/Aby som ťa/g, "Aby som vás")
+    .replace(/aby som ťa/g, "aby som vás")
     .replace(/máš/g, "máte")
     .replace(/Máš/g, "Máte")
     .replace(/chceš/g, "chcete")
@@ -8297,6 +8299,7 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     "garden_frost_free_valve_scope",
     "heating_shutdown_scope",
     "solution_selection_followup",
+    "initial_heat_pump_short",
     "radiators_scope",
     "new_build_scope",
     "video_inspection_scope",
@@ -8432,7 +8435,10 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
       ? Math.min(Math.max(Number.parseInt(process.env.LLM_ANSWER_TIMEOUT_MS || "5000", 10), 3500), 5000)
       : Math.min(Number.parseInt(process.env.LLM_FAST_REQUEST_TIMEOUT_MS || "3500", 10), 3500),
     responseMimeType: "text/plain",
-    modelOverride: useFastQualificationComposer ? process.env.GEMINI_FAST_FALLBACK_MODEL || "gemini-2.5-flash-lite" : undefined,
+    modelOverride:
+      directDecision.triggered || pureSmallTalkTurn || useFastQualificationComposer
+        ? process.env.GEMINI_FAST_FALLBACK_MODEL || "gemini-2.5-flash-lite"
+        : undefined,
   });
   if ((useFastQualificationComposer || useCompactDirectComposer) && (composerLlm.error || !composerLlm.content)) {
     const retryLlm = await callLlmText({
@@ -8444,7 +8450,7 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     });
     if (!retryLlm.error && retryLlm.content) composerLlm = retryLlm;
   }
-  if (directDecision.triggered && (composerLlm.error || !composerLlm.content)) {
+  if (directDecision.triggered && !useCompactDirectComposer && (composerLlm.error || !composerLlm.content)) {
     const directRetryLlm = await callLlmText({
       systemPrompt: activeComposerSystemPrompt,
       prompt: activeComposerInput,
@@ -9154,7 +9160,10 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     recordDiagnostic(answerDiagnostics.validatorsTriggered, "followup_questions_limited");
   }
   answer = softenOverconfidentWording(answer, answerDiagnostics);
-  if (shouldHardClampSmallTalk(message) || (!route.needsRetrieval && (isPureSmallTalkMessage(message) || isLooseSmallTalkMessage(message)))) {
+  if (
+    directDecision.topic !== "neutral_input_test" &&
+    (shouldHardClampSmallTalk(message) || (!route.needsRetrieval && (isPureSmallTalkMessage(message) || isLooseSmallTalkMessage(message))))
+  ) {
     answer = smallTalkHardClampAnswer(message);
     recordDiagnostic(answerDiagnostics.validatorsTriggered, "pure_small_talk_final_hard_clamped");
   }
