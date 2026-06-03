@@ -10301,7 +10301,8 @@ export async function startChatServer(options: StartOptions = {}): Promise<Serve
       if (
         shouldApiClampSmallTalk(body.message || "") &&
         chatResponse.sources.length === 0 &&
-        chatResponse.debug?.llmUsed
+        chatResponse.debug?.llmUsed &&
+        chatResponse.debug?.storedSlots?.last_direct_topic !== "neutral_input_test"
       ) {
         chatResponse.answer = smallTalkHardClampAnswer(body.message || "");
         chatResponse.debug.validatorsTriggered = [
