@@ -1118,10 +1118,20 @@ function enforceVykanie(value: string): string {
     .replace(/Chceš/g, "Chcete")
     .replace(/vieš/g, "viete")
     .replace(/Vieš/g, "Viete")
+    .replace(/píšeš/g, "píšete")
+    .replace(/Píšeš/g, "Píšete")
+    .replace(/pises/g, "píšete")
+    .replace(/Pises/g, "Píšete")
     .replace(/riešiš/g, "riešite")
     .replace(/Riešiš/g, "Riešite")
     .replace(/zvažuješ/g, "zvažujete")
     .replace(/Zvažuješ/g, "Zvažujete")
+    .replace(/uvažuješ/g, "uvažujete")
+    .replace(/Uvažuješ/g, "Uvažujete")
+    .replace(/preferuješ/g, "preferujete")
+    .replace(/Preferuješ/g, "Preferujete")
+    .replace(/kúriš/g, "kúrite")
+    .replace(/Kúriš/g, "Kúrite")
     .replace(/pošli/g, "pošlite")
     .replace(/Pošli/g, "Pošlite")
     .replace(/napíš(?!te)/g, "napíšte")
@@ -1160,6 +1170,8 @@ function enforceVykanie(value: string): string {
     .replace(/\bnapíš\b/g, "napíšte")
     .replace(/\bNapis\b/g, "Napíšte")
     .replace(/\bnapis\b/g, "napíšte")
+    .replace(/\bPridaj\b/g, "Pridajte")
+    .replace(/\bpridaj\b/g, "pridajte")
     .replace(/\bDoplň\b/g, "Doplňte")
     .replace(/\bdoplň\b/g, "doplňte")
     .replace(/\bDopln\b/g, "Doplňte")
@@ -1172,6 +1184,16 @@ function enforceVykanie(value: string): string {
     .replace(/\btvoje\b/g, "vaše")
     .replace(/\bTvoj\b/g, "Váš")
     .replace(/\btvoj\b/g, "váš")
+    .replace(/\bTvojom\b/g, "Vašom")
+    .replace(/\btvojom\b/g, "vašom")
+    .replace(/\bTvojho\b/g, "Vášho")
+    .replace(/\btvojho\b/g, "vášho")
+    .replace(/\bporovnaj si\b/g, "porovnajte si")
+    .replace(/\bPorovnaj si\b/g, "Porovnajte si")
+    .replace(/\bchcel by si\b/g, "chceli by ste")
+    .replace(/\bChcel by si\b/g, "Chceli by ste")
+    .replace(/\bsi chcel\b/g, "ste chceli")
+    .replace(/\bSi chcel\b/g, "Ste chceli")
     .replace(/\bTebou\b/g, "Vami")
     .replace(/\btebou\b/g, "vami")
     .replace(/\bTeba\b/g, "Vás")
@@ -4790,7 +4812,7 @@ function companyPracticalDirectAnswer(message: string): DirectAnswerDecision | n
   if (/\bnibe+\b/.test(text) && /(hluc|hluč|tich|hluk)/.test(text)) {
     return answerBase(
       "Hlučnosť NIBE",
-      "Pri NIBE sa hlučnosť nedá hodnotiť jedným číslom pre všetky modely. Záleží od konkrétnej jednotky, výkonu, režimu, umiestnenia pri dome, podstavca a nočného režimu. Pri výbere by som porovnal aktuálnu zostavu podľa technického listu a montážnych možností, nie iba podľa značky.",
+      "Pri NIBE sa hlučnosť nedá hodnotiť jedným číslom pre všetky modely. Záleží od konkrétnej jednotky, výkonu, režimu, umiestnenia pri dome, podstavca a nočného režimu. Pri výbere by som porovnal aktuálnu zostavu podľa technického listu a montážnych možností, nie iba podľa značky.\n\nKde by mala byť vonkajšia jednotka umiestnená voči obytným miestnostiam alebo susedom?",
       "nibe_noise_scope",
       "brand_model",
       "company-truth NIBE hlučnosť tepelné čerpadlo model umiestnenie technický list Geotherm",
@@ -5801,7 +5823,7 @@ function priceDirectAnswer(message: string, state: QualificationState): DirectAn
     answer = [
       "### Akumulačná nádrž a cena",
       "",
-      "**Bez konkrétnej ponuky akumulačnú nádrž nepovažuj za zahrnutú položku.** Pri radiátoroch alebo komplikovanejšej kotolni môže byť potrebná, ale jej rozsah musí byť samostatne uvedený v ponuke.",
+      "**Bez konkrétnej ponuky akumulačnú nádrž nepovažujte za zahrnutú položku.** Pri radiátoroch alebo komplikovanejšej kotolni môže byť potrebná, ale jej rozsah musí byť samostatne uvedený v ponuke.",
       "",
       "Pri cene 7 tisíc by som obzvlášť overil, či ide iba o zariadenie/zostavu, alebo o kompletnú realizáciu vrátane montáže, regulácie, TÚV, akumulačnej nádrže, elektroprác a uvedenia do prevádzky.",
     ].join("\n");
@@ -6494,9 +6516,45 @@ function directAnswerDecision(message: string, state: QualificationState, route:
     };
   }
 
+  if (
+    (hasActiveHeatPump || route.serviceIntent === "recommendation" || Boolean(state.last_price_topic)) &&
+    state.area_m2 &&
+    !state.heating_distribution &&
+    !state.current_heating &&
+    !state.recommendation_closure_offered &&
+    (/(co odporuc|čo odporúč|co by ste odporuc|čo by ste odporúč|chcel by som vediet|chcel by som vedieť|ake riesenie|aké riešenie)/.test(text) ||
+      (raw.includes("odpor") && /(chcel|vedie|co|čo|ake|aké|riesen|riešen)/.test(raw)))
+  ) {
+    const knownParts = [
+      state.area_m2 ? `${state.area_m2} m2` : null,
+      state.location ? `lokalita ${state.location}` : null,
+      state.project_type || null,
+      state.heating_distribution || null,
+      state.current_heating ? `aktuálne ${state.current_heating}` : null,
+    ].filter(Boolean);
+    return {
+      triggered: true,
+      answerMode: "diagnostic_verdict",
+      reason: "direct_heat_pump_partial_recommendation_soft_handoff",
+      serviceIntent: "recommendation",
+      topic: "heat_pump_partial_recommendation_soft_handoff",
+      retrievalQuery: "service-card-heat-pump odporucanie tepelne cerpadlo plocha lokalita konzultacia nacenenie Geotherm",
+      answer: [
+        "### Predbežné odporúčanie",
+        "",
+        `Podľa toho, čo zatiaľ viem${knownParts.length ? ` (${knownParts.join(", ")})` : ""}, by som ako prvý smer riešil **tepelné čerpadlo vzduch-voda**. Je to najpraktickejší štart pre rodinný dom, ale konkrétnu zostavu by som bez radiátorov/podlahovky, aktuálneho zdroja a rozsahu teplej vody neuzatváral.`,
+        "",
+        "Ak chcete, môžeme to posunúť odborníkovi na konzultáciu a nacenenie; kontakt by sa riešil až vtedy, keď poviete, že chcete, aby sa vám obchodník ozval.",
+      ].join("\n"),
+    };
+  }
+
   const price =
     currentTurnAsksPrice ||
-    (route.serviceIntent === "price" && hasActiveHeatPump && isContextualPriceFollowup(message));
+    (route.serviceIntent === "price" &&
+      hasActiveHeatPump &&
+      (isContextualPriceFollowup(message) ||
+        /(dom|plocha|m2|m 2|metrov|rodinny|rodinný|byt|firma|firemn|radiator|radiátor|podlah|plyn|kotol|starsi|starší|novostav|rekonstruk|rekonštruk)/.test(text)));
   const areaInMessageMatch = text.match(/(\d{3,4})\s*(?:m2|m 2|m²|m\b|metrov|dom)/);
   const areaInMessage = areaInMessageMatch ? Number.parseInt(areaInMessageMatch[1], 10) : undefined;
   const hasLargeObject = Boolean((state.area_m2 && state.area_m2 > 300) || (areaInMessage && areaInMessage > 300));
@@ -6968,7 +7026,7 @@ function sanitizeAnswerForDiagnosticRules(
       sentence.includes("akumulac") &&
       /(je v cene|v tej cene|zahrnuta|zahrnute|sucastou ceny|zapocitava)/.test(sentence) &&
       !/(neviem potvrdit|nie je bezpecne|ak je uveden|treba overit|nemusi byt)/.test(sentence),
-    "Bez výslovnej položky v konkrétnej ponuke akumulačnú nádrž nepovažuj za zahrnutú súčasť rozsahu.",
+    "Bez výslovnej položky v konkrétnej ponuke akumulačnú nádrž nepovažujte za zahrnutú súčasť rozsahu.",
   );
   if (state.own_wood) {
     next = applySanitizerRule(
@@ -8928,6 +8986,7 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
       "older_houses_scope",
       "solution_selection_followup",
       "initial_heat_pump_short",
+      "heat_pump_partial_recommendation_soft_handoff",
       "heat_pump_comfort_scope",
       "heat_pump_expert_selection_scope",
       "comfortable_heating_scope",
@@ -9037,6 +9096,27 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     answer = `${answer}\n\nTypicky má postup obsahovať aj **návrh riešenia**: najprv sa ujasní služba a podklady, potom sa pripraví návrh a cenová ponuka, následne montáž, spustenie, zaškolenie a odovzdanie systému.`.trim();
   }
   if (
+    route.serviceIntent === "price" &&
+    stateForTurn.area_m2 &&
+    !((stateForTurn.area_m2 || 0) > 300) &&
+    /(?:\d{1,3}\s?000|\d+\s?tis).{0,50}(?:eur|€)/.test(normalizePolicyText(answer))
+  ) {
+    recordDiagnostic(answerDiagnostics.validatorsTriggered, "area_only_price_range_repaired");
+    answer = validateAndRepairAnswer(priceDirectAnswer(message, stateForTurn).answer || answer, stateForTurn, route, message, answerDiagnostics);
+  }
+  if (
+    stateForTurn.area_m2 &&
+    /odpor/i.test(rawMessageForHardDirect) &&
+    !(
+      normalizePolicyText(answer).includes("posun") &&
+      /(technik|odborn)/.test(normalizePolicyText(answer)) &&
+      normalizePolicyText(answer).includes("kontakt")
+    )
+  ) {
+    recordDiagnostic(answerDiagnostics.validatorsTriggered, "partial_recommendation_soft_handoff_appended");
+    answer = `${answer.trim()}\n\nAk chcete, môžeme to posunúť odborníkovi na konzultáciu a nacenenie; kontakt by sa riešil až vtedy, keď poviete, že chcete, aby sa vám obchodník ozval.`.trim();
+  }
+  if (
     route.serviceIntent === "service_fault" &&
     normalizePolicyText(answer).includes("nibe") &&
     !normalizePolicyText(message).includes("nibe")
@@ -9053,7 +9133,7 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     (!stateForTurn.area_m2 || !stateForTurn.current_heating)
   ) {
     recordDiagnostic(answerDiagnostics.validatorsTriggered, "early_heat_pump_followup_appended");
-    answer = `${answer}\n\nDoplň mi ešte približnú plochu domu a čím kúriš dnes?`.trim();
+    answer = `${answer}\n\nDoplňte mi ešte približnú plochu domu a čím kúrite dnes?`.trim();
   }
   if (
     !directDecision.triggered &&
@@ -9210,7 +9290,8 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     latestNormalizedForConfidence.includes("nie od vas");
   const responseConfidence: "high" | "medium" | "low" =
     responseConfidenceBase === "high" && cautiousLatestMessage ? "medium" : responseConfidenceBase;
-  const responseIntent = mapServiceIntentToSalesIntent(route.serviceType, route.serviceIntent);
+  let responseIntent = mapServiceIntentToSalesIntent(route.serviceType, route.serviceIntent);
+  if (directDecision.topic === "nibe_noise_scope" || route.retrievalQuery?.includes("hlučnosť")) responseIntent = "noise";
   const skipAsyncQualificationExtraction =
     (isSmallTalkMessage(message) && !route.needsRetrieval) ||
     directDecision.triggered ||
@@ -9249,6 +9330,23 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     currentUrl: requestBody.currentUrl,
     referrer: requestBody.metadata?.referrer,
   });
+  if (!crmOutcome.leadCapture.shouldAsk && !crmOutcome.lead.captured) {
+    if (responseIntent === "noise") {
+      crmOutcome.leadCapture = {
+        shouldAsk: true,
+        nextQuestion: "Kde by mala byť vonkajšia jednotka umiestnená voči obytným miestnostiam alebo susedom?",
+        reason: "advisory_followup",
+        requestedFields: [],
+      };
+    } else if (responseIntent === "quote" && route.serviceIntent === "price") {
+      crmOutcome.leadCapture = {
+        shouldAsk: true,
+        nextQuestion: "Ide o rodinný dom, byt alebo firemný objekt?",
+        reason: "advisory_followup",
+        requestedFields: [],
+      };
+    }
+  }
   answer = crmOutcome.answer;
   if (/(mozno neskor|možno neskôr|neskor|neskôr|teraz nie|zatial nie|zatiaľ nie)/.test(normalizePolicyText(message))) {
     answer = "Rozumiem, nechajme to zatiaľ otvorené. Keď sa k tomu vrátite, stačí nadviazať tým, či chcete riešiť servis, nacenenie alebo výber nového riešenia.";
@@ -9313,7 +9411,7 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     ? "recommendation_closure"
     : route.serviceType === "service" || route.serviceIntent === "service_fault"
       ? "service_fault_triage"
-      : crmOutcome.leadCapture.shouldAsk || ["inspection_requested", "quote_requested", "contact_captured"].includes(crmOutcome.lead.status)
+      : (crmOutcome.leadCapture.requestedFields?.length || 0) > 0 || ["inspection_requested", "quote_requested", "contact_captured"].includes(crmOutcome.lead.status)
         ? "handoff_cta"
       : answerDiagnostics.fallbackType
         ? "ai_fallback"
