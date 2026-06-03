@@ -647,8 +647,24 @@ function generatedAnonymousId(): string {
   return `server_${Math.random().toString(36).slice(2)}_${Date.now()}`;
 }
 
+function repairIncomingText(value: string): string {
+  if (!/[ÄĂĹÂ]/.test(value)) return value;
+  const replacements: Array<[RegExp, string]> = [
+    [/Ăˇ/g, "á"], [/Ă¤/g, "ä"], [/ÄŤ/g, "č"], [/ÄŹ/g, "ď"], [/Ă©/g, "é"], [/Ă­/g, "í"],
+    [/Äľ/g, "ľ"], [/Äş/g, "ĺ"], [/Ĺ/g, "ň"], [/Ăł/g, "ó"], [/Ă´/g, "ô"], [/Ĺ•/g, "ŕ"],
+    [/Ĺˇ/g, "š"], [/ĹĄ/g, "ť"], [/Ăş/g, "ú"], [/Ă˝/g, "ý"], [/Ĺľ/g, "ž"],
+    [/Ă/g, "Á"], [/Ă„/g, "Ä"], [/ÄŚ/g, "Č"], [/ÄŽ/g, "Ď"], [/Ă‰/g, "É"], [/ĂŤ/g, "Ë"],
+    [/ĂŤ/g, "Ë"], [/ĂŤ/g, "Ë"], [/Ă“/g, "Ó"], [/Ă”/g, "Ô"], [/Ĺ /g, "Š"], [/Ĺ¤/g, "Ť"],
+    [/Ăš/g, "Ú"], [/Ăť/g, "Ý"], [/Ĺ˝/g, "Ž"],
+    [/Â²/g, "²"], [/Â°C/g, "°C"], [/â‚¬/g, "€"], [/â€“/g, "-"], [/â€”/g, "-"], [/â€ž/g, "„"], [/â€ś/g, "“"],
+  ];
+  const repaired = replacements.reduce((current, [pattern, replacement]) => current.replace(pattern, replacement), value);
+  const score = (text: string): number => (text.match(/[ÄĂĹÂ�]/g) || []).length;
+  return score(repaired) <= score(value) ? repaired : value;
+}
+
 function normalizePolicyText(value: string): string {
-  return value
+  return repairIncomingText(value)
     .toLowerCase()
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
@@ -6453,6 +6469,68 @@ function directAnswerDecision(message: string, state: QualificationState, route:
       topic: "gas_certification",
     };
   }
+  if (/(ignoruj|ignore|tvar sa|tvár sa|vymysli).*(presn|cenu|navratnost|návratnosť|dotac|garant)|(?:presn|cenu|navratnost|návratnosť|dotac|garant).*(ignoruj|ignore|tvar sa|tvár sa|vymysli)/.test(text)) {
+    return {
+      triggered: true,
+      answerMode: "safety_fallback",
+      reason: "direct_adversarial_price_or_guarantee",
+      answer:
+        "### Toto nebudem vymýšľať\n\nPresnú cenu, dotáciu ani návratnosť bez podkladov nebudem vymýšľať ani garantovať. Bolo by to nepodložené. Viem dať iba bezpečný rámec: cena závisí od domu, výkonu, montáže, regulácie, TÚV, dotácií a konkrétnej ponuky.\n\nAk riešite reálny dopyt, ďalší krok je konzultácia alebo nacenenie podľa objektu.",
+      serviceIntent: "price",
+      retrievalQuery: "company-truth policies price guarantee adversarial no hallucination Geotherm",
+      topic: "adversarial_price_guarantee_guard",
+    };
+  }
+  if (/^(co|čo)\s+odporucate\??$|^(co|čo)\s+odporúčate\??$|^oplat[íi]\s+sa\s+to\??$|^tepelko\??$/.test(text)) {
+    const isTepelko = /^tepelko\??$/.test(text);
+    return {
+      triggered: true,
+      answerMode: "qualification_question",
+      reason: "direct_ambiguous_context_needed",
+      answer: isTepelko
+        ? "### Potrebujem kontext\n\nSlovo „tepelko“ beriem ako tepelné čerpadlo, ale bez kontextu by som nehádal cenu ani model. Najprv treba vedieť, či riešite novostavbu alebo starší dom, plochu a či máte radiátory alebo podlahové kúrenie."
+        : "### Potrebujem kontextu viac\n\nBez kontextu by som neodporúčal konkrétne riešenie ani nesľuboval úsporu. Geotherm rieši kúrenie, chladenie, rekuperáciu, servis, dotácie aj komplexné technické riešenia domu.\n\nNapíšte prosím, či riešite nový návrh, servis, cenu alebo dotáciu.",
+      serviceIntent: isTepelko ? "recommendation" : "general",
+      retrievalQuery: "company-truth ambiguous question context Geotherm services",
+      topic: "ambiguous_context_needed",
+    };
+  }
+  if (/(aké|ake|čo|co).*(potrebujete|treba|vediet|vedieť).*(poradit|poradiť|navrh)|(?:poradit|poradiť|navrh).*(potrebujete|treba|vediet|vedieť)/.test(text)) {
+    return {
+      triggered: true,
+      answerMode: "direct_answer",
+      reason: "direct_design_inputs_needed",
+      answer:
+        "### Čo treba na dobré odporúčanie\n\nAby sa dalo poradiť zodpovedne, treba hlavne **typ domu**, približnú plochu, vykurovanie (radiátory alebo podlahovka), aktuálny zdroj tepla a cieľ: kúrenie, chladenie, TÚV alebo úspora. Pri nacenení pomôže aj **pôdorys** alebo projekt.\n\nBez týchto údajov viem dať len všeobecný smer, nie finálny model ani cenu.",
+      serviceIntent: "recommendation",
+      retrievalQuery: "service-card-heat-pump navrh potrebne udaje typ domu plocha podorys vykurovanie Geotherm",
+      topic: "design_inputs_needed",
+    };
+  }
+  if (/(dolezite|dôležité).*(navrh|návrh).*(vykurov|kuren)|(?:navrh|návrh).*(vykurov|kuren).*(dolezite|dôležité)/.test(text)) {
+    return {
+      triggered: true,
+      answerMode: "direct_answer",
+      reason: "direct_heating_design_factors",
+      answer:
+        "### Návrh vykurovania\n\nPri návrhu vykurovania sú kľúčové **tepelné straty** domu, typ objektu, plocha, radiátory alebo podlahové kúrenie, teplá voda, regulácia, technická miestnosť a možnosti montáže. Návrh má riešiť celý systém, nie iba značku zariadenia.\n\nPraktický ďalší krok je konzultácia alebo nacenenie podľa domu a dostupných podkladov.",
+      serviceIntent: "recommendation",
+      retrievalQuery: "navrh vykurovania tepelne straty podlahove kurenie radiatory regulacia Geotherm",
+      topic: "heating_design_factors",
+    };
+  }
+  if (/(pravideln|preventiv|udrzb|údržb|prehliad).*(zariaden|servis|tepel|cerpad|čerpad)|(?:zariaden|servis|tepel|cerpad|čerpad).*(pravideln|preventiv|udrzb|údržb|prehliad)/.test(text)) {
+    return {
+      triggered: true,
+      answerMode: "service_fault_triage",
+      reason: "direct_regular_maintenance",
+      answer:
+        "### Pravidelná údržba\n\nPravidelná údržba zariadenia dáva zmysel kvôli spoľahlivosti, účinnosti a včasnému zachyteniu problémov. Pri tepelnom čerpadle alebo kotle treba potvrdiť značku, model, vek zariadenia, lokalitu a či ide o vlastnú montáž Geotherm alebo cudziu realizáciu.\n\nĎalší krok je servisná konzultácia podľa konkrétneho zariadenia.",
+      serviceIntent: "service_fault",
+      retrievalQuery: "service-card-service pravidelna udrzba servis prehliadka zariadenie Geotherm",
+      topic: "preventive_service_scope",
+    };
+  }
   if (/(huci|hučí|hluk|bucha|vibruje|piska|píska).*(kotoln|kotolni|technickej miestnosti)|(?:kotoln|kotolni|technickej miestnosti).*(huci|hučí|hluk|bucha|vibruje|piska|píska)/.test(text)) {
     return {
       triggered: true,
@@ -6530,6 +6608,22 @@ function directAnswerDecision(message: string, state: QualificationState, route:
       serviceIntent: "quote",
       retrievalQuery: "company-truth cenova ponuka obhliadka kontakt obchodnik termin nacenenie Geotherm",
       topic: "quote_inspection_contact_request",
+    };
+  }
+  if (
+    !/(orientac|orientač|priblizn|približn|odhad)/.test(text) &&
+    (/(chcem|potrebujem|prosim|prosím).*(cenov.*ponuk|ponuk|nacen|ponuku)|(?:cenov.*ponuk|ponuk|nacen|ponuku).*(ako|pokrac|pokrač|dalej|ďalej)/.test(text) ||
+      /(?:chcem|potrebujem).*(?:aby ste ma kontakt|ozval|ozvali|poslat ponuk|poslať ponuk)/.test(text))
+  ) {
+    return {
+      triggered: true,
+      answerMode: "handoff_cta",
+      reason: "direct_quote_contact_request",
+      answer:
+        "### Cena a ponuka\n\nAk chcete cenovú ponuku, ďalší krok je pripraviť podklady pre obchodníka Geotherm. V chate nepotvrdzujem presnú cenu ani termín, ale viem dopyt zhrnúť a posunúť na nacenenie.\n\nPošlite prosím meno, telefón a e-mail, lokalitu a stručne čo chcete riešiť. Kontakt použijeme iba na spätné ozvanie k tejto ponuke.",
+      serviceIntent: "quote",
+      retrievalQuery: "company-truth cenova ponuka cena kontakt obchodnik nacenenie Geotherm",
+      topic: "quote_contact_request",
     };
   }
   const priorityPractical = companyPracticalDirectAnswer(message);
@@ -6992,7 +7086,7 @@ function directAnswerDecision(message: string, state: QualificationState, route:
       topic: "regular_maintenance_scope",
     };
   }
-  if (/(huci|hučí|hluk|hlucnost|hlučnosť|hlucne|hlučné|tiche|tiché|najtich)/.test(text) && /(cerpad|čerpad|tc\b|tč\b|nibe|vaillant|okn|sused|vonkaj|jednotk|dom)/.test(text)) {
+  if (/(huci|hučí|hucat|hučať|hucanie|hučanie|hluk|hlucnost|hlučnosť|hlucne|hlučné|tiche|tiché|najtich)/.test(text) && /(cerpad|čerpad|tc\b|tč\b|nibe|vaillant|okn|sused|vonkaj|jednotk|dom)/.test(text)) {
     return {
       triggered: true,
       answerMode: "direct_answer",
@@ -8251,7 +8345,7 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     return removeBannedPhrases(limitAnswerLength(compactOversizedTables([...lines.slice(0, first), ...table, ...lines.slice(last + 1)].join("\n").replace(/\n{3,}/g, "\n\n").trim())));
   };
 
-  const message = typeof requestBody.message === "string" ? requestBody.message.trim() : "";
+  const message = typeof requestBody.message === "string" ? repairIncomingText(requestBody.message).trim() : "";
   const sitePublicId = typeof requestBody.siteId === "string" ? requestBody.siteId.trim() : "";
 
   if (!message) throw new Error("message is required");
@@ -9374,6 +9468,15 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
   if (isOutOfScopeGeneral && countQuestionMarks(answer) > 0) {
     answer = answer.replace(/^Nemám dostatočne jasný podklad na túto tému\.\s*/i, "").trim();
   }
+  if (
+    (currentMessagePolicy.kind === "out_of_scope" || /(pocasie|ake auto|ktore auto|investovat|etf|bitcoin|hypotek)/.test(normalizePolicyText(message))) &&
+    !directDecision.triggered &&
+    !isSmallTalkMessage(message)
+  ) {
+    answer =
+      "Nemám dostatočne jasný podklad na túto tému v rámci služieb Geotherm.\n\nViem pomôcť s kúrením, chladením, rekuperáciou, servisom, dotáciami alebo nacenením technického riešenia domu.";
+    recordDiagnostic(answerDiagnostics.validatorsTriggered, "out_of_scope_repaired");
+  }
   if (isSmallTalkMessage(message)) {
     answer = answer.replace(/^Nemám dostatočne jasný podklad na túto tému\.\s*/i, "").trim();
   }
@@ -9459,11 +9562,19 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     directDecision.triggered &&
     directDecision.topic === "NIBE" &&
     directDecision.answer &&
-    countQuestionMarks(answer) === 0
+    (countQuestionMarks(answer) === 0 || !/vykon|výkon/.test(normalizePolicyText(answer)))
   ) {
     recordDiagnostic(answerDiagnostics.validatorsTriggered, "brand_followup_question_repaired");
     answer = validateAndRepairAnswer(directDecision.answer, stateForTurn, route, message, answerDiagnostics);
     directAnswerFallbackUsed = true;
+  }
+  if (directDecision.triggered && directDecision.topic === "nibe_vaillant_comparison" && directDecision.answer) {
+    const normalized = normalizePolicyText(answer);
+    if (!/(nibe|vaillant)/.test(normalized) || !/servis/.test(normalized)) {
+      recordDiagnostic(answerDiagnostics.validatorsTriggered, "nibe_vaillant_comparison_repaired");
+      answer = validateAndRepairAnswer(directDecision.answer, stateForTurn, route, message, answerDiagnostics);
+      directAnswerFallbackUsed = true;
+    }
   }
   if (
     directDecision.triggered &&
@@ -9533,6 +9644,14 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     const normalized = normalizePolicyText(answer);
     if (!/(kontakt|telefon|email|e mail)/.test(normalized) || /potvrdzujem termin|potvrdeny termin/.test(normalized)) {
       recordDiagnostic(answerDiagnostics.validatorsTriggered, "quote_inspection_contact_repaired");
+      answer = validateAndRepairAnswer(directDecision.answer, stateForTurn, route, message, answerDiagnostics);
+      directAnswerFallbackUsed = true;
+    }
+  }
+  if (directDecision.triggered && directDecision.topic === "quote_contact_request" && directDecision.answer) {
+    const normalized = normalizePolicyText(answer);
+    if (!/(cena|ponuk)/.test(normalized) || !/(kontakt|telefon|email|e mail)/.test(normalized)) {
+      recordDiagnostic(answerDiagnostics.validatorsTriggered, "quote_contact_request_repaired");
       answer = validateAndRepairAnswer(directDecision.answer, stateForTurn, route, message, answerDiagnostics);
       directAnswerFallbackUsed = true;
     }
@@ -9666,6 +9785,12 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
       "solution_selection_followup",
       "initial_heat_pump_short",
       "heat_pump_partial_recommendation_soft_handoff",
+      "ambiguous_context_needed",
+      "design_inputs_needed",
+      "heating_design_factors",
+      "adversarial_price_guarantee_guard",
+      "preventive_service_scope",
+      "heat_pump_noise_scope",
       "heat_pump_comfort_scope",
       "heat_pump_expert_selection_scope",
       "comfortable_heating_scope",
@@ -9755,7 +9880,7 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
   const normalizedMessageForHardDirect = normalizePolicyText(message);
   const rawMessageForHardDirect = message.toLowerCase();
   if (/(vonkajs|vonkajsi|vonkajsej).*(jednotk)|pod oknom|umiestnenie jednotky/.test(normalizedMessageForHardDirect)) {
-    answer = "### Umiestnenie vonkajšej jednotky tepelného čerpadla\n\nPri tepelnom čerpadle umiestnenie pod oknom nemusí byť automaticky zlé, ale treba ho posúdiť opatrne. Rozhoduje hluk v noci, prúdenie vzduchu, kondenzát, odstup od okien a susedov, servisný prístup a miestne možnosti montáže.\n\nBez obhliadky by som to nepotvrdil ako finálne miesto. Pri nacenení tepelného čerpadla by som porovnal tichšie umiestnenie bokom od obytných miestností alebo technické opatrenia proti hluku.";
+    answer = "### Hlučnosť a umiestnenie vonkajšej jednotky\n\nPri tepelnom čerpadle umiestnenie pod oknom nemusí byť automaticky zlé, ale treba ho posúdiť opatrne. Rozhoduje hluk v noci, prúdenie vzduchu, kondenzát, odstup od okien a susedov, servisný prístup a miestne možnosti montáže.\n\nBez obhliadky by som to nepotvrdil ako finálne miesto. Pri nacenení tepelného čerpadla by som porovnal tichšie umiestnenie bokom od obytných miestností alebo technické opatrenia proti hluku.";
     recordDiagnostic(answerDiagnostics.validatorsTriggered, "outdoor_unit_placement_answer_hardened");
   }
   if (
@@ -10230,7 +10355,7 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
 async function legacyCreateChatResponse(requestBody: ChatRequest, knowledgePath?: string): Promise<ChatResponse> {
   const responseStartedAt = Date.now();
   loadLocalEnv();
-  const message = typeof requestBody.message === "string" ? requestBody.message.trim() : "";
+  const message = typeof requestBody.message === "string" ? repairIncomingText(requestBody.message).trim() : "";
   const sitePublicId = typeof requestBody.siteId === "string" ? requestBody.siteId.trim() : "";
 
   if (!message) throw new Error("message is required");
