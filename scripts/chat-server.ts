@@ -4161,6 +4161,26 @@ function companyPracticalDirectAnswer(message: string): DirectAnswerDecision | n
     );
   }
 
+  if (/(skolen|školen|drazic|dražic).*(nibe)|nibe.*(skolen|školen|drazic|dražic)/.test(text)) {
+    return answerBase(
+      "Školenie NIBE",
+      "Školenie NIBE beriem ako firemnú referenciu k technickému zázemiu a práci s tepelnými čerpadlami, nie ako servisnú poruchu. Pri NIBE je dôležité vyberať konkrétne tepelné čerpadlo podľa domu, výkonu, vykurovania, TÚV, montáže a servisu. Praktický ďalší krok je konzultácia a aktuálne nacenenie vhodnej zostavy.",
+      "heat_pump_nibe_training_scope",
+      "process",
+      "company-truth NIBE skolenie Drazice tepelne cerpadla Geotherm",
+    );
+  }
+
+  if (/arostor|aro\s*stor/.test(text)) {
+    return answerBase(
+      "Vaillant aroSTOR",
+      "aroSTOR by som zaradil ako Vaillant riešenie súvisiace s ohrevom teplej vody, nie ako univerzálne tepelné čerpadlo na vykurovanie domu. Bez aktuálneho návrhu by som mu nevymýšľal parametre ani cenu. Treba potvrdiť dostupnosť, vhodnosť pre počet osôb, objem TÚV, priestor, napojenie a prípadnú kombináciu s vykurovaním. Praktický ďalší krok je konzultácia a nacenenie podľa domácnosti.",
+      "heat_pump_arostor_scope",
+      "brand_model",
+      "company-truth Vaillant aroSTOR ohrev TUV tepla voda tepelne cerpadlo Geotherm",
+    );
+  }
+
   if (/(chcem|potrebujem|dohodnut|dohodnúť|dat|dať|dajme|dame|dáme|riesit|riešiť).*(stretn|meeting|konzult|termin|termín)|(?:stretn|meeting|konzult).*(geotherm|technik|obchodnik|ponuk|nacen)/.test(text)) {
     return answerBase(
       "Dohodnutie konzultácie",
@@ -4201,6 +4221,36 @@ function companyPracticalDirectAnswer(message: string): DirectAnswerDecision | n
     );
   }
 
+  if (/e\s*shop|eshop/.test(text)) {
+    return answerBase(
+      "E-shop a technická ponuka",
+      "E-shop by som pri Geotherm nebral ako miesto na slepý nákup technológie bez návrhu. Pri produktoch ako tepelné čerpadlo, rekuperácia, klimatizácia, kotol alebo solárne riešenie je dôležitá vhodnosť pre dom, montáž, servis a výsledná ponuka. Praktický ďalší krok je konzultácia alebo nacenenie konkrétneho riešenia podľa objektu.",
+      "eshop_scope",
+      "quote",
+      "company-truth eshop produkty ponuka Geotherm technicke riesenie nacenenie",
+    );
+  }
+
+  if (/(formular|formulár).*(navrh|návrh|ponuk|cenov)|(?:navrh|návrh|ponuk|cenov).*(formular|formulár)/.test(text)) {
+    return answerBase(
+      "Formulár na návrh a ponuku",
+      "Formulár na vypracovanie návrhu a cenovej ponuky beriem ako cestu k naceneniu, nie ako okamžitý výber zariadenia. Zmysel má doplniť kontakt, lokalitu, typ objektu, plochu, aktuálne alebo plánované vykurovanie a čo chcete riešiť: kúrenie, chladenie, vetranie, servis alebo kompletné riešenie. Potom sa dá pripraviť konzultácia a konkrétna ponuka.",
+      "quote_form_scope",
+      "quote",
+      "company-truth formular cenova ponuka navrh kontakt lokalita Geotherm",
+    );
+  }
+
+  if (/zdravotechnik|zdravotechnik|instalacie zdravotechniky/.test(text)) {
+    return answerBase(
+      "Zdravotechnika",
+      "Zdravotechnika súvisí hlavne s rozvodmi pitnej vody, kanalizáciou, odpadom a sanitárnymi časťami technického riešenia domu. Pri Geotherm ju beriem ako súčasť širších inštalačných prác, nie ako samostatný katalógový produkt. Praktický ďalší krok je konzultácia alebo nacenenie podľa projektu, rozsahu rozvodov a stavu objektu.",
+      "sanitary_installations_scope",
+      "process",
+      "company-truth zdravotechnika rozvody vody kanalizacia odpad sanita Geotherm",
+    );
+  }
+
   if (/^mate informacie k teme o nas\??$|^o nas\??$|^o nás\??$|(?:informacie|informácie).*(geotherm|o nas|o nás)/.test(text)) {
     return answerBase(
       "O Geotherm",
@@ -4218,6 +4268,36 @@ function companyPracticalDirectAnswer(message: string): DirectAnswerDecision | n
       "showroom_scope",
       "contact",
       "company-truth showroom Geotherm konzultacia produkty technicke riesenia kontakt termin",
+    );
+  }
+
+  if (/(skolen|školen).*(zehnder|vzduchotechnik)|(?:zehnder|vzduchotechnik).*(skolen|školen|novink)/.test(text)) {
+    return answerBase(
+      "Zehnder a vzduchotechnika",
+      "Školenie k novinkám Zehnder beriem ako firemnú a technickú referenciu k vetraniu/rekuperácii, nie ako záväzný katalóg dostupných modelov. Pri rekuperácii rozhoduje dispozícia domu, rozvody vzduchu, priestor pre jednotku, filtre, komfort a servis. Praktický ďalší krok je konzultácia a nacenenie vetrania podľa domu alebo projektu.",
+      "zehnder_training_heat_recovery_scope",
+      "process",
+      "company-truth Zehnder skolenie vzduchotechnika rekuperacia vetranie Geotherm",
+    );
+  }
+
+  if (/(nove technologie|nové technológie|veltrh|veľtrh|vystav|výstav|konferenc).*(vykurov|technolog|geotherm)|(?:vykurov|technolog|geotherm).*(nove technologie|nové technológie|veltrh|veľtrh|vystav|výstav|konferenc)/.test(text)) {
+    return answerBase(
+      "Nové technológie vo vykurovaní",
+      "Výstavy, konferencie a nové technológie beriem ako orientáciu Geotherm v technických riešeniach, nie ako automatické odporúčanie konkrétneho zariadenia. Pre zákazníka je praktické preložiť novinky do návrhu: vykurovanie, chladenie, vetranie, regulácia, servis a cena pre konkrétny dom. Ďalší krok je konzultácia a nacenenie podľa cieľa.",
+      "heating_new_technologies_scope",
+      "process",
+      "company-truth nove technologie vykurovanie vystavy konferencie Geotherm",
+    );
+  }
+
+  if (/(vaillant).*(zlat|medail|aquatherm)|(?:zlat|medail|aquatherm).*(vaillant)/.test(text)) {
+    return answerBase(
+      "Ocenenie Vaillant",
+      "Ocenenie Vaillant na veľtrhu Aquatherm beriem ako referenciu ku kvalite značky a technológií, nie ako dôkaz, že jeden konkrétny model je automaticky najlepší pre každý dom. Pri tepelnom čerpadle Vaillant treba stále vybrať zostavu podľa výkonu, vykurovania, TÚV, hlučnosti, montáže a servisu. Praktický ďalší krok je konzultácia a aktuálne nacenenie.",
+      "vaillant_award_heat_pump_scope",
+      "brand_model",
+      "company-truth Vaillant ocenenie Aquatherm zlatá medaila tepelne cerpadlo Geotherm",
     );
   }
 
@@ -4278,6 +4358,26 @@ function companyPracticalDirectAnswer(message: string): DirectAnswerDecision | n
       "energy_class_a0_scope",
       "process",
       "company-truth energeticka trieda A0 nizkoenergeticky dom vykurovanie rekuperacia tepelne cerpadlo Geotherm",
+    );
+  }
+
+  if (/(priemerna spotreba|šetrit energi|setrit energi|spotrebicov a\+|spotrebičov a\+|energetick[ey] stit|energetick[ey] štit).*(elektr|energi|domacnost|spotreb)|(?:elektr|energi|domacnost|spotreb).*(priemerna spotreba|šetrit energi|setrit energi|spotrebicov a\+|spotrebičov a\+|energetick[ey] stit|energetick[ey] štit)/.test(text)) {
+    return answerBase(
+      "Spotreba energie v domácnosti",
+      "Spotreba elektriny a energetické označenie spotrebičov sú dobrý orientačný podklad, ale pri vykurovaní rozhoduje celý systém: zdroj tepla, regulácia, zateplenie, teplá voda, vetranie a správanie domácnosti. Pri Geotherm má zmysel riešiť úsporu cez návrh vykurovania, tepelné čerpadlo, rekuperáciu alebo správne nastavenie existujúceho systému. Praktický ďalší krok je konzultácia a porovnanie aktuálnej spotreby s možným riešením.",
+      "household_energy_savings_scope",
+      "process",
+      "company-truth spotreba elektriny energia uspora vykurovanie tepelne cerpadlo rekuperacia Geotherm",
+    );
+  }
+
+  if (/(priemerna spotreba vody|spotreba vody|usetrit za vodu|ušetriť za vodu|setrit vod|šetriť vod)/.test(text)) {
+    return answerBase(
+      "Spotreba vody",
+      "Spotreba vody je skôr prevádzková a inštalačná téma než výber jedného zariadenia. Pri Geotherm ju viem zaradiť k rozvodom pitnej vody, úprave vody, sanitárnym riešeniam a technickému návrhu domu. Ak chcete riešiť úsporu alebo problém s vodou, praktický ďalší krok je konzultácia podľa objektu, rozvodov a požadovaného rozsahu.",
+      "household_water_savings_scope",
+      "process",
+      "company-truth spotreba vody rozvody pitnej vody uprava vody sanita Geotherm",
     );
   }
 

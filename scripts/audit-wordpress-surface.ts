@@ -65,6 +65,30 @@ function classify(item: WordpressItem): { topic: string; expected: string[]; que
   const body = normalize((item.cleanText || "").slice(0, 600));
   const text = `${primary} ${body}`;
   const ask = (prefix: string) => `${prefix}: ${title}?`;
+  if (/e shop/.test(primary)) {
+    return { topic: "quote", expected: ["produkt", "ponuk", "geotherm"], question: ask("Mate informacie k teme") };
+  }
+  if (/formular pre vypracovanie navrhu|dakujeme.*zaujem.*sluzby/.test(primary)) {
+    return { topic: "quote", expected: ["ponuk", "kontakt", "nacenen"], question: ask("Mate informacie k teme") };
+  }
+  if (/instalacie zdravotechniky|zdravotechnik/.test(primary)) {
+    return { topic: "sanitary", expected: ["zdravotechn", "vod", "kanal"], question: ask("Robíte alebo viete poradiť k téme") };
+  }
+  if (/priemerna spotreba elektrickej energie|setrit energiami|oznacenie spotrebicov|spotrebicov a\+/.test(primary)) {
+    return { topic: "heating", expected: ["spotreb", "energi", "usporn"], question: ask("Viete poradit k teme") };
+  }
+  if (/priemerna spotreba vody|usetrit za vodu/.test(primary)) {
+    return { topic: "water", expected: ["vod", "spotreb", "usporn"], question: ask("Robíte alebo viete vysvetliť tému") };
+  }
+  if (/skolenie.*zehnder|novinkach vo vzduchotechnike zehnder/.test(primary)) {
+    return { topic: "heat_recovery", expected: ["zehnder", "rekuper", "vetr"], question: ask("Robíte alebo viete vysvetliť tému") };
+  }
+  if (/nove technologie vo vykurovani|veltrhy vystavy konferencie/.test(primary)) {
+    return { topic: "heating", expected: ["vykurov", "technolog", "geotherm"], question: ask("Viete poradit k teme") };
+  }
+  if (/tepelne cerpadlo vaillant.*zlat.*medail|aquatherm/.test(primary)) {
+    return { topic: "heat_pump", expected: ["vaillant", "tepel", "cerpad"], question: ask("Viete poradiť k téme") };
+  }
   if (!title || /(cookie|cookies|opt out|ochrana osobnych udajov|zasady|prava dotknutej|tiraz|dakujeme|formular|test\b|author|volne pracovne|pracovne miesto|referent|technik|koordinator|obchodny zastupca|e shop|aktuality|sutaz|korona|odborne clanky|podcast|architektur|precitajte si clanok|casopis|coneco|veltrh|vystavy a prezentacie|odborne skolenie|skolenie nasich kolegov|mysli na buducnost|our culture|vymena odbornych poznatkov|spolupracujeme v programe|hladame noveho kolegu)/.test(primary)) {
     return null;
   }
