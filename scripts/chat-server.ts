@@ -4717,6 +4717,16 @@ function companyPracticalDirectAnswer(message: string): DirectAnswerDecision | n
     );
   }
 
+  if (/(viete|mozete|môžete|da sa|dá sa|chcem).*(prist|prísť|pride|príde|vyjazd|výjazd).*(diagnostik)|(?:diagnostik).*(prist|prísť|pride|príde|vyjazd|výjazd)/.test(text)) {
+    return answerBase(
+      "Diagnostika zariadenia",
+      "Diagnostiku beriem ako servisný dopyt. Termín výjazdu by som v chate nepotvrdzoval bez kapacity technika, ale dá sa pripraviť podklad na preverenie. Pošlite prosím typ zariadenia alebo fotku štítku, stručný prejav problému, lokalitu a telefón alebo e-mail; Geotherm potom potvrdí, či je možná diagnostika a aký bude ďalší postup.",
+      "diagnostics_visit_scope",
+      "service_fault",
+      "company-truth service diagnostika vyjazd technik lokalita kontakt Geotherm",
+    );
+  }
+
   if (/(pada|padá|klesa|klesá).*\btlak\b|\btlak\b.*(pada|padá|klesa|klesá)/.test(text)) {
     return answerBase(
       "Pokles tlaku v kúrení",
@@ -8281,6 +8291,7 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     "own_material_scope",
     "quote_inputs",
     "diagnostic_price_scope",
+    "diagnostics_visit_scope",
     "installation_preparation",
     "emergency_service_scope",
     "post_warranty_service_scope",
@@ -8450,12 +8461,14 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     });
     if (!retryLlm.error && retryLlm.content) composerLlm = retryLlm;
   }
-  if (directDecision.triggered && !useCompactDirectComposer && (composerLlm.error || !composerLlm.content)) {
+  if (directDecision.triggered && (composerLlm.error || !composerLlm.content)) {
     const directRetryLlm = await callLlmText({
       systemPrompt: activeComposerSystemPrompt,
       prompt: activeComposerInput,
-      maxOutputTokens: 420,
-      timeoutMs: Math.min(Math.max(Number.parseInt(process.env.LLM_FAST_REQUEST_TIMEOUT_MS || "3200", 10), 2400), 3600),
+      maxOutputTokens: useCompactDirectComposer ? 300 : 420,
+      timeoutMs: useCompactDirectComposer
+        ? Math.min(Math.max(Number.parseInt(process.env.LLM_FAST_REQUEST_TIMEOUT_MS || "1600", 10), 1200), 1800)
+        : Math.min(Math.max(Number.parseInt(process.env.LLM_FAST_REQUEST_TIMEOUT_MS || "3200", 10), 2400), 3600),
       responseMimeType: "text/plain",
       modelOverride: process.env.GEMINI_FAST_FALLBACK_MODEL || "gemini-2.5-flash-lite",
     });
