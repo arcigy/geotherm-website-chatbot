@@ -97,6 +97,29 @@ const scenarios: Scenario[] = [
     ],
   },
   {
+    id: "large_object_quote_yes_then_time",
+    messages: [
+      "mam 580m2 dom a chcem cenu tepelneho cerpadla s montazou",
+      "ano",
+      "dnes medzi 15-16:00",
+    ],
+    expectations: [
+      {
+        mustContain: ["nad 300"],
+        anyOf: ["kontakt", "konzult", "individual"],
+        forbidden: ["10 000", "15 000", "18 000", "F2120", "S2125", "aroTHERM"],
+      },
+      {
+        anyOf: ["meno", "telefon", "e-mail", "email", "kontakt"],
+        forbidden: ["termin", "termín", "potvrdzujem", "dnes o"],
+      },
+      {
+        anyOf: ["nepotvrdzujem", "treba potvrdit", "treba potvrdiť", "kontakt"],
+        forbidden: ["kolo 6", "2017", "zelena domacnostiam", "potvrdzujem", "mozeme sa stretnut"],
+      },
+    ],
+  },
+  {
     id: "past_or_impossible_appointment_not_confirmed",
     messages: [
       "chcem cenovu ponuku a obhliadku",

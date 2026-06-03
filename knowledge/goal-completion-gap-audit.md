@@ -1,7 +1,7 @@
 # Geotherm Chatbot Goal Gap Audit
 
-Generated: 2026-06-03T15:06:29.858Z
-Audit base commit: 8f47af3
+Generated: 2026-06-03T15:14:57.614Z
+Audit base commit: 8e8e053
 
 ## Evidence Gates
 
@@ -24,7 +24,7 @@ Verdict: EVIDENCE PASS
 | cta_coverage | yes | Passed: 12 | Meeting, consultation and handoff CTA behavior. |
 | small_talk | yes | Passed: 14 | Small talk uses AI but avoids unnecessary RAG. |
 | hallucination_guardrails | yes | Passed: 11 | Known banned claims, unsupported facts and safety constraints. |
-| sales_feedback | yes | Passed: 15 | Salesperson feedback: vykanie, appointments, large objects, contact capture. |
+| sales_feedback | yes | Passed: 18 | Salesperson feedback: vykanie, appointments, large objects, contact capture. |
 | sales_flow | yes | ## Summary | Sales flow behavior from first advisory question through soft handoff and lead capture. |
 | operational_guardrails | yes | Passed: 30 | Operational safety, persistence and policy guardrails. |
 

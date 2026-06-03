@@ -6167,6 +6167,36 @@ function directAnswerDecision(message: string, state: QualificationState, route:
     };
   }
   if (
+    /^(ano|áno|jasne|dobre|super|chcem|chcem ponuku|posunte|posuňte)$/.test(text) &&
+    /^(large_object_no_price_guess|large_object_no_model_guess)$/.test(String(state.last_direct_topic || state.last_price_topic || ""))
+  ) {
+    return {
+      triggered: true,
+      answerMode: "handoff_cta",
+      reason: "direct_large_object_quote_contact_request",
+      answer:
+        "### Kontakt pre individuálne nacenenie\n\nPri takomto veľkom objekte by už ďalšie odhady v chate neboli fér. Najlepší ďalší krok je posunúť dopyt obchodníkovi alebo technikovi Geotherm na individuálne nacenenie.\n\nPošlite prosím meno, telefón alebo e-mail, lokalitu a stručne rozsah objektu. Kontakt použijeme na spätné ozvanie k tomuto dopytu.",
+      serviceIntent: "contact",
+      retrievalQuery: "company-truth velky objekt nad 300 m2 kontakt obchodnik individualne nacenenie Geotherm",
+      topic: "large_object_quote_contact_request",
+    };
+  }
+  const earlyAreaInMessageMatch = text.match(/(\d{3,4})\s*(?:m2|m 2|m²|m\b|metrov|dom)/);
+  const earlyAreaInMessage = earlyAreaInMessageMatch ? Number.parseInt(earlyAreaInMessageMatch[1], 10) : undefined;
+  const earlyHasLargeObject = Boolean((state.area_m2 && state.area_m2 > 300) || (earlyAreaInMessage && earlyAreaInMessage > 300));
+  if (earlyHasLargeObject && /(cena|cenov|kolko|koľko|stoji|stojí|ponuk|nacen|montaz|montáž|instalac|inštalac|lacn)/.test(text)) {
+    return {
+      triggered: true,
+      answerMode: "price_answer",
+      reason: "direct_large_object_no_price_guess",
+      answer:
+        "### Veľký objekt - individuálne nacenenie\n\nPri objekte nad 300 m² by som orientačnú cenu tepelného čerpadla s montážou neodhadoval. Bežné cenové rozpätia pre rodinné domy môžu byť pri takejto ploche zavádzajúce, lebo rozhoduje tepelná strata, počet okruhov, zdroj tepla, TÚV, hydraulika, regulácia a prípadné kaskádové riešenie.\n\nNajlepší ďalší krok je individuálny projekt a konzultácia s Geotherm. Pošlite prosím meno, telefón alebo e-mail, lokalitu a základné podklady; obchodník pripraví ďalší postup a nacenenie.",
+      serviceIntent: "contact",
+      retrievalQuery: "company-truth pricing-rules velky objekt nad 300 m2 individualne nacenenie kontakt Geotherm",
+      topic: "large_object_no_price_guess",
+    };
+  }
+  if (
     /(?:cenov|ponuk|nacen|cenu|ponuku).*(?:obhliad|prehliad|pozriet|pozrieť|prist|prísť)|(?:obhliad|prehliad|pozriet|pozrieť|prist|prísť).*(?:cenov|ponuk|nacen|cenu|ponuku)/.test(text)
   ) {
     return {
