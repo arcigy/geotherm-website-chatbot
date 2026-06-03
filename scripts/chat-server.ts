@@ -8296,6 +8296,7 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     if (directDecision.topic && /(boiler|ecotec|eloblock|logamax|buderus|compact)/.test(directDecision.topic)) route.serviceType = "service";
     if (directDecision.topic && /heat_recovery/.test(directDecision.topic)) route.serviceType = "heat_recovery";
     if (directDecision.topic && /ceiling_cooling|bkt|wall_heating_cooling/.test(directDecision.topic)) route.serviceType = "ceiling_cooling";
+    if (directDecision.topic && directDecision.topic === "water_distribution") route.serviceType = "complex_solution";
     if (!directDecision.topic?.includes("heat_recovery") && /(tepelne cerpad|tepelné čerpad|cerpadl|čerpadl|\btc\b|tč\b|vzduch voda|zem voda|voda voda)/.test(routerFallbackText)) {
       route.serviceType = "heat_pump";
     }

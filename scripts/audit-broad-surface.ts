@@ -55,7 +55,7 @@ const cases: Case[] = [
   { id: "radiators", message: "Robíte aj radiátory?", mustContain: ["radiátor"], minSources: 1 },
   { id: "boilers", message: "Robíte aj montáž nových kotlov?", mustContain: ["kotl"], minSources: 1 },
   { id: "vaillant_boilers", message: "Aké Vaillant kotly máte?", mustContain: ["Vaillant", "kot"], minSources: 1 },
-  { id: "water_distribution", message: "Robíte aj rozvody vody?", mustContain: ["vod"], minSources: 1 },
+  { id: "water_distribution", message: "Robíte aj rozvody vody?", mustContain: ["vod"], minSources: 1, expectedServiceType: "complex_solution" },
   { id: "water_treatment", message: "Čo je Katexová úprava vody?", mustContain: ["vody"], minSources: 1 },
   { id: "wc_geberit", message: "Robíte WC Geberit?", mustContain: ["Geberit"], minSources: 1 },
   { id: "screeds", message: "Robíte aj potery?", mustContain: ["poter"], minSources: 1 },

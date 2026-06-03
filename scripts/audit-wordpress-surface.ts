@@ -189,6 +189,9 @@ function validate(testCase: Case, body: Awaited<ReturnType<typeof createChatResp
   if (testCase.topic === "ceiling_cooling" && /sten/.test(normalizedQuestion) && service === "heat_pump") {
     failures.push("wall heating/cooling misrouted as heat_pump");
   }
+  if (testCase.topic === "water" && /(rautitan|rozvod|pitnej vody)/.test(normalizedQuestion) && service === "heat_pump") {
+    failures.push("water distribution misrouted as heat_pump");
+  }
   if (
     testCase.topic === "service" &&
     /(pravideln|preventiv|udrzb|prehliad|neodklad|oplat)/.test(normalize(testCase.question)) &&
