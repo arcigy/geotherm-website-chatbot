@@ -89,6 +89,7 @@ function classify(item: WordpressItem): { topic: string; expected: string[]; que
   if (/nordic inverter/.test(primary)) return { topic: "heat_pump", expected: ["ivt", "vzduch", "inverter"], question: `Viete poradiť k téme: ${title}?` };
   if (/aurocompact/.test(primary)) return { topic: "boilers", expected: ["kot", "vaillant", "compact"], question: `Robíte alebo viete poradiť k téme: ${title}?` };
   if (/klimatiz|mitsubishi|toshiba|\bgree\b/.test(primary)) return { topic: "air_conditioning", expected: ["klimatiz", "vzduch"], question: `Robíte alebo viete poradiť k téme: ${title}?` };
+  if (/nemrznuca kvapalina|teplonosne kvapaliny|ochranne a udrzbove kvapaliny|fernox/.test(primary)) return { topic: "water", expected: ["kvapalin", "system", "udrz"], question: `Robíte alebo viete vysvetliť tému: ${title}?` };
   if (/fotovolt|solarn|solar|slnecne kolektor|aurostep|drain back|zostavy tlakove/.test(primary)) return { topic: "solar_photovoltaic", expected: ["solar", "fotovolt", "panel", "kolektor", "zasobnik"], question: `Robíte alebo viete vysvetliť tému: ${title}?` };
   if (/dotac|poukaz|plan obnovy|zelena|podmienky podpory|podpora/.test(primary)) return { topic: "subsidy", expected: ["dot", "podpor", "over"], question: `Viete pomôcť k téme: ${title}?` };
   if (/stropne chladen|stenove vykurovanie|temperovanie betonoveho jadra|bkt|chladenie a vykurovanie/.test(primary)) return { topic: "ceiling_cooling", expected: ["chladen", "strop", "sten"], question: `Viete poradiť k téme: ${title}?` };
@@ -176,6 +177,15 @@ function validate(testCase: Case, body: Awaited<ReturnType<typeof createChatResp
   if ((body.responseTimeMs || 0) > maxMs) failures.push(`responseTimeMs>${maxMs}: ${body.responseTimeMs}`);
   if (sources < 1) failures.push("sources<1");
   if (!testCase.expected.some((term) => answer.includes(normalize(term)))) failures.push(`missing expected topic term: ${testCase.expected.join("/")}`);
+  const service = String(debug.serviceType || "");
+  const normalizedQuestion = normalize(testCase.question);
+  if (
+    testCase.topic === "solar_photovoltaic" &&
+    !/(dotac|poukaz|prispev|podpor)/.test(normalizedQuestion) &&
+    (service === "heat_pump" || service === "service")
+  ) {
+    failures.push(`solar_photovoltaic misrouted as ${service}`);
+  }
   if (
     testCase.topic === "service" &&
     /(pravideln|preventiv|udrzb|prehliad|neodklad|oplat)/.test(normalize(testCase.question)) &&

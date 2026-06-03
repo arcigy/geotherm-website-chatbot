@@ -8289,6 +8289,12 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     if (!directDecision.topic?.includes("heat_recovery") && /(tepelne cerpad|tepelné čerpad|cerpadl|čerpadl|\btc\b|tč\b|vzduch voda|zem voda|voda voda)/.test(routerFallbackText)) {
       route.serviceType = "heat_pump";
     }
+    if (
+      directDecision.topic &&
+      /^(photovoltaics|photovoltaics_heat_pump_scope|solar_panels|mss_solar_system_scope|solar_collector_tank_scope)$/.test(directDecision.topic)
+    ) {
+      route.serviceType = "complex_solution";
+    }
     if (directDecision.serviceIntent === "service_fault") route.serviceType = "service";
     stateForTurn = {
       ...stateForTurn,
