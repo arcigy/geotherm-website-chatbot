@@ -6158,9 +6158,14 @@ function directAnswerDecision(message: string, state: QualificationState, route:
     ["boilers", "vaillant_boilers"].includes(priorityPractical.topic || "") &&
     (hasExistingDiagnosticContext || hasActiveHeatPump || state.service_intent === "subsidy" || route.serviceIntent === "subsidy") &&
     !/(ake|aké|robite|robíte|mate|máte|znack|značk|servis|oprav|kondenzac|kondenzač|elektrick|vaillant|buderus)/.test(text);
+  const airConditioningWouldOverwriteHeatPumpDiagnostic =
+    priorityPractical?.topic === "air_conditioning_general_scope" &&
+    (hasExistingDiagnosticContext || hasActiveHeatPump) &&
+    !/(klimatiz|klima|klimu|split|multisplit)/.test(text);
   if (
     priorityPractical &&
     !boilerDirectWouldOverwriteDiagnostic &&
+    !airConditioningWouldOverwriteHeatPumpDiagnostic &&
     [
       "plan_obnovy_subsidy_scope",
       "subsidy_conditions_direct_scope",
