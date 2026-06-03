@@ -2439,6 +2439,13 @@ type ServiceType =
   | "heat_recovery"
   | "floor_heating"
   | "ceiling_cooling"
+  | "water"
+  | "sanitary"
+  | "central_vacuum"
+  | "solar_photovoltaic"
+  | "boilers"
+  | "radiators"
+  | "screeds"
   | "service"
   | "subsidy"
   | "complex_solution"
@@ -2473,6 +2480,13 @@ const serviceTypes: ServiceType[] = [
   "heat_recovery",
   "floor_heating",
   "ceiling_cooling",
+  "water",
+  "sanitary",
+  "central_vacuum",
+  "solar_photovoltaic",
+  "boilers",
+  "radiators",
+  "screeds",
   "service",
   "subsidy",
   "complex_solution",
@@ -2515,6 +2529,20 @@ function serviceLabel(serviceType: ServiceType): string {
       return "podlahové kúrenie";
     case "ceiling_cooling":
       return "stropné chladenie";
+    case "water":
+      return "voda a úprava vody";
+    case "sanitary":
+      return "zdravotechnika a sanita";
+    case "central_vacuum":
+      return "centrálny vysávač";
+    case "solar_photovoltaic":
+      return "fotovoltaika a solárne systémy";
+    case "boilers":
+      return "kotly";
+    case "radiators":
+      return "radiátory";
+    case "screeds":
+      return "potery";
     case "service":
       return "servis zariadení";
     case "subsidy":
@@ -2538,6 +2566,20 @@ function serviceSearchKeyword(serviceType: ServiceType): string {
       return "service-card-floor-heating podlahove kurenie";
     case "ceiling_cooling":
       return "service-card-ceiling-cooling stropne chladenie";
+    case "water":
+      return "company-truth voda uprava vody rozvody vody kanalizacia zmakcovac";
+    case "sanitary":
+      return "company-truth zdravotechnika sanita Geberit WC rozvody vody kanalizacia";
+    case "central_vacuum":
+      return "company-truth centralny vysavac rozvody zasuvky technicke riesenie domu";
+    case "solar_photovoltaic":
+      return "company-truth fotovoltaika solarne systemy panely OZE Geotherm";
+    case "boilers":
+      return "company-truth kotly plynove kondenzacne kotly Vaillant Buderus servis";
+    case "radiators":
+      return "company-truth radiatory vykurovacie telesa teplotny spad vykurovanie";
+    case "screeds":
+      return "company-truth potery cementovy anhydritovy poter skladba podlahy";
     case "service":
       return "service-card-service servis porucha";
     case "subsidy":
@@ -2559,7 +2601,7 @@ function inferServiceRoute(message: string, state: QualificationState, history: 
   const hasExplicitServiceSignal =
     heatPumpAbbreviation ||
     outdoorUnitPlacement ||
-    /(tepelne cerpad|heat pump|cerpadl|klimatiz|rekuper|vetran|podlahov|strop.*chladen|servis|porucha|chyb|kod|kód|\bf\d{2,3}\b|dotac|subsidy|poukaz|prispev|plyn|plynov|kotol|radiator|vykurov|kurenie|topeni|topenie|konzult|stretn|meeting|termin|termín)/.test(text);
+    /(tepelne cerpad|heat pump|cerpadl|klimatiz|rekuper|vetran|podlahov|strop.*chladen|zmakcovac|zmäkčovač|uprava vody|úprava vody|katex|rozvod.*vod|kanaliz|zdravotechn|geberit|\bwc\b|sanit|centraln.*vysav|vysavac|vysávač|fotovolt|solar|solarn|solár|poter|potery|anhydrit|cementov|servis|porucha|chyb|kod|kód|\bf\d{2,3}\b|dotac|subsidy|poukaz|prispev|plyn|plynov|kotol|radiator|vykurov|kurenie|topeni|topenie|konzult|stretn|meeting|termin|termín)/.test(text);
   const slotOnlyReply =
     !hasExplicitServiceSignal &&
     previousService !== "unknown" &&
@@ -2592,6 +2634,20 @@ function inferServiceRoute(message: string, state: QualificationState, history: 
         ? "subsidy"
         : complexSolutionSignal
           ? "complex_solution"
+        : /(zdravotechn|geberit|\bwc\b|sanit|odpad)/.test(text)
+          ? "sanitary"
+        : /(zmakcovac|zmäkčovač|uprava vody|úprava vody|katex|rozvod.*vod|vodoin|kanaliz|nezamrz.*ventil|nezámrz.*ventil|nemrznuca|nemrznúca|kvapalin|fernox|agrimex)/.test(text)
+          ? "water"
+        : /(centraln|centráln).*(vysavac|vysávač)|(?:vysavac|vysávač).*(centraln|centráln)/.test(text)
+          ? "central_vacuum"
+        : /(fotovolt|solar|solarn|solár|panel|oze|obnovitel)/.test(text)
+          ? "solar_photovoltaic"
+        : /(poter|potery|anhydrit|cementov)/.test(text)
+          ? "screeds"
+        : boilerOnly || /(kondenzacn|kondenzačn|elektrokotol|plynovy kotol|plynový kotol|buderus|logamax|ecotec|eloblock)/.test(text)
+          ? "boilers"
+        : /(dizajnov.*radiator|radiator.*dizajnov|robite.*radiator|robíte.*radiátor|mate.*radiator|máte.*radiátor)/.test(text)
+          ? "radiators"
         : (/(klimatiz|klima|split|multisplit)/.test(text) ||
           (!/(strop|podlah|rekuper|vetran|kuren|vykurov|tepelne cerpad|cerpadl)/.test(text) && /(chladen|chladit|chladiť)/.test(text)))
           ? "air_conditioning"
@@ -2601,8 +2657,6 @@ function inferServiceRoute(message: string, state: QualificationState, history: 
               ? "heat_recovery"
               : /(podlahov|podlahu|podlahove kurenie)/.test(text) && !/(cerpadl|tepel|\btc\b)/.test(combined)
                 ? "floor_heating"
-                : boilerOnly
-                  ? "complex_solution"
                 : outdoorUnitPlacement || heatPumpAbbreviation || /(tepelne cerpad|heat pump|cerpad|vzduch voda|zem voda|voda voda|nibe|vaillant|plyn|plynov|radiator|vykurov|kurenie|topeni|topenie|kotol)/.test(text)
                   ? "heat_pump"
                   : complexSolutionSignal
@@ -2693,6 +2747,20 @@ function serviceCardSummary(serviceType: ServiceType): string {
       "Service card podlahové kúrenie: minimálne údaje sú novostavba/rekonštrukcia, plocha a zdroj tepla. Pri novostavbe je vhodné pre nízkoteplotné systémy a tepelné čerpadlo. Pri rekonštrukcii treba overiť skladbu podlahy a stavebné možnosti.",
     ceiling_cooling:
       "Service card stropné chladenie: minimálne údaje sú novostavba/rekonštrukcia, rozsah chladenia a projekt. Je komfortné a skryté, ale musí byť navrhnuté projektovo s reguláciou a vlhkosťou. Neprezentuj ho ako plnú náhradu klimatizácie v každom dome bez projektu.",
+    water:
+      "Service card voda a úprava vody: použi pri zmäkčovači vody, tvrdosti vody, rozvodoch vody, kanalizácii, nemrznúcich alebo údržbových kvapalinách a záhradných ventiloch. Nevyberaj konkrétne zariadenie bez tvrdosti vody, spotreby, prietoku, miesta montáže a rozsahu rozvodov; posuň zákazníka na konzultáciu alebo nacenenie.",
+    sanitary:
+      "Service card zdravotechnika a sanita: použi pri zdravotechnike, WC, Geberit, sanitárnych prvkoch, odpadoch a napojení vody/kanalizácie. Rozsah treba potvrdiť podľa fotiek, pôdorysu, novostavby alebo rekonštrukcie; neprezentuj to ako samostatný e-shopový produkt.",
+    central_vacuum:
+      "Service card centrálny vysávač: použi pri centrálnom vysávači, rozvodoch vysávania a zásuvkách. Pri novostavbe rieš pôdorys, trasu rozvodov, počet zásuviek a technickú miestnosť; pri existujúcom dome treba potvrdiť realizovateľnosť.",
+    solar_photovoltaic:
+      "Service card fotovoltaika a solárne systémy: použi pri fotovoltaike, solárnych paneloch, OZE a spolupráci s tepelným čerpadlom. Nehovor garancie dotácie ani úspory; odporuč konzultáciu a nacenenie podľa strechy, spotreby, technológie a aktuálnych podmienok.",
+    boilers:
+      "Service card kotly: použi pri plynových, kondenzačných a elektrokotloch, značkách Vaillant/Buderus a výmene kotla. Pri poruche smeruj na servis; pri výmene alebo návrhu porovnaj s tepelným čerpadlom iba ak je to relevantné pre zákazníkov cieľ.",
+    radiators:
+      "Service card radiátory: použi pri samostatných otázkach na radiátory a vykurovacie telesá. Pri TČ kontexte overuj teplotný spád a výkon; pri samostatnej realizácii rieš typ telies, rozvody, zdroj tepla a nacenenie.",
+    screeds:
+      "Service card potery: použi pri cementových a anhydritových poteroch, skladbe podlahy a väzbe na podlahové kúrenie. Presná cena závisí od plochy, podkladu, hrúbky, typu poteru a termínu; posuň na nacenenie podľa stavby.",
     service:
       "Service card servis: minimálne údaje sú značka, model alebo fotka štítku, chybový kód/problém a lokalita. Pri poruche si vypýtaj servisné údaje a neposkytuj nebezpečné technické návody. Servis cudzích montáží treba potvrdiť.",
     subsidy:
@@ -4410,6 +4478,26 @@ function companyPracticalDirectAnswer(message: string): DirectAnswerDecision | n
     );
   }
 
+  if (/(flexotherm|flexo therm|arocollect|aro collect)/.test(text)) {
+    return answerBase(
+      "Vaillant flexoTHERM a aroCOLLECT",
+      "flexoTHERM exclusive a aroCOLLECT beriem ako konkrétne riešenie z portfólia Vaillant, ktoré treba posudzovať podľa typu domu, zdroja energie, vykurovania, teplej vody a montážnych možností. V Geotherm by som ho nevyberal ako univerzálne najlepšiu voľbu bez návrhu; praktický ďalší krok je porovnať aktuálne dostupnú zostavu s potrebami domu a pripraviť nacenenie.",
+      "vaillant_flexotherm_arocollect_scope",
+      "brand_model",
+      "company-truth Vaillant flexoTHERM aroCOLLECT tepelne cerpadlo Geotherm aktualna ponuka nacenenie",
+    );
+  }
+
+  if (/(multimatic|multi matic|red dot)/.test(text)) {
+    return answerBase(
+      "Vaillant multiMATIC",
+      "multiMATIC beriem ako Vaillant reguláciu a referenčnú tému k ovládaniu technických riešení domu. Ocenenie Red Dot je zaujímavá informácia, ale pre zákazníka je dôležitejšie, ako regulácia spolupracuje s vykurovaním, chladením, teplou vodou a prípadne rekuperáciou. V Geotherm má zmysel riešiť konkrétnu zostavu a jej ovládanie pri konzultácii alebo nacenení.",
+      "vaillant_multimatic_scope",
+      "process",
+      "company-truth Vaillant multiMATIC regulacia Red Dot Geotherm vykurovanie chladenie tepla voda",
+    );
+  }
+
   if (/(skolen|školen).*(zehnder|vzduchotechnik)|(?:zehnder|vzduchotechnik).*(skolen|školen|novink)/.test(text)) {
     return answerBase(
       "Zehnder a vzduchotechnika",
@@ -4500,7 +4588,17 @@ function companyPracticalDirectAnswer(message: string): DirectAnswerDecision | n
     );
   }
 
-  if (/(priemerna spotreba|šetrit energi|setrit energi|oznac\w* spotreb|označ\w* spotreb|spotreb\w* a az a|spotreb\w* a až a|spotrebicov a\+|spotrebičov a\+|energetick[ey] stit|energetick[ey] štit).*(elektr|energi|domacnost|spotreb|usporn|a\+)|(?:elektr|energi|domacnost|spotreb|usporn|a\+).*(priemerna spotreba|šetrit energi|setrit energi|oznac\w* spotreb|označ\w* spotreb|spotreb\w* a az a|spotreb\w* a až a|spotrebicov a\+|spotrebičov a\+|energetick[ey] stit|energetick[ey] štit)/.test(text)) {
+  if (/spotreb.*elektr|elektrick.*energie|u etri za elektrinu|setr.*elektr|uspora.*elektr|energi.*dom/.test(text)) {
+    return answerBase(
+      "Spotreba energie v domácnosti",
+      "Pri spotrebe elektrickej energie v domácnosti je dôležité rozlíšiť bežné spotrebiče, vykurovanie, prípravu teplej vody, vetranie a reguláciu. Úsporné riešenie sa pri Geotherm rieši hlavne cez návrh celého systému: vhodný zdroj tepla, tepelné čerpadlo, rekuperáciu, nastavenie regulácie a rozumné využitie energie.\n\nPraktický ďalší krok je konzultácia podľa domu a aktuálnej spotreby; potom sa dá povedať, kde má úspora najväčší zmysel.",
+      "household_energy_savings_scope",
+      "process",
+      "company-truth spotreba elektrickej energie domacnost uspora energia vykurovanie Geotherm",
+    );
+  }
+
+  if (/(priemerna spotreba|spotreb.*elektr|elektr.*spotreb|elektr.*uset|elektr.*ušet|elektr.*setr|elektr.*šetr|šetrit energi|setrit energi|oznac\w* spotreb|označ\w* spotreb|spotrebi|spotrebic|spotrebič|spotreb\w* a az a|spotreb\w* a až a|a\+\s*az|a\+\s*až|a\+\+\+|energetick[ey] stit|energetick[ey] štit).*(elektr|energi|domacnost|spotreb|usporn|a\+|uset|ušet|setr|šetr)|(?:elektr|energi|domacnost|spotreb|usporn|a\+|uset|ušet|setr|šetr).*(priemerna spotreba|spotreb.*elektr|oznac\w* spotreb|označ\w* spotreb|spotrebi|spotrebic|spotrebič|spotreb\w* a az a|spotreb\w* a až a|a\+\s*az|a\+\s*až|a\+\+\+|energetick[ey] stit|energetick[ey] štit)/.test(text)) {
     return answerBase(
       "Spotreba energie v domácnosti",
       "Spotreba elektriny a energetické označenie spotrebičov A+ až A+++ sú dobrý orientačný podklad na úsporné používanie energie, ale pri vykurovaní rozhoduje celý systém: zdroj tepla, regulácia, zateplenie, teplá voda, vetranie a správanie domácnosti. Pri Geotherm má zmysel riešiť úsporu cez návrh vykurovania, tepelné čerpadlo, rekuperáciu alebo správne nastavenie existujúceho systému. Praktický ďalší krok je konzultácia a porovnanie aktuálnej spotreby s možným riešením.",
@@ -6600,6 +6698,18 @@ function directAnswerDecision(message: string, state: QualificationState, route:
       topic: "ambiguous_context_needed",
     };
   }
+  if (/spotreb.*elektr|elektrick.*energie|u etri za elektrinu|setr.*elektr|uspora.*elektr|energi.*dom/.test(text)) {
+    return {
+      triggered: true,
+      answerMode: "direct_answer",
+      reason: "direct_household_energy_savings",
+      answer:
+        "### Spotreba energie v domácnosti\n\nPri spotrebe elektrickej energie v domácnosti treba rozlíšiť bežné spotrebiče, vykurovanie, prípravu teplej vody, vetranie a reguláciu. Úsporné riešenie pri Geotherm typicky znamená pozrieť sa na celý systém: zdroj tepla, tepelné čerpadlo, rekuperáciu, nastavenie regulácie a spôsob využívania energie.\n\nPraktický ďalší krok je konzultácia podľa domu a aktuálnej spotreby; potom sa dá povedať, kde má úspora najväčší zmysel.",
+      serviceIntent: "process",
+      retrievalQuery: "company-truth spotreba elektrickej energie domacnost uspora energia vykurovanie Geotherm",
+      topic: "household_energy_savings_scope",
+    };
+  }
   if (/(aké|ake|čo|co).*(potrebujete|treba|vediet|vedieť).*(poradit|poradiť|navrh)|(?:poradit|poradiť|navrh).*(potrebujete|treba|vediet|vedieť)/.test(text)) {
     return {
       triggered: true,
@@ -6627,11 +6737,11 @@ function directAnswerDecision(message: string, state: QualificationState, route:
   if (/(pravideln|preventiv|udrzb|údržb|prehliad).*(zariaden|servis|tepel|cerpad|čerpad)|(?:zariaden|servis|tepel|cerpad|čerpad).*(pravideln|preventiv|udrzb|údržb|prehliad)/.test(text)) {
     return {
       triggered: true,
-      answerMode: "service_fault_triage",
+      answerMode: "direct_answer",
       reason: "direct_regular_maintenance",
       answer:
         "### Pravidelná údržba\n\nPravidelná údržba zariadenia dáva zmysel kvôli spoľahlivosti, účinnosti a včasnému zachyteniu problémov. Pri tepelnom čerpadle alebo kotle treba potvrdiť značku, model, vek zariadenia, lokalitu a či ide o vlastnú montáž Geotherm alebo cudziu realizáciu.\n\nĎalší krok je servisná konzultácia podľa konkrétneho zariadenia.",
-      serviceIntent: "service_fault",
+      serviceIntent: "process",
       retrievalQuery: "service-card-service pravidelna udrzba servis prehliadka zariadenie Geotherm",
       topic: "preventive_service_scope",
     };
@@ -7913,9 +8023,9 @@ function validateAndRepairAnswer(
     next = [
       "### Hlučnosť NIBE",
       "",
-      "Pri hlučnosti NIBE by som bez aktuálneho technického listu a konkrétneho modelu neuvádzal presné dB hodnoty. Hlučnosť závisí od modelu, výkonu, režimu, umiestnenia vonkajšej jednotky, vzdialenosti od okien a kvality montáže.",
+      "Pri hlučnosti tepelného čerpadla NIBE by som bez aktuálneho technického listu a konkrétneho modelu neuvádzal presné dB hodnoty. Hlučnosť závisí od modelu, výkonu, režimu, umiestnenia vonkajšej jednotky, vzdialenosti od okien a kvality montáže.",
       "",
-      "Ak riešiš ticho pri dome, treba porovnať konkrétny model, umiestnenie jednotky a nočný režim. Ide o novú inštaláciu alebo už máš NIBE namontované?",
+      "Ak riešite ticho pri dome, treba porovnať konkrétny model tepelného čerpadla, umiestnenie jednotky a nočný režim. Ide o novú inštaláciu alebo už máte NIBE namontované?",
     ].join("\n");
   }
   if (normalizedMessage.includes("nibe") && normalizedMessage.includes("vaillant") && /(tich|hluk|nezerie|spotreb)/.test(normalizedMessage) && !next.includes("?")) {
@@ -8040,7 +8150,7 @@ async function extractQualificationUpdate(input: {
 }): Promise<QualificationUpdate> {
   const deterministic = deterministicQualificationUpdate(input.userMessage, input.route);
   const systemPrompt =
-    "Extract structured data from this conversation exchange. Return JSON only with ONLY the fields you are confident about based on what the user just said. Use null for unknown fields. Fields: service_type (heat_pump|air_conditioning|heat_recovery|floor_heating|ceiling_cooling|service|subsidy|complex_solution), service_intent (recommendation|price|quote|inspection|contact|service_fault|brand_model|location|subsidy|comparison|process|complaint_or_correction|general), project_type (novostavba|rekonštrukcia), property_type (rodinný dom|bungalov|byt|iné), area_m2 (number), location (string), timeline (string), current_heating (string), heating_distribution (radiátory|podlahové kúrenie), wants_cooling (boolean), hot_water (boolean), occupants (number), insulation (string), annual_consumption (string), annual_consumption_unknown (boolean), own_wood (boolean), project_available (boolean), heat_loss_known (boolean). Only extract what the user explicitly stated in their message.";
+    "Extract structured data from this conversation exchange. Return JSON only with ONLY the fields you are confident about based on what the user just said. Use null for unknown fields. Fields: service_type (heat_pump|air_conditioning|heat_recovery|floor_heating|ceiling_cooling|water|sanitary|central_vacuum|solar_photovoltaic|boilers|radiators|screeds|service|subsidy|complex_solution), service_intent (recommendation|price|quote|inspection|contact|service_fault|brand_model|location|subsidy|comparison|process|complaint_or_correction|general), project_type (novostavba|rekonštrukcia), property_type (rodinný dom|bungalov|byt|iné), area_m2 (number), location (string), timeline (string), current_heating (string), heating_distribution (radiátory|podlahové kúrenie), wants_cooling (boolean), hot_water (boolean), occupants (number), insulation (string), annual_consumption (string), annual_consumption_unknown (boolean), own_wood (boolean), project_available (boolean), heat_loss_known (boolean). Only extract what the user explicitly stated in their message.";
 
   try {
     const result = await callLlmText({
@@ -8654,6 +8764,13 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     "- heat_recovery",
     "- floor_heating",
     "- ceiling_cooling",
+    "- water",
+    "- sanitary",
+    "- central_vacuum",
+    "- solar_photovoltaic",
+    "- boilers",
+    "- radiators",
+    "- screeds",
     "- service",
     "- subsidy",
     "- complex_solution",
@@ -8675,7 +8792,7 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     "- general",
     "",
     "First decide what service the customer is really discussing. Do not assume every vague message is only heat pumps.",
-    "Map human wording: úsporné kúrenie or čím nahradiť plyn -> heat_pump; klíma/chladiť miestnosť -> air_conditioning; lepší vzduch/vetrať bez okien -> heat_recovery; stropné chladenie -> ceiling_cooling; servis/porucha/chyba -> service; dotácia -> subsidy; novostavba + kúrenie/chladenie/vetranie/teplá voda -> complex_solution.",
+    "Map human wording: úsporné kúrenie or čím nahradiť plyn -> heat_pump; klíma/chladiť miestnosť -> air_conditioning; lepší vzduch/vetrať bez okien -> heat_recovery; stropné chladenie -> ceiling_cooling; zmäkčovač/rozvody vody/kvapaliny -> water; zdravotechnika/WC/Geberit -> sanitary; centrálny vysávač -> central_vacuum; fotovoltaika/solárne systémy -> solar_photovoltaic; kotol/kondenzačný kotol -> boilers; samostatné radiátory -> radiators; potery -> screeds; servis/porucha/chyba -> service; dotácia -> subsidy; novostavba + kúrenie/chladenie/vetranie/teplá voda -> complex_solution.",
     "",
     "needsRetrieval = true when the answer needs company facts or service operating manual: products, services, brands, models, price, installation, process, timeline, subsidies, service, fault, locations, contact, company identity, comparisons, or any recommendation about heating/cooling/ventilation.",
     "needsRetrieval = false only for pure greetings, personal data only, or fully general conversation that does not need company/service facts.",
@@ -8746,10 +8863,20 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
       /^[A-ZÁÄČĎÉÍĽĹŇÓÔŔŠŤÚÝŽ][\p{L}\s-]{2,},\s*/u.test(message.trim()));
   const previousServiceType = normalizeServiceType(previousState.service_type, "unknown");
   const previousServiceIntent = normalizeServiceIntent(previousState.service_intent, "general");
+  const preservePreviousProductContext =
+    previousServiceType !== "unknown" &&
+    deterministicRoute.serviceType !== "unknown" &&
+    deterministicRoute.serviceType !== previousServiceType &&
+    ((previousServiceType === "sanitary" && /(kupeln|kúpeľn|rozvod.*vod|kanaliz|geberit|\bwc\b|sanit|rekonstruk|rekonštruk)/.test(routerFallbackText)) ||
+      (previousServiceType === "screeds" && /(podlahov|poter|skladb|plocha|m2|novostav|rekonstruk|rekonštruk)/.test(routerFallbackText)) ||
+      (previousServiceType === "solar_photovoltaic" && /(ju|fotovolt|solar|solarn|solár|panel|strech|spotreb|k tepel|cerpadl|čerpadl)/.test(routerFallbackText)) ||
+      (previousServiceType === "central_vacuum" && /(vysav|vysáv|zasuv|zásuv|rozvod|podorys|pôdorys|bungalov|novostav|m2|postup)/.test(routerFallbackText)) ||
+      (previousServiceType === "water" && /(vod|zmakcov|zmäkč|tvrd|rozbor|prietok|spotreb|rozvod|kanaliz|nacen|ponuk)/.test(routerFallbackText)));
   const explicitServiceSwitch =
     previousServiceType !== "unknown" &&
     deterministicRoute.serviceType !== "unknown" &&
     deterministicRoute.serviceType !== previousServiceType &&
+    !preservePreviousProductContext &&
     /(tepelne cerpad|\btc\b|cerpadl|klimatiz|klima|rekuper|vetran|podlahov|strop.*chladen|servis|porucha|dotac|subsidy|komplex|kuren|vykurov|chladen)/.test(
       routerFallbackText,
     );
@@ -8829,6 +8956,18 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
   if (previousServiceType === "heat_pump" && isQualificationDataReply(message)) {
     route.serviceType = "heat_pump";
     if (route.serviceIntent === "general" || route.serviceIntent === "brand_model") route.serviceIntent = "recommendation";
+  }
+  if (preservePreviousProductContext) {
+    route.serviceType = previousServiceType;
+    if (previousServiceIntent !== "general" && route.serviceIntent === "general") route.serviceIntent = previousServiceIntent;
+    route.needsRetrieval = true;
+    route.retrievalQuery = `${serviceSearchKeyword(previousServiceType)} ${message}`;
+    route.directAnswer = null;
+    stateForTurn = {
+      ...stateForTurn,
+      service_type: previousServiceType,
+      service_intent: route.serviceIntent !== "general" ? route.serviceIntent : previousServiceIntent !== "general" ? previousServiceIntent : "process",
+    };
   }
   if (subsidyContextReply) {
     route.serviceType = "subsidy";
@@ -8941,7 +9080,14 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     if (directDecision.topic && /(boiler|ecotec|eloblock|logamax|buderus|compact)/.test(directDecision.topic)) route.serviceType = "service";
     if (directDecision.topic && /heat_recovery/.test(directDecision.topic)) route.serviceType = "heat_recovery";
     if (directDecision.topic && /ceiling_cooling|bkt|wall_heating_cooling/.test(directDecision.topic)) route.serviceType = "ceiling_cooling";
-    if (directDecision.topic && directDecision.topic === "water_distribution") route.serviceType = "complex_solution";
+    if (directDecision.topic && /^(water_distribution|water_softener_scope|water_shutdown_scope|garden_frost_free_valve_scope|system_fluids_scope)$/.test(directDecision.topic)) {
+      route.serviceType = previousServiceType === "sanitary" || route.serviceType === "sanitary" ? "sanitary" : "water";
+    }
+    if (directDecision.topic && /^(sanitary_installations_scope|geberit_wc_scope)$/.test(directDecision.topic)) route.serviceType = "sanitary";
+    if (directDecision.topic && directDecision.topic === "central_vacuum_scope") route.serviceType = "central_vacuum";
+    if (directDecision.topic && /^(screeds_scope|screeds)$/.test(directDecision.topic)) route.serviceType = "screeds";
+    if (directDecision.topic && directDecision.topic === "radiators_scope") route.serviceType = "radiators";
+    if (directDecision.topic && /(boiler|ecotec|eloblock|logamax|buderus|compact)/.test(directDecision.topic)) route.serviceType = "boilers";
     if (
       directDecision.serviceIntent !== "subsidy" &&
       !directDecision.topic?.includes("heat_recovery") &&
@@ -8954,9 +9100,9 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
       directDecision.topic &&
       /^(photovoltaics|photovoltaics_heat_pump_scope|solar_panels|mss_solar_system_scope|solar_collector_tank_scope)$/.test(directDecision.topic)
     ) {
-      route.serviceType = "complex_solution";
+      route.serviceType = "solar_photovoltaic";
     }
-    if (/(fotovolt|fotovoltaik|solar|solarn|solár|panel)/.test(routerFallbackText)) route.serviceType = "complex_solution";
+    if (/(fotovolt|fotovoltaik|solar|solarn|solár|panel)/.test(routerFallbackText)) route.serviceType = "solar_photovoltaic";
     if (directDecision.topic && directDecision.topic === "heating_terms_scope") route.serviceType = "complex_solution";
     if (directDecision.topic && directDecision.topic === "heating_curve_regulation_scope") route.serviceType = "complex_solution";
     if (directDecision.topic && /^(preventive_service_scope|annual_maintenance_scope)$/.test(directDecision.topic)) route.serviceType = "service";

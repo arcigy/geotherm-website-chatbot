@@ -114,9 +114,9 @@ const scenarios: Scenario[] = [
     title: "Zmakcovac vody",
     messages: ["Mate aj zmakcovac vody?", "do rodinneho domu, tvrda voda", "chcem nacenit"],
     expectations: [
-      { anyOf: ["voda", "zmakcovac", "uprava vody"], maxQuestions: 2 },
-      { anyOf: ["tvrda voda", "rozbor", "spotreba", "dom"], maxQuestions: 2 },
-      { anyOf: ["nacen", "ponuk", "konzult", "fot", "kontakt"], forbidden: ["tepelne cerpadlo"] },
+      { service: "water", anyOf: ["voda", "zmakcovac", "uprava vody"], maxQuestions: 2 },
+      { service: "water", anyOf: ["tvrda voda", "rozbor", "spotreba", "dom"], maxQuestions: 2 },
+      { service: "water", anyOf: ["nacen", "ponuk", "konzult", "fot", "kontakt"], forbidden: ["tepelne cerpadlo"] },
     ],
   },
   {
@@ -124,9 +124,39 @@ const scenarios: Scenario[] = [
     title: "Centralny vysavac",
     messages: ["Robite centralne vysavace?", "novostavba bungalov 150m2", "chcem vediet postup"],
     expectations: [
-      { anyOf: ["central", "vysav"], maxQuestions: 2 },
-      { anyOf: ["rozvod", "projekt", "zasuv", "nacen"], maxQuestions: 2 },
-      { anyOf: ["postup", "konzult", "nacen", "podorys"], forbidden: ["tepelne cerpadlo"] },
+      { service: "central_vacuum", anyOf: ["central", "vysav"], maxQuestions: 2 },
+      { service: "central_vacuum", anyOf: ["rozvod", "projekt", "zasuv", "nacen"], maxQuestions: 2 },
+      { service: "central_vacuum", anyOf: ["postup", "konzult", "nacen", "podorys"], forbidden: ["tepelne cerpadlo"] },
+    ],
+  },
+  {
+    id: "sanitary_scope",
+    title: "Zdravotechnika a Geberit",
+    messages: ["Robite Geberit a zdravotechniku?", "rekonstrukcia kupelne a rozvody vody", "chcem nacenit"],
+    expectations: [
+      { service: "sanitary", anyOf: ["geberit", "zdravotechn", "wc", "sanit"], maxQuestions: 2 },
+      { service: "sanitary", anyOf: ["rozvod", "voda", "kanal", "fot"], maxQuestions: 2 },
+      { service: "sanitary", anyOf: ["nacen", "ponuk", "konzult", "fot", "kontakt"], forbidden: ["tepelne cerpadlo"] },
+    ],
+  },
+  {
+    id: "solar_photovoltaic_scope",
+    title: "Fotovoltaika a solar",
+    messages: ["Robite fotovoltaiku?", "rodinny dom, chcem ju k tepelnemu cerpadlu", "chcem nacenenie"],
+    expectations: [
+      { service: "solar_photovoltaic", anyOf: ["fotovolt", "solar", "spotreb"], maxQuestions: 2 },
+      { service: "solar_photovoltaic", anyOf: ["tepelne cerpadlo", "spotreb", "strech", "konzult"], maxQuestions: 2 },
+      { service: "solar_photovoltaic", anyOf: ["nacen", "ponuk", "konzult", "kontakt"], forbidden: ["garantujem dotaciu"] },
+    ],
+  },
+  {
+    id: "screeds_scope",
+    title: "Potery",
+    messages: ["Robite aj anhydritove potery?", "novostavba 120m2 s podlahovkou", "aka je dalsia cesta?"],
+    expectations: [
+      { service: "screeds", anyOf: ["poter", "anhydrit", "cement"], maxQuestions: 2 },
+      { service: "screeds", anyOf: ["podlah", "plocha", "skladba", "nacen"], maxQuestions: 2 },
+      { service: "screeds", anyOf: ["postup", "konzult", "nacen", "plocha"], forbidden: ["tepelne cerpadlo ako jedina moznost"] },
     ],
   },
 ];

@@ -111,6 +111,18 @@ const cases: Case[] = [
   { id: "weather_out_of_scope", message: "aké je dnes počasie?", mustContain: ["podklad"], maxSources: 0, maxMs: 8000 },
 ];
 
+const serviceTypeOverrides: Record<string, string> = {
+  photovoltaics_standalone: "solar_photovoltaic",
+  solar_collector_tank: "solar_photovoltaic",
+  water_distribution: "water",
+  solar_panels: "solar_photovoltaic",
+  photovoltaics: "solar_photovoltaic",
+};
+
+for (const testCase of cases) {
+  if (serviceTypeOverrides[testCase.id]) testCase.expectedServiceType = serviceTypeOverrides[testCase.id];
+}
+
 function normalize(value: string | undefined | null): string {
   return (value || "")
     .toLowerCase()

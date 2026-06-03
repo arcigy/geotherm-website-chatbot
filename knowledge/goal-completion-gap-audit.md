@@ -1,7 +1,7 @@
 # Geotherm Chatbot Goal Gap Audit
 
-Generated: 2026-06-03T18:13:32.113Z
-Audit base commit: dc19f8d
+Generated: 2026-06-03T20:34:16.683Z
+Audit base commit: 98aaccf
 
 ## Evidence Gates
 
@@ -15,7 +15,7 @@ Verdict: EVIDENCE PASS
 | live_questions | yes | Passed: 102 | Live/customer-style question list. |
 | wordpress_surface | yes | ## Summary | Generated checks from exported WordPress content. |
 | wordpress_paraphrases | yes | ## Summary | WordPress-derived paraphrases and customer wording variants. |
-| non_heat_pump_flows | yes | Passed turns: 27 | Multi-turn flows for services beyond heat pumps. |
+| non_heat_pump_flows | yes | Passed turns: 36 | Multi-turn flows for services beyond heat pumps. |
 | adversarial_long_flows | yes | Passed turns: 40 | Corrections, topic switching, price/contact closure and adversarial turns. |
 | provider_resilience | yes | ## Summary | Repeated critical scenarios require LLM usage and under-8s responses. |
 | diagnostic_conversation | yes | Verdict: PASS | Scripted recommendation, direct-answer, correction, price and CRM conversation flows. |
