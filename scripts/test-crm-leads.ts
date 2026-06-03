@@ -47,6 +47,20 @@ function assert(condition: unknown, message: string): void {
   if (!condition) failures.push(message);
 }
 
+function parseJsonObject(value: unknown): Record<string, unknown> {
+  if (typeof value !== "string") return {};
+  try {
+    const parsed = JSON.parse(value) as unknown;
+    return parsed && typeof parsed === "object" && !Array.isArray(parsed) ? (parsed as Record<string, unknown>) : {};
+  } catch {
+    return {};
+  }
+}
+
+function textIncludes(value: unknown, term: string): boolean {
+  return typeof value === "string" && value.toLowerCase().includes(term.toLowerCase());
+}
+
 async function postChat(endpoint: string, anonymousId: string, message: string): Promise<ChatBody> {
   const response = await fetch(`${endpoint}/chat`, {
     method: "POST",
@@ -111,6 +125,12 @@ async function main(): Promise<void> {
       assert(saved.location !== "Dalibor Garek", "name must not be saved as location");
       assert(saved.marketing_consent === 0, "marketing consent must stay false");
       assert(saved.contact_requested_by_user === 1, "contactRequestedByUser should be true");
+      assert(typeof saved.summary === "string" && saved.summary.length > 40, "saved lead should include sales summary");
+      assert(typeof saved.notes === "string" && saved.notes.length > 40, "saved lead should include notes for sales");
+      const transcript = parseJsonObject(saved.transcript_json);
+      assert(Array.isArray(transcript.messages) && transcript.messages.length >= 5, "saved lead transcript should include conversation messages");
+      assert(textIncludes(transcript.summary, "Dalibor") || textIncludes(saved.summary, "Dalibor"), "lead summary should include contact name");
+      assert(textIncludes(transcript.status, "inspection_requested"), `lead transcript status mismatch: ${String(transcript.status)}`);
     }
 
     const missing = await postChat(endpoint, `crm_missing_${Date.now()}`, "chcem obhliadku");
@@ -131,6 +151,13 @@ async function main(): Promise<void> {
     assert(quote?.lead.extractedContact?.email === "peter@example.com", "quote email missing");
     assert(["quote_requested", "contact_captured"].includes(quote?.lead.status || ""), `quote status mismatch: ${quote?.lead.status}`);
     assert(quote?.debug?.outreach?.created === true, "quote outreach should be created");
+    if (quote?.lead.id) {
+      const savedQuote = await adminGet<Record<string, unknown>>(endpoint, `/admin/leads/${encodeURIComponent(quote.lead.id)}`, token);
+      const quoteTranscript = parseJsonObject(savedQuote.transcript_json);
+      assert(textIncludes(savedQuote.summary, "150") || textIncludes(quoteTranscript.summary, "150"), "quote summary should include known area");
+      assert(textIncludes(savedQuote.summary, "radi") || textIncludes(quoteTranscript.summary, "radi"), "quote summary should include radiator context");
+      assert(Array.isArray(quoteTranscript.messages) && quoteTranscript.messages.length >= 3, "quote transcript should include conversation messages");
+    }
 
     const service = await postChat(endpoint, `crm_service_${Date.now()}`, "NIBE mi hlasi chybu, som v Nitre, 0911111111");
     allTurns.push({ scenario: "service_fault", message: "NIBE mi hlasi chybu, som v Nitre, 0911111111", response: service });
@@ -145,6 +172,11 @@ async function main(): Promise<void> {
     }
     const outreach = await adminGet<{ items: unknown[] }>(endpoint, "/admin/outreach", token);
     assert(outreach.items.length > 0, "admin outreach list should not be empty");
+    if (dalibor?.lead.id) {
+      const item = outreach.items.find((value) => typeof value === "object" && value && (value as Record<string, unknown>).lead_id === dalibor.lead.id) as Record<string, unknown> | undefined;
+      assert(Boolean(item), "admin outreach should include Dalibor lead");
+      assert(textIncludes(item?.suggested_action, "obhliad") || textIncludes(item?.suggested_action, "Zavola"), "outreach should tell sales the next action");
+    }
   } finally {
     await new Promise<void>((resolve, reject) => server.close((error) => (error ? reject(error) : resolve())));
   }
