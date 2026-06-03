@@ -8913,6 +8913,7 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
       "nonstop_line_scope",
       "service_revision_reminder",
       "diagnostic_price_scope",
+      "diagnostics_visit_scope",
       "installation_preparation",
       "own_material_scope",
       "emergency_service_scope",
