@@ -309,7 +309,7 @@ function systemPrompt(): string {
     "Do not write the final chatbot formatting. The server renders Markdown deterministically.",
     "Use Slovak language.",
     "Tone: friendly, professional, clear for a layperson.",
-    "Always use informal Slovak tykanie: ty, tebe, ti, tvoj. Never use formal vykanie: Vy, Vám, Váš.",
+    "Always use formal Slovak vykanie: vy, vas, vam, vas. Never use informal tykanie: ty, tebe, ti, tvoj.",
     "Answer briefly and concretely.",
     "Use only provided sources for company facts, services, prices, contacts, guarantees, availability, brands, and exact conditions.",
     "General HVAC explanation is allowed only as high-level context and must not create unsupported company claims.",
@@ -776,7 +776,7 @@ export async function composeWithLlm(input: LlmComposeInput): Promise<LlmCompose
           maxOutputTokens: 900,
           timeoutMs: Number.parseInt(process.env.LLM_FAST_REQUEST_TIMEOUT_MS || "12000", 10),
           singleCandidate: false,
-          systemPrompt: "Return valid JSON only. Slovak friendly advisor. No Markdown. Always use informal Slovak tykanie: ty, tebe, ti, tvoj. Never use formal vykanie. This message does not need retrieval. For pure greetings, thanks, ok, or small talk, answer in 1 short sentence, no service list, no sales pitch, and no follow-up question. If the user mentions a real problem or service, you may ask at most one follow-up question.",
+          systemPrompt: "Return valid JSON only. Slovak friendly advisor. No Markdown. Always use formal Slovak vykanie: vy, vas, vam, vas. Never use informal tykanie: ty, tebe, ti, tvoj. This message does not need retrieval. For pure greetings, thanks, ok, or small talk, answer in 1 short sentence, no service list, no sales pitch, and no follow-up question. If the user mentions a real problem or service, you may ask at most one follow-up question.",
           responseSchema: structuredResponseSchema(),
         }
       : {

@@ -675,21 +675,21 @@ function safetyAnswer(reason: string): string {
   const base = [
     "### Toto rieš radšej telefonicky",
     "",
-    "Toto vyzerá ako technický alebo bezpečnostný problém, pri ktorom by som ťa nenavádzal na svojpomocný zásah.",
+    "Toto vyzerá ako technický alebo bezpečnostný problém, pri ktorom by som vás nenavádzal na svojpomocný zásah.",
     "",
     `**Najlepšie teraz:** nič nerozoberať, nemanipulovať so zariadením a zavolať technikovi na **${urgentServicePhone}**.`,
   ].join("\n");
   if (reason === "subsidy_guarantee") {
-    return ["### Dotáciu nejde garantovať dopredu", "", "Dotáciu sa nedá sľúbiť bez kontroly podmienok programu, oprávnenosti žiadateľa, dostupného rozpočtu a správnosti žiadosti.", "", `Ak to chceš overiť konkrétne, zavolaj na **${urgentServicePhone}**.`].join("\n");
+    return ["### Dotáciu nejde garantovať dopredu", "", "Dotáciu sa nedá sľúbiť bez kontroly podmienok programu, oprávnenosti žiadateľa, dostupného rozpočtu a správnosti žiadosti.", "", `Ak to chcete overiť konkrétne, zavolajte na **${urgentServicePhone}**.`].join("\n");
   }
   if (reason === "return_or_savings_guarantee") {
-    return ["### Úsporu ani návratnosť by som negarantoval", "", "Presná úspora závisí od domu, spotreby, nákladov, cien energií, technického riešenia a kvality návrhu.", "", `Ak chceš riešiť konkrétny prípad, zavolaj na **${urgentServicePhone}**.`].join("\n");
+    return ["### Úsporu ani návratnosť by som negarantoval", "", "Presná úspora závisí od domu, spotreby, nákladov, cien energií, technického riešenia a kvality návrhu.", "", `Ak chcete riešiť konkrétny prípad, zavolajte na **${urgentServicePhone}**.`].join("\n");
   }
   if (reason === "date_or_price_guarantee") {
-    return ["### Presný termín ani cenu by som nesľuboval bez podkladov", "", "Závisí to od rozsahu prác, dostupnosti, technických podmienok a konkrétneho riešenia.", "", `Najrýchlejšie to vyriešiš telefonicky na **${urgentServicePhone}**.`].join("\n");
+    return ["### Presný termín ani cenu by som nesľuboval bez podkladov", "", "Závisí to od rozsahu prác, dostupnosti, technických podmienok a konkrétneho riešenia.", "", `Najrýchlejšie to vyriešite telefonicky na **${urgentServicePhone}**.`].join("\n");
   }
   if (reason === "unsupported_guarantee") {
-    return ["### Toto by som negarantoval bez posúdenia", "", "Pri tepelnom čerpadle záleží na návrhu, montáži, servise aj reálnych podmienkach domu.", "", `Ak potrebuješ rýchle stanovisko, zavolaj na **${urgentServicePhone}**.`].join("\n");
+    return ["### Toto by som negarantoval bez posúdenia", "", "Pri tepelnom čerpadle záleží na návrhu, montáži, servise aj reálnych podmienkach domu.", "", `Ak potrebujete rýchle stanovisko, zavolajte na **${urgentServicePhone}**.`].join("\n");
   }
   if (reason === "diy_install") {
     return ["### Svojpomocnú montáž by som neriskoval", "", "Tepelné čerpadlo potrebuje odborný návrh, odbornú montáž a servis. Pri elektrine, chladive, tlaku alebo zapojení by som to neriešil svojpomocne.", "", `**Najlepšie teraz:** zavolať technikovi na **${urgentServicePhone}**.`].join("\n");
@@ -1543,7 +1543,7 @@ function structuredAnswerForLeadCapture(answer: StructuredAnswer, leadCapture: {
 }
 
 function softHandoffOfferQuestion(): string {
-  return "Ak chceš, môžeme to posunúť technikovi/odborníkovi, aby sa pozrel na tvoj konkrétny prípad. Chceš, aby ťa niekto kontaktoval?";
+  return "Ak chcete, môžeme to posunúť technikovi/odborníkovi, aby sa pozrel na váš konkrétny prípad. Chcete, aby vás niekto kontaktoval?";
 }
 
 function filterRetrievalResultsForAnswer(results: RetrievalResult[], message: string, intent: SalesIntent): RetrievalResult[] {
@@ -4092,7 +4092,7 @@ function projectContextLine(state: QualificationState): string {
     state.heating_distribution,
     state.current_heating ? `aktuálne ${state.current_heating}` : null,
   ].filter(Boolean);
-  return parts.length ? `Pre tvoj prípad (${parts.join(", ")}) by som to bral ako orientačný výber, nie finálny model.` : "Konkrétny model by som vybral až podľa domu, výkonu a technickej miestnosti.";
+  return parts.length ? `Pre váš prípad (${parts.join(", ")}) by som to bral ako orientačný výber, nie finálny model.` : "Konkrétny model by som vybral až podľa domu, výkonu a technickej miestnosti.";
 }
 
 function isBoilerOnlyQuestion(text: string): boolean {
@@ -5852,7 +5852,7 @@ function brandModelDirectAnswer(message: string, state: QualificationState): Dir
         "",
         "Model **F2050** nemám potvrdený ako aktuálne komunikovaný model v firemnej pravde Geotherm, takže mu nebudem vymýšľať parametre ani ho odporúčať ako istú ponuku.",
         "",
-        "Bezpečný postup je držať sa typového riešenia: pre tvoj starší dom s radiátormi predbežne **vzduch-voda systém vhodný pre radiátory** a konkrétny aktuálny model vybrať až po návrhu. Z portfólia firmy viem pri tepelných čerpadlách bezpečne komunikovať najmä **NIBE a Vaillant**, ale aktuálnu dostupnosť konkrétneho modelu treba potvrdiť.",
+        "Bezpečný postup je držať sa typového riešenia: pre váš starší dom s radiátormi predbežne **vzduch-voda systém vhodný pre radiátory** a konkrétny aktuálny model vybrať až po návrhu. Z portfólia firmy viem pri tepelných čerpadlách bezpečne komunikovať najmä **NIBE a Vaillant**, ale aktuálnu dostupnosť konkrétneho modelu treba potvrdiť.",
       ].join("\n"),
     };
   }
@@ -5908,7 +5908,7 @@ function brandModelDirectAnswer(message: string, state: QualificationState): Dir
     "",
     "Daikin a Mitsubishi by som pri TČ voda/voda alebo vzduch/voda nespomínal ako bežné portfólio, kým to firma nepotvrdí. Konkrétny model sa má vybrať až po návrhu podľa výkonu, radiátorov/podlahovky, teplej vody a kotolne.",
     "",
-    "Ak chceš odporúčanie pre svoj dom, ide o novostavbu alebo starší dom a máš radiátory alebo podlahovku?",
+    "Ak chcete odporúčanie pre svoj dom, ide o novostavbu alebo starší dom a máte radiátory alebo podlahovku?",
   ].join("\n");
   return {
     triggered: true,
@@ -6045,9 +6045,9 @@ function correctionDirectAnswer(message: string, state: QualificationState): Dir
     answer = [
       "### Oprava k F2040",
       "",
-      "Máš pravdu, **F2040 by som nemal ponúkať ako aktuálny model pre novú realizáciu**. Ak sa nachádza v starších podkladoch alebo na webe, treba ho brať ako archívny/historický podklad, nie ako automatické odporúčanie.",
+      "Máte pravdu, **F2040 by som nemal ponúkať ako aktuálny model pre novú realizáciu**. Ak sa nachádza v starších podkladoch alebo na webe, treba ho brať ako archívny/historický podklad, nie ako automatické odporúčanie.",
       "",
-      "Pre tvoj prípad by som riešil typovo **vzduch-voda riešenie pre radiátorový systém** a konkrétny aktuálny model vybral až podľa návrhu. Bezpečne sa držím značiek **NIBE alebo Vaillant**, ale aktuálnu dostupnosť konkrétneho modelu treba potvrdiť.",
+      "Pre váš prípad by som riešil typovo **vzduch-voda riešenie pre radiátorový systém** a konkrétny aktuálny model vybral až podľa návrhu. Bezpečne sa držím značiek **NIBE alebo Vaillant**, ale aktuálnu dostupnosť konkrétneho modelu treba potvrdiť.",
     ].join("\n");
   } else if (text.includes("iba nibe") || text.includes("nibe a vaillant") || text.includes("daikin") || text.includes("mitsubishi")) {
     topic = "brand_correction";
@@ -6097,7 +6097,7 @@ function directAnswerDecision(message: string, state: QualificationState, route:
       answerMode: "direct_answer",
       reason: "direct_contradictory_installation_timing",
       answer:
-        "### Najprv systém, potom termín\n\nMontáž hneď zajtra by som **bez podkladov a bez potvrdeného systému nesľuboval**. Najprv treba určiť, či ide o tepelné čerpadlo, klimatizáciu, rekuperáciu, podlahové kúrenie alebo inú technológiu; až potom sa dá potvrdiť termín, kapacita a cena.\n\nAk nevieš systém, začal by som krátkou konzultáciou: kúrenie, chladenie, vetranie alebo komplexné riešenie domu?",
+        "### Najprv systém, potom termín\n\nMontáž hneď zajtra by som **bez podkladov a bez potvrdeného systému nesľuboval**. Najprv treba určiť, či ide o tepelné čerpadlo, klimatizáciu, rekuperáciu, podlahové kúrenie alebo inú technológiu; až potom sa dá potvrdiť termín, kapacita a cena.\n\nAk neviete systém, začal by som krátkou konzultáciou: kúrenie, chladenie, vetranie alebo komplexné riešenie domu?",
       serviceIntent: "process",
       retrievalQuery: "company-truth montaz termin system cena rozsah Geotherm",
       topic: "contradictory_installation_timing",
@@ -10334,7 +10334,7 @@ async function legacyCreateChatResponse(requestBody: ChatRequest, knowledgePath?
   const answerMode = answerModeFromPolicy(answerPolicy, intent, confidence);
   const fallbackStructured = deterministicStructuredAnswer(answerMessage, filteredResults, confidence, intent, answerPolicy, leadCapture);
   const fallbackAnswer = renderStructuredAnswer(fallbackStructured, sources, answerMode, { message: answerMessage, intent });
-  const shouldCallLlm = !["adversarial", "sensitive", "out_of_scope"].includes(answerPolicy.kind) && answerMode !== "low_confidence";
+  const shouldCallLlm = process.env.ARCIGY_LLM_ENABLED !== "false";
   const llm = shouldCallLlm
     ? await composeWithLlm({
         message: answerMessage,
