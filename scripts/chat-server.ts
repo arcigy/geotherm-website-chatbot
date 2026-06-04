@@ -4381,6 +4381,16 @@ function companyPracticalDirectAnswer(message: string): DirectAnswerDecision | n
     );
   }
 
+  if (/(zem\s*voda|voda\s*voda)/.test(text) && !/(vzduch\s*voda|plosn|plošn|kolektor|vrt|f\d{4})/.test(text)) {
+    return answerBase(
+      "Tepelné čerpadlo zem-voda alebo voda-voda",
+      "Zem-voda a voda-voda sú riešenia tepelných čerpadiel so stabilnejším zdrojom energie než vonkajší vzduch. Zvyčajne však vyžadujú vhodný pozemok, vrt, kolektor alebo dostupnú vodu a technicky náročnejší návrh. Nevyberal by som ich univerzálne namiesto vzduch-voda; praktický ďalší krok je konzultácia a nacenenie podľa domu, pozemku, výkonu a možností realizácie.",
+      "heat_pump_ground_water_scope",
+      "recommendation",
+      "company-truth tepelne cerpadlo zem-voda voda-voda vrt kolektor pozemok Geotherm konzultacia nacenenie",
+    );
+  }
+
   if (/stiebel\s*eltron/.test(text)) {
     return answerBase(
       "Stiebel Eltron",
@@ -4634,7 +4644,7 @@ function companyPracticalDirectAnswer(message: string): DirectAnswerDecision | n
   if (/(flexotherm|flexo therm|flexocompact|flexo compact|arocollect|aro collect)/.test(text)) {
     return answerBase(
       "Vaillant flexoTHERM a aroCOLLECT",
-      "flexoTHERM exclusive, flexoCOMPACT exclusive a aroCOLLECT beriem ako konkrétne riešenia Vaillant v oblasti tepelných čerpadiel, ktoré treba posudzovať podľa typu domu, zdroja energie, vykurovania, teplej vody a montážnych možností. V Geotherm by som ich nevyberal ako univerzálne najlepšiu voľbu bez návrhu; praktický ďalší krok je porovnať aktuálne dostupnú zostavu s potrebami domu a pripraviť nacenenie.",
+      "flexoTHERM exclusive, flexoCOMPACT exclusive a aroCOLLECT beriem ako konkrétne riešenia Vaillant v oblasti tepelných čerpadiel. Takéto tepelné čerpadlo treba posudzovať podľa typu domu, zdroja energie, vykurovania, teplej vody a montážnych možností. V Geotherm by som ho nevyberal ako univerzálne najlepšiu voľbu bez návrhu; praktický ďalší krok je porovnať aktuálne dostupnú zostavu s potrebami domu a pripraviť nacenenie.",
       "vaillant_flexotherm_arocollect_scope",
       "brand_model",
       "company-truth Vaillant flexoTHERM aroCOLLECT tepelne cerpadlo Geotherm aktualna ponuka nacenenie",
@@ -6246,10 +6256,10 @@ function companyPracticalDirectAnswer(message: string): DirectAnswerDecision | n
   if (/(obhliad|prehliad).*(platen|platena|platna|bezplat|zadarmo|zdarma)|(?:platen|platena|platna|bezplat|zadarmo|zdarma).*(obhliad|prehliad)/.test(text)) {
     return answerBase(
       "Obhliadka",
-      "Bez aktuálneho potvrdenia by som netvrdil, či je obhliadka bez poplatku alebo spoplatnená. Pri konkrétnom dopyte treba potvrdiť podmienky podľa lokality, služby a rozsahu; ak pošleš fotky alebo základné údaje, dá sa najprv pripraviť orientačné nacenenie a potom dohodnúť ďalší krok.",
+      "Cenu alebo podmienky obhliadky by som v chate nepotvrdzoval bez aktuálneho firemného podkladu. Treba ich overiť podľa lokality, služby a rozsahu; ak pošlete fotky alebo základné údaje, dá sa najprv pripraviť orientačné nacenenie a potom dohodnúť ďalší krok.",
       "inspection_paid",
       "inspection",
-      "company-truth policies obhliadka platena bezplatna potvrdit podmienky Geotherm",
+      "company-truth policies obhliadka platena potvrdit podmienky Geotherm",
     );
   }
 
@@ -7355,6 +7365,18 @@ function directAnswerDecision(message: string, state: QualificationState, route:
       triggered: true,
       answerMode: "qualification_question",
       reason: "direct_initial_heat_pump_short",
+      answer:
+        "### Predbežný smer\n\nPri rodinnom dome sa najčastejšie začína tepelným čerpadlom **vzduch-voda**. Pri novostavbe s podlahovkou je to veľmi vhodný smer; pri staršom dome s radiátormi treba overiť teplotu vody a výkon radiátorov.\n\nAby som ťa zaradil správne, napíš mi: je to novostavba alebo starší dom, koľko m2 chceš vykurovať a či máš radiátory alebo podlahové kúrenie.",
+      serviceIntent: "recommendation",
+      retrievalQuery: "service-card-heat-pump tepelne cerpadla vyber riesenia novostavba starsi dom radiatory podlahove kurenie",
+      topic: "initial_heat_pump_short",
+    };
+  }
+  if (/^(?:viete poradit k teme\s+)?tepelne cerpadlo$/.test(text)) {
+    return {
+      triggered: true,
+      answerMode: "qualification_question",
+      reason: "direct_initial_heat_pump_overview",
       answer:
         "### Predbežný smer\n\nPri rodinnom dome sa najčastejšie začína tepelným čerpadlom **vzduch-voda**. Pri novostavbe s podlahovkou je to veľmi vhodný smer; pri staršom dome s radiátormi treba overiť teplotu vody a výkon radiátorov.\n\nAby som ťa zaradil správne, napíš mi: je to novostavba alebo starší dom, koľko m2 chceš vykurovať a či máš radiátory alebo podlahové kúrenie.",
       serviceIntent: "recommendation",
@@ -9643,6 +9665,8 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     "heat_pump_installation_scope",
     "heat_pump_selection_installation_scope",
     "heat_pump_air_water_overview_scope",
+    "heat_pump_ground_water_scope",
+    "vaillant_flexotherm_arocollect_scope",
     "existing_radiator_heat_pump_standalone",
     "boilers",
     "boiler_brands",
@@ -9768,6 +9792,23 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
   const useFastContactComposer =
     Boolean(message.match(crmPhonePattern) || message.match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i)) &&
     hasActiveDiagnosticState(stateForTurn);
+  const useFastClosureComposer = closureDecision.triggered;
+  const fastClosureComposerSystemPrompt = [
+    "Si AI poradca Geotherm. Prepíš safeDraft na stručné uzatvorené odporúčanie po slovensky.",
+    "Nepýtaj ďalší technický dotazník. Zachovaj najlepší smer, 2-3 možnosti a CTA na konzultáciu alebo nacenenie.",
+    "Pri novostavbe s podlahovkou nespomínaj ako ďalší krok tepelnú stratu, projekt ani energetický certifikát.",
+    "Zachovaj modelové možnosti NIBE S2125 a Vaillant aroTHERM, ak sú v safeDraft.",
+  ].join("\n");
+  const fastClosureComposerInput = JSON.stringify(
+    {
+      latestUserMessage: message,
+      state: stateForTurn,
+      recommendationOptions: closureDecision.options,
+      safeDraft: expectedRecommendationClosureAnswer(stateForTurn, closureDecision),
+    },
+    null,
+    2,
+  );
   const fastContactComposerSystemPrompt = [
     "Si AI obchodný asistent Geotherm. Používateľ poslal kontaktné údaje k rozbehnutému dopytu.",
     "Odpovedz po slovensky, formálne, jednou krátkou vetou. Nepýtaj ďalšie technické otázky, nesľubuj presný termín ani cenu.",
@@ -9800,6 +9841,8 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
   );
   const activeComposerSystemPrompt = useCompactDirectComposer
     ? compactDirectComposerSystemPrompt
+    : useFastClosureComposer
+      ? fastClosureComposerSystemPrompt
     : useFastContactComposer
       ? fastContactComposerSystemPrompt
     : useFastOutOfScopeComposer
@@ -9811,6 +9854,8 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
       : composerSystemPrompt;
   const activeComposerInput = useCompactDirectComposer
     ? compactDirectComposerInput
+    : useFastClosureComposer
+      ? fastClosureComposerInput
     : useFastContactComposer
       ? fastContactComposerInput
     : useFastOutOfScopeComposer
@@ -9835,9 +9880,11 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     : await callLlmText({
         systemPrompt: activeComposerSystemPrompt,
         prompt: activeComposerInput,
-        maxOutputTokens: useFastContactComposer ? 90 : useFastOutOfScopeComposer ? 180 : useCompactDirectComposer ? 300 : useFastQualificationComposer ? 420 : directDecision.triggered ? 520 : 1200,
+        maxOutputTokens: useFastContactComposer ? 90 : useFastClosureComposer ? 520 : useFastOutOfScopeComposer ? 180 : useCompactDirectComposer ? 300 : useFastQualificationComposer ? 420 : directDecision.triggered ? 520 : 1200,
         timeoutMs: useCompactDirectComposer
           ? Math.min(Math.max(Number.parseInt(process.env.LLM_FAST_REQUEST_TIMEOUT_MS || "2500", 10), 1800), 2500)
+          : useFastClosureComposer
+            ? Math.min(Math.max(Number.parseInt(process.env.LLM_CLOSURE_TIMEOUT_MS || "2400", 10), 1800), 2600)
           : useFastContactComposer
             ? Math.min(Math.max(Number.parseInt(process.env.LLM_CONTACT_TIMEOUT_MS || "1200", 10), 800), 1400)
           : useFastOutOfScopeComposer
@@ -9851,7 +9898,7 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
           : Math.min(Number.parseInt(process.env.LLM_FAST_REQUEST_TIMEOUT_MS || "3500", 10), 3500),
         responseMimeType: "text/plain",
         modelOverride:
-          directDecision.triggered || pureSmallTalkTurn || useFastQualificationComposer || useFastContactComposer
+          directDecision.triggered || pureSmallTalkTurn || useFastQualificationComposer || useFastContactComposer || useFastClosureComposer
             ? process.env.GEMINI_FAST_FALLBACK_MODEL || "gemini-2.5-flash-lite"
             : undefined,
       });
@@ -9879,6 +9926,22 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     if (!directRetryLlm.error && directRetryLlm.content) composerLlm = directRetryLlm;
   }
   let cleanedAnswer = composerLlm.error || !composerLlm.content ? "" : cleanAnswerText(composerLlm.content);
+  if (useFastOutOfScopeComposer && isIncompleteAnswer(cleanedAnswer)) {
+    const outOfScopeRetryLlm = await callLlmText({
+      systemPrompt: fastOutOfScopeComposerSystemPrompt,
+      prompt: fastOutOfScopeComposerInput,
+      maxOutputTokens: 160,
+      timeoutMs: Math.min(Math.max(Number.parseInt(process.env.LLM_OUT_OF_SCOPE_RETRY_TIMEOUT_MS || "2200", 10), 1400), 2400),
+      responseMimeType: "text/plain",
+      modelOverride: process.env.GEMINI_FAST_FALLBACK_MODEL || "gemini-2.5-flash-lite",
+    });
+    const outOfScopeRetryAnswer = outOfScopeRetryLlm.error || !outOfScopeRetryLlm.content ? "" : cleanAnswerText(outOfScopeRetryLlm.content);
+    if (!isIncompleteAnswer(outOfScopeRetryAnswer)) {
+      composerLlm = outOfScopeRetryLlm;
+      cleanedAnswer = outOfScopeRetryAnswer;
+      recordDiagnostic(answerDiagnostics.validatorsTriggered, "out_of_scope_llm_retry_used");
+    }
+  }
   if (pureSmallTalkTurn && isIncompleteAnswer(cleanedAnswer)) {
     const smallTalkRetryLlm = await callLlmText({
       systemPrompt:
@@ -9925,7 +9988,7 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
       recordDiagnostic(answerDiagnostics.validatorsTriggered, "recommendation_closure_llm_retry_used");
     }
   }
-  if (isIncompleteAnswer(cleanedAnswer) && !pureSmallTalkTurn && !directDecision.triggered && !useFastOutOfScopeComposer) {
+  if (isIncompleteAnswer(cleanedAnswer) && !pureSmallTalkTurn && !directDecision.triggered && !closureDecision.triggered && !useFastOutOfScopeComposer) {
     const repairLlm = await callLlmText({
       systemPrompt: [
         activeComposerSystemPrompt,
@@ -10203,6 +10266,13 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
       recordDiagnostic(answerDiagnostics.validatorsTriggered, "nibe_vaillant_comparison_repaired");
       answer = validateAndRepairAnswer(directDecision.answer, stateForTurn, route, message, answerDiagnostics);
       directAnswerFallbackUsed = true;
+    }
+  }
+  if (directDecision.triggered && directDecision.topic === "vaillant_flexotherm_arocollect_scope") {
+    const normalized = normalizePolicyText(answer);
+    if (!/tepel.*cerpad|cerpad.*tepel/.test(normalized)) {
+      recordDiagnostic(answerDiagnostics.validatorsTriggered, "vaillant_flexo_heat_pump_term_appended");
+      answer = `${answer.trim()}\n\nIde o tému tepelného čerpadla Vaillant; konkrétnu zostavu treba potvrdiť podľa aktuálnej ponuky a návrhu pre dom.`;
     }
   }
   if (directDecision.triggered && /(nibe).*(vaillant)|(?:vaillant).*(nibe)/.test(normalizePolicyText(message)) && !/vyber|výber/.test(normalizePolicyText(answer))) {
@@ -10724,8 +10794,8 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
   }
   if (directDecision.triggered && directDecision.topic === "inspection_paid") {
     answer = answer
-      .replace(/\bbezplatn[áa]\b/gi, "bez poplatku")
-      .replace(/\bzadarmo\b/gi, "bez poplatku");
+      .replace(/bezplatn[^\s,.!?;:]*/giu, "nepotvrdená")
+      .replace(/zadarmo|zdarma/giu, "nepotvrdené");
   }
   if (currentMessagePolicy.kind === "adversarial") {
     recordDiagnostic(answerDiagnostics.validatorsTriggered, "adversarial_refusal_repaired");
