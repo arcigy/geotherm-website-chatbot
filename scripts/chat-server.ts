@@ -9196,6 +9196,25 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     else if (route.serviceType === "service" && previousServiceType !== "service" && previousServiceType !== "unknown") route.serviceType = previousServiceType;
     if (deterministicRoute.serviceIntent !== "general") route.serviceIntent = deterministicRoute.serviceIntent;
   }
+  const productInspectionHandoff =
+    previousServiceType !== "unknown" &&
+    previousServiceType !== "service" &&
+    isProductOrServiceContext(previousServiceType) &&
+    route.serviceType === "service" &&
+    (route.serviceIntent === "inspection" || route.serviceIntent === "contact") &&
+    /(technik|odbornik|obchodnik|prisiel|prísť|pride|príde|kontakt|telefon|email|e mail|obhliad|stretn|konzult)/.test(routerFallbackText) &&
+    !/(servis|porucha|chyba|huci|húči|nejde|nefunguje|diagnostik|vyjazd|výjazd|f\d{1,3}|kod|kód)/.test(routerFallbackText);
+  if (productInspectionHandoff) {
+    route.serviceType = previousServiceType;
+    route.needsRetrieval = true;
+    route.retrievalQuery = `${serviceSearchKeyword(previousServiceType)} obhliadka konzultacia kontakt ${message}`;
+    route.directAnswer = null;
+    stateForTurn = {
+      ...stateForTurn,
+      service_type: previousServiceType,
+      service_intent: route.serviceIntent,
+    };
+  }
   if (contextualQuoteFollowup) {
     route.serviceType = previousServiceType;
     route.serviceIntent = "quote";
@@ -9649,6 +9668,7 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     "post_warranty_service_scope",
     "pressure_drop_service_scope",
     "heating_not_working_triage",
+    "service_fault_location_followup",
     "regular_service_booking",
     "generic_service_scope",
     "booking_lead_time",
