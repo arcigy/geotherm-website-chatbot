@@ -141,6 +141,19 @@ async function main(): Promise<void> {
     assert((missing.leadCapture.requestedFields || []).includes("phone"), "missing contact should request phone");
     assert((missing.leadCapture.requestedFields || []).includes("email"), "missing contact should request email");
 
+    const technicianTurns = await runFlow(
+      endpoint,
+      `crm_technician_${Date.now()}`,
+      ["Ahoj, chcem tč", "Starší 140m radiatory", "chcem aby prisiel technik, Dalibor Garek 0987543621"],
+      "technician_inspection_request",
+    );
+    allTurns.push(...technicianTurns);
+    const technician = technicianTurns.at(-1)?.response;
+    assert(technician?.lead.captured === true, "technician inspection lead should be captured");
+    assert(technician?.lead.status === "inspection_requested", `technician request status should be inspection_requested, got ${technician?.lead.status}`);
+    assert((technician?.lead.score || 0) >= 70, `technician request score too low: ${technician?.lead.score}`);
+    assert(technician?.debug?.outreach?.created === true, "technician inspection outreach should be created");
+
     const quoteTurns = await runFlow(
       endpoint,
       `crm_quote_${Date.now()}`,

@@ -4018,7 +4018,7 @@ function extractCrmLocation(message: string, contact: CrmContact): string | unde
 
 function detectCrmLeadIntent(message: string, route: Pick<ServiceRoute, "serviceType" | "serviceIntent">): CrmLeadIntent {
   const text = normalizePolicyText(message);
-  if (/(obhliad|prehliad|prist pozriet|prist sa pozriet|dohodnut termin|dohodnut obhliad|chcem aby ste prisli)/.test(text)) return "inspection";
+  if (/(obhliad|prehliad|prist pozriet|prist sa pozriet|dohodnut termin|dohodnut obhliad|chcem aby ste prisli|chcem aby prisiel technik|nech pride technik|poslite technika|poslat technika|technik ma prist|aby prisiel technik|aby prisla technicka|aby prisiel odbornik)/.test(text)) return "inspection";
   if (/(cenova ponuka|cenovu ponuku|ponuku|nacenit|nacenenie|poslite cenu|chcem cenu)/.test(text)) return "quote";
   if (/(zavolajte|ozvite|kontaktujte|nech mi zavola|telefonicky)/.test(text)) return "callback";
   if (route.serviceType === "service" || route.serviceIntent === "service_fault" || /(porucha|chyba|hlasi chybu|servis|diagnostik)/.test(text)) return "service_fault";
@@ -4033,7 +4033,7 @@ function inferCrmLeadIntentFromHistory(messages: Array<{ role: string; content: 
     .map((message) => normalizePolicyText(message.content));
   for (const text of [...userMessages].reverse()) {
     if (/(cenova ponuka|cenovu ponuku|ponuku|nacenit|nacenenie)/.test(text)) return "quote";
-    if (/(obhliad|prehliad|dohodnut termin|technik alebo obchodnik|technik obchodnik)/.test(text)) return "inspection";
+    if (/(obhliad|prehliad|dohodnut termin|technik alebo obchodnik|technik obchodnik|chcem aby prisiel technik|nech pride technik|poslite technika|poslat technika|technik ma prist|aby prisiel technik|aby prisiel odbornik)/.test(text)) return "inspection";
     if (/(porucha|chyba|servis|diagnostik)/.test(text)) return "service_fault";
     if (/(zavolajte|ozvite|kontaktujte|spatny kontakt|spatne ozvanie)/.test(text)) return "callback";
   }
@@ -9402,7 +9402,11 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     ) {
       route.serviceType = previousServiceType;
     }
-    if (directDecision.topic && /^(preventive_service_scope|annual_maintenance_scope|service_fault_context_followup|service_fault_location_followup|service_order_process|service_visit_process|technician_inspection_visit|regular_service_booking|generic_service_scope|error_code_service_scope|pressure_drop_service_scope|heating_not_working_triage)$/.test(directDecision.topic)) route.serviceType = "service";
+    if (directDecision.topic && /^(preventive_service_scope|annual_maintenance_scope|service_fault_context_followup|service_fault_location_followup|service_order_process|service_visit_process|regular_service_booking|generic_service_scope|error_code_service_scope|pressure_drop_service_scope|heating_not_working_triage)$/.test(directDecision.topic)) route.serviceType = "service";
+    if (directDecision.topic === "technician_inspection_visit") {
+      const isServiceTechnicianContext = previousServiceType === "service" || route.serviceIntent === "service_fault" || /(servis|porucha|chyba|huci|húči|nejde|nefunguje|diagnostik|vyjazd|výjazd)/.test(routerFallbackText);
+      route.serviceType = isServiceTechnicianContext ? "service" : previousServiceType !== "unknown" && isProductOrServiceContext(previousServiceType) ? previousServiceType : route.serviceType;
+    }
     if (directDecision.topic && directDecision.topic === "system_fluids_scope") route.serviceType = "service";
     if (directDecision.topic && /^(gas_certification|boiler_certificate_scope)$/.test(directDecision.topic)) route.serviceType = "service";
     if (directDecision.serviceIntent === "service_fault") route.serviceType = "service";
@@ -9741,6 +9745,22 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     fastQualificationServices.has(route.serviceType) &&
     (route.serviceIntent === "recommendation" || route.serviceIntent === "quote" || route.serviceIntent === "process" || route.serviceIntent === "brand_model") &&
     questionRoundsCount <= 1;
+  const useFastContactComposer =
+    Boolean(message.match(crmPhonePattern) || message.match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i)) &&
+    hasActiveDiagnosticState(stateForTurn);
+  const fastContactComposerSystemPrompt = [
+    "Si AI obchodný asistent Geotherm. Používateľ poslal kontaktné údaje k rozbehnutému dopytu.",
+    "Odpovedz po slovensky, formálne, jednou krátkou vetou. Nepýtaj ďalšie technické otázky, nesľubuj presný termín ani cenu.",
+  ].join("\n");
+  const fastContactComposerInput = JSON.stringify(
+    {
+      latestUserMessage: message,
+      route: { service_type: route.serviceType, intent: route.serviceIntent },
+      state: stateForTurn,
+    },
+    null,
+    2,
+  );
   const fastQualificationComposerSystemPrompt = [
     "Si AI technicko-obchodný poradca Geotherm. Odpovedaj po slovensky, stručne a vecne.",
     "Daj predbežný smer, krátky dôvod, typický rozsah a najviac 1-2 otázky alebo CTA na konzultáciu/nacenenie.",
@@ -9760,6 +9780,8 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
   );
   const activeComposerSystemPrompt = useCompactDirectComposer
     ? compactDirectComposerSystemPrompt
+    : useFastContactComposer
+      ? fastContactComposerSystemPrompt
     : useFastOutOfScopeComposer
       ? fastOutOfScopeComposerSystemPrompt
       : useFastQualificationComposer
@@ -9769,6 +9791,8 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
       : composerSystemPrompt;
   const activeComposerInput = useCompactDirectComposer
     ? compactDirectComposerInput
+    : useFastContactComposer
+      ? fastContactComposerInput
     : useFastOutOfScopeComposer
       ? fastOutOfScopeComposerInput
       : useFastQualificationComposer
@@ -9791,9 +9815,11 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     : await callLlmText({
         systemPrompt: activeComposerSystemPrompt,
         prompt: activeComposerInput,
-        maxOutputTokens: useFastOutOfScopeComposer ? 180 : useCompactDirectComposer ? 300 : useFastQualificationComposer ? 420 : directDecision.triggered ? 520 : 1200,
+        maxOutputTokens: useFastContactComposer ? 90 : useFastOutOfScopeComposer ? 180 : useCompactDirectComposer ? 300 : useFastQualificationComposer ? 420 : directDecision.triggered ? 520 : 1200,
         timeoutMs: useCompactDirectComposer
           ? Math.min(Math.max(Number.parseInt(process.env.LLM_FAST_REQUEST_TIMEOUT_MS || "2500", 10), 1800), 2500)
+          : useFastContactComposer
+            ? Math.min(Math.max(Number.parseInt(process.env.LLM_CONTACT_TIMEOUT_MS || "1200", 10), 800), 1400)
           : useFastOutOfScopeComposer
             ? Math.min(Math.max(Number.parseInt(process.env.LLM_FAST_REQUEST_TIMEOUT_MS || "1600", 10), 1000), 1600)
             : useFastQualificationComposer
@@ -9805,7 +9831,7 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
           : Math.min(Number.parseInt(process.env.LLM_FAST_REQUEST_TIMEOUT_MS || "3500", 10), 3500),
         responseMimeType: "text/plain",
         modelOverride:
-          directDecision.triggered || pureSmallTalkTurn || useFastQualificationComposer
+          directDecision.triggered || pureSmallTalkTurn || useFastQualificationComposer || useFastContactComposer
             ? process.env.GEMINI_FAST_FALLBACK_MODEL || "gemini-2.5-flash-lite"
             : undefined,
       });

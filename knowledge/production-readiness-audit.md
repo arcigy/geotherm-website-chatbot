@@ -1,6 +1,6 @@
 # Production Readiness Audit
 
-Generated: 2026-06-04T11:09:16.237Z
+Generated: 2026-06-04T11:27:54.162Z
 Max response time: 8000 ms
 
 ## Summary
@@ -29,23 +29,23 @@ Max response time: 8000 ms
 
 | Scenario | Pass | ms | LLM used | Mode | Service | Intent | Sources | Failures |
 | --- | --- | ---: | --- | --- | --- | --- | ---: | --- |
-| small_talk_greeting | yes | 1747 | yes | general_chat | unknown | general | 0 |  |
-| small_talk_how_are_you | yes | 1783 | yes | general_chat | unknown | general | 0 |  |
-| small_talk_greeting_how_are_you | yes | 3113 | yes | general_chat | unknown | general | 0 |  |
-| vague_heat_pump_followup | yes | 2089 | yes | qualification_question | heat_pump | recommendation | 3 |  |
-| old_house_radiators_verdict | yes | 2252 | yes | diagnostic_verdict | heat_pump | recommendation | 3 |  |
-| new_build_closure_cta | yes | 3528 | yes | recommendation_closure | heat_pump | recommendation | 3 |  |
-| brands_safe | yes | 2424 | yes | brand_model_answer | heat_pump | brand_model | 3 |  |
-| daikin_correction | yes | 3191 | yes | brand_model_answer | heat_pump | brand_model | 3 |  |
-| price_scope | yes | 2341 | yes | price_answer | heat_pump | price | 3 |  |
-| buffer_tank_scope | yes | 2274 | yes | price_answer | heat_pump | price | 3 |  |
-| obsolete_f2040 | yes | 2429 | yes | correction_answer | heat_pump | complaint_or_correction | 3 |  |
-| unconfirmed_f2050 | yes | 2427 | yes | brand_model_answer | heat_pump | brand_model | 3 |  |
-| air_conditioning | yes | 2671 | yes | direct_answer | air_conditioning | recommendation | 3 |  |
-| heat_recovery | yes | 3027 | yes | qualification_question | heat_recovery | recommendation | 3 |  |
-| floor_heating | yes | 1975 | yes | direct_answer | floor_heating | process | 3 |  |
-| ceiling_cooling | yes | 2642 | yes | direct_answer | ceiling_cooling | recommendation | 3 |  |
-| service_fault | yes | 2294 | yes | service_fault_triage | service | service_fault | 3 |  |
-| subsidy | yes | 2685 | yes | direct_answer | subsidy | subsidy | 3 |  |
+| small_talk_greeting | yes | 1710 | yes | general_chat | unknown | general | 0 |  |
+| small_talk_how_are_you | yes | 2173 | yes | general_chat | unknown | general | 0 |  |
+| small_talk_greeting_how_are_you | yes | 2870 | yes | general_chat | unknown | general | 0 |  |
+| vague_heat_pump_followup | yes | 2652 | yes | qualification_question | heat_pump | recommendation | 3 |  |
+| old_house_radiators_verdict | yes | 2507 | yes | diagnostic_verdict | heat_pump | recommendation | 3 |  |
+| new_build_closure_cta | yes | 3860 | yes | recommendation_closure | heat_pump | recommendation | 3 |  |
+| brands_safe | yes | 2480 | yes | brand_model_answer | heat_pump | brand_model | 3 |  |
+| daikin_correction | yes | 2338 | yes | brand_model_answer | heat_pump | brand_model | 3 |  |
+| price_scope | yes | 2437 | yes | price_answer | heat_pump | price | 3 |  |
+| buffer_tank_scope | yes | 2206 | yes | price_answer | heat_pump | price | 3 |  |
+| obsolete_f2040 | yes | 1954 | yes | correction_answer | heat_pump | complaint_or_correction | 3 |  |
+| unconfirmed_f2050 | yes | 2338 | yes | brand_model_answer | heat_pump | brand_model | 3 |  |
+| air_conditioning | yes | 2229 | yes | direct_answer | air_conditioning | recommendation | 3 |  |
+| heat_recovery | yes | 2623 | yes | qualification_question | heat_recovery | recommendation | 3 |  |
+| floor_heating | yes | 2273 | yes | direct_answer | floor_heating | process | 3 |  |
+| ceiling_cooling | yes | 2532 | yes | direct_answer | ceiling_cooling | recommendation | 3 |  |
+| service_fault | yes | 2178 | yes | service_fault_triage | service | service_fault | 3 |  |
+| subsidy | yes | 2772 | yes | direct_answer | subsidy | subsidy | 3 |  |
 
 ## Sample Failed Answers
