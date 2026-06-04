@@ -2598,6 +2598,9 @@ function quoteHandoffTopicSentence(message: string, state: QualificationState, r
   if (/(mss|aurostep|drain back|drain-back|nemrznuca.*solar|nemrznúca.*solár|solar|solarn|solár|panel|kolektor|zasobnik|zásobnik)/.test(text)) {
     return "Dopyt sa týka solárneho systému, solárnych kolektorov alebo zásobníka, takže treba naceniť zostavu, objem zásobníka a napojenie.";
   }
+  if (/(fernox|agrimex|kolekton|ochranne.*kvapalin|ochranné.*kvapalin|udrzbove.*kvapalin|údržbové.*kvapalin|nemrznuc.*kvapalin|nemrznúc.*kvapalin|teplonosn\w*.*kvapalin)/.test(text)) {
+    return "Dopyt sa týka ochranných, údržbových alebo teplonosných kvapalín pre vodu vo vykurovacom, chladiacom alebo solárnom systéme, takže nacenenie má riešiť stav vody, objem sústavy, zariadenie a vhodnú údržbu.";
+  }
   if (/(aurocompact|ecocompact|eco compact|ecotec|eco tec|\bvsc\b|elektricke|elektrické)/.test(text)) {
     return "Dopyt sa týka kotla, Vaillant/Buderus alebo vykurovania, takže nacenenie má riešiť typ zdroja, výkon, reguláciu a montáž.";
   }
@@ -2670,6 +2673,9 @@ function quoteTopicRepairSentence(message: string, answer: string): string | nul
   }
   if (/(mss|aurostep|drain back|drain-back|nemrznuca.*solar|nemrznúca.*solár|solar|solarn|solár|panel|kolektor|zasobnik|zásobnik)/.test(text) && missing(/solar|fotovolt|panel|kolektor|zasobnik|zásobnik/)) {
     return "Téma sa týka solárneho systému, solárnych kolektorov alebo zásobníka, preto má nacenenie riešiť zostavu, objem zásobníka a napojenie.";
+  }
+  if (/(fernox|agrimex|kolekton|ochranne.*kvapalin|ochranné.*kvapalin|udrzbove.*kvapalin|údržbové.*kvapalin|nemrznuc.*kvapalin|nemrznúc.*kvapalin|teplonosn\w*.*kvapalin)/.test(text) && missing(/vod|kvapalin|udrz|údrž|system|sustav|sústav/)) {
+    return "Téma sa týka ochranných, údržbových alebo teplonosných kvapalín a vody v systéme, preto má nacenenie riešiť stav vody, objem sústavy, zariadenie a vhodnú údržbu.";
   }
   if (/(aurocompact|ecocompact|eco compact|ecotec|eco tec|\bvsc\b|elektricke|elektrické)/.test(text) && missing(/kot|vaillant|buderus|vykurov/)) {
     return "Tému beriem ako kotol, Vaillant/Buderus alebo vykurovanie, preto má nacenenie riešiť typ zdroja, výkon, reguláciu a montáž.";
@@ -6905,6 +6911,20 @@ function directAnswerDecision(message: string, state: QualificationState, route:
       topic: "heating_design_factors",
     };
   }
+  if (
+    /(?:(?:ako|akym sposobom|akým spôsobom).*(?:pracuje|funguje).*(?:tepel|cerpad|čerpad|\btc\b|\btč\b)|(?:tepel|cerpad|čerpad|\btc\b|\btč\b).*(?:ako|akym sposobom|akým spôsobom).*(?:pracuje|funguje))/.test(text)
+  ) {
+    return {
+      triggered: true,
+      answerMode: "direct_answer",
+      reason: "direct_heat_pump_how_it_works",
+      answer:
+        "### Ako pracuje tepelné čerpadlo\n\nTepelné čerpadlo nepriamo vyrába teplo tak, že ho prenáša z vonkajšieho vzduchu, zeme alebo vody do vykurovacieho systému. V okruhu pracuje chladivo a kompresor; kompresor zvýši teplotu chladiva a teplo sa potom odovzdá do kúrenia alebo prípravy teplej vody.\n\nPri výbere nestačí poznať princíp. Treba zvoliť typ systému podľa domu, vykurovania, teplej vody a montáže. Praktický ďalší krok je konzultácia alebo nacenenie konkrétneho riešenia.",
+      serviceIntent: "process",
+      retrievalQuery: "ako pracuje tepelne cerpadlo princip chladivo kompresor vykurovanie tepla voda Geotherm",
+      topic: "heat_pump_how_it_works_scope",
+    };
+  }
   if (/(pravideln|preventiv|udrzb|údržb|prehliad).*(zariaden|servis|tepel|cerpad|čerpad)|(?:zariaden|servis|tepel|cerpad|čerpad).*(pravideln|preventiv|udrzb|údržb|prehliad)/.test(text)) {
     return {
       triggered: true,
@@ -9580,6 +9600,7 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     "heat_pump_comfort_scope",
     "heat_pump_video_guides_scope",
     "heat_pump_expert_selection_scope",
+    "heat_pump_how_it_works_scope",
     "comfortable_heating_scope",
     "heating_solution_recommendation_scope",
     "heat_pump_installation_scope",
