@@ -7044,6 +7044,18 @@ function directAnswerDecision(message: string, state: QualificationState, route:
       topic: "large_object_no_price_guess",
     };
   }
+  if (/(rozvod.*vod|rozvod.*kanaliz|kanaliz|vodoin|odpad)/.test(text) && /(porad|odporuc|odporúč|nacen|cenov|cenu|ponuk)/.test(text)) {
+    return {
+      triggered: true,
+      answerMode: "price_answer",
+      reason: "direct_water_distribution_price_scope",
+      answer:
+        "### Rozvody vody alebo kanalizácie\n\nPri rozvodoch vody alebo kanalizácie by som cenu nehádam bez rozsahu. Nacenenie má riešiť, či ide o novostavbu alebo rekonštrukciu, počet napojení, trasu rozvodov, materiál, prístup a stav existujúcich rozvodov.\n\nNajlepší ďalší krok je poslať pôdorys alebo fotky, lokalitu a stručný rozsah prác. Potom sa dá pripraviť konkrétnejšia konzultácia alebo nacenenie.",
+      serviceIntent: "price",
+      retrievalQuery: "company-truth voda rozvody vody kanalizacia nacenenie podorys fotky rozsah Geotherm",
+      topic: "water_distribution",
+    };
+  }
   if (
     /(?:cenov|ponuk|nacen|cenu|ponuku).*(?:obhliad|prehliad|pozriet|pozrieť|prist|prísť)|(?:obhliad|prehliad|pozriet|pozrieť|prist|prísť).*(?:cenov|ponuk|nacen|cenu|ponuku)/.test(text)
   ) {
@@ -7217,19 +7229,21 @@ function directAnswerDecision(message: string, state: QualificationState, route:
       topic: "appointment_time_confirmation_guard",
     };
   }
+  const currentMessageServiceLocation = text.match(/^(bratislava|kosice|košice|trnava|nitra|zilina|žilina|presov|prešov|trenčín|trencin|banska bystrica|banská bystrica)$/)?.[1];
   if (
     activeService === "service" &&
     (state.service_intent === "service_fault" || route.serviceIntent === "service_fault") &&
-    state.location &&
+    (state.location || currentMessageServiceLocation) &&
     !/(telefon|email|@|\+?\d{7,}|kontakt|servis|poruch|chyba|kod|kód)/.test(text) &&
     text.length > 2 &&
     text.length <= 40
   ) {
+    const serviceLocation = state.location || currentMessageServiceLocation || "vašu lokalitu";
     return {
       triggered: true,
       answerMode: "service_fault_triage",
       reason: "direct_service_fault_location_followup",
-      answer: `### Servisný smer\n\nLokalitu **${state.location}** beriem ako doplnenie servisného dopytu, nie ako novú tému. Pri poruche treba ešte potvrdiť kontakt a servisný postup podľa zariadenia, značky/modelu, chybového kódu a dostupnosti technika.\n\nPošlite prosím telefón alebo e-mail, aby sa servis Geotherm vedel ozvať a preveriť ďalší postup.`,
+      answer: `### Servisný smer\n\nLokalitu **${serviceLocation}** beriem ako doplnenie servisného dopytu, nie ako novú tému. Pri poruche treba ešte potvrdiť kontakt a servisný postup podľa zariadenia, značky/modelu, chybového kódu a dostupnosti technika.\n\nPošlite prosím telefón alebo e-mail, aby sa servis Geotherm vedel ozvať a preveriť ďalší postup.`,
       serviceIntent: "service_fault",
       retrievalQuery: "service-card-service servis porucha lokalita kontakt technik Geotherm",
       topic: "service_fault_location_followup",
@@ -9388,7 +9402,7 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     ) {
       route.serviceType = previousServiceType;
     }
-    if (directDecision.topic && /^(preventive_service_scope|annual_maintenance_scope)$/.test(directDecision.topic)) route.serviceType = "service";
+    if (directDecision.topic && /^(preventive_service_scope|annual_maintenance_scope|service_fault_context_followup|service_fault_location_followup|service_order_process|service_visit_process|technician_inspection_visit|regular_service_booking|generic_service_scope|error_code_service_scope|pressure_drop_service_scope|heating_not_working_triage)$/.test(directDecision.topic)) route.serviceType = "service";
     if (directDecision.topic && directDecision.topic === "system_fluids_scope") route.serviceType = "service";
     if (directDecision.topic && /^(gas_certification|boiler_certificate_scope)$/.test(directDecision.topic)) route.serviceType = "service";
     if (directDecision.serviceIntent === "service_fault") route.serviceType = "service";
