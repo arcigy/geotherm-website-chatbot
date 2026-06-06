@@ -744,7 +744,7 @@ function detectSafetyRoute(message: string): SafetyRoute {
     reason = "pressure";
   } else if (hasAny(["chladivo", "freon", "unik chladiva", "unika chladivo"])) {
     reason = "refrigerant";
-  } else if (!userRefusesDisassembly && hasAny(["rozobra", "rozobrat", "rozoberat", "otvorit jednotku", "vonkajsiu jednotku"])) {
+  } else if (!userRefusesDisassembly && hasAny(["rozobra", "rozobrat", "rozoberat", "otvorit jednotku"])) {
     reason = "disassembly";
   } else if (
     hasFaultOrLeakSignal() &&
