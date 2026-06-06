@@ -10855,6 +10855,7 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     recordDiagnostic(answerDiagnostics.validatorsTriggered, "followup_questions_limited");
   }
   answer = softenOverconfidentWording(answer, answerDiagnostics);
+  answer = answer.replace(/([.!?])(?=(?:Pri|Ak|Máte|Mame|Máme|Pre|Konkrétn|Konkretn)\b)/g, "$1\n\n");
   if (
     directDecision.topic !== "neutral_input_test" &&
     !outOfScopeKeywordTurn &&
