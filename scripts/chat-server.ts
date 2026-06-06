@@ -10656,7 +10656,7 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
       answer = `${answer.trim()}\n\n${repairSentence}`;
     }
   }
-  if (/(vonkajs|vonkajsi|vonkajsej).*(jednotk)|pod oknom|umiestnenie jednotky/.test(normalizedMessageForHardDirect)) {
+  if (/(vonkajs|vonkajsi|vonkajsiu|vonkajsej).*(jednotk)|pod okn(?:o|om)|umiestnenie jednotky|jednotk.*sused/.test(normalizedMessageForHardDirect)) {
     answer = "### Hlučnosť a umiestnenie vonkajšej jednotky\n\nPri dome s tepelným čerpadlom umiestnenie pod oknom nemusí byť automaticky zlé, ale treba ho posúdiť opatrne. Rozhoduje hluk v noci, prúdenie vzduchu, kondenzát, odstup od okien a susedov, servisný prístup a miestne možnosti montáže.\n\nBez obhliadky by som to nepotvrdil ako finálne miesto. Pri nacenení tepelného čerpadla by som porovnal tichšie umiestnenie bokom od obytných miestností alebo technické opatrenia proti hluku.";
     recordDiagnostic(answerDiagnostics.validatorsTriggered, "outdoor_unit_placement_answer_hardened");
   }
