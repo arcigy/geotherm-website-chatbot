@@ -91,25 +91,9 @@ type StoredConversation = {
   debugTurns: DebugTurn[];
 };
 
-type SpeechRecognitionLike = {
-  lang: string;
-  continuous: boolean;
-  interimResults: boolean;
-  maxAlternatives: number;
-  start: () => void;
-  stop: () => void;
-  onresult: ((event: { results: ArrayLike<ArrayLike<{ transcript: string }>> }) => void) | null;
-  onerror: (() => void) | null;
-  onend: (() => void) | null;
-};
-
-type SpeechRecognitionConstructor = new () => SpeechRecognitionLike;
-
 declare global {
   interface Window {
     ARCIGY_CHATBOT_CONFIG?: Partial<EmbedConfig>;
-    SpeechRecognition?: SpeechRecognitionConstructor;
-    webkitSpeechRecognition?: SpeechRecognitionConstructor;
     webkitAudioContext?: typeof AudioContext;
     arcigyChatbot?: {
       runAction: typeof runAction;
@@ -130,8 +114,10 @@ const anonymousIdStorageKey = "arcigy-chatbot-anonymous-id";
 const voiceWaveBarCount = 96;
 const voiceWaveUpdateMs = 92;
 const voiceWaveRevealStep = 3;
+const voiceMaxRecordingMs = 18000;
 const textareaMinHeight = 34;
 const textareaMaxHeight = 74;
+const voiceMimeTypes = ["audio/webm;codecs=opus", "audio/webm", "audio/mp4", "audio/ogg;codecs=opus"];
 
 function idleVoiceLevels() {
   return Array.from({ length: voiceWaveBarCount }, (_, index) => 0.045 + ((index * 7) % 5) * 0.008);
@@ -454,6 +440,50 @@ async function sendMessage(message: string, config: EmbedConfig): Promise<ChatRe
   return fakeLocalResponse(message);
 }
 
+function selectVoiceMimeType() {
+  if (!window.MediaRecorder) return "";
+  return voiceMimeTypes.find((mimeType) => window.MediaRecorder.isTypeSupported(mimeType)) || "";
+}
+
+function blobToBase64(blob: Blob): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const result = typeof reader.result === "string" ? reader.result : "";
+      resolve(result.includes(",") ? result.split(",").pop() || "" : result);
+    };
+    reader.onerror = () => reject(reader.error || new Error("Audio could not be read."));
+    reader.readAsDataURL(blob);
+  });
+}
+
+async function transcribeVoiceBlob(blob: Blob, mimeType: string, config: EmbedConfig): Promise<string> {
+  const audioBase64 = await blobToBase64(blob);
+  const apiBase = config.apiBase ? config.apiBase.replace(/\/$/, "") : window.location.origin;
+  const endpoints = config.apiBase ? [`${apiBase}/transcribe`, `${apiBase}/api/geotherm-transcribe`] : ["/api/geotherm-transcribe"];
+  let lastError: Error | null = null;
+
+  for (const endpoint of endpoints) {
+    try {
+      const response = await fetch(endpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ audioBase64, mimeType }),
+      });
+      const data = (await response.json()) as { text?: string; error?: string | { message?: string } };
+      if (!response.ok) {
+        const message = typeof data.error === "string" ? data.error : data.error?.message || "Voice transcription failed.";
+        throw new Error(message);
+      }
+      return (data.text || "").trim();
+    } catch (error) {
+      lastError = error instanceof Error ? error : new Error(String(error));
+    }
+  }
+
+  throw lastError || new Error("Voice transcription failed.");
+}
+
 function Chatbot({ config }: { config: EmbedConfig }) {
   const [isOpen, setIsOpen] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -464,6 +494,7 @@ function Chatbot({ config }: { config: EmbedConfig }) {
   const [debugTurns, setDebugTurns] = useState<DebugTurn[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isListening, setIsListening] = useState(false);
+  const [isTranscribing, setIsTranscribing] = useState(false);
   const [voiceLevels, setVoiceLevels] = useState<number[]>(() => idleVoiceLevels());
   const [visibleVoiceBarCount, setVisibleVoiceBarCount] = useState(0);
   const [composerLift, setComposerLift] = useState(0);
@@ -472,7 +503,10 @@ function Chatbot({ config }: { config: EmbedConfig }) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const typingTimerRef = useRef<number | null>(null);
   const debugTurnsRef = useRef<DebugTurn[]>([]);
-  const recognitionRef = useRef<SpeechRecognitionLike | null>(null);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const voiceChunksRef = useRef<Blob[]>([]);
+  const voiceStopTimerRef = useRef<number | null>(null);
+  const voiceMimeTypeRef = useRef("");
   const audioContextRef = useRef<AudioContext | null>(null);
   const audioStreamRef = useRef<MediaStream | null>(null);
   const waveFrameRef = useRef<number | null>(null);
@@ -571,7 +605,8 @@ function Chatbot({ config }: { config: EmbedConfig }) {
   useEffect(() => {
     return () => {
       if (typingTimerRef.current) window.clearInterval(typingTimerRef.current);
-      recognitionRef.current?.stop();
+      if (voiceStopTimerRef.current) window.clearTimeout(voiceStopTimerRef.current);
+      if (mediaRecorderRef.current?.state === "recording") mediaRecorderRef.current.stop();
       stopVoiceMonitor();
     };
   }, []);
@@ -619,17 +654,19 @@ function Chatbot({ config }: { config: EmbedConfig }) {
     }, voiceWaveUpdateMs);
   }
 
-  async function startVoiceMonitor() {
+  async function startVoiceMonitor(providedStream?: MediaStream) {
     stopVoiceMonitor();
     const AudioContextConstructor = window.AudioContext || window.webkitAudioContext;
     if (!window.navigator.mediaDevices?.getUserMedia || !AudioContextConstructor) {
+      audioStreamRef.current = providedStream || null;
       startSyntheticVoiceWave();
       return;
     }
 
     try {
-      const stream = await window.navigator.mediaDevices.getUserMedia({ audio: true });
+      const stream = providedStream || (await window.navigator.mediaDevices.getUserMedia({ audio: true }));
       const audioContext = new AudioContextConstructor();
+      audioStreamRef.current = stream;
       if (audioContext.state === "suspended") await audioContext.resume();
       const analyser = audioContext.createAnalyser();
       const source = audioContext.createMediaStreamSource(stream);
@@ -640,7 +677,6 @@ function Chatbot({ config }: { config: EmbedConfig }) {
       const data = new Uint8Array(analyser.fftSize);
       source.connect(analyser);
       audioContextRef.current = audioContext;
-      audioStreamRef.current = stream;
       let visibleBars = 0;
       lastVoiceWaveUpdateRef.current = 0;
       setVisibleVoiceBarCount(0);
@@ -726,15 +762,9 @@ function Chatbot({ config }: { config: EmbedConfig }) {
 
   async function submitMessage() {
     const text = (textareaRef.current?.value || input).trim();
-    if (!text || isLoading) return;
+    if (!text || isLoading || isListening || isTranscribing) return;
 
     if (typingTimerRef.current) window.clearInterval(typingTimerRef.current);
-    if (isListening) {
-      recognitionRef.current?.stop();
-      recognitionRef.current = null;
-      setIsListening(false);
-      stopVoiceMonitor();
-    }
 
     setMessages((current) => [...current, { id: createId(), role: "user", content: text }]);
     setIsOpen(true);
@@ -796,56 +826,92 @@ function Chatbot({ config }: { config: EmbedConfig }) {
     textareaRef.current.focus();
   }
 
-  function toggleMicrophone() {
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  function stopVoiceRecording() {
+    if (voiceStopTimerRef.current) {
+      window.clearTimeout(voiceStopTimerRef.current);
+      voiceStopTimerRef.current = null;
+    }
 
+    const recorder = mediaRecorderRef.current;
+    if (recorder && recorder.state !== "inactive") {
+      recorder.stop();
+      return;
+    }
+
+    setIsListening(false);
+    stopVoiceMonitor();
+  }
+
+  async function toggleMicrophone() {
     if (isListening) {
-      recognitionRef.current?.stop();
-      setIsListening(false);
-      stopVoiceMonitor();
+      stopVoiceRecording();
       return;
     }
 
-    if (!SpeechRecognition) {
-      if (config.debug) console.warn("[ArcigyChatbot] Speech recognition is not available in this browser.");
-      setIsListening(true);
-      void startVoiceMonitor();
-      textareaRef.current?.focus();
+    if (isLoading || isTranscribing) return;
+
+    if (!window.MediaRecorder || !window.navigator.mediaDevices?.getUserMedia) {
+      if (config.debug) console.warn("[ArcigyChatbot] MediaRecorder microphone input is not available in this browser.");
+      setTextareaValue("Mikrofón nie je v tomto prehliadači dostupný. Skúste správu napísať.");
       return;
     }
-
-    const recognition = new SpeechRecognition();
-    recognitionRef.current = recognition;
-    recognition.lang = "sk-SK";
-    recognition.continuous = true;
-    recognition.interimResults = true;
-    recognition.maxAlternatives = 1;
-    recognition.onresult = (event) => {
-      const transcript = Array.from(event.results)
-        .map((result) => result?.[0]?.transcript || "")
-        .join(" ")
-        .trim();
-      if (!transcript) return;
-      const current = speechBaseTextRef.current;
-      setTextareaValue(current ? `${current} ${transcript}` : transcript);
-    };
-    recognition.onerror = () => {
-      if (config.debug) console.warn("[ArcigyChatbot] Speech recognition ended with an error.");
-    };
-    recognition.onend = () => {
-      recognitionRef.current = null;
-    };
 
     try {
-      setIsListening(true);
+      const stream = await window.navigator.mediaDevices.getUserMedia({
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true,
+        },
+      });
+      const mimeType = selectVoiceMimeType();
+      const recorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
+
+      mediaRecorderRef.current = recorder;
+      voiceChunksRef.current = [];
+      voiceMimeTypeRef.current = mimeType || recorder.mimeType || "audio/webm";
       speechBaseTextRef.current = (textareaRef.current?.value || input).trim();
-      void startVoiceMonitor();
-      recognition.start();
-    } catch (error) {
-      if (config.debug) console.warn("[ArcigyChatbot] Speech recognition could not start.", error);
-      recognitionRef.current = null;
+
+      recorder.ondataavailable = (event) => {
+        if (event.data.size > 0) voiceChunksRef.current.push(event.data);
+      };
+      recorder.onerror = (event) => {
+        if (config.debug) console.warn("[ArcigyChatbot] Voice recorder failed.", event);
+      };
+      recorder.onstop = () => {
+        const chunks = [...voiceChunksRef.current];
+        voiceChunksRef.current = [];
+        mediaRecorderRef.current = null;
+        setIsListening(false);
+        stopVoiceMonitor();
+
+        const blob = new Blob(chunks, { type: voiceMimeTypeRef.current || "audio/webm" });
+        if (blob.size < 300) return;
+
+        setIsTranscribing(true);
+        void transcribeVoiceBlob(blob, voiceMimeTypeRef.current || blob.type || "audio/webm", config)
+          .then((text) => {
+            if (!text) return;
+            const current = speechBaseTextRef.current;
+            setTextareaValue(current ? `${current} ${text}` : text);
+          })
+          .catch((error) => {
+            if (config.debug) console.warn("[ArcigyChatbot] Gemini voice transcription failed.", error);
+            setTextareaValue("Prepis mikrofónu zlyhal. Skúste to prosím ešte raz alebo správu napíšte.");
+          })
+          .finally(() => setIsTranscribing(false));
+      };
+
       setIsListening(true);
-      void startVoiceMonitor();
+      await startVoiceMonitor(stream);
+      recorder.start();
+      voiceStopTimerRef.current = window.setTimeout(stopVoiceRecording, voiceMaxRecordingMs);
+    } catch (error) {
+      if (config.debug) console.warn("[ArcigyChatbot] Microphone could not start.", error);
+      mediaRecorderRef.current = null;
+      setIsListening(false);
+      setIsTranscribing(false);
+      stopVoiceMonitor();
       textareaRef.current?.focus();
     }
   }
@@ -993,7 +1059,8 @@ function Chatbot({ config }: { config: EmbedConfig }) {
               onChange={(event) => onInputChange(event.target.value)}
               onKeyDown={onKeyDown}
               rows={1}
-              placeholder="Napíšte správu..."
+              disabled={isTranscribing}
+              placeholder={isTranscribing ? "Prepisujem hlas cez AI..." : isListening ? "Nahrávam hlas..." : "Napíšte správu..."}
             />
             <div className="arcigy-chatbot__voiceWave" aria-hidden={!isListening}>
               {voiceLevels.map((level, index) => {
@@ -1015,10 +1082,10 @@ function Chatbot({ config }: { config: EmbedConfig }) {
             <button
               className={`arcigy-chatbot__mic ${isListening ? "is-listening" : ""}`}
               type="button"
-              aria-label="Mikrofón"
+              aria-label={isListening ? "Zastaviť nahrávanie" : "Mikrofón"}
               aria-pressed={isListening}
               onClick={toggleMicrophone}
-              disabled={isLoading}
+              disabled={isLoading || isTranscribing}
             >
               <svg aria-hidden="true" viewBox="0 0 24 24">
                 <path d="M12 4a3 3 0 0 0-3 3v5a3 3 0 0 0 6 0V7a3 3 0 0 0-3-3Z" />
@@ -1027,7 +1094,7 @@ function Chatbot({ config }: { config: EmbedConfig }) {
                 <path d="M9 21h6" />
               </svg>
             </button>
-            <button className="arcigy-chatbot__send" type="submit" disabled={isLoading} aria-label="Odoslať správu">
+            <button className="arcigy-chatbot__send" type="submit" disabled={isLoading || isListening || isTranscribing} aria-label="Odoslať správu">
               <svg aria-hidden="true" viewBox="0 0 24 24">
                 <path d="M12 19V5" />
                 <path d="m6.5 10.5 5.5-5.5 5.5 5.5" />

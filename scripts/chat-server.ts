@@ -5,6 +5,7 @@ import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { type KnowledgeChunk, retrieveKnowledge, tokenize, type RetrievalResult } from "./local-retrieval";
 import { loadLocalEnv } from "./env";
+import { transcribeGeothermAudio } from "../src/lib/geotherm-transcribe";
 import {
   callLlmText,
   composeWithLlm,
@@ -58,6 +59,11 @@ type ChatRequest = {
     userAgent?: string;
     referrer?: string;
   };
+};
+
+type TranscribeRequest = {
+  audioBase64?: string;
+  mimeType?: string;
 };
 
 type ChatSource = {
@@ -508,14 +514,14 @@ async function writeEmbedAsset(requestUrl: string, response: ServerResponse): Pr
   return true;
 }
 
-async function readJsonBody(request: IncomingMessage): Promise<unknown> {
+async function readJsonBody(request: IncomingMessage, maxBytes = 64 * 1024): Promise<unknown> {
   const chunks: Buffer[] = [];
   let total = 0;
 
   for await (const chunk of request) {
     const buffer = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk);
     total += buffer.length;
-    if (total > 64 * 1024) throw new Error("Request body is too large.");
+    if (total > maxBytes) throw new Error("Request body is too large.");
     chunks.push(buffer);
   }
 
@@ -12077,6 +12083,22 @@ export async function startChatServer(options: StartOptions = {}): Promise<Serve
     }
 
     if (request.method === "GET" && (await writeEmbedAsset(requestUrl.pathname, response))) {
+      return;
+    }
+
+    if (request.method === "POST" && requestUrl.pathname === "/transcribe") {
+      try {
+        const body = (await readJsonBody(request, 10 * 1024 * 1024)) as TranscribeRequest;
+        const result = await transcribeGeothermAudio({
+          audioBase64: typeof body.audioBase64 === "string" ? body.audioBase64 : "",
+          mimeType: typeof body.mimeType === "string" ? body.mimeType : undefined,
+        });
+        writeJson(response, 200, result, origin);
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        const status = message.includes("required") || message.includes("large") ? 400 : 500;
+        writeError(response, status, status === 400 ? "bad_request" : "server_error", message, origin);
+      }
       return;
     }
 
