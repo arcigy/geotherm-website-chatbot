@@ -5397,6 +5397,16 @@ function companyPracticalDirectAnswer(message: string): DirectAnswerDecision | n
     );
   }
 
+  if (/zehnder/.test(text) && /(tč|\btc\b|tepelne cerpad|tepelné čerpad|cerpad|čerpad)/.test(text)) {
+    return answerBase(
+      "Zehnder a tepelné čerpadlá",
+      "Zehnder by som v podkladoch Geotherm nekomunikoval ako značku tepelných čerpadiel. V knowledge vystupuje hlavne pri **rekuperácii, vetracích jednotkách, rozvodoch vzduchu, filtroch a dizajnových radiátoroch**. Pri tepelných čerpadlách sú bezpečné značky najmä **NIBE a Vaillant**; Zehnder riešme skôr pri vetraní/rekuperácii.",
+      "zehnder_not_heat_pump_brand",
+      "brand_model",
+      "company-truth Zehnder rekuperacia vetranie radiatory NIBE Vaillant tepelne cerpadla Geotherm",
+    );
+  }
+
   if (/\bivt\b/.test(text) && /(tepelne cerpad|tepelné čerpad|cerpad|čerpad)/.test(text)) {
     return answerBase(
       "IVT tepelné čerpadlá",
@@ -5407,6 +5417,16 @@ function companyPracticalDirectAnswer(message: string): DirectAnswerDecision | n
     );
   }
 
+  if (/(otvar|otvár|otvor|hodin|sviatok|štátny sviatok|statny sviatok|1\.5\.2026|1\. 5\. 2026)/.test(text)) {
+    return answerBase(
+      "Otváracie hodiny cez sviatok",
+      "1. máj je štátny sviatok, takže pri dátume **1.5.2026** by som bez priameho potvrdenia nerátal so štandardnými otváracími hodinami. Najbezpečnejšie je overiť to telefonicky alebo e-mailom: **+421 33 551 1819**, **geotherm@geotherm.sk**. Ak ide o servis alebo termín konzultácie, treba ho dohodnúť vopred.",
+      "holiday_opening_hours",
+      "contact",
+      "company-truth otvaracie hodiny sviatok kontakt Geotherm 1 maj",
+    );
+  }
+
   if (/(zostavy tlakove|tlakove zostavy|tlakové zostavy|tlakove.*zasobnik|tlakové.*zásobník|solarn\w*.*ohrev.*vod|solárn\w*.*ohrev.*vod|ohrev.*vod.*solarn|ohrev.*vod.*solárn|zasobnik.*kolektor|zásobník.*kolektor|aurostep|drain back|slnecne kolektor|slnečné kolektor)/.test(text)) {
     return answerBase(
       "Solárne zostavy a zásobníky",
@@ -5414,6 +5434,18 @@ function companyPracticalDirectAnswer(message: string): DirectAnswerDecision | n
       "solar_collector_tank_scope",
       "process",
       "company-truth solarne kolektory tlakove zostavy zasobnik ohrev vody Geotherm",
+    );
+  }
+
+  if (
+    /(servis|poruch|technik|diagnostik).*(cislo|číslo|telefon|telefón|email|e-mail|mail)|(?:cislo|číslo|telefon|telefón|email|e-mail|mail).*(servis|poruch|technik|diagnostik)/.test(text)
+  ) {
+    return answerBase(
+      "Kontakt na servis",
+      "Pre servisný dopyt použite hlavný kontakt Geotherm **+421 33 551 1819** alebo **geotherm@geotherm.sk**. Pri technickom dopyte sa v podkladoch uvádza aj **Ing. Pavol Šturdík: +421 905 665 755, sturdik@geotherm.sk**. Do správy priložte značku/model alebo fotku štítku, chybový kód alebo popis problému a lokalitu.",
+      "service_contact_details",
+      "contact",
+      "company-truth kontakt servis telefon email Geotherm Sturdik",
     );
   }
 
@@ -5500,7 +5532,7 @@ function companyPracticalDirectAnswer(message: string): DirectAnswerDecision | n
   if (isContactQuestion(message)) {
     return answerBase(
       "Ako sa spojiť",
-      "Najistejšia cesta je otvoriť web Geotherm a prejsť do sekcie Kontakt. Tam budú aktuálne kanály priamo od firmy. Do správy stačí napísať, že chceš spätnú reakciu k svojej veci; detaily sa môžu doplniť až následne.",
+      "Kontakt Geotherm: **+421 33 551 1819**, **geotherm@geotherm.sk**. Pre návrh alebo cenovú ponuku sa v podkladoch uvádza aj **Ing. Pavol Šturdík: +421 905 665 755, sturdik@geotherm.sk**. Kontaktná stránka je http://www.geotherm.sk/kontakt/.",
       "contact_details",
       "contact",
       "company-truth kontakt Geotherm telefon email adresa",
@@ -6133,6 +6165,16 @@ function companyPracticalDirectAnswer(message: string): DirectAnswerDecision | n
     );
   }
 
+  if (/(vrt|vrty|hlbin)/.test(text) && /(strat|strát|kw|kilowatt|18\s*kw|\b18\b)/.test(text)) {
+    return answerBase(
+      "Vrt pri tepelnej strate",
+      "Pri strate okolo **18 kW** sa dĺžka vrtu nedá zodpovedne určiť len jednou vetou ani jednoduchým prepočtom z výkonu. Pri vrtoch rozhoduje geológia, odber tepla z podložia, výkon/príkon/COP tepelného čerpadla, prevádzkové hodiny, TÚV, chladenie a miesto inštalácie. Z referencií máme príklady: pri menšom riešení NIBE F1245-8 PC boli vrty spolu 140 m (2 x 70 m), pri veľkom objekte 103 kW bol geotermálny vrt 20 x 100 m. Pri 18 kW by som preto hovoril o projektovom návrhu vrtov, nie o presnej dĺžke v chate; ďalší krok je konzultácia a nacenenie zem-voda riešenia.",
+      "borehole_heat_loss_scope",
+      "recommendation",
+      "company-truth technicke FAQ vrt tepelna strata 18 kW zem-voda geologia Geotherm",
+    );
+  }
+
   if (/(vrt|vrty|hlbin)/.test(text)) {
     return answerBase(
       "Vrty pre tepelné čerpadlá",
@@ -6448,6 +6490,42 @@ function brandModelDirectAnswer(message: string, state: QualificationState): Dir
   const asksF2050 = text.includes("f2050");
   const asksF1155 = text.includes("f1155");
 
+  if (text.includes("zehnder")) {
+    return {
+      triggered: true,
+      answerMode: "brand_model_answer",
+      reason: "direct_zehnder_heat_pump_question",
+      serviceIntent: "brand_model",
+      topic: "zehnder_not_heat_pump_brand",
+      retrievalQuery: "company-truth Zehnder rekuperacia vetranie radiatory NIBE Vaillant tepelne cerpadla Geotherm",
+      answer: [
+        "### Zehnder a tepelné čerpadlá",
+        "",
+        "Zehnder by som v podkladoch Geotherm nekomunikoval ako značku tepelných čerpadiel. V knowledge vystupuje hlavne pri **rekuperácii, vetracích jednotkách, rozvodoch vzduchu, filtroch a dizajnových radiátoroch**.",
+        "",
+        "Pri tepelných čerpadlách sú bezpečné značky najmä **NIBE a Vaillant**. Ak riešite Zehnder, je to skôr téma vetrania/rekuperácie, nie výber TČ.",
+      ].join("\n"),
+    };
+  }
+
+  if (/(strat|strát|tepelna strata|tepelná strata).*(11\s*kw|\b11\b)|(?:11\s*kw|\b11\b).*(strat|strát|tepelna strata|tepelná strata)/.test(text)) {
+    return {
+      triggered: true,
+      answerMode: "brand_model_answer",
+      reason: "direct_heat_loss_model_direction",
+      serviceIntent: "brand_model",
+      topic: "heat_loss_11kw_model_direction",
+      retrievalQuery: "company-truth technicke FAQ tepelna strata 11 kW model NIBE Vaillant vzduch-voda zem-voda Geotherm",
+      answer: [
+        "### Tepelná strata 11 kW",
+        "",
+        "Pri dome so stratou okolo **11 kW** by som už vyberal čerpadlo podľa výkonovej triedy a vykurovacej sústavy, nie iba podľa plochy. Predbežný smer môže byť **vzduch-voda** pre jednoduchšiu realizáciu, prípadne **zem-voda**, ak chcete stabilnejšiu prevádzku a máte podmienky na vrt.",
+        "",
+        "Značkovo by som pozeral najmä na **Vaillant aroTHERM plus / aroTHERM Split** alebo vhodné **NIBE vzduch-voda riešenie, napríklad S2125**, ale konkrétny výkon a zostava sa musia potvrdiť návrhom. Ďalší krok by už bola konzultácia a nacenenie 2-3 reálnych zostáv.",
+      ].join("\n"),
+    };
+  }
+
   if (asksF2040) {
     return {
       triggered: true,
@@ -6590,9 +6668,9 @@ function priceDirectAnswer(message: string, state: QualificationState): DirectAn
     answer = [
       "### Akumulačná nádrž a cena",
       "",
-      "**Bez konkrétnej ponuky akumulačnú nádrž nepovažujte za zahrnutú položku.** Pri radiátoroch alebo komplikovanejšej kotolni môže byť potrebná, ale jej rozsah musí byť samostatne uvedený v ponuke.",
+      "**Akumulačná nádrž nie je automaticky zahrnutá v cene.** Bez konkrétnej ponuky ju nepovažujte za zahrnutú položku; musí byť výslovne uvedená v konkrétnej ponuke.",
       "",
-      "Pri cene 7 tisíc by som obzvlášť overil, či ide iba o zariadenie/zostavu, alebo o kompletnú realizáciu vrátane montáže, regulácie, TÚV, akumulačnej nádrže, elektroprác a uvedenia do prevádzky.",
+      "Pri cene 7 tisíc by som obzvlášť overil, či ide iba o zariadenie/zostavu, alebo aj o práce a ďalšie položky: montáž, reguláciu, TÚV, elektropráce, uvedenie do prevádzky a prípadnú akumulačnú nádrž.",
     ].join("\n");
   } else if (/(rozpocet|rozpočet|\b5k\b|\b5000\b|5\s*000)/.test(text)) {
     reason = "direct_budget_scope_question";
@@ -7360,7 +7438,7 @@ function directAnswerDecision(message: string, state: QualificationState, route:
       topic: "no_more_questionnaire_handoff",
     };
   }
-  if (/(chcem|potrebujem|zhanam|zháňam|hladam|hľadám).*(tepelne cerpad|tepelné čerpad|\btc\b|\btč\b)/.test(text)) {
+  if (!/(vrt|vrty|hlbin)/.test(text) && /(chcem|potrebujem|zhanam|zháňam|hladam|hľadám).*(tepelne cerpad|tepelné čerpad|\btc\b|\btč\b)/.test(text)) {
     return {
       triggered: true,
       answerMode: "qualification_question",
@@ -10247,6 +10325,17 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     if (!/(archiv|archivny|historick|neaktual|nie je aktual|obsolete|nevyraba|nevyrába)/.test(normalized)) {
       recordDiagnostic(answerDiagnostics.validatorsTriggered, "direct_f2040_obsolete_repaired");
       answer = validateAndRepairAnswer(directDecision.answer, stateForTurn, route, message, answerDiagnostics);
+      directAnswerFallbackUsed = true;
+    }
+  }
+  if (directDecision.triggered && directDecision.topic === "borehole_heat_loss_scope" && directDecision.answer) {
+    const normalized = normalizePolicyText(answer);
+    const driftedToGenericHeatPump =
+      /najcastejsie sa pri rodinnych domoch zacina|novostavba alebo starsi dom|radiatory alebo podlahove/.test(normalized) ||
+      !/(vrt|vrty|hlbin|geolog|18\s*kw|tepelnej strate|tepelna strata)/.test(normalized);
+    if (driftedToGenericHeatPump) {
+      recordDiagnostic(answerDiagnostics.validatorsTriggered, "borehole_heat_loss_scope_repaired");
+      answer = directDecision.answer;
       directAnswerFallbackUsed = true;
     }
   }
