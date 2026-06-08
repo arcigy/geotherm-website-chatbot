@@ -3847,7 +3847,21 @@ function expectedVerdictAnswer(state: QualificationState): string {
   ].join("\n");
 }
 
-function expectedAirConditioningAnswer(): string {
+function expectedAirConditioningAnswer(message = ""): string {
+  const normalized = normalizePolicyText(message);
+  const genericCoolingQuestion = /(ake|aké|co|čo).*(chladenia|chladenie|klimy|klímy|klimatizacie|klimatizácie)|(?:chladenia|chladenie|klimy|klímy|klimatizacie|klimatizácie).*(mate|máte|robite|robíte|ponukate|ponúkate)/.test(normalized);
+  if (genericCoolingQuestion) {
+    return [
+      "### Chladenie a klimatizácie",
+      "",
+      "Pri chladení by som rozlíšil tri praktické možnosti: klasické klimatizácie pre jednu miestnosť, multisplit pre viac miestností s jednou vonkajšou jednotkou, alebo komfortnejšie plošné riešenia ako stropné chladenie pri vhodnom projekte.",
+      "",
+      "Klimatizácia je rýchlejšia a jednoduchšia na montáž, stropné chladenie je skôr projektové riešenie pre vyšší komfort a musí riešiť vlhkosť aj rosný bod.",
+      "",
+      "Chcete chladiť jednu miestnosť, viac miestností alebo celý dom?",
+    ].join("\n");
+  }
+
   return [
     "### Predbežný smer",
     "",
@@ -8429,7 +8443,7 @@ function validateAndRepairAnswer(
     const normalized = normalizePolicyText(next);
     if (!/(multisplit|samostatn).*(jednot|klimatiz)/.test(normalized) || !/(vonkajsia jednotka|plocha|m2)/.test(normalized)) {
       if (diagnostics) recordDiagnostic(diagnostics.validatorsTriggered, "air_conditioning_verdict_repaired");
-      next = expectedAirConditioningAnswer();
+      next = expectedAirConditioningAnswer(message);
     }
   }
   if (route.serviceType === "heat_recovery") {
