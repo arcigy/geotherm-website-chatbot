@@ -2756,7 +2756,7 @@ function inferServiceRoute(message: string, state: QualificationState, history: 
   const hasExplicitServiceSignal =
     heatPumpAbbreviation ||
     outdoorUnitPlacement ||
-    /(tepelne cerpad|heat pump|cerpadl|klimatiz|rekuper|vetran|podlahov|strop.*chladen|zmakcovac|zmäkčovač|uprava vody|úprava vody|katex|rozvod.*vod|kanaliz|zdravotechn|geberit|\bwc\b|sanit|centraln.*vysav|vysavac|vysávač|fotovolt|solar|solarn|solár|poter|potery|anhydrit|cementov|posobnost|okres|mesto|referenc|recenzi|material|materiál|platb|faktur|zaloha|záloha|whatsapp|email|e-mail|telefon|telefonicky|kontakt|dokumentac|poisten|showroom|sluzb|služb|nacen.*projekt|nacen.*fot|ponuk.*projekt|ponuk.*fot|servis|porucha|chyb|kod|kód|\bf\d{2,3}\b|dotac|subsidy|poukaz|prispev|plyn|plynov|kotol|radiator|vykurov|kurenie|topeni|topenie|konzult|stretn|meeting|termin|termín)/.test(text);
+    /(tepelne cerpad|heat pump|cerpadl|klimatiz|klima|klimu|klimy|chladen|chladit|chladiť|rekuper|vetran|podlahov|strop.*chladen|zmakcovac|zmäkčovač|uprava vody|úprava vody|katex|rozvod.*vod|kanaliz|zdravotechn|geberit|\bwc\b|sanit|centraln.*vysav|vysavac|vysávač|fotovolt|solar|solarn|solár|poter|potery|anhydrit|cementov|posobnost|okres|mesto|referenc|recenzi|material|materiál|platb|faktur|zaloha|záloha|whatsapp|email|e-mail|telefon|telefonicky|kontakt|dokumentac|poisten|showroom|sluzb|služb|nacen.*projekt|nacen.*fot|ponuk.*projekt|ponuk.*fot|servis|porucha|chyb|kod|kód|\bf\d{2,3}\b|dotac|subsidy|poukaz|prispev|plyn|plynov|kotol|radiator|vykurov|kurenie|topeni|topenie|konzult|stretn|meeting|termin|termín)/.test(text);
   const slotOnlyReply =
     !hasExplicitServiceSignal &&
     previousService !== "unknown" &&
@@ -5367,6 +5367,18 @@ function companyPracticalDirectAnswer(message: string): DirectAnswerDecision | n
       "heat_pump_split_scope",
       "brand_model",
       "service-card-heat-pump split tepelne cerpadlo vzduch-voda vnutorna vonkajsia jednotka Geotherm",
+    );
+  }
+
+  if (
+    /(ake|aké|co|čo).*(chladenia|chladenie|klimy|klímy|klimatizacie|klimatizácie).*(mate|máte|robite|robíte|ponukate|ponúkate)|(?:mate|máte|robite|robíte|ponukate|ponúkate).*(chladenia|chladenie|klimy|klímy|klimatizacie|klimatizácie)/.test(text)
+  ) {
+    return answerBase(
+      "Chladenie a klimatizácie",
+      "Pri chladení by som rozlíšil hlavne tri smery: klasické klimatizácie pre jednu alebo viac miestností, multisplit s jednou vonkajšou jednotkou, a komfortnejšie plošné riešenia ako stropné chladenie pri vhodnom projekte. Pri dome s tepelným čerpadlom sa dá riešiť aj chladenie cez vhodne navrhnutý systém, ale netreba to miešať s bežnou klimatizáciou naslepo. Praktický ďalší krok je povedať, či chcete chladiť jednu miestnosť, viac miestností alebo celý dom.",
+      "cooling_services_overview_scope",
+      "recommendation",
+      "service-card-air-conditioning klimatizacie chladenie multisplit service-card-ceiling-cooling stropne chladenie Geotherm",
     );
   }
 
@@ -9485,6 +9497,7 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     if (directDecision.topic && /^(subsidy_|plan_obnovy_|vaillant_anniversary_subsidy_scope|solar_collector_subsidy_scope)/.test(directDecision.topic)) route.serviceType = "subsidy";
     if (directDecision.topic && /(boiler|ecotec|eloblock|logamax|buderus|compact)/.test(directDecision.topic)) route.serviceType = "service";
     if (directDecision.topic && /heat_recovery/.test(directDecision.topic)) route.serviceType = "heat_recovery";
+    if (directDecision.topic && /^(cooling_services_overview_scope|air_conditioning_general_scope|air_conditioning_brand_scope|gree_air_conditioning_scope)$/.test(directDecision.topic)) route.serviceType = "air_conditioning";
     if (directDecision.topic && /ceiling_cooling|bkt|wall_heating_cooling/.test(directDecision.topic)) route.serviceType = "ceiling_cooling";
     if (directDecision.topic && /^(water_distribution|water_softener_scope|water_shutdown_scope|garden_frost_free_valve_scope|system_fluids_scope)$/.test(directDecision.topic)) {
       route.serviceType = previousServiceType === "sanitary" || route.serviceType === "sanitary" ? "sanitary" : "water";

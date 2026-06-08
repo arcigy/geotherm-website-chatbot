@@ -282,6 +282,30 @@ const scenarios: Scenario[] = [
     },
   },
   {
+    id: "fast_topic_switch_heat_pump_to_cooling",
+    title: "Rychly prechod z TC na chladenie a klimy",
+    messages: ["ake tc predavate?", "ake chladenia mate?", "ake mate klimy?"],
+    check(turnIndex, body) {
+      const failures = commonChecks(body);
+      const answer = normalize(body.answer || "");
+      if (turnIndex === 0) {
+        if (body.debug?.serviceType !== "heat_pump") failures.push(`expected heat_pump, got ${body.debug?.serviceType || "missing"}`);
+        if (body.debug?.answerMode !== "brand_model_answer") failures.push(`expected brand_model_answer, got ${body.debug?.answerMode || "missing"}`);
+      }
+      if (turnIndex === 1) {
+        if (body.debug?.serviceType !== "air_conditioning") failures.push(`expected air_conditioning after cooling switch, got ${body.debug?.serviceType || "missing"}`);
+        if (!hasAny(answer, ["klimatiz", "multisplit", "stropne chladen"])) failures.push("cooling switch answer lacks cooling options");
+        if (hasAll(answer, ["nibe", "vaillant"]) && hasAny(answer, ["tepelne cerpadl"])) failures.push("cooling switch leaked heat-pump brand answer");
+      }
+      if (turnIndex === 2) {
+        if (body.debug?.serviceType !== "air_conditioning") failures.push(`expected air_conditioning for klimy, got ${body.debug?.serviceType || "missing"}`);
+        if (!hasAny(answer, ["klimatiz", "miestnost", "multisplit", "vonkajsia jednotka"])) failures.push("klimy answer lacks air-conditioning direction");
+        if (hasAll(answer, ["nibe", "vaillant"]) && hasAny(answer, ["tepelne cerpadl"])) failures.push("klimy answer leaked heat-pump brand answer");
+      }
+      return failures;
+    },
+  },
+  {
     id: "heat_recovery_new_build",
     title: "Rekuperácia v novostavbe",
     messages: ["staviam dom a chcem lepsi vzduch bez otvarania okien"],
