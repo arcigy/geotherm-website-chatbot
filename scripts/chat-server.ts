@@ -2309,7 +2309,7 @@ function isGeneralChatWithoutRetrieval(message: string): boolean {
 function isPureSmallTalkMessage(message: string): boolean {
   const text = normalizePolicyText(message);
   if (/(tc|tepel|cerpad|klimatiz|rekuper|servis|dotac|cena|kontakt|montaz|kuren|chladen|vykurov|kotol|radiator|podlah|nibe|vaillant)/.test(text)) return false;
-  return /^(ahoj|cau|hello|hi|hey|dobry den|dobry vecer|zdravim|ako sa mas|ako sa mate|ako sa ma|ako sa m|dakujem|vdaka|dik|diky|super|ok|haha|test|kto si|co si zac)$/.test(text) ||
+  return /^(ahoj|cau|hello|hi|hey|dobry den|dobry vecer|zdravim|ako sa mas|ako sa mate|ako sa ma|ako sa m|dakujem|vdaka|dik|diky|super|ok|haha|haha ok|ok haha|test|kto si|co si zac)$/.test(text) ||
     /^(ahoj|cau|hello|hi|hey|dobry den|dobry vecer|zdravim)\s+(ako sa mas|ako sa mate|ako sa ma|ako sa m)$/.test(text);
 }
 
@@ -2318,7 +2318,7 @@ function isLooseSmallTalkMessage(message: string): boolean {
   if (text.length > 60) return false;
   if (/(tc|tepel|cerpad|klimatiz|rekuper|servis|dotac|cena|kontakt|montaz|kuren|chladen|vykurov|kotol|radiator|podlah|nibe|vaillant)/.test(text)) return false;
   return /^(ahoj|cau|hello|hi|hey|dobry den|dobry vecer|zdravim)(\s+(ako sa mas|ako sa mate|ako sa ma|ako sa m))?$/.test(text) ||
-    /^(ako sa mas|ako sa mate|ako sa ma|ako sa m|dakujem|vdaka|dik|diky|super|ok|haha|test|kto si|co si zac)$/.test(text);
+    /^(ako sa mas|ako sa mate|ako sa ma|ako sa m|dakujem|vdaka|dik|diky|super|ok|haha|haha ok|ok haha|test|kto si|co si zac)$/.test(text);
 }
 
 function shouldHardClampSmallTalk(message: string): boolean {
@@ -2326,7 +2326,7 @@ function shouldHardClampSmallTalk(message: string): boolean {
   if (text.length > 60) return false;
   if (/(tc|tepel|cerpad|klimatiz|rekuper|servis|dotac|cena|kontakt|montaz|kuren|chladen|vykurov|kotol|radiator|podlah|nibe|vaillant)/.test(text)) return false;
   return /^(ahoj|cau|hello|hi|hey|dobry den|dobry vecer|zdravim)(\s+(ako sa mas|ako sa mate|ako sa ma|ako sa m))?$/.test(text) ||
-    /^(ako sa mas|ako sa mate|ako sa ma|ako sa m|dakujem|vdaka|dik|diky|super|ok|haha|test|kto si|co si zac)$/.test(text);
+    /^(ako sa mas|ako sa mate|ako sa ma|ako sa m|dakujem|vdaka|dik|diky|super|ok|haha|haha ok|ok haha|test|kto si|co si zac)$/.test(text);
 }
 
 function shouldApiClampSmallTalk(message: string): boolean {
@@ -2347,7 +2347,7 @@ function pureSmallTalkFallback(message: string): StructuredAnswer {
         ? "Rado sa stalo."
         : text === "ok" || text === "super"
           ? "Jasné."
-          : text === "haha" || text === "test"
+          : text === "haha" || text === "haha ok" || text === "ok haha" || text === "test"
             ? "Jasné, som tu."
           : text.includes("kto si") || text.includes("co si zac")
             ? "Som Geotherm chatbot a pomáham s orientáciou v technických riešeniach domu."
@@ -2379,6 +2379,7 @@ function compactPureSmallTalkAnswer(answer: string, message: string): string {
   const normalizedCompact = normalizePolicyText(compact);
   if ((normalizedMessage.includes("ako sa mas") || normalizedMessage.includes("ako sa mate")) && !normalizedCompact.includes("dobre")) return fallback;
   if (/^(ahoj|cau|hello|hi|hey|dobry den|dobry vecer|zdravim)$/.test(normalizedMessage) && !normalizedCompact.includes("som tu")) return fallback;
+  if (normalizedMessage.includes("haha") && !normalizedCompact.includes("jasne") && !normalizedCompact.includes("ok")) return fallback;
   if (/(tepelne cerpad|klimatiz|rekuper|podlah|stropne chladen|servis|dotac|nacenen|ponuk)/.test(normalizedCompact)) return fallback;
   return compact.length > 120 ? `${compact.slice(0, 117).trim()}...` : compact || fallback;
 }
@@ -2778,15 +2779,50 @@ function inferServiceRoute(message: string, state: QualificationState, history: 
     /(vyber.*riesen|poradit.*riesen|vhodn.*riesen)/.test(text) ||
     (complexHeatingSignal && complexVentilationSignal && complexCoolingSignal) ||
     (complexSignalCount >= 2 && /(novostav|cely system|cel[ey] dom|usporn[ey] riesenie|technicke riesenie|komplex|spolu|\baj\b)/.test(combined));
+  const currentHeatSourceReplyForHeatPump =
+    previousService === "heat_pump" &&
+    isQualificationDataReply(message) &&
+    /(plyn|plynov|drevo|uhlie|pelety|tuhe palivo|tuhé palivo|kotol)/.test(text) &&
+    !/(ake|aké|robite|robíte|mate|máte|znack|značk|servis|oprav|vymen|výmen|kondenzac|kondenzač|elektro|buderus|vaillant)/.test(text);
+  const latestFocusedServiceType: ServiceType | null =
+    /(zdravotechn|geberit|\bwc\b|sanit|odpad)/.test(text)
+      ? "sanitary"
+      : /(zmakcovac|zmäkčovač|uprava vody|úprava vody|katex|rozvod.*vod|vodoin|kanaliz|nezamrz.*ventil|nezámrz.*ventil|nemrznuca|nemrznúca|kvapalin|fernox|agrimex)/.test(text)
+        ? "water"
+        : /(centraln|centráln).*(vysavac|vysávač)|(?:vysavac|vysávač).*(centraln|centráln)/.test(text)
+          ? "central_vacuum"
+          : /(fotovolt|solar|solarn|solár|panel|oze|obnovitel)/.test(text)
+          ? "solar_photovoltaic"
+            : /(poter|potery|anhydrit|cementov)/.test(text)
+              ? "screeds"
+              : !currentHeatSourceReplyForHeatPump && (boilerOnly || /(kondenzacn|kondenzačn|elektrokotol|plynovy kotol|plynový kotol|buderus|logamax|ecotec|eloblock)/.test(text))
+                ? "boilers"
+                : /^(?:a\s+)?(?:radiator|radiatory|radiátor|radiátory)\??$/.test(text) ||
+                    /(dizajnov.*radiator|radiator.*dizajnov|robite.*radiator|robíte.*radiátor|mate.*radiator|máte.*radiátor)/.test(text)
+                  ? "radiators"
+                  : /(klimatiz|klima|klimu|klimy|split|multisplit)/.test(text) ||
+                      (!/(strop|podlah|rekuper|vetran|kuren|vykurov|tepelne cerpad|cerpadl)/.test(text) && /(chladen|chladit|chladiť)/.test(text))
+                    ? "air_conditioning"
+                    : /(strop|strp).*(chladen|vykurov|kuren)|chlad.*strop/.test(text)
+                      ? "ceiling_cooling"
+                      : /(rekuper|vetran|vydychany|vzduch)/.test(text)
+                        ? "heat_recovery"
+                        : /(podlahov|podlahu|podlahove kurenie)/.test(text) && !/(cerpadl|tepel|\btc\b)/.test(combined)
+                          ? "floor_heating"
+                          : null;
   const serviceType: ServiceType =
     slotOnlyReply
       ? previousIntent === "service_fault"
         ? "service"
         : previousService
+      : currentHeatSourceReplyForHeatPump
+        ? "heat_pump"
       : /(servis|porucha|chyb|kod|kód|\bf\d{2,3}\b|diagnostik|revizi|udrzb|údržb|nekuri|nefunguje|hlasi|hlási|tlak|huci|hučí|hluk|hlucnost)/.test(text)
       ? "service"
       : /(dotac|subsidy|poukazk|prispevok|zelen[ae] domacnost)/.test(text)
         ? "subsidy"
+        : latestFocusedServiceType
+          ? latestFocusedServiceType
         : complexSolutionSignal
           ? "complex_solution"
         : /(zdravotechn|geberit|\bwc\b|sanit|odpad)/.test(text)
@@ -4571,7 +4607,7 @@ function companyPracticalDirectAnswer(message: string): DirectAnswerDecision | n
     );
   }
 
-  if (/(chcem|potrebujem|dohodnut|dohodnúť|dat|dať|dajme|dame|dáme|riesit|riešiť).*(stretn|meeting|konzult|termin|termín)|(?:stretn|meeting|konzult).*(geotherm|technik|obchodnik|ponuk|nacen)/.test(text)) {
+  if (/(chcem|potrebujem|dohodnut|dohodnúť|dohodnime|dohodneme|dat|dať|dajme|dame|dáme|riesit|riešiť).*(stretn|meeting|konzult|termin|termín)|(?:stretn|meeting|konzult).*(geotherm|technik|obchodnik|ponuk|nacen)/.test(text)) {
     return answerBase(
       "Dohodnutie konzultácie",
       "Áno, v tomto bode už dáva zmysel dohodnúť krátku konzultáciu alebo stretnutie s Geotherm a pripraviť nacenenie podľa rozsahu. Pri tepelnom čerpadle pomôžu aj fotky kotolne alebo základné údaje o dome. Pošlite prosím meno, telefón a e-mail, lokalitu a stručný rozsah dopytu.",
@@ -5449,7 +5485,7 @@ function companyPracticalDirectAnswer(message: string): DirectAnswerDecision | n
     );
   }
 
-  if (/(otvar|otvár|otvor|hodin|sviatok|štátny sviatok|statny sviatok|1\.5\.2026|1\. 5\. 2026)/.test(text)) {
+  if (/(otvaracie hodiny|otváracie hodiny|otvorene|otvorené|hodin|sviatok|štátny sviatok|statny sviatok|1\.5\.2026|1\. 5\. 2026)/.test(text)) {
     return answerBase(
       "Otváracie hodiny cez sviatok",
       "1. máj je štátny sviatok, takže pri dátume **1.5.2026** by som bez priameho potvrdenia nerátal so štandardnými otváracími hodinami. Najbezpečnejšie je overiť to telefonicky alebo e-mailom: **+421 33 551 1819**, **geotherm@geotherm.sk**. Ak ide o servis alebo termín konzultácie, treba ho dohodnúť vopred.",
@@ -5551,7 +5587,7 @@ function companyPracticalDirectAnswer(message: string): DirectAnswerDecision | n
     );
   }
 
-  if (/(robite|robíte|viete|mate|máte).*(radiator|radiátor)|(?:radiator|radiátor).*(robite|robíte|viete|mate|máte)/.test(text)) {
+  if (/^(?:a\s+)?(?:radiator|radiatory|radiátor|radiátory)\??$/.test(text) || /(robite|robíte|viete|mate|máte).*(radiator|radiátor)|(?:radiator|radiátor).*(robite|robíte|viete|mate|máte)/.test(text)) {
     return answerBase(
       "Radiátory",
       "Áno, radiátory sa v podkladoch Geotherm riešia ako súčasť vykurovacieho systému. Pri novej realizácii alebo výmene treba potvrdiť výkon, teplotný spád, typ zdroja tepla a stav rozvodov. Pri tepelnom čerpadle je dôležité overiť, či radiátory vykúria dom pri nižšej teplote vody, alebo bude treba časť vykurovacích telies upraviť.",
@@ -6890,6 +6926,30 @@ function directAnswerDecision(message: string, state: QualificationState, route:
       serviceIntent: "general",
       retrievalQuery: "company-truth out-of-scope Geotherm services",
       topic: "external_topic_out_of_scope",
+    };
+  }
+  if (activeService === "heat_recovery" && /(cena|cenu|kolko|koľko|stoji|stojí|nacen|ponuk)/.test(text)) {
+    return {
+      triggered: true,
+      answerMode: "price_answer",
+      reason: "direct_heat_recovery_price_scope",
+      answer:
+        "### Cena rekuperácie\n\nCenu rekuperácie bez konkrétnej ponuky nepotvrdím. Pri rekuperácii rozhoduje najmä typ jednotky, rozsah rozvodov, počet miestností, regulácia, filtre, prestupy, montáž a uvedenie do prevádzky.\n\nBezpečný ďalší krok je konzultácia alebo nacenenie podľa domu a rozsahu vetrania, aby bolo jasné, čo je v cene zariadenia a čo patrí do kompletnej realizácie.",
+      serviceIntent: "price",
+      retrievalQuery: "service-card-heat-recovery pricing-rules cena rekuperacia rozvody jednotka filtre montaz Geotherm",
+      topic: "heat_recovery_price_scope",
+    };
+  }
+  if (activeService === "heat_recovery" && /^(?:a\s+)?(?:filter|filtre|filtre\?)$/.test(text)) {
+    return {
+      triggered: true,
+      answerMode: "direct_answer",
+      reason: "direct_heat_recovery_filters_followup",
+      answer:
+        "### Filtre pre rekuperáciu\n\nFiltre pri rekuperácii sú bežná servisná a údržbová téma. Treba ich riešiť podľa konkrétnej jednotky, typu filtrov a prostredia v dome; bez modelu jednotky by som nepotvrdil presný filter ani interval.\n\nPraktický ďalší krok je poslať značku/model rekuperácie alebo fotku štítku a Geotherm vie potvrdiť vhodný servis alebo výmenu filtrov.",
+      serviceIntent: "process",
+      retrievalQuery: "service-card-heat-recovery rekuperacia filtre vetranie servis Geotherm",
+      topic: "heat_recovery_filters_scope",
     };
   }
   if (/(oznacen|označen|energetick|trieda|spotrebic|spotrebič|\ba\+|\ba\+\+|\ba\+\+\+)/.test(text)) {
@@ -8285,6 +8345,16 @@ function sanitizeAnswerForDiagnosticRules(
       "",
     );
   }
+  if (route.serviceType === "heat_pump" && route.serviceIntent === "brand_model") {
+    next = applySanitizerRule(
+      next,
+      diagnostics,
+      "heat_pump_brand_adjacent_topics_removed",
+      null,
+      (sentence) => /(rekuper|klimatiz)/.test(sentence) && /(doplnk|doplnit|doplniť|doplnen|zvazit|zvážiť|zamerat|zamerať|technolog|zahrnat|zahŕňať|zahrna|zahŕňa)/.test(sentence),
+      "",
+    );
+  }
   if (route.serviceType === "heat_pump" || state.service_type === "heat_pump") {
     next = applySanitizerRule(
       next,
@@ -8446,7 +8516,7 @@ function validateAndRepairAnswer(
       next = expectedAirConditioningAnswer(message);
     }
   }
-  if (route.serviceType === "heat_recovery") {
+  if (route.serviceType === "heat_recovery" && (route.serviceIntent === "recommendation" || route.serviceIntent === "general")) {
     const normalized = normalizePolicyText(next);
     if (!normalized.includes("rekuper") || !normalized.includes("projekt") || !/(cely dom|celý dom|miestnost)/.test(normalized)) {
       if (diagnostics) recordDiagnostic(diagnostics.validatorsTriggered, "heat_recovery_verdict_repaired");
@@ -9278,7 +9348,7 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     deterministicRoute.serviceType !== "unknown" &&
     deterministicRoute.serviceType !== previousServiceType &&
     !preservePreviousProductContext &&
-    /(tepelne cerpad|\btc\b|cerpadl|klimatiz|klima|rekuper|vetran|podlahov|strop.*chladen|servis|porucha|dotac|subsidy|komplex|kuren|vykurov|chladen)/.test(
+    /(tepelne cerpad|\btc\b|cerpadl|klimatiz|klima|klimu|klimy|split|multisplit|rekuper|vetran|podlahov|strop.*chladen|servis|porucha|dotac|subsidy|komplex|kuren|vykurov|chladen|radiator|radiátor|kotol|fotovolt|solar|solarn|solár|zmakcov|zmäkč|geberit|\bwc\b|sanit|centraln.*vysav|centráln.*vysáv|poter)/.test(
       routerFallbackText,
     );
   const complaintAboutRecommendation = /(nepovedal|neodpovedal|najleps|najlepší|konkretne|konkrétne)/.test(routerFallbackText);
@@ -9819,6 +9889,7 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     "solution_selection_followup",
     "initial_heat_pump_short",
     "radiators_scope",
+    "meeting_consultation_handoff",
     "new_build_scope",
     "video_inspection_scope",
     "booking_process",
@@ -10265,6 +10336,17 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     validateAndRepairAnswer(baseAnswer, stateForTurn, route, message, answerDiagnostics),
     message,
   );
+  if (directDecision.topic === "meeting_consultation_handoff" && routerDirectAnswer) {
+    const normalizedHandoffAnswer = normalizePolicyText(answer);
+    if (
+      !/(meno|telefon|email|e mail|lokalit)/.test(normalizedHandoffAnswer) ||
+      /(projekt|energeticky certifikat|tepelna strata|tepelnu stratu)/.test(normalizedHandoffAnswer)
+    ) {
+      answer = routerDirectAnswer;
+      directAnswerFallbackUsed = true;
+      recordDiagnostic(answerDiagnostics.validatorsTriggered, "meeting_handoff_direct_draft_used");
+    }
+  }
   if (isOutOfScopeGeneral && countQuestionMarks(answer) === 0 && !/nemám dostatočne jasný podklad|nemam dostatocne jasny podklad/i.test(answer)) {
     answer = `Nemám dostatočne jasný podklad na túto tému.\n\n${answer}`.trim();
   }

@@ -34,6 +34,7 @@
     "test:chat-api": "tsx scripts/test-chat-api.ts",
     "test:crm-leads": "tsx scripts/test-crm-leads.ts",
     "test:diagnostic-conversation": "tsx scripts/test-diagnostic-conversation.ts",
+    "test:topic-switching": "tsx scripts/test-topic-switching.ts",
     "audit:production-readiness": "tsx scripts/audit-production-readiness.ts",
     "audit:broad-surface": "tsx scripts/audit-broad-surface.ts",
     "audit:adversarial-long-flows": "tsx scripts/audit-adversarial-long-flows.ts",
