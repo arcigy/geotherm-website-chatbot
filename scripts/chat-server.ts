@@ -165,6 +165,7 @@ export type ChatResponse = {
       leadSaved: boolean;
       outreachSaved: boolean;
     };
+    leadWebhook?: LeadWebhookResult;
   };
   fallbackUsed?: boolean;
   action: null;
@@ -220,6 +221,7 @@ function isLocalDevOrigin(origin: string | undefined): boolean {
 }
 const safetyFollowUp = "Ide o poruchu existujúceho zariadenia alebo plánujete novú montáž?";
 const diagnosticFlowVersion = "diagnostic-v5-recommendation-closure";
+const aiFirstResponseMode = true;
 
 let knowledgeCache: KnowledgeChunk[] | null = null;
 let serverCommitCache: string | null = null;
@@ -255,6 +257,26 @@ const supplementalCompanyTruthTexts = [
       "Vzdy rozlisuj cenu samotnej zostavy a kompletnu realizaciu vratane montaze, hydrauliky, regulacie, uvedenia do prevadzky, elektroprac, demontaze stareho kotla, TUV zasobnika a pripadnej akumulacnej nadrze.",
       "Ak sa pouzivatel pyta, ci je akumulacna nadrz v cene, odpovedz priamo: nie je bezpecne tvrdit, ze je zahrnuta automaticky; musi to byt uvedene v konkretnej ponuke.",
       "Pri staršom dome s radiatormi je 7000 eur skor podozrivo nizka hranica pre kompletnu realizaciu; treba overit, co presne cena obsahuje.",
+    ].join(" "),
+  },
+  {
+    id: "geotherm-company-truth-vaillant-arotherm-packages",
+    heading: "Company truth: Vaillant aroTHERM orientacne baliky pre predbezne odporucanie",
+    text: [
+      "Excel s tepelnymi cerpadlami nepouzivaj ako runtime subor; sluzi iba ako zdroj pre tento interny knowledge text.",
+      "Chatbot nema hned vyberat model ani cenu. Najprv ma zistit typ projektu, plochu domu v m2, ci su v dome radiatory alebo podlahove kurenie, pri rekonstrukcii aktualny zdroj tepla, TUV a pripadne chladenie.",
+      "Ak chybaju tieto udaje, odpoved ma byt kratka a ma polozit presne jednu follow-up otazku podla najdolezitejsieho chybajuceho udaja.",
+      "Vaillant aroTHERM orientacne baliky pouzivaj iba po ziskani zakladnych udajov o dome a iba ako predbezne odporucanie, nie ako finalnu ponuku.",
+      "Ak pouzivatel neziada porovnanie viacerych zostav, nedavaj rozsah viacerych cien naraz. Vyber najblizsi zakladny orientacny balik aroTHERM split plus podla plochy domu a ostatne varianty spominaj iba ked sa pyta na alternativy.",
+      "Pre dom 100 az 130 m2 su orientacne baliky s montazou s DPH: aroTHERM split plus 55/8.2AS priblizne 13 890 eur, aroTHERM plus 55/6 priblizne 15 650 eur, aroTHERM pro 55/7.1 priblizne 15 562 eur.",
+      "Pre dom 140 az 200 m2 je najblizsi zakladny orientacny balik Tepelne cerpadlo Vzduch/Voda aroTHERM split plus, model Vaillant aroTHERM split 75/8.2AS, priblizne 14 450 eur s montazou s DPH. V zdroji je uvedene: kompaktny balik s 190 l zasobnikom TUV, ovladanie termostatom alebo aplikaciou, maximalna vystupna teplota 62 stupnov cez kompresor, prevadzka az do -25 stupnov a moznost chladenia.",
+      "Pre dom 140 az 200 m2 existuju aj dalsie varianty: aroTHERM plus 75/6 priblizne 16 350 eur s montazou s DPH a aroTHERM pro 75/7.1 priblizne 15 880 eur s montazou s DPH. Nepouzivaj ich ako cenovy rozsah, ak pouzivatel neziada porovnanie variantov.",
+      "Pre dom 210 az 260 m2 su orientacne baliky s montazou s DPH: aroTHERM split plus 105/5AS priblizne 16 890 eur, aroTHERM plus 105/6 priblizne 18 520 eur, aroTHERM pro 115/7.1 priblizne 17 440 eur.",
+      "Pre dom nad 260 do 320 m2 pouzi iba opatrny orientacny podklad: aroTHERM split plus 125/5AS priblizne 17 650 eur a aroTHERM plus 125/6 priblizne 19 225 eur s montazou s DPH. Blok aroTHERM pro 125/5AS je v zdroji nejasny a nepouzivaj ho ako isty fakt.",
+      "Pri aroTHERM split plus zdroj uvadza zasobnik TUV 190 l a maximalnu vystupnu teplotu 62 stupnov cez kompresor. Pri aroTHERM plus zdroj uvadza zasobnik TUV 185 l a maximalnu vystupnu teplotu 75 stupnov cez kompresor, ale pri poslednom vykone je pravdepodobny preklep 1850 l a tento udaj nepouzivaj ako fakt. Pri aroTHERM pro zdroj uvadza zasobnik TUV 190 l a maximalnu vystupnu teplotu 70 stupnov pri nizsich vykonoch.",
+      "Pri rekonstrukcii s radiatormi vzdy zdorazni overenie teploty vody, vykonu radiatorov, kotolne, TUV a pripadnej akumulacnej nadrze.",
+      "Pri dome nad 320 m2 tieto pasma nepouzivaj; odporuc individualny navrh a nacenenie.",
+      "Ciel odpovede: AI ma vlastnymi slovami vysvetlit predbezny smer, pouzit najblizsi orientacny balik iba ako podklad a jasne povedat, ze nejde o finalnu ponuku.",
     ].join(" "),
   },
   {
@@ -2342,23 +2364,23 @@ function pureSmallTalkFallback(message: string): StructuredAnswer {
   const text = normalizePolicyText(message);
   const shortAnswer =
     text.includes("ako sa mas") || text.includes("ako sa mate") || text === "ako sa ma" || text === "ako sa m"
-      ? "Mám sa dobre, vďaka. Som tu, keď budeš chcieť s niečím pomôcť."
+      ? "Mám sa dobre, vďaka. Som tu, keď budete chcieť s niečím pomôcť."
       : text.includes("dakujem") || text.includes("vdaka") || text === "dik" || text === "diky"
-        ? "Rado sa stalo."
+        ? "Rado sa stalo. Pokojne pokračujte."
         : text === "ok" || text === "super"
-          ? "Jasné."
+          ? "Jasné, pokojne pokračujte."
           : text === "haha" || text === "haha ok" || text === "ok haha" || text === "test"
-            ? "Jasné, som tu."
+            ? "Jasné, som tu. Pokojne pokračujte."
           : text.includes("kto si") || text.includes("co si zac")
             ? "Som Geotherm chatbot a pomáham s orientáciou v technických riešeniach domu."
-            : "Ahoj, som tu.";
+            : "Ahoj, rád pomôžem. Pokojne mi napíšte, čo riešite.";
   return { shortAnswer, details: [], followUpQuestion: null, shouldAskFollowUp: false, safetyNote: null, confidence: "high" };
 }
 
 function smallTalkHardClampAnswer(message: string): string {
   const raw = String(message || "").toLowerCase();
   const text = normalizePolicyText(raw);
-  if (raw.includes("ako sa") || text.includes("ako sa")) return "Mám sa dobre, vďaka. Som tu, keď budeš chcieť s niečím pomôcť.";
+  if (raw.includes("ako sa") || text.includes("ako sa")) return "Mám sa dobre, vďaka. Som tu, keď budete chcieť s niečím pomôcť.";
   return pureSmallTalkFallback(message).shortAnswer;
 }
 
@@ -2382,6 +2404,29 @@ function compactPureSmallTalkAnswer(answer: string, message: string): string {
   if (normalizedMessage.includes("haha") && !normalizedCompact.includes("jasne") && !normalizedCompact.includes("ok")) return fallback;
   if (/(tepelne cerpad|klimatiz|rekuper|podlah|stropne chladen|servis|dotac|nacenen|ponuk)/.test(normalizedCompact)) return fallback;
   return compact.length > 120 ? `${compact.slice(0, 117).trim()}...` : compact || fallback;
+}
+
+function violatesPureSmallTalkStyle(answer: string): boolean {
+  const compact = answer.replace(/\s+/g, " ").trim();
+  const normalized = normalizePolicyText(compact);
+  const wordCount = compact.split(/\s+/).filter(Boolean).length;
+  return (
+    wordCount > 24 ||
+    countQuestionMarks(compact) > 0 ||
+    /(^|\s)#{1,6}\s|^\s*[-*]\s/m.test(answer) ||
+    /(tepel|cerpad|klimatiz|rekuper|podlah|stropn|servis|dotac|sluzb|riesen|domov|vykurov|chladen)/.test(normalized)
+  );
+}
+
+function isIncompleteFallbackAnswer(content: string): boolean {
+  const answer = content.trim();
+  if (!answer) return true;
+  const compact = answer.replace(/\s+/g, " ").trim();
+  const lower = compact.toLowerCase();
+  if (compact.length < 45 && !/[.!?…]$/.test(compact)) return true;
+  if (!/[.!?…]$/.test(compact)) return true;
+  if (/[{[]\s*$/.test(compact) || /\\n/.test(compact)) return true;
+  return /\b(aby|aby som|že|a|alebo|pre|k|ku|s|so|na|do|od|ak|keď|ktorý|ktorá|ktoré|čo|by|ti|som|mohol|pomohol)$/i.test(lower);
 }
 
 function isGreetingMessage(message: string): boolean {
@@ -4028,6 +4073,13 @@ type CrmOutcome = {
   outreachRecord: OutreachRecord | null;
 };
 
+type LeadWebhookResult = {
+  configured: boolean;
+  sent: boolean;
+  status: number | null;
+  error: string | null;
+};
+
 const crmPhonePattern = /(?:\+421|00421)[\s.-]*(?:\d[\s.-]*){9}|0[\s.-]*(?:\d[\s.-]*){9}|(?<!\d)(?:\d[\s.-]*){9}(?!\d)/;
 const crmPhonePatternGlobal = /(?:\+421|00421)[\s.-]*(?:\d[\s.-]*){9}|0[\s.-]*(?:\d[\s.-]*){9}|(?<!\d)(?:\d[\s.-]*){9}(?!\d)/g;
 
@@ -4185,6 +4237,139 @@ function buildOutreachSuggestedAction(nextAction: string | null, summary: string
   return `${action} Výcuc: ${digest}`;
 }
 
+function leadWebhookConfig(): { url: string | null; secret: string | null; timeoutMs: number } {
+  const url = process.env.LEAD_WEBHOOK_URL?.trim() || process.env.CRM_WEBHOOK_URL?.trim() || null;
+  const secret = process.env.LEAD_WEBHOOK_SECRET?.trim() || process.env.CRM_WEBHOOK_SECRET?.trim() || null;
+  const parsedTimeout = Number.parseInt(process.env.LEAD_WEBHOOK_TIMEOUT_MS || "", 10);
+  return {
+    url,
+    secret,
+    timeoutMs: Number.isFinite(parsedTimeout) && parsedTimeout > 0 ? parsedTimeout : 4000,
+  };
+}
+
+function signLeadWebhook(body: string, timestamp: string, secret: string): string {
+  return createHmac("sha256", secret).update(`${timestamp}\n${body}`).digest("hex");
+}
+
+function buildLeadWebhookPayload(input: {
+  lead: LeadRecord;
+  outreach: OutreachRecord | null;
+  publicLead: CrmOutcome["lead"];
+  sitePublicId: string;
+  currentUrl?: string;
+  referrer?: string;
+}): Record<string, unknown> {
+  return {
+    event: "lead.created",
+    version: "1.0",
+    createdAt: new Date().toISOString(),
+    source: "arcigy-geotherm-chatbot",
+    siteId: input.sitePublicId,
+    lead: {
+      id: input.lead.id,
+      conversationId: input.lead.conversation_id,
+      status: input.lead.status,
+      score: input.lead.score,
+      temperature: input.lead.temperature,
+      nextAction: input.lead.next_action,
+      summary: input.lead.summary,
+      contact: {
+        name: input.lead.name,
+        email: input.lead.email,
+        phone: input.lead.phone,
+        preferredContactMethod: input.lead.preferred_contact_method,
+      },
+      project: {
+        serviceType: input.lead.service_type,
+        serviceIntent: input.lead.service_intent,
+        projectType: input.lead.project_type,
+        location: input.lead.location,
+        areaM2: input.lead.area_m2,
+        heatingDistribution: input.lead.heating_distribution,
+        currentHeatSource: input.lead.current_heat_source,
+        wantsCooling: input.lead.wants_cooling === null ? null : Boolean(input.lead.wants_cooling),
+        wantsHotWater: input.lead.wants_hot_water === null ? null : Boolean(input.lead.wants_hot_water),
+      },
+      consent: {
+        contactRequestedByUser: input.lead.contact_requested_by_user === null ? null : Boolean(input.lead.contact_requested_by_user),
+        consentToContact: input.lead.consent_to_contact === null ? null : Boolean(input.lead.consent_to_contact),
+        marketingConsent: input.lead.marketing_consent === null ? null : Boolean(input.lead.marketing_consent),
+      },
+      captured: input.publicLead.captured,
+    },
+    outreach: input.outreach
+      ? {
+          id: input.outreach.id,
+          priority: input.outreach.priority,
+          reason: input.outreach.reason,
+          suggestedAction: input.outreach.suggested_action,
+          dueAt: input.outreach.due_at,
+        }
+      : null,
+    context: {
+      currentUrl: input.currentUrl || null,
+      referrer: input.referrer || null,
+    },
+  };
+}
+
+async function sendLeadWebhook(input: {
+  lead: LeadRecord | null;
+  outreach: OutreachRecord | null;
+  publicLead: CrmOutcome["lead"];
+  sitePublicId: string;
+  currentUrl?: string;
+  referrer?: string;
+}): Promise<LeadWebhookResult> {
+  const config = leadWebhookConfig();
+  if (!config.url) return { configured: false, sent: false, status: null, error: null };
+  if (!input.lead || !input.publicLead.captured) return { configured: true, sent: false, status: null, error: "lead_not_captured" };
+
+  const payload = buildLeadWebhookPayload({
+    lead: input.lead,
+    outreach: input.outreach,
+    publicLead: input.publicLead,
+    sitePublicId: input.sitePublicId,
+    currentUrl: input.currentUrl,
+    referrer: input.referrer,
+  });
+  const body = JSON.stringify(payload);
+  const timestamp = new Date().toISOString();
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), config.timeoutMs);
+  try {
+    const headers: Record<string, string> = {
+      "Content-Type": "application/json",
+      "X-Arcigy-Event": "lead.created",
+      "X-Arcigy-Timestamp": timestamp,
+      "X-Arcigy-Lead-Id": input.lead.id,
+    };
+    if (config.secret) headers["X-Arcigy-Signature"] = `sha256=${signLeadWebhook(body, timestamp, config.secret)}`;
+    const response = await fetch(config.url, {
+      method: "POST",
+      headers,
+      body,
+      signal: controller.signal,
+    });
+    return {
+      configured: true,
+      sent: response.ok,
+      status: response.status,
+      error: response.ok ? null : `http_${response.status}`,
+    };
+  } catch (error) {
+    return {
+      configured: true,
+      sent: false,
+      status: null,
+      error: error instanceof Error ? error.message : String(error),
+    };
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 function shouldPersistLead(input: { score: number; contact: CrmContact; leadIntent: CrmLeadIntent; closureTriggered: boolean }): boolean {
   return Boolean(input.contact.phone || input.contact.email || input.score >= 30 || input.closureTriggered || ["inspection", "quote", "callback", "service_fault"].includes(input.leadIntent));
 }
@@ -4239,7 +4424,18 @@ function buildCrmOutcome(input: {
     leadIntent === "service_fault" &&
     /(kontakt|zavol|telefon|email|e mail|objedn|termin|prist|prísť|vyjazd|urgent|havar|kedy)/.test(normalizedLeadMessage);
   const explicitContactIntent = ["inspection", "quote", "callback"].includes(leadIntent) || serviceContactRequest;
-  const shouldAskContact = !hasContact && (explicitContactIntent || (input.closureTriggered && score >= 75));
+  const missingHeatPumpDistributionForPrice =
+    input.route.serviceType === "heat_pump" &&
+    ["price", "quote", "recommendation"].includes(input.route.serviceIntent) &&
+    Boolean(nextState.area_m2 || nextState.project_type) &&
+    !nextState.heating_distribution;
+  const answerAsksTechnicalFollowUp =
+    countQuestionMarks(input.answer) > 0 &&
+    /(podlah|radiator|radiátor|plocha|m2|novostav|rekonstruk|rekonštruk|zdroj|kurite|kúrite|tepla voda|tuv)/.test(normalizePolicyText(input.answer));
+  const shouldAskContact =
+    !hasContact &&
+    !missingHeatPumpDistributionForPrice &&
+    (explicitContactIntent || (!answerAsksTechnicalFollowUp && input.closureTriggered && score >= 75));
   const requestedFields = shouldAskContact ? ["name", "phone", "email"] : [];
   const nextQuestion = shouldAskContact
     ? "Jasné, ďalší krok je, aby sa vám vedel ozvať technik alebo obchodník a dohodol postup. Pošlite prosím meno, telefón a e-mail. Kontakt použijeme iba na spätné ozvanie k tomuto dopytu."
@@ -4405,6 +4601,114 @@ function projectContextLine(state: QualificationState): string {
     state.current_heating ? `aktuálne ${state.current_heating}` : null,
   ].filter(Boolean);
   return parts.length ? `Pre váš prípad (${parts.join(", ")}) by som to bral ako orientačný výber, nie finálny model.` : "Konkrétny model by som vybral až podľa domu, výkonu a technickej miestnosti.";
+}
+
+type VaillantPackageOption = {
+  series: "split_plus" | "plus" | "pro";
+  name: string;
+  model: string;
+  price: number;
+  tankLiters: number;
+  maxTempC: number;
+  twoFanUnit?: boolean;
+};
+
+type VaillantPackageBand = {
+  min: number;
+  max: number;
+  splitPlus: VaillantPackageOption;
+  plus: VaillantPackageOption;
+  pro?: VaillantPackageOption;
+};
+
+const vaillantPackageBands: VaillantPackageBand[] = [
+  {
+    min: 100,
+    max: 130,
+    splitPlus: { series: "split_plus", name: "Tepelné čerpadlo Vzduch/Voda aroTHERM split plus", model: "Vaillant aroTHERM split 55/8.2AS", price: 13890, tankLiters: 190, maxTempC: 62 },
+    plus: { series: "plus", name: "Tepelné čerpadlo Vzduch/Voda aroTHERM plus", model: "Vaillant aroTHERM plus 55/6", price: 15650, tankLiters: 185, maxTempC: 75 },
+    pro: { series: "pro", name: "Tepelné čerpadlo Vzduch/Voda aroTHERM pro", model: "Vaillant aroTHERM split 55/7.1", price: 15562, tankLiters: 190, maxTempC: 70 },
+  },
+  {
+    min: 140,
+    max: 200,
+    splitPlus: { series: "split_plus", name: "Tepelné čerpadlo Vzduch/Voda aroTHERM split plus", model: "Vaillant aroTHERM split 75/8.2AS", price: 14450, tankLiters: 190, maxTempC: 62 },
+    plus: { series: "plus", name: "Tepelné čerpadlo Vzduch/Voda aroTHERM plus", model: "Vaillant aroTHERM plus 75/6", price: 16350, tankLiters: 185, maxTempC: 75 },
+    pro: { series: "pro", name: "Tepelné čerpadlo Vzduch/Voda aroTHERM pro", model: "Vaillant aroTHERM split 75/7.1", price: 15880, tankLiters: 190, maxTempC: 70 },
+  },
+  {
+    min: 210,
+    max: 260,
+    splitPlus: { series: "split_plus", name: "Tepelné čerpadlo Vzduch/Voda aroTHERM split plus", model: "Vaillant aroTHERM split 105/5AS", price: 16890, tankLiters: 190, maxTempC: 62, twoFanUnit: true },
+    plus: { series: "plus", name: "Tepelné čerpadlo Vzduch/Voda aroTHERM plus", model: "Vaillant aroTHERM plus 105/6", price: 18520, tankLiters: 185, maxTempC: 75, twoFanUnit: true },
+    pro: { series: "pro", name: "Tepelné čerpadlo Vzduch/Voda aroTHERM pro", model: "Vaillant aroTHERM split 115/7.1", price: 17440, tankLiters: 190, maxTempC: 70 },
+  },
+  {
+    min: 260,
+    max: 320,
+    splitPlus: { series: "split_plus", name: "Tepelné čerpadlo Vzduch/Voda aroTHERM split plus", model: "Vaillant aroTHERM split 125/5AS", price: 17650, tankLiters: 190, maxTempC: 62, twoFanUnit: true },
+    plus: { series: "plus", name: "Tepelné čerpadlo Vzduch/Voda aroTHERM plus", model: "Vaillant aroTHERM plus 125/6", price: 19225, tankLiters: 185, maxTempC: 75, twoFanUnit: true },
+  },
+];
+
+function formatEuro(value: number): string {
+  return new Intl.NumberFormat("sk-SK", { maximumFractionDigits: 0 }).format(value);
+}
+
+function vaillantBandForArea(areaM2: number | undefined): VaillantPackageBand | null {
+  if (!areaM2 || !Number.isFinite(areaM2)) return null;
+  return vaillantPackageBands.find((band) => areaM2 >= band.min && areaM2 <= band.max) ?? null;
+}
+
+function vaillantGuidanceForState(state: QualificationState): { text: string; option: VaillantPackageOption | null; band: VaillantPackageBand | null; oversized: boolean } {
+  const areaM2 = state.area_m2;
+  if (!areaM2) return { text: "", option: null, band: null, oversized: false };
+  if (areaM2 > 320) {
+    return {
+      text: `Pevný fakt z Excelu: plocha ${areaM2} m2 je nad 320 m2, preto nepoužívaj Vaillant orientačné balíky pre rodinné domy. Odpoveď má ísť na individuálny návrh a nacenenie.`,
+      option: null,
+      band: null,
+      oversized: true,
+    };
+  }
+  const band = vaillantBandForArea(areaM2);
+  if (!band) {
+    return {
+      text: `Pevný fakt z Excelu: plocha ${areaM2} m2 nespadá do dostupných Vaillant pásiem 100-320 m2. Nepoužívaj konkrétnu cenu; pošli to na individuálne nacenenie.`,
+      option: null,
+      band: null,
+      oversized: false,
+    };
+  }
+  const distribution = normalizePolicyText(state.heating_distribution || "");
+  const projectType = normalizePolicyText(state.project_type || "");
+  const radiatorSystem = distribution.includes("radiator");
+  const floorHeating = distribution.includes("podlah");
+  const option = radiatorSystem ? band.plus : band.splitPlus;
+  const alternativePrices = [band.splitPlus, band.plus, band.pro]
+    .filter((item): item is VaillantPackageOption => Boolean(item))
+    .filter((item) => item.series !== option.series)
+    .map((item) => `${item.model} ${formatEuro(item.price)} eur`)
+    .join("; ");
+  const reason = radiatorSystem
+    ? "pre radiátory je technicky opatrnejší vysokoteplotnejší aroTHERM plus, ale treba overiť teplotu vody a výkon radiátorov"
+    : floorHeating || projectType.includes("novostav")
+      ? "pre novostavbu alebo podlahové kúrenie ber základný orientačný balík aroTHERM split plus"
+      : "bez požiadavky na porovnanie variantov ber základný orientačný balík aroTHERM split plus";
+  return {
+    option,
+    band,
+    oversized: false,
+    text: [
+      `Pevný fakt z Excelu pre tento prípad: plocha ${areaM2} m2 spadá do pásma ${band.min}-${band.max} m2.`,
+      `Použi jeden najbližší orientačný balík: ${option.name}, model ${option.model}, cena približne ${formatEuro(option.price)} eur s montážou s DPH.`,
+      `Dôvod výberu: ${reason}.`,
+      `Technické údaje balíka: ${option.tankLiters} l zásobník TUV, ovládanie termostatom alebo aplikáciou, maximálna výstupná teplota ${option.maxTempC} °C cez kompresor, prevádzka až do -25 °C, možnosť chladenia${option.twoFanUnit ? ", 2-ventilátorová jednotka" : ""}.`,
+      alternativePrices ? `Tieto alternatívne ceny nepoužívaj ako rozsah odpovede, ak sa používateľ nepýta na porovnanie: ${alternativePrices}.` : "",
+    ]
+      .filter(Boolean)
+      .join(" "),
+  };
 }
 
 function isBoilerOnlyQuestion(text: string): boolean {
@@ -6720,7 +7024,35 @@ function priceDirectAnswer(message: string, state: QualificationState): DirectAn
   let reason = "direct_price_question";
   let topic = "price";
 
-  if (/(fotovolt|fotovoltaik|panel).*(tepelne cerpad|tepelné čerpad|cerpad|čerpad|\btc\b|\btč\b)|(?:tepelne cerpad|tepelné čerpad|cerpad|čerpad|\btc\b|\btč\b).*(fotovolt|fotovoltaik|panel)/.test(text)) {
+  if (
+    normalizeServiceType(state.service_type, "unknown") === "heat_pump" &&
+    state.area_m2 &&
+    state.project_type &&
+    !state.heating_distribution
+  ) {
+    reason = "direct_price_missing_heating_distribution";
+    topic = "price_missing_heating_distribution";
+    answer =
+      "Cieľ odpovede: používateľ už dal typ domu a plochu, ale chýba vykurovacia sústava. Odpovedz stručne, kamarátsky a vlastnými slovami. Nepýtaj kontakt. Vysvetli, že orientačné cenové pásmo vieš dať až po tom, či ide o podlahové kúrenie alebo radiátory. Polož presne jednu otázku: bude v dome podlahovka alebo radiátory?";
+  } else if (
+    normalizeServiceType(state.service_type, "unknown") === "heat_pump" &&
+    state.area_m2 &&
+    state.project_type &&
+    state.heating_distribution
+  ) {
+    const vaillantGuidance = vaillantGuidanceForState(state);
+    reason = "direct_vaillant_package_price_guidance";
+    topic = "vaillant_arotherm_package_guidance";
+    answer =
+      [
+        "Cieľ odpovede: používateľ má dosť základných údajov na orientačný Vaillant balík. Odpovedz vlastnými slovami, stručne a kamarátsky.",
+        vaillantGuidance.text,
+        "Toto sú povinné fakty z Excelu; nepouži inú cenu ani iný model.",
+        "Cenu povedz iba ako približnú cenu s montážou s DPH, nikdy ako finálnu ponuku.",
+        "Nepýtaj ďalšiu otázku na osoby, TÚV, chladenie ani kontakt v tej istej odpovedi; teraz odpovedáš iba na cenu.",
+        "Ak ide o rekonštrukciu s radiátormi, spomeň overenie teploty vody, výkonu radiátorov, kotolne a TÚV.",
+      ].join(" ");
+  } else if (/(fotovolt|fotovoltaik|panel).*(tepelne cerpad|tepelné čerpad|cerpad|čerpad|\btc\b|\btč\b)|(?:tepelne cerpad|tepelné čerpad|cerpad|čerpad|\btc\b|\btč\b).*(fotovolt|fotovoltaik|panel)/.test(text)) {
     reason = "direct_photovoltaics_heat_pump_price_scope";
     topic = "photovoltaics_heat_pump_price_scope";
     answer = [
@@ -6832,7 +7164,10 @@ function priceDirectAnswer(message: string, state: QualificationState): DirectAn
     reason,
     answer,
     serviceIntent: "price",
-    retrievalQuery: "company-truth pricing-rules cena náklady návratnosť úspora servis ponuka tepelné čerpadlo montáž inštalácia akumulačná nádrž čo je v cene rozsah ponuky",
+    retrievalQuery:
+      topic === "vaillant_arotherm_package_guidance"
+        ? "vaillant arOtherm orientacne baliky cena montaz DPH plocha domu tepelne cerpadlo"
+        : "company-truth pricing-rules cena náklady návratnosť úspora servis ponuka tepelné čerpadlo montáž inštalácia akumulačná nádrž čo je v cene rozsah ponuky",
     topic,
   };
 }
@@ -7180,6 +7515,48 @@ function directAnswerDecision(message: string, state: QualificationState, route:
       serviceIntent: null,
       retrievalQuery: null,
       topic: null,
+    };
+  }
+  if (
+    state.last_price_topic === "price_missing_heating_distribution" &&
+    state.area_m2 &&
+    state.project_type &&
+    state.heating_distribution &&
+    /(podlah|radiator|radiátor)/.test(text)
+  ) {
+    return priceDirectAnswer("orientačná cena tepelného čerpadla s montážou", state);
+  }
+  if (
+    state.last_direct_topic === "initial_heat_pump_short" &&
+    !state.area_m2 &&
+    /(novostav|rekonstruk|rekonštruk|starsi|starší)/.test(text)
+  ) {
+    return {
+      triggered: true,
+      answerMode: "qualification_question",
+      reason: "direct_heat_pump_project_type_followup",
+      answer:
+        "Cieľ odpovede: používateľ doplnil typ projektu. Odpovedz vlastnými slovami, veľmi stručne a kamarátsky. Nepredpokladaj podlahovku ani radiátory. Nepíš značky, cenu ani chladenie. Polož iba jednu otázku: aká je približná vykurovaná plocha domu v m2?",
+      serviceIntent: "recommendation",
+      retrievalQuery: "service-card-heat-pump minimalne udaje plocha domu tepelne cerpadlo",
+      topic: "heat_pump_project_type_followup",
+    };
+  }
+  if (
+    (state.last_direct_topic === "initial_heat_pump_short" || state.last_direct_topic === "heat_pump_project_type_followup") &&
+    state.project_type &&
+    !state.heating_distribution &&
+    /(\d{2,4})\s*(?:m2|m 2|m²|m\b|metrov|dom)?/.test(text)
+  ) {
+    return {
+      triggered: true,
+      answerMode: "qualification_question",
+      reason: "direct_heat_pump_area_followup",
+      answer:
+        "Cieľ odpovede: používateľ doplnil plochu domu. Odpovedz vlastnými slovami, veľmi stručne a kamarátsky. Nepýtaj sa na chladenie, TÚV, projekt ani kontakt. Polož iba jednu otázku: bude v dome podlahové kúrenie alebo radiátory?",
+      serviceIntent: "recommendation",
+      retrievalQuery: "service-card-heat-pump minimalne udaje podlahove kurenie radiatory tepelne cerpadlo",
+      topic: "heat_pump_area_followup",
     };
   }
   if (/^(ahoj\s+)?(raz\s+dva\s+tri|test(?:\s+mikrofonu|\s+mikrofónu)?|sds|asdf|123)\.?$/.test(text)) {
@@ -7536,7 +7913,7 @@ function directAnswerDecision(message: string, state: QualificationState, route:
       answerMode: "qualification_question",
       reason: "direct_initial_heat_pump_short",
       answer:
-        "### Predbežný smer\n\nPri rodinnom dome sa najčastejšie začína tepelným čerpadlom **vzduch-voda**. Pri novostavbe s podlahovkou je to veľmi vhodný smer; pri staršom dome s radiátormi treba overiť teplotu vody a výkon radiátorov.\n\nAby som ťa zaradil správne, napíš mi: je to novostavba alebo starší dom, koľko m2 chceš vykurovať a či máš radiátory alebo podlahové kúrenie.",
+        "Cieľ odpovede: používateľ chce začať s výberom tepelného čerpadla. Odpovedz vlastnými slovami ako AI, nie šablónou. Stručne vysvetli, že pri rodinnom dome je prvý predbežný smer často vzduch-voda, ale pred modelom alebo cenou treba zistiť základné údaje. Polož iba jednu najbližšiu otázku; ako prvé zisti, či ide o novostavbu alebo rekonštrukciu. Nekopíruj tento text do odpovede.",
       serviceIntent: "recommendation",
       retrievalQuery: "service-card-heat-pump tepelne cerpadla vyber riesenia novostavba starsi dom radiatory podlahove kurenie",
       topic: "initial_heat_pump_short",
@@ -7548,7 +7925,7 @@ function directAnswerDecision(message: string, state: QualificationState, route:
       answerMode: "qualification_question",
       reason: "direct_initial_heat_pump_overview",
       answer:
-        "### Predbežný smer\n\nPri rodinnom dome sa najčastejšie začína tepelným čerpadlom **vzduch-voda**. Pri novostavbe s podlahovkou je to veľmi vhodný smer; pri staršom dome s radiátormi treba overiť teplotu vody a výkon radiátorov.\n\nAby som ťa zaradil správne, napíš mi: je to novostavba alebo starší dom, koľko m2 chceš vykurovať a či máš radiátory alebo podlahové kúrenie.",
+        "Cieľ odpovede: používateľ otvoril tému tepelného čerpadla. Odpovedz vlastnými slovami ako AI, nie šablónou. Stručne vysvetli, že pred odporúčaním modelu alebo ceny treba najprv základné údaje o dome. Polož iba jednu najbližšiu otázku; ako prvé zisti, či ide o novostavbu alebo rekonštrukciu. Nekopíruj tento text do odpovede.",
       serviceIntent: "recommendation",
       retrievalQuery: "service-card-heat-pump tepelne cerpadla vyber riesenia novostavba starsi dom radiatory podlahove kurenie",
       topic: "initial_heat_pump_short",
@@ -8475,6 +8852,9 @@ function validateAndRepairAnswer(
       "Ak riešite ticho pri dome, treba porovnať konkrétny model tepelného čerpadla, umiestnenie jednotky a nočný režim. Ide o novú inštaláciu alebo už máte NIBE namontované?",
     ].join("\n");
   }
+  if (aiFirstResponseMode) {
+    return sanitizeAnswerForDiagnosticRules(next, state, route, diagnostics);
+  }
   if (normalizedMessage.includes("nibe") && normalizedMessage.includes("vaillant") && /(tich|hluk|nezerie|spotreb)/.test(normalizedMessage) && !next.includes("?")) {
     if (diagnostics) recordDiagnostic(diagnostics.validatorsTriggered, "nibe_vaillant_followup_repaired");
     next = companyPracticalDirectAnswer(message)?.answer || `${next}\n\nIde o novostavbu s podlahovkou alebo starší dom s radiátormi?`;
@@ -8612,7 +8992,7 @@ async function extractQualificationUpdate(input: {
   try {
     const result = await callLlmText({
       systemPrompt,
-      prompt: JSON.stringify({ userMessage: input.userMessage, assistantAnswer: input.assistantAnswer }),
+      prompt: JSON.stringify({ userMessage: input.userMessage, currentState: input.currentState, route: input.route }),
       maxOutputTokens: 260,
       timeoutMs: 3000,
       responseMimeType: "application/json",
@@ -9714,8 +10094,9 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
   const directAnswerComposerInstruction = directDecision.triggered
     ? [
         "Direct answer gate je aktívny. Toto je len plán a bezpečnostné obmedzenie, nie hotová odpoveď. Finálnu odpoveď musíš napísať vlastnými slovami ako AI poradca.",
-        "Najprv odpovedz priamo na poslednú otázku používateľa. Ak otázka nestačí na výber konkrétneho riešenia, po priamej odpovedi polož najviac 1-2 follow-up otázky.",
-        "V direct odpovedi nikdy nepolož viac ako 2 otázniky. Pri otázke typu „aké TČ máte?“ odpovedz na portfólio a potom polož jednu kombinovanú follow-up otázku, či chce používateľ vybrať riešenie pre konkrétny dom a či ide o novostavbu/starší dom s radiátormi/podlahovkou.",
+        "Ak safeAnswerDraft alebo RAG kontext znie ako hotová odpoveď, nekopíruj jeho štruktúru ani formulácie. Použi iba fakty, ciele a obmedzenia.",
+        "Najprv odpovedz priamo na poslednú otázku používateľa. Ak otázka nestačí na výber konkrétneho riešenia, po priamej odpovedi polož najviac jednu krátku follow-up otázku.",
+        "V direct odpovedi nikdy nepolož viac ako 1 otáznik. Pri otázke typu „aké TČ máte?“ odpovedz na portfólio a potom polož jednu krátku follow-up otázku.",
         "Neopakuj mechanicky rovnaký text ako v predchádzajúcej odpovedi. Ak používateľ poslal iba otáznik alebo nerozumie, stručne vysvetli predchádzajúcu odpoveď a ponúkni ďalší krok.",
         "Dodrž firemné fakty z RAGu: značky, modely, ceny a rozsah ponuky netvrď bez potvrdenia.",
         JSON.stringify(
@@ -9732,6 +10113,8 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     : "Direct answer gate: inactive.";
   const composerSystemPrompt = [
     "Si diagnostický technicko-obchodný poradca Geotherm. Firma rieši viac služieb: tepelné čerpadlá, klimatizácie, rekuperáciu, podlahové kúrenie, stropné chladenie, servis, dotácie a komplexné technické riešenia domu. Píšeš po slovensky, prirodzene, s vykaním.",
+    "AI-first pravidlo: odpoveď tvoríš sám vlastnými slovami. Knowledge, RAG, safeAnswerDraft a interné service-card texty sú len podklady, ciele a hranice. Nie sú to šablóny na kopírovanie.",
+    "Štýl: buď kamarátsky, stručný a praktický. Nepíš korporátny úvod, dlhý zoznam služieb ani marketingové frázy typu skvelý krok, najefektívnejšie riešenie alebo vysoká spoľahlivosť. Bežná odpoveď má mať 2-4 krátke vety; odrážky použi len výnimočne.",
     "",
     "Nie si FAQ ani produktový katalóg. Najprv pracuj so service_type a intentom, potom použi pipeline danej služby. Ak zákazník nepovie presnú službu, odhadni cieľ: kúrenie, chladenie, vetranie, servis, dotácia alebo celé riešenie domu.",
     "",
@@ -9739,7 +10122,8 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     "",
     "RAG nie je gatekeeper. Ak RAG chýba alebo je slabý, stále odpovedz všeobecne odborne podľa technickej logiky. Chýbajúci firemný fakt má len zabrániť tomu, aby si sľuboval konkrétnu firemnú cenu, značku, pôsobnosť, servis alebo dotáciu.",
     "",
-    "Univerzálny pipeline: 1. rozpoznaj službu, 2. rozpoznaj zámer, 3. skontroluj minimum údajov, 4. daj predbežný verdikt, 5. vysvetli dôvod, 6. povedz typický rozsah/riešenie, 7. polož najviac 1-2 ďalšie otázky, 8. posuň zákazníka k ponuke, obhliadke, servisu alebo kontaktu.",
+    "Univerzálny pipeline: 1. rozpoznaj službu, 2. rozpoznaj zámer, 3. skontroluj minimum údajov, 4. daj predbežný smer, 5. vysvetli dôvod, 6. povedz typický rozsah/riešenie, 7. polož najviac jednu ďalšiu otázku, 8. posuň zákazníka k ponuke, obhliadke, servisu alebo kontaktu.",
+    "Pri tepelnom čerpadle dodrž poradie kvalifikácie: najprv typ projektu, potom približná plocha v m2, potom vykurovacia sústava (podlahovka alebo radiátory). Chladenie, TÚV, projekt a kontakt rieš až potom. Nikdy nepredpokladaj podlahovku len preto, že ide o novostavbu.",
     "",
     "Verdict gate: nesmieš viesť nekonečný dotazník. Ak poznáš službu a máš aspoň základný kontext, musíš najprv povedať predbežný smer a až potom sa pýtať ďalej. Nikdy neodpovedaj iba „závisí od“.",
     "",
@@ -9750,6 +10134,7 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     directAnswerComposerInstruction,
     "",
     "Pri novostavbe sa nepýtaj na ročnú spotrebu ako hlavný údaj. Pred closure môžeš pýtať počet osôb, teplú vodu a chladenie; po closure už smeruj na konzultáciu alebo nacenenie konkrétnych zostáv. Pri recommendation intent sa nepýtaj na rozpočet.",
+    "Ak pri tepelnom čerpadle ešte chýba plocha alebo vykurovacia sústava, nespomínaj konkrétny model, značku ani cenové pásmo. Pýtaj sa iba na najbližší chýbajúci údaj.",
     "",
     "Zakázané: pýtať sa na údaje, ktoré už zákazník povedal; pýtať sa na rozpočet, keď zákazník chce technické odporúčanie; sľubovať bezplatnú alebo nezáväznú obhliadku; sľubovať servis cudzej montáže; tvrdiť kompletné vybavenie dotácie alebo odpočítanie dotácie z ceny; garantovať cenu, dotáciu, úsporu, model, termín alebo pôsobnosť bez firemného RAG dôkazu.",
     "Ak otázka nesúvisí so službami Geotherm, povedz presne, že nemáš dostatočne jasný podklad na túto tému, a krátko presmeruj na kúrenie, chladenie, rekuperáciu, servis alebo dotácie.",
@@ -9784,7 +10169,7 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
       2,
     ),
     "",
-    "Konverzácia do tej chvíle ti dáva kontext čo sa už povedalo. Nepýtaj sa na niečo čo už vieš alebo čo si sa už pýtal. Pri rozpracovanom rozhovore polož jednu ďalšiu relevantnú otázku; pri úplne všeobecnej prvej otázke môžeš položiť 2 až 3 krátke otázky.",
+    "Konverzácia do tej chvíle ti dáva kontext čo sa už povedalo. Nepýtaj sa na niečo čo už vieš alebo čo si sa už pýtal. Pri rozpracovanom aj prvom rozhovore polož vždy len jednu najbližšiu relevantnú otázku.",
     "",
     `RAG status: ${ragEvidenceStatus}; topScore: ${topScore}; sourcesCount: ${sources.length}`,
     "",
@@ -9803,13 +10188,15 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
   );
   const directComposerSystemPrompt = [
     "Si AI technicko-obchodný poradca Geotherm. Píšeš po slovensky, prirodzene a stručne.",
+    "Štýl: krátko, kamarátsky, ľudsky, vo vykání. Bez korporátneho predstavovania a bez dlhých zoznamov.",
     "Toto je direct-answer režim: posledná správa je priama otázka, oprava alebo žiadosť o vysvetlenie. Neodpovedaj dotazníkom bez priamej odpovede.",
-    "Použi safeAnswerDraft iba ako vecný podklad a pravidlá. Neprepisuj ho mechanicky, ale zachovaj jeho firemné obmedzenia.",
-    "Ak používateľ nemá dosť údajov na výber riešenia, po priamej odpovedi polož najviac 1-2 follow-up otázky. Nikdy viac ako 2 otázniky.",
+    "Použi safeAnswerDraft iba ako vecný podklad, ciele a pravidlá. Neprepisuj ho mechanicky, nekopíruj jeho štruktúru a nepouži ho ako šablónu.",
+    "Ak používateľ nemá dosť údajov na výber riešenia, po priamej odpovedi polož najviac jednu follow-up otázku. Nikdy viac ako 1 otáznik.",
+    "Pri tepelnom čerpadle nikdy nepredpokladaj podlahové kúrenie alebo radiátory, kým to používateľ nepovie. Ak chýba plocha, pýtaj sa na plochu; ak plocha je známa a chýba rozvod, pýtaj sa na podlahovku/radiátory.",
     "Pri otázke na značky TČ bezpečne komunikuj NIBE a Vaillant; IVT len opatrne; Daikin/Mitsubishi pri TČ nepotvrdzuj bez firemného dôkazu.",
     "Pri cenách rozlišuj cenu zariadenia a kompletnej realizácie. Netvrď presnú cenu ani že akumulačná nádrž je v cene, kým to nie je potvrdené v konkrétnej ponuke.",
     "Pri oprave uznaj chybu alebo upresnenie a potom povedz správnu vec. Neodpovedaj iba poďakovaním.",
-    "Odpoveď drž do 80-160 slov a použi najviac jeden otáznik.",
+    "Odpoveď drž skôr do 40-90 slov a použi najviac jeden otáznik.",
   ].join("\n");
   const directComposerInput = JSON.stringify(
     {
@@ -9836,7 +10223,6 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     "F2040_obsolete",
     "F2050",
     "gas_leak_safety_scope",
-    "initial_heat_pump_short",
     "heat_pump_comfort_scope",
     "heat_pump_video_guides_scope",
     "heat_pump_expert_selection_scope",
@@ -9846,6 +10232,8 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     "heat_pump_installation_scope",
     "heat_pump_selection_installation_scope",
     "heat_pump_air_water_overview_scope",
+    "heat_pump_project_type_followup",
+    "heat_pump_area_followup",
     "heat_pump_ground_water_scope",
     "vaillant_flexotherm_arocollect_scope",
     "existing_radiator_heat_pump_standalone",
@@ -9887,7 +10275,6 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     "garden_frost_free_valve_scope",
     "heating_shutdown_scope",
     "solution_selection_followup",
-    "initial_heat_pump_short",
     "radiators_scope",
     "meeting_consultation_handoff",
     "new_build_scope",
@@ -9938,12 +10325,22 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     "no_more_questionnaire_handoff",
   ]);
   const useCompactDirectComposer = directDecision.triggered && compactDirectComposerTopics.has(directDecision.topic ?? "");
-  const compactDirectComposerSystemPrompt = [
-    "Si AI poradca Geotherm. Odpovedaj po slovensky, prirodzene a stručne.",
-    "Prepíš safeAnswerDraft na finálnu odpoveď pre zákazníka. Zachovaj firemné obmedzenia a nič nepridávaj ako istý fakt.",
-    "Zachovaj hlavné technologické slová zo safeAnswerDraft, napríklad tepelné čerpadlo, rekuperácia, klimatizácia alebo podlahové kúrenie.",
-    "Použi 60 až 110 slov, čistý Markdown s krátkym nadpisom, najviac jeden otáznik.",
-  ].join("\n");
+  const useSingleQuestionDirectComposer =
+    directDecision.topic === "heat_pump_project_type_followup" || directDecision.topic === "heat_pump_area_followup";
+  const compactDirectComposerSystemPrompt = useSingleQuestionDirectComposer
+    ? [
+        "Si AI poradca Geotherm. Odpovedaj po slovensky, prirodzene, kamarátsky a vo vykání.",
+        "Prepíš safeAnswerDraft na finálnu odpoveď pre zákazníka.",
+        "Použi najviac 35 slov, bez Markdown nadpisu a bez odrážok.",
+        "Polož presne jednu otázku. Neuvádzaj značky, modely, ceny, TÚV, chladenie ani kontakt.",
+        "Nedomýšľaj podlahovku len preto, že ide o novostavbu.",
+      ].join("\n")
+    : [
+        "Si AI poradca Geotherm. Odpovedaj po slovensky, prirodzene a stručne.",
+        "Prepíš safeAnswerDraft na finálnu odpoveď pre zákazníka. Zachovaj firemné obmedzenia a nič nepridávaj ako istý fakt.",
+        "Zachovaj hlavné technologické slová zo safeAnswerDraft, napríklad tepelné čerpadlo, rekuperácia, klimatizácia alebo podlahové kúrenie.",
+        "Použi 60 až 110 slov, čistý Markdown s krátkym nadpisom, najviac jeden otáznik.",
+      ].join("\n");
   const compactDirectComposerInput = JSON.stringify(
     {
       latestUserMessage: message,
@@ -9957,6 +10354,16 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
   const fastOutOfScopeComposerSystemPrompt =
     "Si krátky slovenský chatbot Geotherm. Otázka je mimo tém Geotherm. Odpovedz cez AI maximálne dvoma vetami: neodpovedaj na externú tému, krátko presmeruj na kúrenie, chladenie, vetranie, servis, dotácie alebo ponuku. Nepouži RAG ani markdown nadpis.";
   const fastOutOfScopeComposerInput = `Používateľ napísal: ${message}\nOdpovedz stručne a bezpečne.`;
+  const pureSmallTalkComposerSystemPrompt = [
+    "Si slovenský chatbot Geotherm.",
+    "Toto je čistý smalltalk bez technickej otázky.",
+    "Odpovedz cez AI voľne vlastnými slovami, ale veľmi stručne, kamarátsky a prirodzene.",
+    "Vždy vykaj. Nepoužívaj tykanie.",
+    "Použi jednu krátku vetu, ideálne do 14 slov.",
+    "Nepíš zoznam služieb, nepredstavuj firemnú rolu, nedávaj obchodný pitch a nepýtaj follow-up otázku.",
+    "Bez Markdown nadpisu a bez odrážok.",
+  ].join("\n");
+  const pureSmallTalkComposerInput = `Používateľ napísal: ${message}\nOdpovedz jednou veľmi krátkou kamarátskou vetou vo vykání.`;
   const fastQualificationServices = new Set<ServiceType>([
     "heat_pump",
     "air_conditioning",
@@ -10006,7 +10413,9 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
   );
   const fastQualificationComposerSystemPrompt = [
     "Si AI technicko-obchodný poradca Geotherm. Odpovedaj po slovensky, stručne a vecne.",
-    "Daj predbežný smer, krátky dôvod, typický rozsah a najviac 1-2 otázky alebo CTA na konzultáciu/nacenenie.",
+    "Daj predbežný smer, krátky dôvod, typický rozsah a najviac jednu otázku alebo CTA na konzultáciu/nacenenie.",
+    "Štýl má byť kamarátsky a úsporný: 2-4 krátke vety, bez dlhého predaja a bez opakovania všetkých služieb firmy.",
+    "Pri tepelnom čerpadle nepredpokladaj podlahovku pri novostavbe. Najprv zisti typ projektu, potom plochu, potom podlahovka/radiátory.",
     "Nesľubuj cenu, termín, bezplatnú obhliadku ani servis cudzej montáže bez potvrdenia. Nepíš frázu Stručne k otázke.",
     "Odpoveď drž do 90-150 slov, čistý Markdown s krátkym nadpisom.",
   ].join("\n");
@@ -10029,6 +10438,8 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
       ? fastContactComposerSystemPrompt
     : useFastOutOfScopeComposer
       ? fastOutOfScopeComposerSystemPrompt
+    : pureSmallTalkTurn
+      ? pureSmallTalkComposerSystemPrompt
       : useFastQualificationComposer
         ? fastQualificationComposerSystemPrompt
     : directDecision.triggered
@@ -10042,6 +10453,8 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
       ? fastContactComposerInput
     : useFastOutOfScopeComposer
       ? fastOutOfScopeComposerInput
+    : pureSmallTalkTurn
+      ? pureSmallTalkComposerInput
       : useFastQualificationComposer
         ? fastQualificationComposerInput
       : directDecision.triggered
@@ -10062,13 +10475,15 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     : await callLlmText({
         systemPrompt: activeComposerSystemPrompt,
         prompt: activeComposerInput,
-        maxOutputTokens: useFastContactComposer ? 90 : useFastClosureComposer ? 520 : useFastOutOfScopeComposer ? 180 : useCompactDirectComposer ? 300 : useFastQualificationComposer ? 420 : directDecision.triggered ? 520 : 1200,
+        maxOutputTokens: useFastContactComposer ? 90 : pureSmallTalkTurn ? 80 : useFastClosureComposer ? 520 : useFastOutOfScopeComposer ? 180 : useCompactDirectComposer ? 300 : useFastQualificationComposer ? 420 : directDecision.triggered ? 520 : 1200,
         timeoutMs: useCompactDirectComposer
           ? Math.min(Math.max(Number.parseInt(process.env.LLM_FAST_REQUEST_TIMEOUT_MS || "2500", 10), 1800), 2500)
           : useFastClosureComposer
             ? Math.min(Math.max(Number.parseInt(process.env.LLM_CLOSURE_TIMEOUT_MS || "2400", 10), 1800), 2600)
           : useFastContactComposer
             ? Math.min(Math.max(Number.parseInt(process.env.LLM_CONTACT_TIMEOUT_MS || "1200", 10), 800), 1400)
+          : pureSmallTalkTurn
+            ? Math.min(Math.max(Number.parseInt(process.env.LLM_FAST_REQUEST_TIMEOUT_MS || "1800", 10), 1200), 2200)
           : useFastOutOfScopeComposer
             ? Math.min(Math.max(Number.parseInt(process.env.LLM_FAST_REQUEST_TIMEOUT_MS || "1600", 10), 1000), 1600)
             : useFastQualificationComposer
@@ -10124,20 +10539,63 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
       recordDiagnostic(answerDiagnostics.validatorsTriggered, "out_of_scope_llm_retry_used");
     }
   }
-  if (pureSmallTalkTurn && isIncompleteAnswer(cleanedAnswer)) {
+  if (pureSmallTalkTurn && (isIncompleteAnswer(cleanedAnswer) || violatesPureSmallTalkStyle(cleanedAnswer))) {
     const smallTalkRetryLlm = await callLlmText({
       systemPrompt:
-        "Si krátky slovenský chatbot Geotherm. Odpovedz na small-talk prirodzene jednou vetou, bez RAG, bez obchodného dotazníka a bez markdown nadpisu.",
-      prompt: `Používateľ napísal: ${message}\nOdpovedz stručne.`,
+        "Si slovenský chatbot Geotherm. Odpovedz na small-talk cez AI veľmi stručne, kamarátsky a prirodzene. Vždy vykaj. Bez RAG, bez obchodného dotazníka a bez markdown nadpisu.",
+      prompt: `Používateľ napísal: ${message}\nOdpovedz veľmi stručne, kamarátsky a vo vykání.`,
       maxOutputTokens: 80,
       timeoutMs: Math.min(Math.max(Number.parseInt(process.env.LLM_FAST_REQUEST_TIMEOUT_MS || "3000", 10), 2200), 3200),
       responseMimeType: "text/plain",
       modelOverride: process.env.GEMINI_FAST_FALLBACK_MODEL || "gemini-2.5-flash-lite",
     });
     const smallTalkRetryAnswer = smallTalkRetryLlm.error || !smallTalkRetryLlm.content ? "" : cleanAnswerText(smallTalkRetryLlm.content);
-    if (!isIncompleteAnswer(smallTalkRetryAnswer)) {
+    if (!isIncompleteAnswer(smallTalkRetryAnswer) && !violatesPureSmallTalkStyle(smallTalkRetryAnswer)) {
       composerLlm = smallTalkRetryLlm;
-      cleanedAnswer = compactPureSmallTalkAnswer(smallTalkRetryAnswer, message);
+      cleanedAnswer = smallTalkRetryAnswer;
+      recordDiagnostic(answerDiagnostics.validatorsTriggered, "pure_small_talk_ai_retry_used");
+    }
+  }
+  const heatPumpRecommendationTurn =
+    route.serviceType === "heat_pump" &&
+    route.serviceIntent === "recommendation" &&
+    !closureDecision.triggered &&
+    !outOfScopeKeywordTurn;
+  const qualificationWordCount = cleanedAnswer.split(/\s+/).filter(Boolean).length;
+  const needsAreaOnlyQuestion =
+    heatPumpRecommendationTurn &&
+    stateForTurn.project_type &&
+    !stateForTurn.area_m2 &&
+    (qualificationWordCount > 80 || /(podlah|radiator|radiátor|chladen|tuv|tepl[áa] voda|kontakt|projekt|nibe|vaillant)/i.test(cleanedAnswer));
+  const needsDistributionOnlyQuestion =
+    heatPumpRecommendationTurn &&
+    stateForTurn.area_m2 &&
+    !stateForTurn.heating_distribution &&
+    (qualificationWordCount > 80 || /(chladen|tuv|tepl[áa] voda|kontakt|projekt|model|nibe|vaillant)/i.test(cleanedAnswer));
+  if (needsAreaOnlyQuestion || needsDistributionOnlyQuestion) {
+    const qualificationRetry = await callLlmText({
+      systemPrompt: [
+        "Si slovenský AI poradca Geotherm. Prepíš odpoveď vlastnými slovami, nie šablónou.",
+        "Odpovedz veľmi stručne, kamarátsky a vo vykání.",
+        "Max 45 slov, bez nadpisu, bez odrážok, bez značiek a bez kontaktu.",
+        needsAreaOnlyQuestion
+          ? "Cieľ: používateľ povedal, že ide o novostavbu/rekonštrukciu, ale chýba plocha. Spýtaj sa iba na približnú vykurovanú plochu v m2."
+          : "Cieľ: používateľ povedal plochu, ale chýba vykurovacia sústava. Spýtaj sa iba, či bude podlahové kúrenie alebo radiátory.",
+      ].join("\n"),
+      prompt: JSON.stringify({ userMessage: message, currentAnswer: cleanedAnswer, state: stateForTurn }),
+      maxOutputTokens: 120,
+      timeoutMs: Math.min(Math.max(Number.parseInt(process.env.LLM_FAST_REQUEST_TIMEOUT_MS || "2200", 10), 1500), 2600),
+      responseMimeType: "text/plain",
+      modelOverride: process.env.GEMINI_FAST_FALLBACK_MODEL || "gemini-2.5-flash-lite",
+    });
+    const retryAnswer = qualificationRetry.error || !qualificationRetry.content ? "" : cleanAnswerText(qualificationRetry.content);
+    if (!isIncompleteAnswer(retryAnswer)) {
+      composerLlm = qualificationRetry;
+      cleanedAnswer = retryAnswer;
+      recordDiagnostic(
+        answerDiagnostics.validatorsTriggered,
+        needsAreaOnlyQuestion ? "heat_pump_area_followup_ai_rewrite_used" : "heat_pump_distribution_followup_ai_rewrite_used",
+      );
     }
   }
   if (closureDecision.triggered && isIncompleteAnswer(cleanedAnswer)) {
@@ -10365,9 +10823,14 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
   if (isSmallTalkMessage(message)) {
     answer = answer.replace(/^Nemám dostatočne jasný podklad na túto tému\.\s*/i, "").trim();
   }
-  if (!outOfScopeKeywordTurn && !route.needsRetrieval && (isPureSmallTalkMessage(message) || isLooseSmallTalkMessage(message))) {
-    answer = compactPureSmallTalkAnswer(answer, message);
-    recordDiagnostic(answerDiagnostics.validatorsTriggered, "pure_small_talk_compacted");
+  if (
+    !outOfScopeKeywordTurn &&
+    !route.needsRetrieval &&
+    (isPureSmallTalkMessage(message) || isLooseSmallTalkMessage(message)) &&
+    isIncompleteAnswer(answer)
+  ) {
+    answer = pureSmallTalkFallback(message).shortAnswer;
+    recordDiagnostic(answerDiagnostics.validatorsTriggered, "pure_small_talk_fallback_used");
   }
   answer = validateAndRepairAnswer(answer, stateForTurn, route, message, answerDiagnostics);
   if (
@@ -10620,6 +11083,41 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
       directAnswerFallbackUsed = true;
     }
   }
+  if (directDecision.triggered && directDecision.topic === "heat_pump_area_followup") {
+    const normalized = normalizePolicyText(answer);
+    if (!/podlah/.test(normalized) || !/radiator/.test(normalized) || countQuestionMarks(answer) !== 1 || answer.split(/\s+/).filter(Boolean).length > 45) {
+      recordDiagnostic(answerDiagnostics.validatorsTriggered, "heat_pump_distribution_followup_precise_repaired");
+      answer = stateForTurn.area_m2
+        ? `Ďakujem, ${stateForTurn.area_m2} m² mám. Bude v dome podlahové kúrenie alebo radiátory?`
+        : "Ďakujem, plochu mám. Bude v dome podlahové kúrenie alebo radiátory?";
+      directAnswerFallbackUsed = true;
+    }
+  }
+  if (directDecision.triggered && directDecision.topic === "vaillant_arotherm_package_guidance") {
+    const fact = vaillantGuidanceForState(stateForTurn);
+    if (fact.option) {
+      const normalized = normalizePolicyText(answer);
+      const expectedPrice = formatEuro(fact.option.price);
+      const wrongPrice = [13890, 14450, 15650, 15880, 16350, 16890, 17440, 17650, 18520, 19225].some((price) => {
+        if (price === fact.option?.price) return false;
+        return normalized.includes(String(price)) || normalized.includes(normalizePolicyText(formatEuro(price)));
+      });
+      const missingRequiredFact = !normalized.includes(String(fact.option.price)) && !normalized.includes(normalizePolicyText(expectedPrice));
+      if (wrongPrice || missingRequiredFact || countQuestionMarks(answer) > 0) {
+        const radiatorSystem = normalizePolicyText(stateForTurn.heating_distribution || "").includes("radiator");
+        recordDiagnostic(answerDiagnostics.validatorsTriggered, "vaillant_package_price_fact_repaired");
+        answer = [
+          `Podľa údajov, ktoré ste dali, by som orientačne pozeral na **${fact.option.name}**, model **${fact.option.model}**.`,
+          `Cena je približne **${expectedPrice} € s montážou s DPH**.`,
+          radiatorSystem ? "Pri radiátoroch by sa ešte musela overiť teplota vody, výkon radiátorov, kotolňa a TÚV." : null,
+          "Berte to ako predbežný odhad, nie finálnu ponuku.",
+        ]
+          .filter(Boolean)
+          .join("\n\n");
+        directAnswerFallbackUsed = true;
+      }
+    }
+  }
   if (
     directDecision.triggered &&
     directDecision.answerMode === "price_answer" &&
@@ -10747,7 +11245,6 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
       "technician_inspection_visit",
       "older_houses_scope",
       "solution_selection_followup",
-      "initial_heat_pump_short",
       "heat_pump_partial_recommendation_soft_handoff",
       "ambiguous_context_needed",
       "design_inputs_needed",
@@ -10903,7 +11400,12 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     recordDiagnostic(answerDiagnostics.validatorsTriggered, "area_only_price_range_repaired");
     answer = validateAndRepairAnswer(priceDirectAnswer(message, stateForTurn).answer || answer, stateForTurn, route, message, answerDiagnostics);
   }
-  if (route.serviceIntent === "price" && /(tepelne cerpad|tepelné čerpad|cerpad|čerpad|\btc\b|\btč\b|cena|kolko|koľko)/.test(normalizePolicyText(message)) && !/(zavisi|závisí)/.test(normalizePolicyText(answer))) {
+  if (
+    directDecision.topic !== "vaillant_arotherm_package_guidance" &&
+    route.serviceIntent === "price" &&
+    /(tepelne cerpad|tepelné čerpad|cerpad|čerpad|\btc\b|\btč\b|cena|kolko|koľko)/.test(normalizePolicyText(message)) &&
+    !/(zavisi|závisí)/.test(normalizePolicyText(answer))
+  ) {
     recordDiagnostic(answerDiagnostics.validatorsTriggered, "price_dependency_wording_appended");
     answer = `${answer.trim()}\n\nCena závisí od domu, výkonu, rozsahu montáže, regulácie, TÚV a konkrétnej ponuky.`;
   }
@@ -10928,6 +11430,7 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
     answer = expectedServiceFaultAnswer(message);
   }
   if (
+    !aiFirstResponseMode &&
     !directDecision.triggered &&
     route.serviceType === "heat_pump" &&
     route.serviceIntent === "recommendation" &&
@@ -11063,10 +11566,11 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
   if (
     directDecision.topic !== "neutral_input_test" &&
     !outOfScopeKeywordTurn &&
-    (shouldHardClampSmallTalk(message) || (!route.needsRetrieval && (isPureSmallTalkMessage(message) || isLooseSmallTalkMessage(message))))
+    (shouldHardClampSmallTalk(message) || (!route.needsRetrieval && (isPureSmallTalkMessage(message) || isLooseSmallTalkMessage(message)))) &&
+    isIncompleteAnswer(answer)
   ) {
     answer = smallTalkHardClampAnswer(message);
-    recordDiagnostic(answerDiagnostics.validatorsTriggered, "pure_small_talk_final_hard_clamped");
+    recordDiagnostic(answerDiagnostics.validatorsTriggered, "pure_small_talk_final_fallback_used");
   }
   answer = enforceVykanie(answer);
   const normalizedFinalAnswer = normalizePolicyText(answer);
@@ -11098,7 +11602,13 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
   const responseConfidence: "high" | "medium" | "low" =
     responseConfidenceBase === "high" && cautiousLatestMessage ? "medium" : responseConfidenceBase;
   let responseIntent = mapServiceIntentToSalesIntent(route.serviceType, route.serviceIntent);
-  if (directDecision.topic === "nibe_noise_scope" || route.retrievalQuery?.includes("hlučnosť")) responseIntent = "noise";
+  if (
+    directDecision.topic === "nibe_noise_scope" ||
+    directDecision.topic === "heat_pump_noise_scope" ||
+    route.retrievalQuery?.includes("hlučnosť")
+  ) {
+    responseIntent = "noise";
+  }
   const skipAsyncQualificationExtraction =
     (isSmallTalkMessage(message) && !route.needsRetrieval) ||
     directDecision.triggered ||
@@ -11289,6 +11799,27 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
       });
     }
   }
+  const leadWebhook = await sendLeadWebhook({
+    lead: crmOutcome.leadRecord,
+    outreach: crmOutcome.outreachRecord,
+    publicLead: crmOutcome.lead,
+    sitePublicId,
+    currentUrl: requestBody.currentUrl,
+    referrer: requestBody.metadata?.referrer,
+  });
+  if (leadWebhook.configured && crmOutcome.leadRecord && crmOutcome.lead.captured) {
+    insertEvent({
+      siteId: site.id,
+      sessionId: session.id,
+      conversationId: conversation.id,
+      eventType: leadWebhook.sent ? "lead_webhook_sent" : "lead_webhook_failed",
+      payload: {
+        leadId: crmOutcome.leadRecord.id,
+        status: leadWebhook.status,
+        error: leadWebhook.error,
+      },
+    });
+  }
 
   return {
     conversationId: conversation.id,
@@ -11343,6 +11874,7 @@ export async function createChatResponse(requestBody: ChatRequest, knowledgePath
       },
       outreach: crmOutcome.outreach,
       persistence: crmOutcome.persistence,
+      leadWebhook,
     },
     action: null,
     fallbackUsed: Boolean(answerDiagnostics.fallbackType),
@@ -11754,20 +12286,9 @@ async function legacyCreateChatResponse(requestBody: ChatRequest, knowledgePath?
       fallbackAnswer,
       lastAskedQuestion: previousState.last_asked_question,
     });
-    const structuredAnswer =
-      noRetrievalSmallTalk && llm.structuredAnswer
-        ? {
-            shortAnswer: compactPureSmallTalkAnswer(llm.structuredAnswer.shortAnswer, message),
-            details: [],
-            followUpQuestion: null,
-            shouldAskFollowUp: false,
-            safetyNote: null,
-            confidence,
-          }
-        : structuredAnswerForLeadCapture(llm.structuredAnswer || fallbackStructured, leadCapture);
+    const structuredAnswer = structuredAnswerForLeadCapture(llm.structuredAnswer || fallbackStructured, leadCapture);
     let answer = renderStructuredAnswer(structuredAnswer, sources, llm.structuredAnswer ? llm.answerMode : answerMode, { message: answerMessage, intent });
-    if (noRetrievalSmallTalk) answer = compactPureSmallTalkAnswer(answer, message);
-    if (sources.length === 0 && shouldHardClampSmallTalk(message)) answer = pureSmallTalkFallback(message).shortAnswer;
+    if (noRetrievalSmallTalk && !llm.used && isIncompleteFallbackAnswer(answer)) answer = pureSmallTalkFallback(message).shortAnswer;
     const persistedState = stateWithLastAskedQuestion(finalState, structuredAnswer);
 
     insertEvent({
@@ -12028,10 +12549,10 @@ async function legacyCreateChatResponse(requestBody: ChatRequest, knowledgePath?
     const repairedStructured = deterministicStructuredAnswer(answerMessage, filteredResults, confidence, intent, answerPolicy, leadCapture);
     answer = softenOverconfidentWording(renderStructuredAnswer(repairedStructured, sources, answerMode, { message: answerMessage, intent }));
   }
-  if (sources.length === 0 && (isSmallTalkMessage(message) || isLooseSmallTalkMessage(message))) {
+  if (sources.length === 0 && !llm.used && (isSmallTalkMessage(message) || isLooseSmallTalkMessage(message)) && isIncompleteFallbackAnswer(answer)) {
     answer = compactPureSmallTalkAnswer(answer, message);
   }
-  if (sources.length === 0 && shouldHardClampSmallTalk(message)) {
+  if (sources.length === 0 && !llm.used && shouldHardClampSmallTalk(message) && isIncompleteFallbackAnswer(answer)) {
     answer = pureSmallTalkFallback(message).shortAnswer;
   }
   const persistedState = stateWithLastAskedQuestion(finalState, structuredAnswer);
@@ -12238,20 +12759,6 @@ export async function startChatServer(options: StartOptions = {}): Promise<Serve
       }
 
       const chatResponse = await createChatResponse(body, knowledgePath);
-      const apiNormalizedMessage = normalizePolicyText(body.message || "");
-      if (
-        shouldApiClampSmallTalk(body.message || "") &&
-        !/(etf|bitcoin|hypotek|invest|akcie|auto|pocasie|počasie)/.test(apiNormalizedMessage) &&
-        chatResponse.sources.length === 0 &&
-        chatResponse.debug?.llmUsed &&
-        chatResponse.debug?.storedSlots?.last_direct_topic !== "neutral_input_test"
-      ) {
-        chatResponse.answer = smallTalkHardClampAnswer(body.message || "");
-        chatResponse.debug.validatorsTriggered = [
-          ...(chatResponse.debug.validatorsTriggered || []),
-          "api_small_talk_hard_clamped",
-        ];
-      }
       writeJson(response, 200, chatResponse, origin);
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);

@@ -308,9 +308,9 @@ function systemPrompt(): string {
     "Return JSON only. No Markdown. No prose outside JSON. No code fences.",
     "Do not write the final chatbot formatting. The server renders Markdown deterministically.",
     "Use Slovak language.",
-    "Tone: friendly, professional, clear for a layperson.",
+    "Tone: friendly, concise, human, clear for a layperson.",
     "Always use formal Slovak vykanie: vy, vas, vam, vas. Never use informal tykanie: ty, tebe, ti, tvoj.",
-    "Answer briefly and concretely.",
+    "Answer very briefly and concretely. Avoid corporate introductions, long service lists, and marketing phrases.",
     "Use only provided sources for company facts, services, prices, contacts, guarantees, availability, brands, and exact conditions.",
     "General HVAC explanation is allowed only as high-level context and must not create unsupported company claims.",
     "Never invent exact prices, subsidies, savings, installation dates, availability, warranties, certifications, or guarantees.",
@@ -318,7 +318,7 @@ function systemPrompt(): string {
     "Ask at most one follow-up question.",
     "Do not request phone, email, or name unless the input explicitly says the user wants to be contacted or the mode is lead_capture.",
     "When uncertain, say it depends on the concrete case and ask one clarifying question.",
-    "For general_chat mode: answer naturally, do not use sources, do not claim exact website facts, and keep it short.",
+    "For general_chat and small talk: answer freely, naturally, very briefly, friendly, and in formal Slovak vykanie. Do not use sources or claim exact website facts.",
   ].join("\n");
 }
 
@@ -350,6 +350,10 @@ function userPayload(input: LlmComposeInput): string {
           pureSocialMessage: isPureGeneralChatMessage(input.message),
           noFollowUpQuestionForPureSocialMessage: isPureGeneralChatMessage(input.message),
           noServiceListForPureSocialMessage: isPureGeneralChatMessage(input.message),
+          pureSocialStyle: isPureGeneralChatMessage(input.message)
+            ? "Very brief, friendly, formal vykanie, one natural sentence, no service list, no sales pitch, no question."
+            : undefined,
+          pureSocialMaxWords: isPureGeneralChatMessage(input.message) ? 14 : undefined,
           maxDetails: 2,
           maxQuestions: isPureGeneralChatMessage(input.message) ? 0 : 1,
           fallbackIfUnsure: input.fallbackAnswer,
@@ -576,6 +580,12 @@ function validateStructuredResponse(raw: string, input: LlmComposeInput): { ok: 
     details = [];
     shouldAskFollowUp = false;
     followUpQuestion = null;
+    const normalizedSmallTalkAnswer = normalizeUserText(shortAnswer);
+    const wordCount = shortAnswer.split(/\s+/).filter(Boolean).length;
+    if (wordCount > 18) errors.push("pure small talk must stay very brief");
+    if (/(tepel|cerpad|klimatiz|rekuper|podlah|stropn|servis|dotac|sluzb|riesenia|domy|vykurov|chladen)/.test(normalizedSmallTalkAnswer)) {
+      errors.push("pure small talk must not list services or sales topics");
+    }
   }
   if (shouldAskFollowUp && !followUpQuestion && input.leadCapture.nextQuestion) {
     followUpQuestion = firstQuestion(input.leadCapture.nextQuestion);
@@ -774,10 +784,10 @@ export async function composeWithLlm(input: LlmComposeInput): Promise<LlmCompose
   const callOptions =
     mode === "general_chat"
       ? {
-          maxOutputTokens: 900,
+          maxOutputTokens: 180,
           timeoutMs: Number.parseInt(process.env.LLM_FAST_REQUEST_TIMEOUT_MS || "12000", 10),
           singleCandidate: false,
-          systemPrompt: "Return valid JSON only. Slovak friendly advisor. No Markdown. Always use formal Slovak vykanie: vy, vas, vam, vas. Never use informal tykanie: ty, tebe, ti, tvoj. This message does not need retrieval. For pure greetings, thanks, ok, or small talk, answer in 1 short sentence, no service list, no sales pitch, and no follow-up question. If the user mentions a real problem or service, you may ask at most one follow-up question.",
+          systemPrompt: "Return valid JSON only. Slovak friendly advisor. No Markdown. Always use formal Slovak vykanie: vy, vas, vam, vas. Never use informal tykanie: ty, tebe, ti, tvoj. This message does not need retrieval. For pure greetings, thanks, ok, or small talk, answer freely in your own words, very briefly, friendly, and with vykanie: one natural sentence, ideally under 14 words. No service list, no company role introduction, no sales pitch, and no follow-up question. If the user mentions a real problem or service, you may ask at most one follow-up question.",
           responseSchema: structuredResponseSchema(),
         }
       : {
